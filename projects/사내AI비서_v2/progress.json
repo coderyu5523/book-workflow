@@ -87,6 +87,19 @@
             "audit": "pass"
           },
           "questions_pending": 0
+        },
+        {
+          "id": "CH03",
+          "title": "어떤 문서를 넣을까",
+          "version": "v0.2",
+          "status": "done",
+          "artifact": "chapters/03-어떤-문서를-넣을까.md",
+          "review": {
+            "insight": "pass",
+            "intent_watch": "pass",
+            "audit": "pass"
+          },
+          "questions_pending": 0
         }
       ]
     },
