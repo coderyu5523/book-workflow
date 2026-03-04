@@ -1,5 +1,5 @@
 /* =====================================================
-   기본 전역 스타일 (CH07 동일 디자인)
+   기본 전역 스타일 (ex02 admin.css 기반)
    plan.md 1.6 웹 UI 통일 규칙 준수
    색상: 검정/흰색 + 금색(#d4af37) 강조, CSS 변수 기반
    폰트: Inter (Google Fonts)
@@ -147,9 +147,8 @@ a {
     font-weight: 600;
 }
 
-/* ---- 내역 지우기 / 초기화 버튼 ---- */
-.btn-clear-chat,
-.clear-btn {
+/* ---- 내역 지우기 버튼 ---- */
+.btn-clear-chat {
     background: white;
     border: 1px solid var(--border);
     padding: 5px 12px;
@@ -163,14 +162,12 @@ a {
     gap: 4px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     margin-left: 4px;
-    font-family: inherit;
 }
 
-.btn-clear-chat:hover,
-.clear-btn:hover {
-    background-color: #fff5f5;
-    border-color: #ff5555;
-    color: #dc2626;
+.btn-clear-chat:hover {
+    background-color: #f8f9fa;
+    border-color: #ccc;
+    color: var(--primary);
 }
 
 /* ---- 반응형 ---- */

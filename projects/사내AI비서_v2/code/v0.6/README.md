@@ -1,191 +1,218 @@
-# CH09 LangChain 연결 전략
+# CH08 — 정형 MCP + 비정형 RAG 통합 에이전트 설계
 
-> 사내 문서 기반 AI 업무 비서 (RAG + MCP) — 9장 실습 코드
+> RAG 기술서 Chapter 08: QueryRouter + ReAct Agent + MCP Tools + 채팅 UI
 
-## 학습 목표
+## 개요
 
-- LangChain Agent의 표준 구성(Router + Agent + RAG Chain + MCP Tools) 3종 세트를 이해한다.
-- `@tool` 데코레이터로 4개의 MCP 도구(휴가 조회, 매출 조회, 직원 조회, 문서 검색)를 직접 정의한다.
-- Timeout/Retry 설정, 구조화된 로깅, TTL 기반 캐시를 운영 설정으로 적용한다.
-- Langfuse를 통한 LLM 모니터링 연동 방법을 이해한다.
+이 예제는 정형 데이터(PostgreSQL DB)와 비정형 데이터(사내 문서)를 통합하여
+복합적인 HR 질문에 답변하는 에이전트를 구현합니다.
 
-## 실행 환경
+**3단계 라우팅 전략:**
+1. Step 1 — 규칙 기반: 키워드 매칭으로 빠르게 분류
+2. Step 2 — 스키마 기반: DB 컬럼명 감지로 정형 질문 식별
+3. Step 3 — LLM 판단: 모호한 질문을 LLM이 최종 분류
 
-- Python 3.10+
-- Docker (인프라용 — PostgreSQL, FastAPI)
-- Ollama + DeepSeek R1 모델 (또는 OpenAI API)
-- rag-infra 레포지터리 (PostgreSQL + CRUD 서버)
+**10개 대표 시나리오:**
+- 정형(4): 연차 잔여, 매출 합계, 직원 목록, 부서별 통계
+- 비정형(4): 온보딩 절차, 보안 정책, 복지 안내, 출장 규정
+- 복합(2): 매출 상위 부서의 복지 정책, 특정 직원의 연차 규정
 
-## 사전 준비 — 인프라 설정 (최초 1회)
+정형 데이터 도구는 **PostgreSQL 연결이 필수**입니다. `docker compose up -d`로 DB를 시작한 후 실행하십시오.
 
-아래 인프라 레포지터리를 클론하고 PostgreSQL과 CRUD 서버를 먼저 시작하십시오.
+---
 
-```bash
-git clone https://github.com/{repo}/rag-infra
-cd rag-infra
-docker-compose up -d
-```
-
-PostgreSQL(샘플 데이터 포함)과 FastAPI CRUD 서버가 자동으로 시작됩니다.
-
-**참고**: PostgreSQL이 없어도 모의(mock) 데이터로 모든 기능을 테스트할 수 있습니다.
-
-## 설치 및 실행
-
-이 챕터 예제 코드를 클론합니다.
+## 빠른 시작
 
 ```bash
-git clone https://github.com/{repo}/CH09_LangChain_연결
-cd CH09_LangChain_연결
+cd CH08_통합_에이전트_설계
+python3.12 -m venv .venv
+source .venv/bin/activate
+cp .env.example .env
+pip install -r requirements.txt
+
+# 1. PostgreSQL 시작 (필수)
+docker compose up -d
+
+# 2. 단위 테스트 실행
+python -m pytest tests/test_scenarios.py -v
 ```
 
-환경 변수를 설정합니다.
+---
+
+## 전체 실행 (FastAPI 웹 UI)
+
+### 1단계: 환경 변수 설정
 
 ```bash
 cp .env.example .env
-# .env 파일을 열고 LLM 제공자와 API 키를 입력하십시오.
+# .env 파일에서 LLM_PROVIDER 및 관련 키를 설정하세요
 ```
 
-### macOS / Linux
+### 2단계: PostgreSQL 시작 (필수)
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
+docker compose up -d
 ```
 
-### Windows (WSL2)
+### 3단계: LLM 준비
+
+CH08은 Tool Calling이 필요하므로 `llama3.1:8b`를 사용합니다.
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+ollama pull llama3.1:8b
 ```
 
-## 실행
+OpenAI 사용 시 `.env`에서 `LLM_PROVIDER=openai`로 변경하고
+`OPENAI_API_KEY`를 설정합니다.
 
-대화형 CLI 모드로 실행합니다.
+### 4단계: 서버 실행
 
 ```bash
-python src/main.py
+uvicorn app.main:app --reload --port 8008
 ```
 
-사전 정의된 데모 시나리오 5개를 자동으로 실행합니다.
+브라우저에서 `http://localhost:8008/chat` 접속
 
-```bash
-python src/main.py --demo
-```
+---
 
-## 예상 출력
-
-<!-- [CAPTURE NEEDED: python src/main.py --demo 전체 터미널 출력] -->
+## 프로젝트 구조
 
 ```
-============================================================
-Q/A 사내 AI AI 비서 — CH09 LangChain 연결 전략 예제
-============================================================
-LLM 제공자: ollama | 모델: deepseek-r1:8b
-[ConnectHRAgent] 초기화 시작...
-[agent_config] LLM 제공자: ollama
-[agent_config] Ollama LLM 생성 완료: deepseek-r1:8b (URL: http://localhost:11434)
-[agent_config] RAG 체인 구성 실패 (search_documents 도구로 대체): ...
-[ConnectHRAgent] AgentExecutor 구성 완료
-[ConnectHRAgent] 초기화 완료 (도구 수: 4, RAG 체인: 비활성)
-
-대화형 모드를 종료하고 데모 시나리오를 실행합니다.
-총 5개 시나리오 실행
-
-============================================================
-[시나리오 1/5] 영업팀 직원 목록을 보여줘
-------------------------------------------------------------
-[Router] 쿼리 분류 완료: route=db (DB점수=2, RAG점수=0)
-[Retry] 시도 1/3
-
-> Entering new AgentExecutor chain...
-Invoking: `list_employees` with `{'dept': '영업팀'}`
-[list_employees] 조회 대상 부서: 영업팀
-[list_employees] 조회된 직원 수: 2
-
-[라우팅 경로] db
-[AI 답변]
-영업팀 직원 목록입니다:
-1. 이서연 (seoyeon@company.com, 입사일: 2021-07-15)
-2. 정우진 (woojin@company.com, 입사일: 2022-06-20)
-
-[도구 호출 내역] 1건
-  1. list_employees → [{'id': 2, 'name': '이서연', 'dept': '영업팀', ...}]...
-
-============================================================
-[시나리오 2/5] 이서연의 휴가 잔여일이 몇 일이야?
-...
-
-============================================================
-
-[실행 통계]
-  총 호출 횟수: 5
-  총 토큰 사용량: 1240
-  평균 응답 시간: 3820ms
-  캐시 적중률: 0.0%
-```
-
-> **참고**: 위 출력은 실제 실행 결과를 기반으로 작성되었습니다. Ollama 모델의 응답 내용은 실행마다 약간 다를 수 있습니다.
-
-## 전체 구조
-
-```mermaid
-flowchart LR
-    A["사용자 질문"] -- "run()" --> B["ConnectHRAgent"]
-    B -- "route" --> C["Router"]
-    C -- "db/agent" --> D["AgentExecutor"]
-    C -- "rag" --> E["RAG Chain"]
-    D -- "tool call" --> F["4 MCP Tools"]
-    F -- "결과" --> D
-    D -- "답변" --> B
-    B -- "config" --> G["Timeout/Retry/Cache"]
-    B -- "log" --> H["Monitoring/Langfuse"]
-```
-
-## 파일 구조
-
-```
-CH09_LangChain_연결/
-├── README.md               이 파일
-├── requirements.txt        Python 의존성 (버전 고정)
-├── .env.example            환경 변수 템플릿
+CH08_통합_에이전트_설계/
+├── README.md               # 이 파일
+├── requirements.txt        # Python 의존성 (버전 고정)
+├── .env.example            # 환경 변수 템플릿
+├── docker-compose.yml      # PostgreSQL 16 컨테이너
 ├── src/
 │   ├── __init__.py
-│   ├── main.py             진입점 — 대화형 CLI
-│   ├── agent_config.py     LangChain Agent 구성 (Router + AgentExecutor + RAG Chain)
-│   ├── monitoring.py       구조화된 JSON 로깅 + 토큰 추적 + Langfuse 연동
-│   ├── cache.py            TTL 기반 응답 캐시 + 임베딩 캐시
-│   └── tools/
-│       ├── __init__.py
-│       ├── leave_balance.py    @tool: 휴가 잔여 조회
-│       ├── sales_sum.py        @tool: 매출 합계 조회
-│       ├── list_employees.py   @tool: 직원 목록 조회
-│       └── search_documents.py @tool: 사내 문서 검색
-└── outputs/
-    └── embedding_cache/    임베딩 캐시 파일 저장 위치
+│   ├── router.py           # QueryRouter (3단계 라우팅)
+│   ├── mcp_tools.py        # MCP 도구 4개 (DB 연결 필수)
+│   └── agent.py            # ReAct 통합 에이전트
+├── app/
+│   ├── __init__.py
+│   ├── database.py         # PostgreSQL 연결 (필수)
+│   ├── chat_api.py         # FastAPI 라우터 + 채팅 엔드포인트
+│   └── main.py             # FastAPI 앱 진입점
+├── templates/
+│   ├── base.html           # 사이드바 레이아웃 (Inter 폰트, 골드 강조)
+│   └── chat.html           # 채팅 UI (에이전트 모드 토글 + 질문 유형 배지)
+├── static/
+│   ├── css/
+│   │   ├── style.css       # 기본 레이아웃
+│   │   └── chat.css        # 채팅 버블 + 배지 + 아코디언
+│   └── js/
+│       └── chat.js         # 채팅 로직 + 로컬스토리지
+├── tests/
+│   └── test_scenarios.py   # 18개 단위 테스트
+├── data/
+│   ├── schema.sql          # PostgreSQL 스키마 + 샘플 데이터
+│   └── chroma_db/          # ChromaDB 저장소 (선택)
+└── outputs/                # 실행 결과 저장 (.gitignore 대상)
 ```
 
-## 모의 데이터로 테스트
+---
 
-PostgreSQL이나 ChromaDB가 없어도 모의 데이터로 바로 실행할 수 있습니다.
-각 도구 파일 상단의 `MOCK_*` 변수에 샘플 데이터가 내장되어 있습니다.
+## 핵심 코드 설명
 
-DB 연결 실패 시 자동으로 모의 데이터를 사용합니다.
+### QueryRouter (src/router.py)
 
-## LLM 제공자 전환
+**다음 코드는 사용자 질문을 3단계 전략으로 분류하여 처리 경로를 결정합니다.**
 
-`.env` 파일에서 `LLM_PROVIDER`를 변경하면 LLM을 전환할 수 있습니다.
-
-```bash
-# Ollama (기본, 무료)
-LLM_PROVIDER=ollama
-OLLAMA_MODEL=deepseek-r1:8b
-
-# OpenAI (유료)
-LLM_PROVIDER=openai
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o-mini
+```python
+step1_result = self._step1_rule_based(query)   # ①
+step2_result = self._step2_schema_based(query)  # ②
+step3_result = self._step3_llm_based(query)     # ③
+return step3_result or "unstructured"           # ④
 ```
+
+> ① 키워드 매칭: 연차/매출/목록 → structured, 절차/정책/안내 → unstructured
+> ② 스키마 매칭: remaining_days, total_amount 등 DB 컬럼명 감지
+> ③ LLM 판단: Step 1,2에서 미결정 시 LLM이 JSON으로 분류
+> ④ 기본값: 모두 실패하면 비정형으로 처리
+
+### MCP 도구 (src/mcp_tools.py)
+
+**다음 코드는 PostgreSQL에서 연차 잔여일수를 조회합니다. DB 연결은 필수입니다.**
+
+```python
+rows = _run_query("SELECT ... FROM employees WHERE emp_no = %s", (emp_no,))  # ①
+if rows:
+    return rows[0]                    # ②
+return {"error": f"직원 '{emp_no}'을(를) 찾을 수 없습니다."}  # ③
+```
+
+> ① PostgreSQL 조회 시도 (connect_timeout=3으로 빠른 실패)
+> ② DB 결과가 있으면 즉시 반환
+> ③ DB 미연결 또는 미발견 시 에러 메시지 반환
+
+### ReAct 에이전트 (src/agent.py)
+
+**다음 코드는 Tool Calling 에이전트가 MCP 도구를 반복 실행하며 복합 질문을 해결합니다.**
+
+```python
+query_type = self._router.classify_query(query)          # ①
+result = self._agent_executor.invoke({"input": query})   # ②
+answer = re.sub(r"<think>.*?</think>", "", answer)       # ③
+structured_data, unstructured_data = self._parse_result(steps)  # ④
+```
+
+> ① QueryRouter로 질문 유형 먼저 분류
+> ② AgentExecutor가 도구를 선택·실행하며 최종 답변 생성
+> ③ DeepSeek-R1 등의 `<think>` 태그를 최종 답변에서 제거
+> ④ 중간 단계(intermediate_steps)에서 DB/문서 데이터를 추출
+
+---
+
+## API 명세
+
+### POST /api/chat
+
+**요청:**
+
+```json
+{
+  "query": "김민준 연차 잔여일수 알려줘",
+  "use_agent": true
+}
+```
+
+**응답:**
+
+```json
+{
+  "query": "김민준 연차 잔여일수 알려줘",
+  "answer": "김민준 과장님의 연차 잔여일수는 8일입니다.",
+  "query_type": "structured",
+  "mode": "agent",
+  "structured_data": {
+    "leave_balance": {
+      "name": "김민준",
+      "remaining_days": 8,
+      "used_days": 7,
+      "total_days": 15
+    }
+  },
+  "unstructured_data": [],
+  "steps": [
+    {"tool": "leave_balance", "input": {"emp_no": "김민준"}, "output": "..."}
+  ]
+}
+```
+
+---
+
+## 외부 서비스 의존성
+
+| 서비스 | 필수 여부 | 미연결 시 동작 |
+|--------|:--------:|-------------|
+| PostgreSQL | **필수** | 정형 데이터 도구가 에러 반환 |
+| ChromaDB | 선택 | `data/docs/` 키워드 검색으로 대체 |
+| LLM (Ollama/OpenAI) | 선택 | QueryRouter Step 1, 2만으로 라우팅 결정 |
+
+---
+
+## 환경 요구사항
+
+- Python 3.12 이상
+- Docker Desktop: PostgreSQL 컨테이너 실행 (**필수**)
+- Ollama 또는 OpenAI API 키: LLM 실행

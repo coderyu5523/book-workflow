@@ -24,7 +24,7 @@
 
 ## Part 1. AI가 왜 거짓말을 할까
 
-### CH01: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.0)
+### CH01: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.1)
 
 **핵심 개념**: LLM 환각, Context Injection, RAG 기본
 **기술**: Ollama + deepseek-r1:8b, LangChain RetrievalQA, ChromaDB
@@ -33,7 +33,7 @@
 
 **코드 실습 분류**:
 ```
-v0.0/
+v0.1/
 ├── step1_fail.py           [실습] LLM 단독 호출 → 환각 체험
 ├── step2_context.py        [실습] 컨텍스트 직접 주입 → 임시 해결
 ├── step3_rag.py            [실습] RAG 기본 파이프라인 구성
@@ -46,7 +46,7 @@ v0.0/
 
 ## Part 2. 사내 시스템 만들기
 
-### CH02: "일단 사내 시스템부터" — 사내 시스템 소개 (v0.1)
+### CH02: "일단 사내 시스템부터" — 사내 시스템 소개 (v0.2)
 
 **핵심 개념**: REST API, CRUD 패턴
 **기술**: (코드 없음 — 소개 챕터. 완성 시스템을 실행하고 Swagger UI로 확인)
@@ -58,13 +58,13 @@ v0.0/
 (코드 없음)
 - Swagger UI 캡처 (API 전체 목록, CRUD 테스트)
 - API 엔드포인트 표 (10개)
-- 코드가 궁금한 독자를 위한 code/v0.1/app/ 안내
+- 코드가 궁금한 독자를 위한 code/v0.2/app/ 안내
 ```
 **실습 요약**: 설명 0 / 실습 0 / 소개 중심 (UI 캡처)
 
 ---
 
-### CH03: "어떤 문서를 넣을까" — 사내 문서 수집 전략과 표준 (v0.2)
+### CH03: "어떤 문서를 넣을까" — 사내 문서 수집 전략과 표준 (v0.3)
 
 **핵심 개념**: 문서 품질, 메타데이터, 청킹 전략 사전 설계, 재인덱싱 전략
 **기술**: (코드 없음 — 개념 챕터)
@@ -84,7 +84,7 @@ v0.0/
 
 ## Part 3. RAG 엔진 만들기
 
-### CH04: "문서를 '지식'으로 바꾸다" — VectorDB 구축 (v0.3)
+### CH04: "문서를 '지식'으로 바꾸다" — VectorDB 구축 (v0.4)
 
 **핵심 개념**: 문서 파싱, 청킹, 임베딩, 벡터 저장/검색, 임베딩 모델 선택 기준
 **기술**: pypdf, python-docx, openpyxl, ko-sroberta-multitask, ChromaDB
@@ -95,7 +95,7 @@ v0.0/
 
 **코드 실습 분류**:
 ```
-v0.3/src/
+v0.4/src/
 ├── extractor.py    [실습] PDF/DOCX/XLSX 통합 파서
 ├── chunker.py      [실습] Fixed-size 청킹 (500자+100오버랩)
 ├── store.py        [실습] ko-sroberta 임베딩 + ChromaDB upsert
@@ -109,7 +109,7 @@ v0.3/src/
 
 ---
 
-### CH05: "드디어 답해준다" — RAG Q&A 엔진 (v0.4)
+### CH05: "드디어 답해준다" — RAG Q&A 엔진 (v0.5)
 
 **핵심 개념**: LCEL 파이프라인, 출처 강제, 멀티턴 대화
 **기술**: LangChain LCEL (Retriever|Prompt|LLM|Parser), WindowMemory, FastAPI
@@ -118,11 +118,11 @@ v0.3/src/
 
 **코드 실습 분류**:
 ```
-v0.4/src/
+v0.5/src/
 ├── rag_chain.py       [실습] LCEL 파이프라인 + 출처 강제 프롬프트
 ├── conversation.py    [실습] WindowMemory(k=5) 멀티턴
 ├── response_parser.py [설명] DeepSeek <think> 제거 + 출처 추출
-v0.4/app/
+v0.5/app/
 ├── chat_api.py        [설명] POST /api/chat
 └── session.py         [참고] 세션 쿠키 관리
 ```
@@ -132,7 +132,7 @@ v0.4/app/
 
 ## Part 4. 진짜 비서 만들기
 
-### CH06: "'연차 몇 개, 규정은?' 동시에" — 통합 에이전트 설계 (v0.5)
+### CH06: "'연차 몇 개, 규정은?' 동시에" — 통합 에이전트 설계 (v0.6)
 
 **핵심 개념**: QueryRouter, MCP 도구, ReAct 에이전트
 **기술**: 규칙/스키마/LLM 3단계 라우팅, @tool 데코레이터, AgentExecutor
@@ -141,11 +141,11 @@ v0.4/app/
 
 **코드 실습 분류**:
 ```
-v0.5/src/
+v0.6/src/
 ├── router.py      [실습] 3단계 QueryRouter (규칙→스키마→LLM)
 ├── mcp_tools.py   [실습] @tool 4개 (leave_balance, sales_sum, list_employees, search_documents)
 └── agent.py       [실습] ReAct Agent (create_tool_calling_agent)
-v0.5/app/
+v0.6/app/
 ├── chat_api.py    [설명] 에이전트/RAG 모드 선택 API
 └── database.py    [참고] PostgreSQL 연결
 ```
@@ -153,7 +153,7 @@ v0.5/app/
 
 ---
 
-### CH07: "실제로 써보니" — 운영을 위한 안정화 (v0.6)
+### CH07: "실제로 써보니" — 운영을 위한 안정화 (v0.7)
 
 **핵심 개념**: 응답 캐시, 임베딩 캐시, 토큰 추적, 에이전트 표준화
 **기술**: ResponseCache(TTL), EmbeddingCache, TokenTracker, ConnectHRAgent
@@ -162,7 +162,7 @@ v0.5/app/
 
 **코드 실습 분류**:
 ```
-v0.6/src/
+v0.7/src/
 ├── agent_config.py  [실습] ConnectHRAgent 표준 구성
 ├── cache.py         [실습] ResponseCache(TTL) + EmbeddingCache
 ├── monitoring.py    [설명] TokenTracker + JSON 로깅
@@ -175,7 +175,7 @@ v0.6/src/
 
 ## Part 5. 더 잘 만들기 — 튜닝과 평가
 
-### CH08: "엉뚱한 문서를 가져온다" — 검색 품질 튜닝 (v0.7)
+### CH08: "엉뚱한 문서를 가져온다" — 검색 품질 튜닝 (v0.8)
 
 **핵심 개념**: 청킹 최적화, Retriever 튜닝, 리랭킹, 하이브리드 검색
 **기술**: Semantic Chunking, Cross-Encoder ReRanker, BM25+Vector, rank-bm25
@@ -184,7 +184,7 @@ v0.6/src/
 
 **코드 실습 분류**:
 ```
-v0.7/tuning/
+v0.8/tuning/
 ├── chunk_experiment.py     [실습] Fixed vs Semantic, 크기/오버랩 실험
 ├── retriever_experiment.py [실습] k값, threshold 실험
 ├── reranker.py             [실습] Cross-Encoder 리랭킹
@@ -194,7 +194,7 @@ v0.7/tuning/
 
 ---
 
-### CH09: "질문을 제대로 이해 못한다" — 질문+답변 고급 튜닝 (v0.8)
+### CH09: "질문을 제대로 이해 못한다" — 질문+답변 고급 튜닝 (v0.9)
 
 **핵심 개념**: 고급 Retriever, Query Rewrite, 답변 근거 시스템
 **기술**: Parent Document Retriever, HyDE, Multi-Query, EvidencePipeline
@@ -203,7 +203,7 @@ v0.7/tuning/
 
 **코드 실습 분류**:
 ```
-v0.8/tuning/
+v0.9/tuning/
 ├── advanced_retriever.py  [실습] Parent/SelfQuery/Compression
 ├── query_rewrite.py       [실습] HyDE, Multi-Query, 약어 확장
 └── evidence_pipeline.py   [실습] 이미지+DB 근거 동시 제공
@@ -212,7 +212,7 @@ v0.8/tuning/
 
 ---
 
-### CH10: "PDF 이미지까지 잡아라" — 고급 문서 처리와 평가 (v0.9)
+### CH10: "PDF 이미지까지 잡아라" — 고급 문서 처리와 평가 (v1.0)
 
 **핵심 개념**: Vision LLM, OCR, 이미지 인덱싱, RAG 평가
 **기술**: LLaVA/EasyOCR, 하이브리드 이미지 처리, Precision@k, Hallucination Rate
@@ -221,7 +221,7 @@ v0.8/tuning/
 
 **코드 실습 분류**:
 ```
-v0.9/tuning/
+v1.0/tuning/
 ├── document_parser.py   [실습] 라이브러리 비교 + vLLM 멀티모달
 ├── document_capture.py  [실습] OCR 캡처 + 자동 인제스천
 └── eval_framework.py    [실습] Precision@k, Recall@k, Hallucination Rate
@@ -279,13 +279,13 @@ Part 5: CH08(12p) + CH09(10p) + CH10(10p)     = 32p
 
 | 챕터 | 버전 | 핵심 기술 | 완성 코드 대비 차이 |
 |------|------|----------|--------------|
-| CH01 | v0.0 | Ollama, LangChain, ChromaDB | 완성 코드와 동일 (교육용 단순화) |
-| CH02 | v0.1 | (소개) REST API, CRUD 개념 | 코드 없음 — Swagger UI 캡처만 |
-| CH03 | v0.2 | (개념) | 코드 없음 |
-| CH04 | v0.3 | pypdf, ko-sroberta, ChromaDB | 완성 코드와 동일 |
-| CH05 | v0.4 | LCEL, WindowMemory | templates/session 제외 |
-| CH06 | v0.5 | QueryRouter, @tool, AgentExecutor | templates 제외 |
-| CH07 | v0.6 | ResponseCache, TokenTracker | Langfuse 상세 제외 |
-| CH08 | v0.7 | Cross-Encoder, BM25, rank-bm25 | 완성 코드와 동일 |
-| CH09 | v0.8 | Parent Retriever, HyDE, Evidence | 완성 코드와 동일 |
-| CH10 | v0.9 | LLaVA, EasyOCR, eval metrics | RAGAS 제외 |
+| CH01 | v0.1 | Ollama, LangChain, ChromaDB | 완성 코드와 동일 (교육용 단순화) |
+| CH02 | v0.2 | (소개) REST API, CRUD 개념 | 코드 없음 — Swagger UI 캡처만 |
+| CH03 | v0.3 | (개념) | 코드 없음 |
+| CH04 | v0.4 | pypdf, ko-sroberta, ChromaDB | 완성 코드와 동일 |
+| CH05 | v0.5 | LCEL, WindowMemory | templates/session 제외 |
+| CH06 | v0.6 | QueryRouter, @tool, AgentExecutor | templates 제외 |
+| CH07 | v0.7 | ResponseCache, TokenTracker | Langfuse 상세 제외 |
+| CH08 | v0.8 | Cross-Encoder, BM25, rank-bm25 | 완성 코드와 동일 |
+| CH09 | v0.9 | Parent Retriever, HyDE, Evidence | 완성 코드와 동일 |
+| CH10 | v1.0 | LLaVA, EasyOCR, eval metrics | RAGAS 제외 |

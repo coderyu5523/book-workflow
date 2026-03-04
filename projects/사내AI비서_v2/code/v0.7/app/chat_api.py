@@ -43,17 +43,6 @@ class ChatRequest(BaseModel):
     use_agent: bool = Field(default=True, description="통합 에이전트 사용 여부")
 
 
-class EvidenceItem(BaseModel):
-    """답변 근거 항목."""
-
-    text: str = Field(default="", description="근거 텍스트")
-    image_url: str = Field(default="", description="캡처 이미지 URL")
-    source: str = Field(default="", description="출처 문서명")
-    page: str = Field(default="", description="페이지 번호")
-    table_data: dict = Field(default_factory=dict, description="DB 조회 데이터 (정형)")
-    query: str = Field(default="", description="SQL 쿼리 (정형)")
-
-
 class ChatResponse(BaseModel):
     """채팅 응답 모델."""
 
@@ -63,7 +52,6 @@ class ChatResponse(BaseModel):
     mode: str = Field(default="agent", description="처리 모드: agent|rag")
     structured_data: dict = Field(default_factory=dict, description="DB 조회 결과")
     unstructured_data: list = Field(default_factory=list, description="문서 검색 결과")
-    evidence: list[EvidenceItem] = Field(default_factory=list, description="답변 근거")
     steps: list = Field(default_factory=list, description="에이전트 중간 단계")
 
 
@@ -101,34 +89,7 @@ def _get_router() -> Any:
 
 
 # ---------------------------------------------------------------------------
-# 4. 근거 수집 헬퍼
-# ---------------------------------------------------------------------------
-
-def _collect_evidence(query: str, query_type: str) -> list[EvidenceItem]:
-    """질문에 대한 답변 근거를 수집한다."""
-    try:
-        from tuning.evidence_pipeline import retrieve_with_evidence, format_evidence_response
-
-        result = retrieve_with_evidence(query, query_type=query_type)
-        formatted = format_evidence_response(result)
-
-        items = []
-        for ev in formatted.get("evidence", []):
-            items.append(EvidenceItem(
-                text=ev.get("text", ""),
-                image_url=ev.get("image_url", ""),
-                source=ev.get("source", ""),
-                page=str(ev.get("page", "")),
-                table_data=ev.get("table_data", {}),
-                query=ev.get("query", ""),
-            ))
-        return items
-    except Exception:
-        return []
-
-
-# ---------------------------------------------------------------------------
-# 5. 엔드포인트 정의
+# 4. 엔드포인트 정의
 # ---------------------------------------------------------------------------
 
 @router.get("/chat", response_class=HTMLResponse)
@@ -167,15 +128,25 @@ async def chat_endpoint(body: ChatRequest) -> ChatResponse:
             agent = _get_agent()  # ①
             result = agent.run(body.query)
 
-            # 근거 수집
-            evidence = _collect_evidence(body.query, result.get("route", "unstructured"))
+            # intermediate_steps에서 근거 데이터 추출
+            structured_data: dict = {}
+            unstructured_data: list = []
+            for step in result.get("intermediate_steps", []):
+                if isinstance(step, (list, tuple)) and len(step) >= 2:
+                    action, observation = step[0], step[1]
+                    tool_name = getattr(action, "tool", "")
+                    if tool_name in ("get_leave_balance", "list_employees", "get_sales_sum"):
+                        structured_data[tool_name] = observation
+                    elif tool_name == "search_documents" and isinstance(observation, list):
+                        unstructured_data.extend(observation)
 
             return ChatResponse(
                 query=body.query,
                 answer=result.get("output", "답변을 생성하지 못했습니다."),
                 query_type=result.get("route", "unstructured"),
                 mode="agent",
-                evidence=evidence,
+                structured_data=structured_data,
+                unstructured_data=unstructured_data,
                 steps=result.get("intermediate_steps", []),
             )
         except Exception as e:

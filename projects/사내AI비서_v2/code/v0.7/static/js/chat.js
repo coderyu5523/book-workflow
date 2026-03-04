@@ -144,90 +144,53 @@ function buildQueryTypeBadge(queryType) {
 function buildSourceAccordion(data) {
   const docs = data.unstructured_data || [];
   const dbData = data.structured_data || {};
-  const evidence = data.evidence || [];
 
   const hasUnstructured = docs.length > 0;
   const hasStructured = Object.keys(dbData).length > 0;
-  const hasEvidence = evidence.length > 0;
 
-  if (!hasUnstructured && !hasStructured && !hasEvidence) return '';
+  if (!hasUnstructured && !hasStructured) return '';
 
   let cards = '';
 
-  // 답변 근거 카드 (evidence 우선)
-  evidence.forEach((ev) => {
-    const source = escapeHtml(ev.source || '사내 문서');
-    const text = escapeHtml(ev.text || '');
-    const page = ev.page ? ` ${escapeHtml(String(ev.page))}p` : '';
-    const imageUrl = ev.image_url || '';
-    const tableData = ev.table_data || {};
-    const sqlQuery = ev.query || '';
-
-    if (Object.keys(tableData).length > 0) {
-      // 정형 근거 (DB 조회)
-      const content = JSON.stringify(tableData, null, 2).slice(0, 200);
-      cards += `
-        <div class="source-card db-result-card evidence-card">
-          <div class="source-card-title">${source}</div>
-          ${sqlQuery ? `<div class="evidence-sql">${escapeHtml(sqlQuery)}</div>` : ''}
-          <div class="source-card-content" style="white-space:pre-wrap;font-family:monospace">${escapeHtml(content)}</div>
-        </div>
-      `;
-    } else {
-      // 비정형 근거 (문서 + 이미지)
-      cards += `
-        <div class="source-card evidence-card">
-          <div class="source-card-title">${source}${page}</div>
-          <div class="source-card-content">${text}</div>
-          ${imageUrl ? `<div class="evidence-image"><img src="${escapeHtml(imageUrl)}" alt="${source}" loading="lazy" /><span class="evidence-source">${source}${page}</span></div>` : ''}
-        </div>
-      `;
-    }
+  // 비정형 문서 카드
+  docs.forEach((doc) => {
+    const source = escapeHtml(doc.source || '사내 문서');
+    const content = escapeHtml(doc.content || '');
+    cards += `
+      <div class="source-card">
+        <div class="source-card-title">${source}</div>
+        <div class="source-card-content">${content}</div>
+      </div>
+    `;
   });
 
-  // 기존 비정형 문서 카드 (evidence가 없을 때)
-  if (!hasEvidence) {
-    docs.forEach((doc) => {
-      const source = escapeHtml(doc.source || '사내 문서');
-      const content = escapeHtml(doc.content || '');
-      cards += `
-        <div class="source-card">
-          <div class="source-card-title">${source}</div>
-          <div class="source-card-content">${content}</div>
-        </div>
-      `;
-    });
+  // 정형 DB 결과 카드
+  Object.entries(dbData).forEach(([toolName, result]) => {
+    const title = {
+      leave_balance: '연차 조회 결과',
+      sales_sum: '매출 집계 결과',
+      list_employees: '직원 목록 결과',
+    }[toolName] || toolName;
 
-    // 기존 정형 DB 결과 카드
-    Object.entries(dbData).forEach(([toolName, result]) => {
-      const title = {
-        leave_balance: '연차 조회 결과',
-        sales_sum: '매출 집계 결과',
-        list_employees: '직원 목록 결과',
-      }[toolName] || toolName;
+    const content = typeof result === 'object'
+      ? JSON.stringify(result, null, 2).slice(0, 200)
+      : String(result).slice(0, 200);
 
-      const content = typeof result === 'object'
-        ? JSON.stringify(result, null, 2).slice(0, 200)
-        : String(result).slice(0, 200);
+    cards += `
+      <div class="source-card db-result-card">
+        <div class="source-card-title">${escapeHtml(title)}</div>
+        <div class="source-card-content" style="white-space:pre-wrap;font-family:monospace">${escapeHtml(content)}</div>
+      </div>
+    `;
+  });
 
-      cards += `
-        <div class="source-card db-result-card">
-          <div class="source-card-title">${escapeHtml(title)}</div>
-          <div class="source-card-content" style="white-space:pre-wrap;font-family:monospace">${escapeHtml(content)}</div>
-        </div>
-      `;
-    });
-  }
-
-  const totalCount = hasEvidence
-    ? evidence.length
-    : docs.length + Object.keys(dbData).length;
+  const totalCount = docs.length + Object.keys(dbData).length;
 
   return `
     <div class="source-container">
       <div class="source-header" role="button" tabindex="0" aria-expanded="false">
         <span class="arrow">&#9660;</span>
-        <span>답변 근거 ${totalCount}건 보기</span>
+        <span>근거 ${totalCount}건 보기</span>
       </div>
       <div class="source-body">
         <div class="source-grid">${cards}</div>

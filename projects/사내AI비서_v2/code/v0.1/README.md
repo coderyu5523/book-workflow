@@ -1,168 +1,106 @@
-# CH04 FastAPI 기본 시스템
+# CH03 LLM의 한계와 RAG의 필요성
 
-> 사내 문서 기반 AI 업무 비서 (RAG + MCP) - CH04 실습 코드
+> 사내 문서 기반 AI 업무 비서 (RAG + MCP) - 3장 실습 코드
 
-## 목적 및 학습 목표
+## 학습 목표
 
-- FastAPI + PostgreSQL을 사용하여 실무형 CRUD 시스템을 구축한다
-- Pydantic 스키마로 요청/응답 데이터를 검증하는 방법을 익힌다
-- Jinja2 템플릿 엔진으로 서버사이드 렌더링 Admin UI를 구현한다
-- Docker Compose로 PostgreSQL을 실행하고 데이터베이스 연결을 관리한다
+- LLM의 환각(Hallucination) 현상을 직접 체험하고 원인을 이해합니다.
+- Context Injection의 작동 원리와 한계를 체감합니다.
+- RAG(Retrieval-Augmented Generation)가 환각 문제를 어떻게 해결하는지 확인합니다.
+- DeepSeek R1의 Chain-of-Thought 추론 능력을 RAG와 결합하여 활용합니다.
+
+## 폴더 구조
+
+```
+CH03_LLM의_한계와_RAG의_필요성/
+├── step1_fail.py              # [실패] LLM 단독 질의 → 환각 체험
+├── step2_context.py           # [임시 해결] Context Injection
+├── step3_rag.py               # [성공] RAG + 청킹 적용
+├── step3_rag_no_chunking.py   # [비교] RAG 청킹 미적용
+├── step4_rag.py               # [심화] RAG + 추론(Reasoning)
+├── requirements.txt           # 의존성 목록
+└── docs/                      # 튜토리얼 가이드 문서
+```
+
+## 4단계 실습 구성
+
+| 스크립트 | 단계 | 핵심 체험 |
+|---------|------|---------|
+| `step1_fail.py` | 실패 | LLM 단독 질의 → 환각 응답 체험 |
+| `step2_context.py` | 임시 해결 | 프롬프트에 문서 직접 삽입 → 정확도 향상 |
+| `step3_rag.py` | 성공 | 청킹 적용 RAG — 관련 문서만 검색하여 답변 |
+| `step3_rag_no_chunking.py` | 비교 | 청킹 미적용 RAG — 통째로 검색하여 비효율 체감 |
+| `step4_rag.py` | 심화 | RAG + 추론 — 규정 기반 계산 질문 |
 
 ## 실행 환경
 
-- Python 3.10+
-- Docker Desktop (PostgreSQL 컨테이너 실행용)
-- psycopg2, FastAPI, Jinja2
+- Python 3.12
+- Ollama + DeepSeek R1:8b 모델
+- Ollama + nomic-embed-text 임베딩 모델
 
-## 전제 조건 — 인프라 실행 (최초 1회)
+## 사전 준비
 
-PostgreSQL 컨테이너를 먼저 실행합니다. 이 단계는 이 폴더 내에서 수행합니다.
-
-```bash
-docker-compose up -d
-```
-
-> PostgreSQL 16이 시작되고 `data/schema.sql`이 자동으로 실행됩니다.
-> 직원 5명, 매출 10건의 시드 데이터가 입력됩니다.
-
-컨테이너 상태를 확인합니다.
+### Ollama 모델 다운로드
 
 ```bash
-docker-compose ps
+ollama pull deepseek-r1:8b
+ollama pull nomic-embed-text
 ```
 
-기대 출력:
+### Ollama 서버 실행
 
-```
-NAME              STATUS
-metacoding_db     running (healthy)
+```bash
+ollama serve
 ```
 
 ## 설치 및 실행
 
-이 챕터의 예제 코드를 클론합니다.
-
 ```bash
-git clone https://github.com/{repo}/CH04_FastAPI_기본_시스템
-cd CH04_FastAPI_기본_시스템
-```
-
-환경 변수를 설정합니다.
-
-```bash
-cp .env.example .env
-# .env 파일은 docker-compose 기본값과 동일하므로 별도 수정 불필요
-```
-
-### macOS / Linux
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
+cd examples/CH03_LLM의_한계와_RAG의_필요성
+python3.12 -m venv .venv
+source .venv/bin/activate   # Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
 
-### Windows
+### 의존성 설명
+
+| 패키지 | 역할 |
+|-------|------|
+| `langchain` | LLM 애플리케이션 프레임워크 (체인, 프롬프트 관리) |
+| `langchain-ollama` | Ollama LLM/임베딩 연결 (`ChatOllama`, `OllamaEmbeddings`) |
+| `langchain-chroma` | ChromaDB 벡터스토어 연결 |
+| `langchain-classic` | `RetrievalQA` 등 레거시 체인 지원 |
+| `chromadb` | 인메모리 벡터 데이터베이스 |
+
+## 실행 순서
+
+4개의 스크립트를 순서대로 실행합니다.
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
+# 1단계: LLM 단독 질의 (환각 체험)
+python step1_fail.py
+
+# 2단계: Context Injection
+python step2_context.py
+
+# 3단계: RAG 미리보기 (청킹 적용 vs 미적용 비교)
+python step3_rag_no_chunking.py
+python step3_rag.py
+
+# 4단계: RAG + 추론
+python step4_rag.py
 ```
 
-## 실행
+## 자주 발생하는 오류
 
-```bash
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
+| 오류 메시지 | 원인 | 해결 방법 |
+|------------|------|---------|
+| `Connection refused` | Ollama가 실행되지 않음 | `ollama serve` 실행 |
+| `model not found` | 모델 미다운로드 | `ollama pull deepseek-r1:8b` |
+| `nomic-embed-text` 관련 오류 | 임베딩 모델 미다운로드 | `ollama pull nomic-embed-text` |
+| 응답이 너무 느림 | RAM 부족 | `deepseek-r1:1.5b` 소형 모델로 전환 |
 
-또는
+## 다음 챕터
 
-```bash
-python app/main.py
-```
-
-## 기대 출력
-
-<!-- [CAPTURE NEEDED: 터미널 전체 화면 — uvicorn 시작 후 정상 동작 상태] -->
-
-```
-=======================================================
-  Q/A 사내 AI 사내 시스템 (CH04)
-  Admin UI : http://localhost:8000/admin/dashboard
-  API 문서 : http://localhost:8000/docs
-=======================================================
-INFO:     Will watch for changes in these directories: ['/path/to/CH04']
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [12345] using WatchFiles
-INFO:     Started server process [12346]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-```
-
-브라우저에서 아래 URL로 접속합니다.
-
-| URL | 설명 |
-|-----|------|
-| http://localhost:8000/admin/dashboard | Admin 대시보드 |
-| http://localhost:8000/admin/employees | 직원 관리 |
-| http://localhost:8000/admin/leaves | 휴가 관리 |
-| http://localhost:8000/admin/sales | 매출 관리 |
-| http://localhost:8000/docs | Swagger API 문서 |
-
-## 전체 구조
-
-```mermaid
-flowchart LR
-    A["Admin UI(Jinja2)"] -- "HTTP" --> B["FastAPI"]
-    B -- "psycopg2" --> C["PostgreSQL 16"]
-    C -- "employee" --> D["3 Tables"]
-    C -- "leave_balance" --> D
-    C -- "sales" --> D
-```
-
-```
-CH04_FastAPI_기본_시스템/
-├── README.md
-├── requirements.txt
-├── .env.example
-├── docker-compose.yml        # PostgreSQL 16 컨테이너
-├── data/
-│   └── schema.sql            # DDL + 시드 데이터 (직원 5명, 매출 10건)
-├── app/
-│   ├── __init__.py
-│   ├── main.py               # FastAPI 앱 + 라우터 등록
-│   ├── database.py           # psycopg2 연결 컨텍스트 매니저
-│   ├── models.py             # 도메인 dataclass (Employee, LeaveBalance, Sale)
-│   ├── schemas.py            # Pydantic 요청/응답 스키마
-│   ├── crud.py               # DB CRUD 함수
-│   ├── views.py              # Jinja2 Admin UI 라우터 (/admin/*)
-│   └── api.py                # REST JSON API 라우터 (/api/*)
-├── templates/
-│   ├── base.html             # 공통 레이아웃 (사이드바 + 메인)
-│   ├── dashboard.html        # 통계 카드 + 최근 매출
-│   ├── employees.html        # 직원 CRUD UI
-│   ├── leaves.html           # 휴가 관리 UI
-│   └── sales.html            # 매출 관리 UI
-├── static/
-│   └── css/
-│       └── style.css         # Inter 폰트, 검정/흰색 + 금색 디자인
-└── outputs/                  # 실행 결과물 저장 (.gitignore 대상)
-```
-
-## 중단 방법
-
-FastAPI 서버: `Ctrl+C`
-
-PostgreSQL 컨테이너 중단:
-
-```bash
-docker-compose down
-```
-
-데이터까지 완전 삭제:
-
-```bash
-docker-compose down -v
-```
+- **CH04**: FastAPI + PostgreSQL로 사내 시스템(직원/휴가/매출 CRUD)을 구축합니다.
+- **CH06**: 이 챕터의 인메모리 ChromaDB를 디스크에 영속화하고 실제 PDF 문서를 인덱싱합니다.

@@ -1,21 +1,17 @@
-"""CH10 RAG 튜닝 — 듀얼모드 CLI 진입점.
+"""
+CH09 LangChain 연결 전략 — CLI 실행 진입점.
 
-두 가지 모드를 지원한다:
-  (1) 에이전트 CLI: CH09과 동일한 대화형 Q/A 비서
-  (2) 실험 메뉴: RAG 튜닝 실험 선택/실행
+Q/A 사내 AI AI 비서 LangChain Agent를 대화형 CLI로 실행합니다.
+Agent 초기화, Router 동작, Tool 실행 결과를 터미널에서 확인할 수 있습니다.
 
 실행 방법:
-    python -m src.main                 # 메인 메뉴 (모드 선택)
-    python -m src.main --agent         # 에이전트 CLI 직접 실행
-    python -m src.main --demo          # 에이전트 데모 시나리오
-    python -m src.main --experiments   # 실험 메뉴 직접 실행
-    python -m src.main --experiment 1  # 특정 실험 직접 실행
+    python -m src.main
+    (또는 프로젝트 루트에서) python src/main.py
 """
 
 import sys
 import os
 import logging
-import importlib
 
 # sys.path에 프로젝트 루트 추가 (패키지 임포트 지원)
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -42,10 +38,7 @@ setup_logging(
 
 logger = logging.getLogger(__name__)
 
-# ===================================================================
-# (1) 에이전트 CLI 모드 (CH09 동일)
-# ===================================================================
-
+# --- 대표 질문 시나리오 ---
 DEMO_QUERIES: list[str] = [
     "영업팀 직원 목록을 보여줘",
     "이서연의 휴가 잔여일이 몇 일이야?",
@@ -56,12 +49,21 @@ DEMO_QUERIES: list[str] = [
 
 
 def print_separator(char: str = "=", width: int = 60) -> None:
-    """구분선을 출력합니다."""
+    """구분선을 출력합니다.
+
+    Args:
+        char: 구분선에 사용할 문자
+        width: 구분선 길이
+    """
     print(char * width)
 
 
 def print_result(result: dict) -> None:
-    """Agent 실행 결과를 가독성 있게 출력합니다."""
+    """Agent 실행 결과를 가독성 있게 출력합니다.
+
+    Args:
+        result: Agent.run()이 반환한 결과 딕셔너리
+    """
     print(f"\n[라우팅 경로] {result.get('route', 'unknown')}")
     if result.get("from_cache"):
         print("[캐시] 이전 응답을 재사용했습니다.")
@@ -78,7 +80,11 @@ def print_result(result: dict) -> None:
 
 
 def run_demo_mode(agent: object) -> None:
-    """사전 정의된 시나리오를 순서대로 실행합니다."""
+    """사전 정의된 시나리오를 순서대로 실행합니다.
+
+    Args:
+        agent: ConnectHRAgent 인스턴스
+    """
     print("\n대화형 모드를 종료하고 데모 시나리오를 실행합니다.")
     print(f"총 {len(DEMO_QUERIES)}개 시나리오 실행\n")
 
@@ -98,8 +104,12 @@ def run_demo_mode(agent: object) -> None:
 
 
 def run_interactive_mode(agent: object) -> None:
-    """사용자와 대화형으로 질문을 주고받는 CLI를 실행합니다."""
-    print("\nQ/A 사내 AI 비서가 준비되었습니다.")
+    """사용자와 대화형으로 질문을 주고받는 CLI를 실행합니다.
+
+    Args:
+        agent: ConnectHRAgent 인스턴스
+    """
+    print("\nQ/A 사내 AI AI 비서가 준비되었습니다.")
     print("종료하려면 'q' 또는 'quit'를 입력하십시오.")
     print("데모 시나리오를 보려면 'demo'를 입력하십시오.")
     print("캐시 통계를 보려면 'stats'를 입력하십시오.")
@@ -134,16 +144,20 @@ def run_interactive_mode(agent: object) -> None:
             print(token_tracker.summary())
             continue
 
+        # --- INPUT ---
         print_separator("-")
 
         try:
+            # --- PROCESS ---
             result = agent.run(query=user_input, chat_history=chat_history)
             print_result(result)
 
+            # 대화 히스토리 업데이트 (멀티턴)
             from langchain_core.messages import HumanMessage, AIMessage
             chat_history.append(HumanMessage(content=user_input))
             chat_history.append(AIMessage(content=result["output"]))
 
+            # 히스토리 최대 10턴 유지
             if len(chat_history) > 20:
                 chat_history = chat_history[-20:]
 
@@ -152,16 +166,21 @@ def run_interactive_mode(agent: object) -> None:
             print(f"\n처리 중 오류가 발생했습니다: {exc}")
 
 
-def run_agent_cli(demo: bool = False) -> None:
-    """에이전트 CLI를 시작합니다."""
+def main() -> None:
+    """메인 실행 함수.
+
+    Agent를 초기화하고 대화형 CLI를 시작합니다.
+    """
     print_separator()
-    print("Q/A 사내 AI 비서 — CH10 RAG 튜닝 예제")
+    print("Q/A 사내 AI AI 비서 — CH09 LangChain 연결 전략 예제")
     print_separator()
 
+    # --- INPUT: 환경 확인 ---
     provider = os.getenv("LLM_PROVIDER", "ollama")
     model = os.getenv("OLLAMA_MODEL", os.getenv("OPENAI_MODEL", "deepseek-r1:8b"))
     print(f"LLM 제공자: {provider} | 모델: {model}")
 
+    # --- PROCESS: Agent 초기화 ---
     try:
         agent = get_agent()
     except SystemExit:
@@ -171,11 +190,13 @@ def run_agent_cli(demo: bool = False) -> None:
         print("환경 설정을 확인하고 다시 시도하십시오. (.env.example 참조)")
         sys.exit(1)
 
-    if demo:
+    # --- OUTPUT: CLI 실행 ---
+    if len(sys.argv) > 1 and sys.argv[1] == "--demo":
         run_demo_mode(agent)
     else:
         run_interactive_mode(agent)
 
+    # 실행 후 통계 출력
     print_separator()
     print("\n[실행 통계]")
     summary = token_tracker.summary()
@@ -184,194 +205,6 @@ def run_agent_cli(demo: bool = False) -> None:
     print(f"  평균 응답 시간: {summary['avg_latency_ms']:.0f}ms")
     cache_stats = response_cache.stats()
     print(f"  캐시 적중률: {cache_stats['hit_rate_percent']}%")
-
-
-# ===================================================================
-# (2) 실험 메뉴 모드 (CH10 신규)
-# ===================================================================
-
-EXPERIMENTS = {
-    "1": {
-        "name": "청킹 전략 실험",
-        "description": "Fixed-size vs Semantic 청킹 비교, 크기/오버랩 실험",
-        "module": "tuning.chunk_experiment",
-        "func": "run_all_experiments",
-    },
-    "2": {
-        "name": "Retriever 튜닝 실험",
-        "description": "k값(3/5/10), Threshold, Metadata Filtering 실험",
-        "module": "tuning.retriever_experiment",
-        "func": "run_all_retriever_experiments",
-    },
-    "3": {
-        "name": "ReRanker 실험",
-        "description": "Cross-Encoder 기반 top_k=20 → top_k=5 재정렬",
-        "module": "tuning.reranker",
-        "func": "run_reranker_experiment",
-    },
-    "4": {
-        "name": "하이브리드 검색 실험",
-        "description": "BM25 + Vector EnsembleRetriever, alpha 파라미터 실험",
-        "module": "tuning.hybrid_search",
-        "func": "run_hybrid_search_experiment",
-    },
-    "5": {
-        "name": "고급 Retriever 실험",
-        "description": "ParentDocument, SelfQuery, ContextualCompression 비교",
-        "module": "tuning.advanced_retriever",
-        "func": "run_advanced_retriever_experiment",
-    },
-    "6": {
-        "name": "Query Rewrite 실험",
-        "description": "HyDE, Multi-Query, 약어/동의어 확장",
-        "module": "tuning.query_rewrite",
-        "func": "run_query_rewrite_experiment",
-    },
-    "7": {
-        "name": "문서 파싱 비교",
-        "description": "라이브러리 vs vLLM(LLaVA) 파싱 전략 비교",
-        "module": "tuning.document_parser",
-        "func": "run_parser_comparison",
-    },
-    "8": {
-        "name": "문서 캡처 파이프라인",
-        "description": "PDF/DOCX/XLSX → 캡처(PNG) + 벡터DB 인제스천",
-        "module": "tuning.document_capture",
-        "func": "run_capture_pipeline",
-    },
-    "9": {
-        "name": "답변 근거 시스템",
-        "description": "비정형(문서+캡처) / 정형(DB) 답변 근거 데모",
-        "module": "tuning.evidence_pipeline",
-        "func": "run_evidence_demo",
-    },
-    "10": {
-        "name": "평가 프레임워크 데모",
-        "description": "Precision@k, Recall@k, 환각률, before/after 비교",
-        "module": "src.eval_framework",
-        "func": "run_full_evaluation_demo",
-    },
-}
-
-
-def run_experiment(experiment_key: str) -> None:
-    """선택한 실험을 실행합니다."""
-    if experiment_key == "all":
-        run_all_experiments()
-        return
-
-    if experiment_key not in EXPERIMENTS:
-        print(f"잘못된 선택입니다: {experiment_key}")
-        print(f"유효한 선택지: {', '.join(EXPERIMENTS.keys())}, all")
-        return
-
-    exp = EXPERIMENTS[experiment_key]
-    print(f"\n실험 {experiment_key}: {exp['name']} 시작")
-
-    try:
-        module = importlib.import_module(exp["module"])
-        func = getattr(module, exp["func"])
-        func()
-    except ModuleNotFoundError as e:
-        print(f"모듈을 찾을 수 없습니다: {e}")
-        print("requirements.txt에 따라 패키지를 설치하십시오:")
-        print("  pip install -r requirements.txt")
-    except Exception as e:
-        print(f"실험 실행 중 오류 발생: {e}")
-        raise
-
-
-def run_all_experiments() -> None:
-    """모든 실험을 순서대로 실행합니다."""
-    print("\n전체 실험 순서 실행")
-    print("주의: 전체 실행에는 임베딩 모델 다운로드로 인해 시간이 걸릴 수 있습니다.\n")
-
-    for key in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]:
-        exp = EXPERIMENTS[key]
-        print(f"\n{'='*50}")
-        print(f"실험 {key}: {exp['name']}")
-        run_experiment(key)
-
-
-def run_experiment_menu() -> None:
-    """실험 선택 메뉴를 표시하고 실행합니다."""
-    print_separator()
-    print("CH10 RAG 튜닝 - 실험 선택 메뉴")
-    print_separator()
-    print("\n이 챕터에서는 RAG 품질을 개선하는 다양한 튜닝 기법을 실험합니다.")
-    print("각 실험은 ChromaDB 없이 인메모리 샘플 데이터로 독립 실행 가능합니다.\n")
-
-    print(f"{'번호':^6} {'실험 이름':<25} {'설명'}")
-    print("-" * 70)
-    for key, exp in EXPERIMENTS.items():
-        print(f"  {key:<4} {exp['name']:<25} {exp['description']}")
-    print(f"  {'all':<4} {'전체 실험 순서 실행':<25} {'모든 실험을 1~10 순서로 실행'}")
-    print("-" * 70)
-
-    try:
-        choice = input("\n실험 번호를 입력하십시오 (1~10) 또는 'all' (전체 실행): ").strip().lower()
-        if not choice:
-            choice = "10"
-        run_experiment(choice)
-    except KeyboardInterrupt:
-        print("\n\n실험이 취소되었습니다.")
-
-
-# ===================================================================
-# (3) 메인 메뉴 (듀얼모드)
-# ===================================================================
-
-def main() -> None:
-    """메인 실행 함수.
-
-    명령줄 인수에 따라 모드를 선택하거나, 대화형으로 모드를 선택한다.
-    """
-    # 명령줄 인수 처리
-    if len(sys.argv) > 1:
-        arg = sys.argv[1].lower()
-        if arg == "--agent":
-            run_agent_cli(demo=False)
-            return
-        elif arg == "--demo":
-            run_agent_cli(demo=True)
-            return
-        elif arg == "--experiments":
-            run_experiment_menu()
-            return
-        elif arg == "--experiment":
-            if len(sys.argv) > 2:
-                run_experiment(sys.argv[2])
-            else:
-                print("실험 번호를 지정하십시오. 예: python -m src.main --experiment 1")
-            return
-        elif arg in EXPERIMENTS or arg == "all":
-            # 하위 호환: 실험 번호 직접 전달
-            run_experiment(arg)
-            return
-
-    # 대화형 모드 선택
-    print_separator()
-    print("CH10 RAG 튜닝 — 메인 메뉴")
-    print_separator()
-    print("\n  1. 에이전트 CLI  (Q/A 사내 AI 비서)")
-    print("  2. 실험 메뉴    (RAG 튜닝 실험)")
-    print("  3. 데모 모드    (에이전트 시나리오 자동 실행)")
-    print()
-
-    try:
-        choice = input("모드를 선택하십시오 (1/2/3): ").strip()
-    except (KeyboardInterrupt, EOFError):
-        print("\n종료합니다.")
-        return
-
-    if choice == "1":
-        run_agent_cli(demo=False)
-    elif choice == "2":
-        run_experiment_menu()
-    elif choice == "3":
-        run_agent_cli(demo=True)
-    else:
-        print(f"잘못된 선택입니다: {choice}")
 
 
 if __name__ == "__main__":

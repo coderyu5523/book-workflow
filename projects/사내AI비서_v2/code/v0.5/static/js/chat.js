@@ -1,359 +1,297 @@
 /**
- * MetaCoding CH08 - 채팅 UI 스크립트
- * Gemini 스타일 채팅 인터페이스 + 로컬스토리지 대화 기록
+ * CH07 RAG Q&A 채팅 로직
+ *
+ * ex02의 qa.js 패턴을 기반으로 작성된 Fetch 기반 채팅 스크립트.
+ * 멀티턴 대화: 세션 ID를 localStorage에 저장하여 이전 대화 맥락을 유지한다.
+ * 출처 아코디언: 각 AI 답변 아래에 근거 문서 목록을 펼칠 수 있다.
  */
 
 'use strict';
 
-const STORAGE_KEY = 'metacoding_ch08_chat';
+// ---- DOM 요소 참조 ----
+const chatHistory = document.getElementById('chatHistory');
+const loadingIndicator = document.getElementById('loadingIndicator');
+const questionInput = document.getElementById('questionInput');
+const chatForm = document.getElementById('chatForm');
 
-// ============================================================
-// 1. 쿼리 전송 (메인 진입점)
-// ============================================================
+// ---- 세션 ID 관리 (localStorage 기반 멀티턴) ----
+const SESSION_STORAGE_KEY = 'rag_chat_session_id';
 
 /**
- * 폼 제출 이벤트를 처리하고 API에 질문을 전송한다.
- * @param {Event} event - 폼 submit 이벤트
+ * localStorage에서 세션 ID를 읽거나 신규 생성한다.
+ * @returns {string} 세션 ID 문자열
  */
-async function submitQuery(event) {
-  event.preventDefault();
-
-  const input = document.getElementById('queryInput');
-  const query = input.value.trim();
-  if (!query) return;
-
-  const useAgent = document.getElementById('agentModeToggle').checked;
-  const sendBtn = document.querySelector('.btn-send');
-
-  // ① 사용자 메시지 표시
-  appendUserMessage(query);  // ①
-  input.value = '';
-  input.style.height = 'auto';
-
-  // ② 로딩 표시
-  const loading = document.getElementById('loadingIndicator');
-  loading.style.display = 'flex';
-  sendBtn.disabled = true;
-
-  try {
-    // ③ API 호출
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query, use_agent: useAgent }),  // ③
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+function getOrCreateSessionId() {
+    let sessionId = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!sessionId) {
+        // 간단한 UUID v4 생성
+        sessionId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = (Math.random() * 16) | 0;
+            return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
+        });
+        localStorage.setItem(SESSION_STORAGE_KEY, sessionId);
     }
-
-    const data = await response.json();
-
-    // ④ AI 응답 표시
-    appendAiMessage(data);  // ④
-    saveChatHistory();
-  } catch (err) {
-    appendAiMessage({
-      answer: `오류가 발생했습니다: ${escapeHtml(err.message)}`,
-      query_type: 'unstructured',
-      mode: 'error',
-      structured_data: {},
-      unstructured_data: [],
-    });
-  } finally {
-    loading.style.display = 'none';
-    sendBtn.disabled = false;
-    scrollToBottom();
-  }
+    return sessionId;
 }
 
-// ============================================================
-// 2. 메시지 렌더링
-// ============================================================
+// ---- 스크롤 유틸리티 ----
 
 /**
- * 사용자 메시지 버블을 채팅 히스토리에 추가한다.
- * @param {string} text - 사용자 입력 텍스트
+ * 채팅 히스토리를 최하단으로 스크롤한다.
+ */
+function scrollToBottom() {
+    if (chatHistory) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+}
+
+// ---- 메시지 렌더링 ----
+
+/**
+ * 사용자 메시지 말풍선을 채팅 히스토리에 추가한다.
+ * @param {string} text - 표시할 질문 텍스트
  */
 function appendUserMessage(text) {
-  const history = document.getElementById('chatHistory');
-  const div = document.createElement('div');
-  div.className = 'chat-message user-message';
-  div.innerHTML = `
-    <div class="avatar">나</div>
-    <div class="message-content">${escapeHtml(text)}</div>
-  `;
-  history.appendChild(div);
-  scrollToBottom();
+    const div = document.createElement('div');
+    div.className = 'chat-message user-message';
+
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.textContent = text; // XSS 방지: textContent 사용
+
+    div.appendChild(content);
+    chatHistory.appendChild(div);
+    scrollToBottom();
 }
 
 /**
- * AI 응답 버블을 채팅 히스토리에 추가한다.
- * @param {Object} data - API 응답 객체 (answer, query_type, mode, structured_data, unstructured_data)
+ * AI 답변 말풍선과 출처 아코디언을 채팅 히스토리에 추가한다.
+ * @param {string} answer - AI 답변 텍스트
+ * @param {Array<{doc: string, page: number, snippet: string}>} sources - 출처 목록
  */
-function appendAiMessage(data) {
-  const history = document.getElementById('chatHistory');
-  const div = document.createElement('div');
-  div.className = 'chat-message ai-message';
+function appendAiMessage(answer, sources) {
+    const div = document.createElement('div');
+    div.className = 'chat-message ai-message';
 
-  const typeBadge = buildQueryTypeBadge(data.query_type || 'unstructured');
-  const modeBadge = data.mode === 'agent'
-    ? '<span class="mode-badge">에이전트</span>'
-    : '<span class="mode-badge" style="background:rgba(160,160,160,0.15);color:#aaa;border-color:rgba(160,160,160,0.2);">RAG</span>';
+    // AI 아바타
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = '🤖';
 
-  // 소스 아코디언 (문서 + DB 결과)
-  const accordion = buildSourceAccordion(data);
+    // 메시지 본문
+    const content = document.createElement('div');
+    content.className = 'message-content';
 
-  div.innerHTML = `
-    <div class="avatar">🤖</div>
-    <div class="message-content">
-      ${formatAnswer(data.answer || '')}
-      <div class="message-meta" style="padding-left:0;">
-        ${typeBadge}
-        ${modeBadge}
-      </div>
-      ${accordion}
-    </div>
-  `;
+    // 답변 텍스트 (줄바꿈을 <br>로 변환)
+    const answerDiv = document.createElement('div');
+    answerDiv.className = 'ai-ans-text';
+    answerDiv.innerHTML = escapeHtml(answer).replace(/\n/g, '<br>');
+    content.appendChild(answerDiv);
 
-  history.appendChild(div);
-  rebindAccordions(div);
-  scrollToBottom();
+    // 출처 아코디언
+    const accordionHtml = buildSourceAccordion(sources);
+    if (accordionHtml) {
+        const accordionWrapper = document.createElement('div');
+        accordionWrapper.innerHTML = accordionHtml;
+        content.appendChild(accordionWrapper.firstElementChild);
+    }
+
+    div.appendChild(avatar);
+    div.appendChild(content);
+    chatHistory.appendChild(div);
+    scrollToBottom();
 }
 
 /**
- * 질문 유형 배지 HTML을 생성한다.
- * @param {string} queryType - "structured" | "unstructured" | "hybrid"
- * @returns {string} 배지 HTML 문자열
+ * 오류 메시지 말풍선을 채팅 히스토리에 추가한다.
+ * @param {string} errorMsg - 표시할 오류 메시지
  */
-function buildQueryTypeBadge(queryType) {
-  const config = {
-    structured: { cls: 'type-structured', label: '정형' },
-    unstructured: { cls: 'type-unstructured', label: '비정형' },
-    hybrid: { cls: 'type-hybrid', label: '복합' },
-  };
-  const { cls, label } = config[queryType] || config.unstructured;
-  return `<span class="query-type-badge ${cls}">${label}</span>`;
+function appendErrorMessage(errorMsg) {
+    const div = document.createElement('div');
+    div.className = 'chat-message ai-message error-message';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.textContent = '⚠️';
+
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    content.textContent = errorMsg;
+
+    div.appendChild(avatar);
+    div.appendChild(content);
+    chatHistory.appendChild(div);
+    scrollToBottom();
 }
 
+// ---- 출처 아코디언 생성 ----
+
 /**
- * 소스 아코디언 HTML을 생성한다.
- * @param {Object} data - API 응답 데이터
+ * 출처 목록으로 아코디언 HTML 문자열을 생성한다.
+ * 출처가 없으면 빈 문자열을 반환한다.
+ *
+ * @param {Array<{doc: string, page: number, snippet: string}>} sources - 출처 배열
  * @returns {string} 아코디언 HTML 문자열
  */
-function buildSourceAccordion(data) {
-  const docs = data.unstructured_data || [];
-  const dbData = data.structured_data || {};
+function buildSourceAccordion(sources) {
+    if (!sources || sources.length === 0) {
+        return '';
+    }
 
-  const hasUnstructured = docs.length > 0;
-  const hasStructured = Object.keys(dbData).length > 0;
+    const itemsHtml = sources.map((src) => {
+        const doc = escapeHtml(src.doc || '알 수 없는 문서');
+        const page = src.page > 0 ? `p.${src.page}` : '-';
+        const snippet = escapeHtml(src.snippet || '');
 
-  if (!hasUnstructured && !hasStructured) return '';
+        return `
+            <div class="source-item">
+                <span class="source-doc">📄 ${doc}</span>
+                <span class="source-page">${page}</span>
+                <div class="source-snippet">${snippet}</div>
+            </div>
+        `;
+    }).join('');
 
-  let cards = '';
-
-  // 비정형 문서 카드
-  docs.forEach((doc) => {
-    const source = escapeHtml(doc.source || '사내 문서');
-    const content = escapeHtml(doc.content || '');
-    cards += `
-      <div class="source-card">
-        <div class="source-card-title">${source}</div>
-        <div class="source-card-content">${content}</div>
-      </div>
+    return `
+        <div class="source-container">
+            <div class="source-header" onclick="this.parentElement.classList.toggle('active')">
+                <span>🔍 근거 문서 보기 (${sources.length}건)</span>
+                <i class="arrow">▼</i>
+            </div>
+            <div class="source-body">
+                <div class="source-list">
+                    ${itemsHtml}
+                </div>
+            </div>
+        </div>
     `;
-  });
-
-  // 정형 DB 결과 카드
-  Object.entries(dbData).forEach(([toolName, result]) => {
-    const title = {
-      leave_balance: '연차 조회 결과',
-      sales_sum: '매출 집계 결과',
-      list_employees: '직원 목록 결과',
-    }[toolName] || toolName;
-
-    const content = typeof result === 'object'
-      ? JSON.stringify(result, null, 2).slice(0, 200)
-      : String(result).slice(0, 200);
-
-    cards += `
-      <div class="source-card db-result-card">
-        <div class="source-card-title">${escapeHtml(title)}</div>
-        <div class="source-card-content" style="white-space:pre-wrap;font-family:monospace">${escapeHtml(content)}</div>
-      </div>
-    `;
-  });
-
-  const totalCount = docs.length + Object.keys(dbData).length;
-
-  return `
-    <div class="source-container">
-      <div class="source-header" role="button" tabindex="0" aria-expanded="false">
-        <span class="arrow">&#9660;</span>
-        <span>근거 ${totalCount}건 보기</span>
-      </div>
-      <div class="source-body">
-        <div class="source-grid">${cards}</div>
-      </div>
-    </div>
-  `;
 }
 
-// ============================================================
-// 3. 아코디언 바인딩
-// ============================================================
+// ---- XSS 방지 유틸리티 ----
 
 /**
- * 특정 컨테이너 내의 아코디언 헤더에 이벤트를 바인딩한다.
- * @param {HTMLElement} container - 검색 범위 DOM 요소
- */
-function rebindAccordions(container) {
-  const headers = container.querySelectorAll('.source-header');
-  headers.forEach((header) => {
-    if (header.dataset.bound) return;
-    header.dataset.bound = 'true';
-
-    const toggle = () => {
-      const container = header.closest('.source-container');
-      const expanded = header.getAttribute('aria-expanded') === 'true';
-      header.setAttribute('aria-expanded', String(!expanded));
-      if (container) container.classList.toggle('active', !expanded);
-    };
-
-    header.addEventListener('click', toggle);
-    header.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggle();
-      }
-    });
-  });
-}
-
-// ============================================================
-// 4. 유틸리티
-// ============================================================
-
-/**
- * XSS 방지를 위해 HTML 특수문자를 이스케이프한다.
- * @param {string} text - 원본 텍스트
+ * HTML 특수문자를 이스케이프한다.
+ * @param {string} text - 이스케이프할 문자열
  * @returns {string} 이스케이프된 문자열
  */
 function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = String(text);
-  return div.innerHTML;
-}
-
-/**
- * 답변 텍스트에서 마크다운 줄바꿈을 HTML로 변환한다.
- * @param {string} text - 원본 답변 텍스트
- * @returns {string} HTML로 변환된 문자열
- */
-function formatAnswer(text) {
-  return escapeHtml(text).replace(/\n/g, '<br>');
-}
-
-/**
- * 채팅 히스토리 영역을 맨 아래로 스크롤한다.
- */
-function scrollToBottom() {
-  const history = document.getElementById('chatHistory');
-  history.scrollTop = history.scrollHeight;
-}
-
-// ============================================================
-// 5. 로컬스토리지 대화 기록
-// ============================================================
-
-/**
- * 현재 채팅 히스토리 HTML을 로컬스토리지에 저장한다.
- */
-function saveChatHistory() {
-  try {
-    const history = document.getElementById('chatHistory');
-    localStorage.setItem(STORAGE_KEY, history.innerHTML);
-  } catch (e) {
-    // 스토리지 용량 초과 등 무시
-  }
-}
-
-/**
- * 로컬스토리지에서 채팅 기록을 불러와 복원한다.
- */
-function loadChatHistory() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const history = document.getElementById('chatHistory');
-      history.innerHTML = saved;
-      rebindAccordions(history);
-      scrollToBottom();
-    }
-  } catch (e) {
-    // 스토리지 오류 무시
-  }
-}
-
-/**
- * 대화 기록을 초기화한다 (확인 다이얼로그 포함).
- */
-function clearChatHistory() {
-  if (!window.confirm('대화 기록을 모두 삭제하시겠습니까?')) return;
-  localStorage.removeItem(STORAGE_KEY);
-  location.reload();
-}
-
-// ============================================================
-// 6. 초기화
-// ============================================================
-
-document.addEventListener('DOMContentLoaded', () => {
-  // 저장된 대화 기록 복원
-  loadChatHistory();
-
-  // 텍스트에어리어 자동 높이 조절
-  const textarea = document.getElementById('queryInput');
-  if (textarea) {
-    textarea.addEventListener('input', () => {
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-    });
-
-    // Shift+Enter: 줄바꿈, Enter: 제출
-    textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
-      }
-    });
-  }
-
-  // 에이전트 모드 토글 → 레이블 업데이트
-  const toggle = document.getElementById('agentModeToggle');
-  const modeLabel = document.getElementById('modeLabel');
-  if (toggle && modeLabel) {
-    const updateLabel = () => {
-      if (toggle.checked) {
-        modeLabel.textContent = 'ON';
-        modeLabel.className = 'mode-label mode-agent';
-      } else {
-        modeLabel.textContent = 'OFF';
-        modeLabel.className = 'mode-label mode-rag';
-      }
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
     };
-    toggle.addEventListener('change', updateLabel);
-    updateLabel();
-  }
+    return String(text).replace(/[&<>"']/g, (m) => map[m]);
+}
 
-  // 예시 질문 클릭 → 입력창에 복사
-  document.querySelectorAll('.example-category li').forEach((li) => {
-    li.addEventListener('click', () => {
-      const inputEl = document.getElementById('queryInput');
-      if (inputEl) {
-        inputEl.value = li.textContent.trim();
-        inputEl.focus();
-      }
-    });
-  });
+// ---- 채팅 전송 로직 ----
+
+/**
+ * 폼 제출 이벤트 핸들러.
+ * 사용자 질문을 /api/chat에 Fetch POST로 전송하고 응답을 렌더링한다.
+ *
+ * @param {Event} event - 폼 제출 이벤트
+ */
+async function handleSubmit(event) {
+    event.preventDefault();
+
+    const question = questionInput.value.trim();
+    if (!question) return;
+
+    // 1. 사용자 메시지 표시
+    appendUserMessage(question);
+    questionInput.value = '';
+
+    // 2. 로딩 표시
+    loadingIndicator.style.display = 'flex';
+
+    const sessionId = getOrCreateSessionId();
+
+    try {
+        // 3. Fetch POST 요청
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                question: question,
+                session_id: sessionId,
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `서버 오류 (HTTP ${response.status})`);
+        }
+
+        // 4. 응답 파싱
+        const data = await response.json();
+
+        // 서버에서 신규 세션 ID가 오면 갱신
+        if (data.session_id) {
+            localStorage.setItem(SESSION_STORAGE_KEY, data.session_id);
+        }
+
+        // 5. AI 답변 표시
+        appendAiMessage(data.answer || '답변을 받지 못했습니다.', data.sources || []);
+
+    } catch (error) {
+        console.error('[ERROR] 채팅 요청 실패:', error);
+        appendErrorMessage(
+            `오류가 발생했습니다: ${error.message}\n` +
+            'LLM 서버(Ollama)가 실행 중인지 확인해 주세요.'
+        );
+    } finally {
+        // 6. 로딩 숨기기
+        loadingIndicator.style.display = 'none';
+    }
+}
+
+// ---- 대화 내역 초기화 ----
+
+/**
+ * 화면의 채팅 내역을 지우고 세션을 초기화한다.
+ * 서버의 대화 히스토리(WindowMemory)도 함께 삭제한다.
+ */
+async function clearChatHistory() {
+    if (!confirm('대화 내역을 모두 지우시겠습니까?\n이전 대화 맥락도 초기화됩니다.')) {
+        return;
+    }
+
+    // 서버 세션 초기화 요청
+    try {
+        await fetch('/api/chat/session', { method: 'DELETE' });
+    } catch (e) {
+        console.warn('[WARN] 서버 세션 초기화 실패:', e);
+    }
+
+    // 로컬 세션 ID 삭제 (다음 질문 시 신규 생성)
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+
+    // 화면 초기화: 환영 메시지만 남기기
+    if (chatHistory) {
+        chatHistory.innerHTML = `
+            <div class="chat-message ai-message">
+                <div class="avatar">🤖</div>
+                <div class="message-content">
+                    대화 내역이 초기화되었습니다. 새 질문을 입력해 주세요.
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ---- 이벤트 리스너 등록 ----
+if (chatForm) {
+    chatForm.addEventListener('submit', handleSubmit);
+}
+
+// 페이지 로드 시 입력창에 포커스
+window.addEventListener('DOMContentLoaded', () => {
+    if (questionInput) {
+        questionInput.focus();
+    }
+    scrollToBottom();
 });

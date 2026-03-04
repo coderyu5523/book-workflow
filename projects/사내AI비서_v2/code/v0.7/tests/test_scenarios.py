@@ -1,7 +1,7 @@
-"""CH10 대표 시나리오 테스트.
+"""CH09 대표 시나리오 테스트.
 
-CH09의 테스트를 그대로 유지하며,
-CH10 고유 기능(eval_framework, 실험 모듈)을 추가 검증한다.
+CH08의 QueryRouter 테스트를 그대로 유지하며,
+CH09 고유 기능(캐시, 모니터링, tools/ 분리)을 추가 검증한다.
 
 실행 방법:
     python -m pytest tests/test_scenarios.py -v
@@ -161,169 +161,7 @@ class TestTokenTracker(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 5. 평가 프레임워크 테스트 (CH10 신규)
-# ---------------------------------------------------------------------------
-
-class TestEvalFramework(unittest.TestCase):
-    """eval_framework 모듈 import 및 기본 기능 테스트."""
-
-    def test_eval_framework_import(self) -> None:
-        """eval_framework 모듈을 import할 수 있다."""
-        from src import eval_framework
-        self.assertTrue(hasattr(eval_framework, "precision_at_k"))
-        self.assertTrue(hasattr(eval_framework, "recall_at_k"))
-
-    def test_precision_at_k(self) -> None:
-        """Precision@k가 올바른 값을 반환한다."""
-        from src.eval_framework import precision_at_k
-        retrieved = ["doc1", "doc2", "doc3", "doc4", "doc5"]
-        relevant = {"doc1", "doc3"}
-        result = precision_at_k(retrieved, relevant, k=5)
-        self.assertAlmostEqual(result, 0.4)
-
-    def test_recall_at_k(self) -> None:
-        """Recall@k가 올바른 값을 반환한다."""
-        from src.eval_framework import recall_at_k
-        retrieved = ["doc1", "doc2", "doc3"]
-        relevant = {"doc1", "doc3", "doc5"}
-        result = recall_at_k(retrieved, relevant, k=3)
-        self.assertAlmostEqual(result, 2 / 3)
-
-    def test_test_questions_file(self) -> None:
-        """data/test_questions.json이 존재하고 로드할 수 있다."""
-        import json
-        questions_path = os.path.join(_ROOT, "data", "test_questions.json")
-        self.assertTrue(os.path.exists(questions_path))
-        with open(questions_path, encoding="utf-8") as f:
-            data = json.load(f)
-        self.assertIsInstance(data, list)
-        self.assertGreater(len(data), 0)
-
-
-# ---------------------------------------------------------------------------
-# 6. 튜닝 모듈 import 테스트 (CH10 신규)
-# ---------------------------------------------------------------------------
-
-class TestTuningImport(unittest.TestCase):
-    """tuning/ 패키지의 핵심 모듈을 import할 수 있는지 테스트."""
-
-    def test_tuning_package_exists(self) -> None:
-        """tuning 패키지 디렉토리가 존재한다."""
-        tuning_dir = os.path.join(_ROOT, "tuning")
-        self.assertTrue(os.path.isdir(tuning_dir))
-
-    def test_tuning_init_import(self) -> None:
-        """tuning 패키지를 import할 수 있다."""
-        import tuning
-        self.assertIsNotNone(tuning)
-
-
-# ---------------------------------------------------------------------------
-# 7. 문서 파싱 모듈 테스트 (CH10 섹션 9)
-# ---------------------------------------------------------------------------
-
-class TestDocumentParser(unittest.TestCase):
-    """tuning/document_parser 모듈 테스트."""
-
-    def test_import(self) -> None:
-        """document_parser 모듈을 import할 수 있다."""
-        from tuning import document_parser
-        self.assertTrue(hasattr(document_parser, "parse_pdf_library"))
-        self.assertTrue(hasattr(document_parser, "parse_pdf_vllm"))
-        self.assertTrue(hasattr(document_parser, "compare_strategies"))
-        self.assertTrue(hasattr(document_parser, "run_parser_comparison"))
-
-    def test_parse_functions_exist(self) -> None:
-        """DOCX, XLSX 파싱 함수가 존재한다."""
-        from tuning import document_parser
-        self.assertTrue(hasattr(document_parser, "parse_docx_library"))
-        self.assertTrue(hasattr(document_parser, "parse_docx_vllm"))
-        self.assertTrue(hasattr(document_parser, "parse_xlsx_library"))
-        self.assertTrue(hasattr(document_parser, "parse_xlsx_vllm"))
-
-    def test_library_parse_missing_file(self) -> None:
-        """존재하지 않는 파일 파싱 시 빈 결과를 반환한다."""
-        from tuning.document_parser import parse_pdf_library
-        from pathlib import Path
-        result = parse_pdf_library(Path("/nonexistent/file.pdf"))
-        self.assertIn("strategy", result)
-        self.assertEqual(result["strategy"], "library")
-
-
-# ---------------------------------------------------------------------------
-# 8. 문서 캡처 모듈 테스트 (CH10 섹션 10)
-# ---------------------------------------------------------------------------
-
-class TestDocumentCapture(unittest.TestCase):
-    """tuning/document_capture 모듈 테스트."""
-
-    def test_import(self) -> None:
-        """document_capture 모듈을 import할 수 있다."""
-        from tuning import document_capture
-        self.assertTrue(hasattr(document_capture, "capture_pdf_pages"))
-        self.assertTrue(hasattr(document_capture, "capture_docx_images"))
-        self.assertTrue(hasattr(document_capture, "capture_xlsx_sheets"))
-        self.assertTrue(hasattr(document_capture, "extract_metadata"))
-        self.assertTrue(hasattr(document_capture, "ingest_to_vectordb"))
-        self.assertTrue(hasattr(document_capture, "run_capture_pipeline"))
-
-    def test_extract_metadata_existing_file(self) -> None:
-        """기존 파일의 메타데이터를 추출할 수 있다."""
-        from tuning.document_capture import extract_metadata
-        from pathlib import Path
-        # test_scenarios.py 자체를 테스트 대상으로 사용
-        meta = extract_metadata(Path(__file__))
-        self.assertIn("filename", meta)
-        self.assertIn("size_bytes", meta)
-        self.assertGreater(meta["size_bytes"], 0)
-
-    def test_captured_dir_structure(self) -> None:
-        """data/captured/ 디렉토리 구조가 존재한다."""
-        captured_dir = os.path.join(_ROOT, "data", "captured")
-        self.assertTrue(os.path.isdir(captured_dir))
-
-
-# ---------------------------------------------------------------------------
-# 9. 답변 근거 모듈 테스트 (CH10 섹션 11)
-# ---------------------------------------------------------------------------
-
-class TestEvidencePipeline(unittest.TestCase):
-    """tuning/evidence_pipeline 모듈 테스트."""
-
-    def test_import(self) -> None:
-        """evidence_pipeline 모듈을 import할 수 있다."""
-        from tuning import evidence_pipeline
-        self.assertTrue(hasattr(evidence_pipeline, "retrieve_with_evidence"))
-        self.assertTrue(hasattr(evidence_pipeline, "format_evidence_response"))
-        self.assertTrue(hasattr(evidence_pipeline, "run_evidence_demo"))
-
-    def test_structured_evidence(self) -> None:
-        """정형 질문에 대해 근거를 반환한다."""
-        from tuning.evidence_pipeline import retrieve_with_evidence
-        result = retrieve_with_evidence("김민준 연차 잔여일수", query_type="structured")
-        self.assertIn("answer", result)
-        self.assertIn("evidence", result)
-        self.assertEqual(result["query_type"], "structured")
-
-    def test_unstructured_evidence(self) -> None:
-        """비정형 질문에 대해 근거를 반환한다."""
-        from tuning.evidence_pipeline import retrieve_with_evidence
-        result = retrieve_with_evidence("연차 사용 규정", query_type="unstructured")
-        self.assertIn("answer", result)
-        self.assertIn("evidence", result)
-
-    def test_format_evidence(self) -> None:
-        """근거 응답 포맷이 올바른 형식을 반환한다."""
-        from tuning.evidence_pipeline import retrieve_with_evidence, format_evidence_response
-        result = retrieve_with_evidence("연차 규정", query_type="unstructured")
-        formatted = format_evidence_response(result)
-        self.assertIn("answer", formatted)
-        self.assertIn("evidence", formatted)
-        self.assertIsInstance(formatted["evidence"], list)
-
-
-# ---------------------------------------------------------------------------
-# 10. 실행 진입점
+# 5. 실행 진입점
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
@@ -334,11 +172,6 @@ if __name__ == "__main__":
     suite.addTests(loader.loadTestsFromTestCase(TestToolsImport))
     suite.addTests(loader.loadTestsFromTestCase(TestResponseCache))
     suite.addTests(loader.loadTestsFromTestCase(TestTokenTracker))
-    suite.addTests(loader.loadTestsFromTestCase(TestEvalFramework))
-    suite.addTests(loader.loadTestsFromTestCase(TestTuningImport))
-    suite.addTests(loader.loadTestsFromTestCase(TestDocumentParser))
-    suite.addTests(loader.loadTestsFromTestCase(TestDocumentCapture))
-    suite.addTests(loader.loadTestsFromTestCase(TestEvidencePipeline))
 
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)

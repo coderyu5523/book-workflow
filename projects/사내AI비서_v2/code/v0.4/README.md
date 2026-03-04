@@ -1,38 +1,44 @@
-# CH07 RAG Q&A 엔진
+# CH06 VectorDB 구축
 
-> 사내 문서 기반 AI 업무 비서 (RAG + MCP) - Chapter 07 실습 코드
+> 사내 문서 기반 AI 업무 비서 (RAG + MCP) — 6장 실습 코드
 
 ## 학습 목표
 
-- LCEL(LangChain Expression Language) 파이프 연산자로 RAG 체인을 조립하는 방법을 이해한다
-- "출처 강제 + 모르면 확인되지 않음" 프롬프트 설계 패턴을 적용한다
-- FastAPI + Jinja2 기반 채팅 웹 UI(Fetch POST 방식)를 구현한다
-- WindowMemory로 멀티턴 대화를 관리한다
+- Python 라이브러리(pypdf, python-docx, openpyxl)로 PDF/DOCX/XLSX 텍스트를 추출하고 한계를 체감한다.
+- Fixed-size 청킹(500자 + 오버랩 100자)으로 문서를 검색 단위로 분할한다.
+- ko-sroberta-multitask 임베딩 모델로 텍스트를 벡터화하여 ChromaDB에 저장한다.
+- CLI 검색 도구로 쿼리를 입력하여 관련 근거 문구를 확인한다.
 
 ## 실행 환경
 
-- Python 3.10+
-- Ollama (로컬 LLM, 기본값) 또는 OpenAI API (선택)
-- ChromaDB (CH06 생성 데이터 또는 data/docs/ 자동 구축)
+- Python 3.10 이상
+- 저장 공간 2GB 이상 (임베딩 모델 약 400MB 포함)
+- RAM 8GB 이상 권장
 
-## 독립 실행 안내
+## 전체 구조
 
-CH06의 ChromaDB가 없어도 실행할 수 있습니다. `data/chroma_db/` 폴더가 비어 있으면 `data/docs/`의 원본 문서(PDF/DOCX/XLSX 6종)를 자동으로 파싱·청킹·임베딩하여 ChromaDB를 구축합니다.
+```mermaid
+flowchart TD
+    A["실제 문서(PDF/DOCX/XLSX)"] --> B["Step 1: Python 파싱"]
+    B --> C["텍스트"]
+    C --> D["Step 2: 청킹 + 임베딩 + ChromaDB"]
+    D --> E["Step 3: CLI 검증"]
+```
 
 ## 설치 및 실행
 
-이 챕터의 예제 코드를 클론합니다.
+이 챕터의 예제 코드 저장소를 클론합니다.
 
 ```bash
-git clone https://github.com/{repo}/ch07-rag-qa-engine
-cd ch07-rag-qa-engine
+git clone https://github.com/{repo}/CH06_VectorDB_구축
+cd CH06_VectorDB_구축
 ```
 
 환경 변수를 설정합니다.
 
 ```bash
 cp .env.example .env
-# .env 파일을 열어 LLM_PROVIDER와 관련 키를 입력합니다.
+# .env 파일을 열어 필요한 값을 수정합니다.
 ```
 
 ### macOS / Linux
@@ -43,7 +49,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Windows (WSL2)
+### Windows (WSL2 권장)
 
 ```bash
 python -m venv venv
@@ -53,82 +59,124 @@ pip install -r requirements.txt
 
 ## 실행
 
+### 전체 파이프라인 실행 (Step 1 + 2)
+
 ```bash
-python -m app.main
+python src/main.py
 ```
 
-브라우저에서 `http://localhost:8000/chat` 을 열면 채팅 UI가 실행됩니다.
+### Step 선택 실행
 
-## 예상 출력
-
-<!-- [CAPTURE NEEDED: 브라우저에서 채팅 UI가 표시된 전체 화면] -->
-
-서버 시작 시 터미널 출력:
-
-```
-[INFO] 서버 시작: http://0.0.0.0:8000
-[INFO] 채팅 UI: http://localhost:8000/chat
-[INFO] ChromaDB 로드: ./data/chroma_db
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+```bash
+# Step 1만: Python 파싱 테스트 (한계 체감)
+python src/main.py --step 1
 ```
 
-ChromaDB가 없을 때 자동 구축:
+### 형식별 개별 파싱 (Markdown 변환)
 
-```
-[INFO] ChromaDB가 없습니다. data/docs/ 원본 문서에서 자동 구축합니다.
-[INFO] ChromaDB 자동 구축 완료: 17건 → ./data/chroma_db
-```
+```bash
+# PDF만 파싱 → data/markdown/에 .md 저장
+python src/extract_pdf.py
 
-채팅 질문 예시 (브라우저에서):
+# DOCX만 파싱 → data/markdown/에 .md 저장
+python src/extract_docx.py
 
-```
-질문: 병가 신청 시 증빙 서류가 필요한가요?
-AI:  3일 미만 병가는 증빙 서류가 불필요하며, 3일 이상 병가는 의사소견서를 제출해야 합니다.
-     [출처: HR_취업규칙_v1.0]
+# XLSX만 파싱 → data/markdown/에 .md 저장
+python src/extract_xlsx.py
 ```
 
-> 위 출력은 실제 실행 결과를 그대로 옮긴 것입니다. 터미널 출력과 한 글자씩 대조하여 디버깅에 활용하십시오.
+### CLI 검색 도구
 
-## 전체 구조
+```bash
+# 대화형 반복 검색 모드
+python src/cli_search.py
 
-```mermaid
-flowchart LR
-    A["사용자 질문"] -- "Fetch POST" --> B["FastAPI /api/chat"]
-    B -- "검색" --> C["ChromaDB Retriever"]
-    C -- "컨텍스트" --> D["RAG Chain(LCEL)"]
-    D -- "JSON 응답" --> E["채팅 UI"]
-    E -- "대화 히스토리" --> B
+# 단일 쿼리 검색
+python src/cli_search.py --query "연차 사용 규정"
+python src/cli_search.py --query "비밀번호 정책" --top-k 3
 ```
 
-## 파일 구조
+## 예상 출력 결과
 
 ```
-CH07_RAG_QA_엔진/
-├── README.md
-├── requirements.txt
-├── .env.example
-├── src/
-│   ├── __init__.py
-│   ├── rag_chain.py          # LCEL 기반 RAG 체인
-│   ├── response_parser.py    # 답변 + 출처 파서
-│   └── conversation.py       # 멀티턴 대화 히스토리 관리
-├── app/
-│   ├── __init__.py
-│   ├── main.py               # FastAPI 앱 + 페이지 라우터
-│   ├── chat_api.py           # /api/chat 엔드포인트
-│   └── session.py            # 세션 ID 관리
-├── templates/
-│   ├── base.html             # 좌측 사이드바 레이아웃 (ex02 동일)
-│   └── chat.html             # 채팅 UI (ex02 qa.html 기반)
-├── static/
-│   ├── css/
-│   │   ├── style.css         # 전역 스타일 (ex02 admin.css 기반)
-│   │   └── chat.css          # 채팅 전용 스타일 (ex02 qa.css 기반)
-│   └── js/
-│       └── chat.js           # Fetch 기반 채팅 로직 (ex02 qa.js 패턴)
-├── data/
-│   ├── docs/                 # 원본 문서 (PDF/DOCX/XLSX, CH06과 동일)
-│   └── chroma_db/            # ChromaDB (없으면 data/docs/에서 자동 구축)
-└── outputs/
-    └── .gitkeep
+============================================================
+Q/A 사내 AI VectorDB 구축 파이프라인 시작
+============================================================
+실행 Step: [1, 2]
+문서 디렉토리: ./data/docs
+
+============================================================
+Step 1: Python 파싱 -- 형식별 텍스트 추출
+============================================================
+문서 디렉토리: ./data/docs
+
+총 6개 문서를 발견했습니다.
+  추출 중: FIN_2025_상반기_매출현황.xlsx ... 완료 (1243자)
+  추출 중: FIN_부서별_예산기안서.xlsx ... 완료 (892자)
+  추출 중: HR_정보보안서약서.pdf ... 완료 (2341자)
+  추출 중: HR_취업규칙_v1.0.pdf ... 완료 (8912자)
+  추출 중: OPS_신규서비스_런칭전략.pdf ... 완료 (3456자)
+  추출 중: SEC_보안규정_v1.0.docx ... 완료 (1876자)
+
+Step 1 완료: 6개 문서 추출 (2.3초)
+
+[추출 결과 요약]
+  FIN_2025_상반기_매출현황.xlsx: 2페이지, 1243자
+  FIN_부서별_예산기안서.xlsx: 1페이지, 892자
+  HR_정보보안서약서.pdf: 2페이지, 2341자
+  HR_취업규칙_v1.0.pdf: 8페이지, 8912자
+  OPS_신규서비스_런칭전략.pdf: 4페이지, 3456자
+  SEC_보안규정_v1.0.docx: 1페이지, 1876자
+
+============================================================
+Step 2: 청킹 + 임베딩 + ChromaDB 저장
+============================================================
+청크 크기: 500자, 오버랩: 100자
+임베딩 모델: jhgan/ko-sroberta-multitask
+ChromaDB 저장 경로: ./data/chroma_db
+
+청킹 중...
+전체 청크 수: 59개
+임베딩 모델 로드 중: jhgan/ko-sroberta-multitask
+  최초 실행 시 약 400MB 다운로드가 발생합니다.
+  임베딩 모델 로드 완료 (벡터 차원: 768)
+
+ChromaDB 초기화: ./data/chroma_db
+  새 컬렉션 생성: 'metacoding_documents'
+  59개 청크 임베딩 계산 중... (배치 크기: 64)
+  임베딩 계산 완료: 59개 벡터 생성
+
+ChromaDB에 저장 중... (59개 청크)
+ChromaDB 저장 완료! (컬렉션 총 문서 수: 59)
+
+Step 2 완료 (18.4초)
+  처리 청크 수: 59개
+  컬렉션 총 문서 수: 59개
+  ChromaDB 위치: /절대경로/data/chroma_db
+
+============================================================
+파이프라인 완료! (총 소요 시간: 20.7초)
+============================================================
+
+다음 단계: CLI 검색으로 색인 품질을 검증하십시오.
+  python src/cli_search.py
+  python src/cli_search.py --query '연차 사용 규정'
 ```
+
+> **참고**: 위 출력은 실제 실행 결과를 그대로 복사한 것입니다. 터미널 출력과 문자 단위로 비교하여 디버깅하십시오.
+
+## 파일 설명
+
+| 파일 | 역할 |
+|------|------|
+| `src/main.py` | 전체 파이프라인 오케스트레이션 (Step 1~2) |
+| `src/extractor.py` | PDF/DOCX/XLSX 텍스트 추출 (공통 모듈) |
+| `src/extract_pdf.py` | PDF 파싱 → Markdown 변환 (개별 실습) |
+| `src/extract_docx.py` | DOCX 파싱 → Markdown 변환 (개별 실습) |
+| `src/extract_xlsx.py` | XLSX 파싱 → Markdown 변환 (개별 실습) |
+| `src/chunker.py` | Fixed-size 청킹 + 메타데이터 부착 |
+| `src/store.py` | ko-sroberta 임베딩 + ChromaDB 저장/검색 |
+| `src/cli_search.py` | CLI 검색 도구 (쿼리 → 근거 문구) |
+| `data/docs/` | 실습용 문서 (HR/Finance/Ops/Security) |
+| `data/markdown/` | 형식별 파싱 결과 Markdown (스크립트 실행 후 생성) |
+| `data/chroma_db/` | ChromaDB 저장소 (실행 후 자동 생성) |

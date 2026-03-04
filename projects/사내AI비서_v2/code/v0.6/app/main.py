@@ -3,7 +3,7 @@
 정적 파일 마운트, 라우터 등록, 헬스체크 엔드포인트를 설정한다.
 
 사용법:
-    uvicorn app.main:app --reload --port 8009
+    uvicorn app.main:app --reload --port 8008
 """
 
 from __future__ import annotations
@@ -21,8 +21,8 @@ from .chat_api import router as chat_router
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="ConnectHR CH09 - LangChain 연결",
-    description="LangChain Agent + 캐시 + 모니터링 통합 데모",
+    title="ConnectHR CH08 - 통합 에이전트",
+    description="정형(DB) + 비정형(RAG) 통합 에이전트 데모",
     version="1.0.0",
 )
 
@@ -50,4 +50,4 @@ async def root() -> RedirectResponse:
 @app.get("/health")
 async def health() -> dict:
     """서버 상태를 반환한다."""
-    return {"status": "ok", "chapter": "CH09", "title": "LangChain 연결"}
+    return {"status": "ok", "chapter": "CH08", "title": "통합 에이전트 설계"}

@@ -1,6 +1,6 @@
-# Ch.1: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.0)
+# Ch.1: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.1)
 
-> 이번 버전: 없음 → v0.0
+> 이번 버전: 없음 → v0.1
 > 한 줄 요약: LLM은 우리 회사 문서를 읽은 적이 없다. 문서를 직접 넣어줘야 한다.
 > 핵심 개념: LLM 환각, Context Injection, RAG
 
@@ -239,7 +239,7 @@ flowchart LR
 ### 이번 챕터 파일 구조
 
 ```
-v0.0/
+v0.1/
 ├── step1_fail.py            [실습] LLM 단독 호출 → 환각 체험
 ├── step2_context.py         [실습] 컨텍스트 직접 주입 → 임시 해결
 ├── step3_rag.py             [실습] RAG 기본 파이프라인 구성
@@ -261,7 +261,7 @@ v0.0/
 ollama pull deepseek-r1:8b
 ollama pull nomic-embed-text
 
-# 패키지 설치 (v0.0/requirements.txt)
+# 패키지 설치 (v0.1/requirements.txt)
 pip install -r requirements.txt
 ```
 

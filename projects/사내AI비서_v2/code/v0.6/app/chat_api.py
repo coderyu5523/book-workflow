@@ -1,13 +1,12 @@
 """채팅 API 라우터.
 
 FastAPI 라우터로 채팅 UI 서빙과 POST /api/chat 엔드포인트를 제공한다.
-ConnectHRAgent(use_agent=True) 또는 단순 RAG 검색(use_agent=False)을 지원한다.
-CH09에서는 응답 캐시 연동이 추가되었다.
+통합 에이전트(use_agent=True) 또는 단순 RAG 검색(use_agent=False)을 지원한다.
 
 IPO 패턴:
   Input  - ChatRequest(query, use_agent)
-  Process - ConnectHRAgent.run() 또는 search_documents 직접 호출 (캐시 우선)
-  Output - ChatResponse(answer, query_type, mode, steps)
+  Process - IntegratedAgent.run() 또는 search_documents 직접 호출
+  Output - ChatResponse(answer, query_type, structured_data, unstructured_data, steps)
 """
 
 from __future__ import annotations
@@ -64,15 +63,15 @@ _router_instance: Optional[Any] = None
 
 
 def _get_agent() -> Any:
-    """ConnectHRAgent 싱글턴을 반환한다."""
+    """IntegratedAgent 싱글턴을 반환한다."""
     global _agent_instance
     if _agent_instance is None:
         # sys.path에 src/ 추가
         src_path = os.path.join(_BASE_DIR, "src")
         if src_path not in sys.path:
             sys.path.insert(0, src_path)
-        from src.agent_config import get_agent
-        _agent_instance = get_agent()
+        from src.agent import IntegratedAgent
+        _agent_instance = IntegratedAgent()
     return _agent_instance
 
 
@@ -123,31 +122,18 @@ async def chat_endpoint(body: ChatRequest) -> ChatResponse:
         sys.path.insert(0, src_path)
 
     if body.use_agent:
-        # ① 통합 에이전트 모드 (캐시 연동)
+        # ① 통합 에이전트 모드
         try:
             agent = _get_agent()  # ①
             result = agent.run(body.query)
-
-            # intermediate_steps에서 근거 데이터 추출
-            structured_data: dict = {}
-            unstructured_data: list = []
-            for step in result.get("intermediate_steps", []):
-                if isinstance(step, (list, tuple)) and len(step) >= 2:
-                    action, observation = step[0], step[1]
-                    tool_name = getattr(action, "tool", "")
-                    if tool_name in ("get_leave_balance", "list_employees", "get_sales_sum"):
-                        structured_data[tool_name] = observation
-                    elif tool_name == "search_documents" and isinstance(observation, list):
-                        unstructured_data.extend(observation)
-
             return ChatResponse(
                 query=body.query,
-                answer=result.get("output", "답변을 생성하지 못했습니다."),
-                query_type=result.get("route", "unstructured"),
+                answer=result["answer"],
+                query_type=result.get("query_type", "unstructured"),
                 mode="agent",
-                structured_data=structured_data,
-                unstructured_data=unstructured_data,
-                steps=result.get("intermediate_steps", []),
+                structured_data=result.get("structured_data", {}),
+                unstructured_data=result.get("unstructured_data", []),
+                steps=result.get("steps", []),
             )
         except Exception as e:
             return ChatResponse(
@@ -158,14 +144,14 @@ async def chat_endpoint(body: ChatRequest) -> ChatResponse:
     else:
         # ② 단순 RAG 모드 (문서 검색만)
         try:
-            from src.tools.search_documents import search_documents
+            from src.mcp_tools import search_documents
             from src.router import QueryRouter
 
             query_router = _get_router()  # ②
             query_type = query_router.classify_query(body.query)
 
-            search_result = search_documents.invoke({"query": body.query})  # ③
-            docs = search_result if isinstance(search_result, list) else []
+            search_result = search_documents.invoke({"query": body.query, "k": 3})  # ③
+            docs = search_result.get("results", []) if isinstance(search_result, dict) else []
 
             # 간단한 컨텍스트 조합 응답
             if docs:

@@ -1,4 +1,4 @@
-# CH09 LangChain 연결 - 의존성
+# CH08 통합 에이전트 설계 - 의존성
 # 설치: pip install -r requirements.txt
 
 # FastAPI 웹 프레임워크
@@ -13,15 +13,13 @@ langchain-core==0.3.63
 langchain-community==0.3.7
 langchain-ollama==0.2.0
 langchain-openai==0.2.9
-langchain-chroma==0.2.4
 
-# 벡터 DB
+# 벡터 DB (mcp_tools.py에서 chromadb를 직접 사용)
 chromadb==1.5.1
 
 # 임베딩 모델
 langchain-huggingface==0.1.2
 sentence-transformers==3.3.1
-huggingface-hub==0.30.2
 
 # PostgreSQL 클라이언트
 psycopg2-binary==2.9.10
@@ -40,6 +38,3 @@ pydantic==2.10.1
 
 # HTTP 클라이언트
 httpx==0.28.0
-
-# 선택: LLM 모니터링
-# langfuse==2.60.5

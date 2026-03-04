@@ -1,7 +1,7 @@
 """데이터베이스 연결 모듈.
 
-PostgreSQL 연결을 관리하며, 연결 실패 시 인메모리 모드로
-자동 전환할 수 있는 안전한 연결 함수를 제공한다.
+PostgreSQL 연결을 관리한다.
+정형 데이터 조회를 위해 PostgreSQL 연결은 필수이다.
 
 IPO 패턴:
   Input  - 환경 변수 (POSTGRES_HOST, PORT, DB, USER, PASSWORD)
@@ -79,7 +79,6 @@ def get_db_connection() -> _DbConnectionWrapper:
 def get_db_connection_safe() -> Optional[_DbConnectionWrapper]:
     """PostgreSQL 연결을 시도하고 실패 시 None을 반환한다.
 
-    인메모리 폴백 모드 활성화에 사용된다.
     connect_timeout=3으로 빠른 실패를 보장한다.
 
     Returns:
@@ -90,4 +89,4 @@ def get_db_connection_safe() -> Optional[_DbConnectionWrapper]:
         conn = psycopg2.connect(DATABASE_URL, connect_timeout=3)  # ①
         return _DbConnectionWrapper(conn)
     except Exception:
-        return None  # ② 연결 실패 → 인메모리 모드
+        return None  # ② 연결 실패

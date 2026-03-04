@@ -1,7 +1,6 @@
 /* =====================================================
-   채팅 전용 스타일 (CH07 동일 디자인 기반)
+   채팅 전용 스타일 (ex02 qa.css 기반)
    Gemini 스타일: 사용자=파랑 우측, AI=회색 좌측, 🤖 아바타
-   CH08 추가: 에이전트 토글, 질문 유형 배지, 소스 아코디언
    ===================================================== */
 
 /* ---- 채팅 컨테이너 ---- */
@@ -56,10 +55,6 @@
     flex-shrink: 0;
 }
 
-.user-message .avatar {
-    background: #dbeafe;
-}
-
 /* ---- 메시지 말풍선 ---- */
 .message-content {
     padding: 14px 18px;
@@ -83,157 +78,6 @@
     background: #0366d6;
     color: #ffffff;
     border-top-right-radius: 4px;
-}
-
-/* ---- 에이전트 모드 토글 ---- */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 44px;
-    height: 24px;
-    vertical-align: middle;
-    margin-left: 8px;
-}
-
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.toggle-slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: 0.3s;
-    border-radius: 24px;
-}
-
-.toggle-slider::before {
-    position: absolute;
-    content: "";
-    height: 18px;
-    width: 18px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: 0.3s;
-    border-radius: 50%;
-}
-
-input:checked + .toggle-slider {
-    background-color: var(--accent);
-}
-
-input:checked + .toggle-slider::before {
-    transform: translateX(20px);
-}
-
-.mode-label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 999px;
-    vertical-align: middle;
-}
-
-.mode-agent {
-    background: rgba(34, 197, 94, 0.15);
-    color: #16a34a;
-}
-
-.mode-rag {
-    background: rgba(160, 160, 160, 0.15);
-    color: #666;
-}
-
-/* ---- 질문 유형 배지 ---- */
-.query-type-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-
-.type-structured {
-    background: rgba(59, 130, 246, 0.12);
-    color: #2563eb;
-    border: 1px solid rgba(59, 130, 246, 0.25);
-}
-
-.type-unstructured {
-    background: rgba(139, 92, 246, 0.12);
-    color: #7c3aed;
-    border: 1px solid rgba(139, 92, 246, 0.25);
-}
-
-.type-hybrid {
-    background: rgba(249, 115, 22, 0.12);
-    color: #ea580c;
-    border: 1px solid rgba(249, 115, 22, 0.25);
-}
-
-.mode-badge {
-    background: rgba(34, 197, 94, 0.1);
-    color: #16a34a;
-    border: 1px solid rgba(34, 197, 94, 0.2);
-    display: inline-flex;
-    align-items: center;
-    padding: 2px 8px;
-    border-radius: 9999px;
-    font-size: 0.72rem;
-}
-
-/* ---- 메시지 메타 (배지 영역) ---- */
-.message-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 6px;
-    padding-left: 48px;
-}
-
-/* ---- 환영 메시지 / 예시 질문 카드 ---- */
-.welcome-message {
-    max-width: 100% !important;
-}
-
-.example-queries {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    margin-top: 14px;
-}
-
-.example-category {
-    background: #fff;
-    border: 1px solid #e5e5e5;
-    border-radius: 10px;
-    padding: 12px;
-}
-
-.example-category ul {
-    margin-top: 8px;
-    padding-left: 14px;
-}
-
-.example-category li {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 2;
-    cursor: pointer;
-    transition: color 0.15s;
-}
-
-.example-category li:hover {
-    color: var(--accent);
 }
 
 /* ---- 근거 아코디언 ---- */
@@ -278,45 +122,6 @@ input:checked + .toggle-slider::before {
 }
 
 /* ---- 출처 목록 ---- */
-.source-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-}
-
-.source-card {
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 0.78rem;
-}
-
-.source-card-title {
-    color: var(--accent);
-    font-weight: 600;
-    margin-bottom: 4px;
-    font-size: 0.72rem;
-}
-
-.source-card-content {
-    color: #666;
-    line-height: 1.6;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-
-.db-result-card {
-    background: rgba(59, 130, 246, 0.04);
-    border: 1px solid rgba(59, 130, 246, 0.15);
-}
-
-.db-result-card .source-card-title {
-    color: #2563eb;
-}
-
 .source-list {
     display: flex;
     flex-direction: column;
@@ -347,6 +152,12 @@ input:checked + .toggle-slider::before {
     color: #555;
     margin-top: 4px;
     line-height: 1.5;
+}
+
+.no-sources {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.8rem;
 }
 
 /* ---- 하단 입력바 ---- */
@@ -380,10 +191,6 @@ input:checked + .toggle-slider::before {
     outline: none;
     color: #171717;
     font-family: inherit;
-    resize: none;
-    max-height: 120px;
-    overflow-y: auto;
-    line-height: 1.5;
 }
 
 .chat-input::placeholder {
@@ -408,13 +215,6 @@ input:checked + .toggle-slider::before {
 .btn-send:hover {
     opacity: 1;
     background: rgba(3, 102, 214, 0.08);
-}
-
-.chat-hint {
-    font-size: 0.72rem;
-    color: #888;
-    margin-top: 8px;
-    text-align: center;
 }
 
 /* ---- 로딩 인디케이터 ---- */
@@ -458,14 +258,4 @@ input:checked + .toggle-slider::before {
     background: #fff5f5;
     border-color: #fecaca;
     color: #dc2626;
-}
-
-/* ---- 반응형 ---- */
-@media (max-width: 768px) {
-    .example-queries {
-        grid-template-columns: 1fr;
-    }
-    .source-grid {
-        grid-template-columns: 1fr;
-    }
 }

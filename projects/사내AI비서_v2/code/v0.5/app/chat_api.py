@@ -1,175 +1,154 @@
-"""채팅 API 라우터.
+"""
+채팅 API 라우터 모듈.
 
-FastAPI 라우터로 채팅 UI 서빙과 POST /api/chat 엔드포인트를 제공한다.
-통합 에이전트(use_agent=True) 또는 단순 RAG 검색(use_agent=False)을 지원한다.
+POST /api/chat 엔드포인트를 제공한다.
+Fetch 기반으로 질문을 받아 RAG 체인으로 처리하고 JSON 응답을 반환한다.
 
-IPO 패턴:
-  Input  - ChatRequest(query, use_agent)
-  Process - IntegratedAgent.run() 또는 search_documents 직접 호출
-  Output - ChatResponse(answer, query_type, structured_data, unstructured_data, steps)
+처리 흐름:
+    1. 세션 ID 확인/생성
+    2. 대화 히스토리 조회 (WindowMemory)
+    3. Retriever로 관련 문서 검색 (출처 표시용)
+    4. RAG 체인 실행 (LCEL: 검색→프롬프트→LLM→파싱)
+    5. 답변 + 출처 JSON 반환
+    6. 세션 히스토리 업데이트
 """
 
-from __future__ import annotations
-
-import sys
-import os
-from typing import Any, Optional
-
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
-# ---------------------------------------------------------------------------
-# 1. 라우터 및 템플릿 설정
-# ---------------------------------------------------------------------------
+from app.session import get_session_id, set_session_cookie
+from src.conversation import get_conversation_manager
+from src.rag_chain import get_rag_chain
+from src.response_parser import build_response
 
-router = APIRouter()
+router = APIRouter(prefix="/api", tags=["chat"])
 
-# 템플릿 경로 (app/ 기준으로 ../templates/)
-_BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-templates = Jinja2Templates(directory=os.path.join(_BASE_DIR, "templates"))
-
-
-# ---------------------------------------------------------------------------
-# 2. 요청/응답 모델
-# ---------------------------------------------------------------------------
 
 class ChatRequest(BaseModel):
-    """채팅 요청 모델."""
+    """채팅 API 요청 스키마."""
 
-    query: str = Field(..., description="사용자 질문 문자열")
-    use_agent: bool = Field(default=True, description="통합 에이전트 사용 여부")
+    question: str = Field(..., min_length=1, max_length=2000, description="사용자 질문")
+    session_id: str | None = Field(None, description="세션 ID (없으면 자동 생성)")
+
+
+class SourceItem(BaseModel):
+    """출처 항목 스키마."""
+
+    doc: str = Field(..., description="문서명")
+    page: int = Field(..., description="페이지 번호")
+    snippet: str = Field(..., description="관련 내용 앞부분")
 
 
 class ChatResponse(BaseModel):
-    """채팅 응답 모델."""
+    """채팅 API 응답 스키마."""
 
-    query: str = Field(..., description="원본 질문")
-    answer: str = Field(..., description="최종 답변")
-    query_type: str = Field(default="unstructured", description="질문 유형: structured|unstructured|hybrid")
-    mode: str = Field(default="agent", description="처리 모드: agent|rag")
-    structured_data: dict = Field(default_factory=dict, description="DB 조회 결과")
-    unstructured_data: list = Field(default_factory=list, description="문서 검색 결과")
-    steps: list = Field(default_factory=list, description="에이전트 중간 단계")
+    answer: str = Field(..., description="AI 답변")
+    sources: list[SourceItem] = Field(default_factory=list, description="참조 출처 목록")
+    session_id: str = Field(..., description="세션 ID")
 
 
-# ---------------------------------------------------------------------------
-# 3. 싱글턴 관리
-# ---------------------------------------------------------------------------
-
-_agent_instance: Optional[Any] = None
-_router_instance: Optional[Any] = None
-
-
-def _get_agent() -> Any:
-    """IntegratedAgent 싱글턴을 반환한다."""
-    global _agent_instance
-    if _agent_instance is None:
-        # sys.path에 src/ 추가
-        src_path = os.path.join(_BASE_DIR, "src")
-        if src_path not in sys.path:
-            sys.path.insert(0, src_path)
-        from src.agent import IntegratedAgent
-        _agent_instance = IntegratedAgent()
-    return _agent_instance
-
-
-def _get_router() -> Any:
-    """QueryRouter 싱글턴을 반환한다."""
-    global _router_instance
-    if _router_instance is None:
-        src_path = os.path.join(_BASE_DIR, "src")
-        if src_path not in sys.path:
-            sys.path.insert(0, src_path)
-        from src.router import QueryRouter
-        _router_instance = QueryRouter()
-    return _router_instance
-
-
-# ---------------------------------------------------------------------------
-# 4. 엔드포인트 정의
-# ---------------------------------------------------------------------------
-
-@router.get("/chat", response_class=HTMLResponse)
-async def chat_page(request: Request) -> HTMLResponse:
-    """채팅 UI 페이지를 반환한다.
+@router.post("/chat")
+async def chat_endpoint(
+    body: ChatRequest,
+    request: Request,
+) -> JSONResponse:
+    """
+    사용자 질문을 받아 RAG 체인으로 답변을 생성하고 반환한다.
 
     Args:
-        request: FastAPI Request 객체.
+        body: ChatRequest (question, session_id)
+        request: FastAPI Request (쿠키에서 세션 ID 추출용)
 
     Returns:
-        chat.html 렌더링 결과.
+        JSONResponse: {"answer": str, "sources": list, "session_id": str}
     """
-    return templates.TemplateResponse("chat.html", {"request": request})
+    # === INPUT ===
+    # 세션 ID: 요청 본문 > 쿠키 > 신규 생성 순으로 결정
+    session_id = body.session_id or get_session_id(request)
+    question = body.question.strip()
+
+    if not question:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "질문이 비어 있습니다. 내용을 입력해 주세요."},
+        )
+
+    # === PROCESS ===
+    try:
+        # 대화 매니저에서 이전 대화 히스토리 조회
+        conv_manager = get_conversation_manager()
+        history_text = conv_manager.get_history_text(session_id)
+
+        # RAG 체인과 Retriever 로드
+        chain, retriever = get_rag_chain()
+
+        # Retriever로 관련 문서 검색 (출처 표시에 사용)
+        docs = retriever.invoke(question)
+
+        # LCEL 체인 실행: {"question": ..., "history": ...} 형식으로 입력
+        # 체인 내부에서 question → 검색 → 포맷 → 프롬프트 → LLM 순서로 처리
+        raw_answer = chain.invoke(
+            {
+                "question": question,   # ① 검색 및 프롬프트에 사용
+                "history": history_text,  # ② 이전 대화 맥락 주입
+            }
+        )
+
+        # 응답 구조 생성 (answer 정제 + sources 추출)
+        response_data = build_response(raw_answer=raw_answer, docs=docs)
+        response_data["session_id"] = session_id
+
+        # 세션 히스토리에 이번 대화 저장
+        conv_manager.save_turn(
+            session_id=session_id,
+            question=question,
+            answer=response_data["answer"],
+        )
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": (
+                    f"답변 생성 중 오류가 발생했습니다: {str(e)}\n"
+                    "LLM 서버(Ollama)가 실행 중인지 확인해 주세요. "
+                    "OpenAI를 사용하려면 .env에서 LLM_PROVIDER=openai로 변경하세요."
+                ),
+                "session_id": session_id,
+            },
+        )
+
+    # === OUTPUT ===
+    json_response = JSONResponse(content=response_data)
+    set_session_cookie(json_response, session_id)
+    return json_response
 
 
-@router.post("/api/chat", response_model=ChatResponse)
-async def chat_endpoint(body: ChatRequest) -> ChatResponse:
-    """사용자 질문을 처리하고 답변을 반환한다.
-
-    use_agent=True이면 IntegratedAgent를 사용하고,
-    False이면 search_documents 도구만 직접 호출한다.
+@router.delete("/chat/session")
+async def clear_session_endpoint(request: Request) -> JSONResponse:
+    """
+    현재 세션의 대화 히스토리를 초기화한다.
 
     Args:
-        body: ChatRequest (query, use_agent).
+        request: FastAPI Request (쿠키에서 세션 ID 추출)
 
     Returns:
-        ChatResponse (answer, query_type, structured_data, unstructured_data, steps).
+        JSONResponse: {"message": str, "session_id": str}
     """
-    src_path = os.path.join(_BASE_DIR, "src")
-    if src_path not in sys.path:
-        sys.path.insert(0, src_path)
+    # === INPUT ===
+    session_id = get_session_id(request)
 
-    if body.use_agent:
-        # ① 통합 에이전트 모드
-        try:
-            agent = _get_agent()  # ①
-            result = agent.run(body.query)
-            return ChatResponse(
-                query=body.query,
-                answer=result["answer"],
-                query_type=result.get("query_type", "unstructured"),
-                mode="agent",
-                structured_data=result.get("structured_data", {}),
-                unstructured_data=result.get("unstructured_data", []),
-                steps=result.get("steps", []),
-            )
-        except Exception as e:
-            return ChatResponse(
-                query=body.query,
-                answer=f"에이전트 처리 중 오류가 발생했습니다: {e}",
-                mode="agent",
-            )
-    else:
-        # ② 단순 RAG 모드 (문서 검색만)
-        try:
-            from src.mcp_tools import search_documents
-            from src.router import QueryRouter
+    # === PROCESS ===
+    conv_manager = get_conversation_manager()
+    conv_manager.clear_session(session_id)
 
-            query_router = _get_router()  # ②
-            query_type = query_router.classify_query(body.query)
-
-            search_result = search_documents.invoke({"query": body.query, "k": 3})  # ③
-            docs = search_result.get("results", []) if isinstance(search_result, dict) else []
-
-            # 간단한 컨텍스트 조합 응답
-            if docs:
-                context = "\n\n".join(d["content"] for d in docs)
-                answer = f"관련 문서에서 찾은 내용:\n\n{context}"
-            else:
-                answer = "관련 문서를 찾지 못했습니다."
-
-            return ChatResponse(
-                query=body.query,
-                answer=answer,
-                query_type=query_type,
-                mode="rag",
-                unstructured_data=docs,
-            )
-        except Exception as e:
-            return ChatResponse(
-                query=body.query,
-                answer=f"RAG 검색 중 오류가 발생했습니다: {e}",
-                mode="rag",
-            )
+    # === OUTPUT ===
+    response = JSONResponse(
+        content={
+            "message": "대화 히스토리가 초기화되었습니다.",
+            "session_id": session_id,
+        }
+    )
+    set_session_cookie(response, session_id)
+    return response
