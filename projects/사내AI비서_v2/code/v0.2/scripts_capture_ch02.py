@@ -66,10 +66,10 @@ def main():
             time.sleep(1)
             
             # Fill the form
-            page.fill("input[name='emp_no']", "EMP999")
-            page.fill("input[name='name']", "테스터")
-            page.fill("input[name='dept']", "개발팀")
-            page.fill("input[name='position']", "사원")
+            page.fill("input[name='emp_no']", "EMP998")
+            page.fill("input[name='name']", "웹테스터")
+            page.fill("input[name='dept']", "운영팀")
+            page.fill("input[name='position']", "대리")
             page.fill("input[name='hire_date']", "2026-03-05")
             time.sleep(0.5)
             
