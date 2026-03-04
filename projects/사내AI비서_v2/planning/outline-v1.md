@@ -24,7 +24,7 @@
 
 ## Part 1. AI가 왜 거짓말을 할까
 
-### CH03: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.0)
+### CH01: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.0)
 
 **핵심 개념**: LLM 환각, Context Injection, RAG 기본
 **기술**: Ollama + deepseek-r1:8b, LangChain RetrievalQA, ChromaDB
@@ -46,7 +46,7 @@ v0.0/
 
 ## Part 2. 사내 시스템 만들기
 
-### CH04: "일단 사내 시스템부터" — FastAPI로 CRUD 만들기 (v0.1)
+### CH02: "일단 사내 시스템부터" — FastAPI로 CRUD 만들기 (v0.1)
 
 **핵심 개념**: REST API, Pydantic, psycopg2, CRUD 패턴
 **기술**: FastAPI, PostgreSQL 16, psycopg2, Pydantic 2
@@ -68,7 +68,7 @@ v0.1/app/
 
 ---
 
-### CH05: "어떤 문서를 넣을까" — 사내 문서 수집 전략과 표준 (v0.2)
+### CH03: "어떤 문서를 넣을까" — 사내 문서 수집 전략과 표준 (v0.2)
 
 **핵심 개념**: 문서 품질, 메타데이터, 청킹 전략 사전 설계, 재인덱싱 전략
 **기술**: (코드 없음 — 개념 챕터)
@@ -88,7 +88,7 @@ v0.1/app/
 
 ## Part 3. RAG 엔진 만들기
 
-### CH06: "문서를 '지식'으로 바꾸다" — VectorDB 구축 (v0.3)
+### CH04: "문서를 '지식'으로 바꾸다" — VectorDB 구축 (v0.3)
 
 **핵심 개념**: 문서 파싱, 청킹, 임베딩, 벡터 저장/검색, 임베딩 모델 선택 기준
 **기술**: pypdf, python-docx, openpyxl, ko-sroberta-multitask, ChromaDB
@@ -113,7 +113,7 @@ v0.3/src/
 
 ---
 
-### CH07: "드디어 답해준다" — RAG Q&A 엔진 (v0.4)
+### CH05: "드디어 답해준다" — RAG Q&A 엔진 (v0.4)
 
 **핵심 개념**: LCEL 파이프라인, 출처 강제, 멀티턴 대화
 **기술**: LangChain LCEL (Retriever|Prompt|LLM|Parser), WindowMemory, FastAPI
@@ -136,7 +136,7 @@ v0.4/app/
 
 ## Part 4. 진짜 비서 만들기
 
-### CH08: "'연차 몇 개, 규정은?' 동시에" — 통합 에이전트 설계 (v0.5)
+### CH06: "'연차 몇 개, 규정은?' 동시에" — 통합 에이전트 설계 (v0.5)
 
 **핵심 개념**: QueryRouter, MCP 도구, ReAct 에이전트
 **기술**: 규칙/스키마/LLM 3단계 라우팅, @tool 데코레이터, AgentExecutor
@@ -157,7 +157,7 @@ v0.5/app/
 
 ---
 
-### CH09: "실제로 써보니" — 운영을 위한 안정화 (v0.6)
+### CH07: "실제로 써보니" — 운영을 위한 안정화 (v0.6)
 
 **핵심 개념**: 응답 캐시, 임베딩 캐시, 토큰 추적, 에이전트 표준화
 **기술**: ResponseCache(TTL), EmbeddingCache, TokenTracker, ConnectHRAgent
@@ -171,7 +171,7 @@ v0.6/src/
 ├── cache.py         [실습] ResponseCache(TTL) + EmbeddingCache
 ├── monitoring.py    [설명] TokenTracker + JSON 로깅
 ├── main.py          [설명] CLI 대화형 + 데모 모드
-└── tools/           [참고] @tool 모듈화 (CH08 개선)
+└── tools/           [참고] @tool 모듈화 (CH06 개선)
 ```
 **실습 요약**: 실습 2개 / 설명 2개 / 참고 1개
 
@@ -179,7 +179,7 @@ v0.6/src/
 
 ## Part 5. 더 잘 만들기 — 튜닝과 평가
 
-### CH10: "엉뚱한 문서를 가져온다" — 검색 품질 튜닝 (v0.7)
+### CH08: "엉뚱한 문서를 가져온다" — 검색 품질 튜닝 (v0.7)
 
 **핵심 개념**: 청킹 최적화, Retriever 튜닝, 리랭킹, 하이브리드 검색
 **기술**: Semantic Chunking, Cross-Encoder ReRanker, BM25+Vector, rank-bm25
@@ -198,7 +198,7 @@ v0.7/tuning/
 
 ---
 
-### CH11: "질문을 제대로 이해 못한다" — 질문+답변 고급 튜닝 (v0.8)
+### CH09: "질문을 제대로 이해 못한다" — 질문+답변 고급 튜닝 (v0.8)
 
 **핵심 개념**: 고급 Retriever, Query Rewrite, 답변 근거 시스템
 **기술**: Parent Document Retriever, HyDE, Multi-Query, EvidencePipeline
@@ -216,7 +216,7 @@ v0.8/tuning/
 
 ---
 
-### CH12: "PDF 이미지까지 잡아라" — 고급 문서 처리와 평가 (v0.9)
+### CH10: "PDF 이미지까지 잡아라" — 고급 문서 처리와 평가 (v0.9)
 
 **핵심 개념**: Vision LLM, OCR, 이미지 인덱싱, RAG 평가
 **기술**: LLaVA/EasyOCR, 하이브리드 이미지 처리, Precision@k, Hallucination Rate
@@ -240,9 +240,9 @@ v0.9/tuning/
 
 | 누락 주제 | 우선순위 | 반영 방안 | 저자 결정 |
 |----------|---------|----------|----------|
-| **임베딩 모델 선택 기준** (ko-sroberta vs OpenAI) | [필수] | CH06에 "임베딩 모델 왜 이걸 썼나?" 섹션 추가 | ✅ 반영 |
+| **임베딩 모델 선택 기준** (ko-sroberta vs OpenAI) | [필수] | CH04에 "임베딩 모델 왜 이걸 썼나?" 섹션 추가 | ✅ 반영 |
 | **프롬프트 인젝션 방어** (사내 AI 보안) | [권장] | 사내 직원 전용 → 실질 위협 낮음. RAG 핵심에서 이탈. | ⬛ 생략 |
-| **재인덱싱 전략** (새 문서 추가 시) | [권장] | CH05 문서 수집 전략에 운영 관점 추가 | ✅ 반영 |
+| **재인덱싱 전략** (새 문서 추가 시) | [권장] | CH03 문서 수집 전략에 운영 관점 추가 | ✅ 반영 |
 | **LangChain vs 직접 구현 비교** | [선택] | 더 알아보기 or 생략 (의도 = 이해 중심) | ⬛ 생략 |
 | **배포 전략** (Docker/Nginx) | [선택] | 의도 밖 범위 (seed.md) — 생략 | ⬛ 생략 |
 
@@ -251,12 +251,12 @@ v0.9/tuning/
 ## 여정 맵
 
 ```
-CH03(전환점①) → CH04(보통) → CH05(쉬어가기) → CH06(보통) → CH07(보통)
-→ CH08(전환점②) → CH09(쉬어가기) → CH10(높음) → CH11(높음) → CH12(전환점③+마무리)
+CH01(전환점①) → CH02(보통) → CH03(쉬어가기) → CH04(보통) → CH05(보통)
+→ CH06(전환점②) → CH07(쉬어가기) → CH08(높음) → CH09(높음) → CH10(전환점③+마무리)
 
 난이도: 낮음 ─ 보통 ─ 높음
-CH03[■■□] CH04[■■□] CH05[■□□] CH06[■■□] CH07[■■□]
-CH08[■■■] CH09[■□□] CH10[■■■] CH11[■■■] CH12[■■■]
+CH01[■■□] CH02[■■□] CH03[■□□] CH04[■■□] CH05[■■□]
+CH06[■■■] CH07[■□□] CH08[■■■] CH09[■■■] CH10[■■■]
 ```
 
 ---
@@ -266,11 +266,11 @@ CH08[■■■] CH09[■□□] CH10[■■■] CH11[■■■] CH12[■■■]
 ```
 Part 0 (도입부): 프롤로그 4p + 부록(환경설정) 4p = 8p
 ─────────────────────────────────────────────────────
-Part 1: CH03(12p)                              = 12p
-Part 2: CH04(10p) + CH05(9p)                  = 19p
-Part 3: CH06(11p) + CH07(10p)                 = 21p
-Part 4: CH08(10p) + CH09(8p)                  = 18p
-Part 5: CH10(12p) + CH11(10p) + CH12(10p)     = 32p
+Part 1: CH01(12p)                              = 12p
+Part 2: CH02(10p) + CH03(9p)                  = 19p
+Part 3: CH04(11p) + CH05(10p)                 = 21p
+Part 4: CH06(10p) + CH07(8p)                  = 18p
+Part 5: CH08(12p) + CH09(10p) + CH10(10p)     = 32p
 ─────────────────────────────────────────────────────
 총계: 8 + 12 + 19 + 21 + 18 + 32 = 110p
 ```
@@ -283,13 +283,13 @@ Part 5: CH10(12p) + CH11(10p) + CH12(10p)     = 32p
 
 | 챕터 | 버전 | 핵심 기술 | 완성 코드 대비 차이 |
 |------|------|----------|--------------|
-| CH03 | v0.0 | Ollama, LangChain, ChromaDB | 완성 코드와 동일 (교육용 단순화) |
-| CH04 | v0.1 | FastAPI, psycopg2, Pydantic | views.py/templates 제외 |
-| CH05 | v0.2 | (개념) | 코드 없음 |
-| CH06 | v0.3 | pypdf, ko-sroberta, ChromaDB | 완성 코드와 동일 |
-| CH07 | v0.4 | LCEL, WindowMemory | templates/session 제외 |
-| CH08 | v0.5 | QueryRouter, @tool, AgentExecutor | templates 제외 |
-| CH09 | v0.6 | ResponseCache, TokenTracker | Langfuse 상세 제외 |
-| CH10 | v0.7 | Cross-Encoder, BM25, rank-bm25 | 완성 코드와 동일 |
-| CH11 | v0.8 | Parent Retriever, HyDE, Evidence | 완성 코드와 동일 |
-| CH12 | v0.9 | LLaVA, EasyOCR, eval metrics | RAGAS 제외 |
+| CH01 | v0.0 | Ollama, LangChain, ChromaDB | 완성 코드와 동일 (교육용 단순화) |
+| CH02 | v0.1 | FastAPI, psycopg2, Pydantic | views.py/templates 제외 |
+| CH03 | v0.2 | (개념) | 코드 없음 |
+| CH04 | v0.3 | pypdf, ko-sroberta, ChromaDB | 완성 코드와 동일 |
+| CH05 | v0.4 | LCEL, WindowMemory | templates/session 제외 |
+| CH06 | v0.5 | QueryRouter, @tool, AgentExecutor | templates 제외 |
+| CH07 | v0.6 | ResponseCache, TokenTracker | Langfuse 상세 제외 |
+| CH08 | v0.7 | Cross-Encoder, BM25, rank-bm25 | 완성 코드와 동일 |
+| CH09 | v0.8 | Parent Retriever, HyDE, Evidence | 완성 코드와 동일 |
+| CH10 | v0.9 | LLaVA, EasyOCR, eval metrics | RAGAS 제외 |

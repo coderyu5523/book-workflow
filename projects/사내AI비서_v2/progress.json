@@ -48,7 +48,7 @@
       "artifact_version": 1,
       "gap_analysis": {
         "total_items": 5,
-        "applied": ["임베딩 모델 선택 기준(CH06)", "재인덱싱 전략(CH05)"],
+        "applied": ["임베딩 모델 선택 기준(CH04)", "재인덱싱 전략(CH03)"],
         "skipped": ["프롬프트 인젝션 방어", "LangChain vs 직접 구현 비교", "배포 전략"],
         "total_pages": 110
       },
@@ -60,8 +60,22 @@
     },
     "step_5_chapters": {
       "name": "챕터 집필",
-      "status": "pending",
-      "chapters": []
+      "status": "in_progress",
+      "chapters": [
+        {
+          "id": "CH01",
+          "title": "환각과 RAG의 첫 만남",
+          "version": "v0.0",
+          "status": "draft",
+          "artifact": "chapters/01-환각과-RAG의-첫-만남.md",
+          "review": {
+            "insight": null,
+            "intent_watch": null,
+            "audit": null
+          },
+          "questions_pending": 0
+        }
+      ]
     },
     "step_6_prologue": {
       "name": "프롤로그+로드맵",
