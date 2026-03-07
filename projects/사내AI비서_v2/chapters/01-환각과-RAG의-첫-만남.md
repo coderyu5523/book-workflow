@@ -1,6 +1,6 @@
-# Ch.1: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (v0.1)
+# Ch.1: "ChatGPT에 물어봤더니…" — 환각과 RAG의 첫 만남 (ex01)
 
-> 이번 버전: 없음 → v0.1<br>
+> 이번 버전: 없음 → ex01<br>
 > 한 줄 요약: LLM은 우리 회사 문서를 읽은 적이 없다. 문서를 직접 넣어줘야 한다.<br>
 > 핵심 개념: LLM 환각, Context Injection, RAG
 
@@ -28,23 +28,19 @@ Style: scene-opener
 -->
 ![챕터 오프닝](../assets/CH01/01_chapter-opening.png)
 
-입사 3일 차였습니다.<br>
-아직 사내 Wi-Fi 비밀번호를 포스트잇에 적어 모니터에 붙여놓던 시절이었습니다.
+커넥트에 입사한 지 3일 차. 아직 사내 Wi-Fi 비밀번호를 포스트잇에 적어 모니터에 붙여놓던 시절.
+오전 10시, 아침부터 팀장이 저를 바라보며 다가오기 시작합니다.
 
-오전 10시, 팀장이 자리로 왔습니다.
+**팀장**: "AI로 사내 문서 검색 시스템 만들어봐. 직원들이 규정이나 정책 찾는 게 너무 번거롭다고 해서. 채팅창에 물어보면 바로 답해주는 거."
 
-**팀장**: "AI로 사내 문서 검색 시스템 만들어봐."<br>
-**팀장**: "직원들이 규정이나 정책 찾는 게 너무 번거롭다고 해서."<br>
-**팀장**: "채팅창에 물어보면 바로 답해주는 거."
-
-*(AI 비서. 사내 문서. 대화식 검색. 나 혼자서?)*
+*AI 비서. 사내 문서. 대화식 검색. 나 혼자서?*
 
 **나**: "언제까지요?"<br>
 **팀장**: "급하진 않아. 2주 내로 간단한 프로토타입만."
 
-자리에 돌아와 노트북을 열었습니다.
+우선 노트북을 열고 ChatGPT를 실행했습니다.
 
-*(ChatGPT도 뭐든 대답하잖아. LLM에게 직접 물어보면 되는 거 아니야?)*
+*ChatGPT도 뭐든 대답하잖아. LLM에게 직접 물어보면 되는 거 아니야?*
 
 일단 코드부터 짰습니다.
 
@@ -60,19 +56,16 @@ LLM이 답했습니다.
 
 > **LLM**: 커넥트 사의 신입사원 연차 규정은 근로기준법에 따라, 입사 후 1년 미만 기간에는 1개월 개근 시 1일의 유급휴가가 발생합니다. 1년 이상 근무 시에는 15일의 연차가 발생하며, 3년 이상 근무한 경우 1년마다 1일씩 추가됩니다…
 
-그럴듯했습니다.<br>
-뭔가 공식적인 느낌도 났습니다.
+그럴듯했습니다. 뭔가 공식적인 느낌도 났습니다.
 
-그런데 입사할 때 받은 규정집과 비교해보니 완전히 달랐습니다.
-커넥트의 실제 규정은 이랬습니다.
+입사할 때 받은 규정집을 꺼내 비교해봤습니다. 커넥트의 실제 규정은 이랬습니다.
 
 *신입사원은 입사 후 3년 동안은 연차가 없다. 대신 매월 1회 '리프레시 데이'를 유급으로 제공한다. 3년 근속 시 30일의 연차가 일시에 발생한다.*
 
-*(잠깐, 뭐라고?)*
+*잠깐, 뭐라고?*
 
-다시 읽어봤습니다.<br>
-완전히 다른 내용이었습니다.<br>
-LLM이 방금 그럴듯한 거짓말을 한 것이었습니다.
+다시 읽었습니다. 완전히 다른 내용이었습니다.
+LLM이 방금, 그럴듯한 거짓말을 했습니다.
 
 ---
 
@@ -117,20 +110,17 @@ Style: metaphor-diagram
 
 ### 문서를 직접 넣어주면 되지 않을까?
 
-그러면 해결책은 간단해 보입니다. LLM이 모른다면, 직접 알려주면 되지 않을까요?
+생각해보면 해결책은 단순합니다. LLM이 모른다면, 직접 알려주면 되지 않을까요?
 
-프롬프트에 규정 내용을 직접 붙여서 다시 물어봤습니다.
+규정 내용을 통째로 프롬프트에 붙여서 다시 물어봤습니다.
 
 > **나**: 아래 [커넥트 취업규칙]을 참고해서 신입사원 연차 규정을 알려줘.
 
-규정 내용 전체를 그 뒤에 이어 붙였습니다.
+이번엔 달랐습니다. 커넥트의 실제 규정을 정확히 설명해줬습니다.
 
-이번에는 정확한 답변이 왔습니다.
-커넥트의 실제 규정을 그대로 설명해줬습니다.
+*오, 이거면 되는 거 아니야?*
 
-*(오, 이거면 되는 거 아니야?)*
-
-잠깐 기뻤습니다.
+잠깐, 기뻤습니다.
 
 그런데 사내 문서가 규정집 하나가 아닙니다. 복지 정책, 보안 지침, 업무 가이드, 회의록, 프로젝트 문서… 파일만 수십 개입니다. 그걸 매번 전부 복사해서 프롬프트에 붙이면 어떻게 될까요?
 
@@ -162,7 +152,7 @@ Style: limitation-diagram
 
 ### RAG — "오픈북 시험"으로 바꾸기
 
-더 나은 방법이 있습니다. 문제를 다시 생각해 보겠습니다.
+더 나은 방법이 있습니다.
 
 LLM이 모든 사내 문서를 외울 필요가 있을까요? 사람도 비슷한 문제를 해결한 방식이 있습니다. 시험에서 모든 내용을 통째로 외우는 대신, 오픈북을 허용하면 됩니다. 시험지가 나오면 그 문제와 관련된 페이지를 찾아서 보면서 답하는 것입니다.
 
@@ -239,12 +229,12 @@ flowchart LR
 ### 이번 챕터 파일 구조
 
 ```
-v0.1/
+ex01/
 ├── step1_fail.py            [실습] LLM 단독 호출 → 환각 체험
 ├── step2_context.py         [실습] 컨텍스트 직접 주입 → 임시 해결
 ├── step3_rag.py             [실습] RAG 기본 파이프라인 구성
-├── step3_rag_no_chunking.py [설명] 청킹 유무 비교 (읽기만)
-└── step4_rag.py             [참고] 추론 심화 (Chain-of-Thought)
+├── step3_rag_no_chunking.py [실습] 청킹 없이 비교 → 차이 체감
+└── step4_rag.py             [실습] 추론 심화 (Chain-of-Thought)
 ```
 
 > 이 챕터는 더미 문서(3개)로 동작을 확인하는 맛보기 버전입니다.
@@ -254,43 +244,73 @@ v0.1/
 
 ### 실습 환경 구축
 
-> Python, Ollama, Docker 설치가 아직 안 되어 있다면 **부록(환경 설정)** 을 먼저 참고하세요.
+> 기본 환경(Python 3.12, Ollama)이 없다면 **부록(환경 설정)** 을 먼저 참고하세요.
 
 ```bash
-# Ollama에 LLM과 임베딩 모델 다운로드
-ollama pull deepseek-r1:8b
-ollama pull nomic-embed-text
-
-# 패키지 설치 (v0.1/requirements.txt)
+cd ex01
+python3.12 -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-| 패키지 | 용도 |
+Ollama 모델이 아직 없다면 다운로드합니다.
+
+```bash
+ollama pull deepseek-r1:8b
+ollama pull nomic-embed-text
+```
+
+> **팁: LLM 선택**
+> 기본값은 Ollama + `deepseek-r1:8b`입니다 (16GB RAM 이상 권장). RAM이 부족하거나 응답이 너무 느리다면 `.env`에서 `LLM_PROVIDER=openai`로 바꾸면 GPT-4o-mini도 쓸 수 있습니다. (단, API 비용이 발생합니다. `.env` 파일에 `OPENAI_API_KEY=sk-xxxxxx` 형태로 키를 등록하세요.) 상세 안내는 **프롤로그**의 "시작하기 전에"를 참고하세요.
+
+이번 챕터에서는 **LangChain** 이라는 프레임워크를 사용합니다. LLM 호출, 벡터 검색, 체인 조립 같은 RAG에 필요한 부품을 제공하는 도구입니다. 여기서는 맛보기로 사용하고, CH05에서 본격적으로 다룹니다.
+
+| 패키지 | 역할 |
 |--------|------|
 | `langchain-ollama` | Ollama LLM/임베딩 연동 |
 | `langchain-chroma` | ChromaDB 벡터 저장소 |
 | `langchain-classic` | RetrievalQA 체인 (CH05에서 LCEL로 전환) |
 | `chromadb` | 벡터 DB |
 
+> **팁: 지금은 개념만 잡으세요**
+> LangChain, 임베딩, 벡터 DB 같은 기술 용어가 한꺼번에 나와서 부담스러울 수 있습니다. 지금은 "문서를 넣어주면 LLM이 정확하게 답한다"는 **RAG의 개념**만 이해하면 됩니다. 각 기술의 상세한 동작 원리는 CH04~CH05에서 차근차근 다룹니다.
+
+### 실습 순서
+
+```mermaid
+flowchart LR
+    A["step1_fail.py<br>LLM 단독 질문"] --> B["step2_context.py<br>문서 직접 전달"]
+    B --> C["step3_rag.py<br>RAG 파이프라인"]
+    C --> D["step3_no_chunking.py<br>청킹 없이 비교"]
+    D --> E["step4_rag.py<br>추론 심화"]
+```
+
+환각을 직접 체험하고(step1), 문서를 넣으면 달라지는 걸 확인하고(step2), RAG로 조립하고(step3), 청킹 없이 돌려서 차이를 체감한 뒤(step3_no_chunking), 추론이 필요한 질문까지 던져봅니다(step4). **step1부터 순서대로 실행하세요.**
+
 ---
 
 ### 실습 1 — step1_fail.py: LLM에게 직접 물어보기
 
-LLM 단독으로 사내 규정을 물어보는 가장 단순한 코드입니다. 환각이 어떻게 생기는지 직접 확인해 보세요.
+아래 코드를 `ex01/step1_fail.py`에 작성합니다.
 
 ```python
 from langchain_ollama import ChatOllama
 
+# 로컬 LLM 연결
 llm = ChatOllama(model="deepseek-r1:8b", temperature=0)
 
+# 질문: 모델이 학습했을 리 없는 가상의 회사 규정
 question = "우리 회사(커넥트)의 신입사원 연차 발생 규정이 어떻게 돼?"
+
+print(f"질문: {question}\n")
 response = llm.invoke(question)
-print(response.content)
+print(f"답변:\n{response.content}")
 ```
 
-`temperature=0`은 LLM이 창의적 변형 없이 가장 확률 높은 답변을 내놓도록 하는 설정입니다. 실행하면 그럴듯하게 들리지만 커넥트의 실제 규정과 다른 답변이 나옵니다.
+`ChatOllama`는 LangChain이 Ollama LLM을 호출할 때 쓰는 래퍼입니다. `temperature=0`은 LLM이 창의적 변형 없이 가장 확률 높은 답변을 내놓도록 하는 설정입니다. 실행하면 그럴듯하게 들리지만 커넥트의 실제 규정과 다른 답변이 나옵니다.
 
 ```bash
+# 실행
 python step1_fail.py
 ```
 
@@ -301,9 +321,14 @@ python step1_fail.py
 
 ### 실습 2 — step2_context.py: 문서를 직접 넣어보기
 
-프롬프트에 실제 규정 내용을 포함시킵니다. Context Injection의 효과와 한계를 함께 확인해 보세요.
+step1에서 LLM이 거짓말하는 걸 봤습니다. 이번에는 **규정 내용을 프롬프트에 직접 포함**시켜 봅니다. 아래 코드를 `ex01/step2_context.py`에 작성합니다.
 
 ```python
+from langchain_ollama import ChatOllama
+
+llm = ChatOllama(model="deepseek-r1:8b", temperature=0)
+
+# 1. 정보를 변수에 담습니다 (아직 DB 안 씀)
 context_data = """
 [커넥트 취업규칙]
 1. 신입사원은 입사 후 3년 동안은 연차가 없다. (파격적인 규정)
@@ -311,6 +336,9 @@ context_data = """
 3. 3년 근속 시 30일의 연차가 일시에 발생한다.
 """
 
+question = "우리 회사(커넥트)의 신입사원 연차 발생 규정이 어떻게 돼?"
+
+# 2. 프롬프트에 정보를 포함시킵니다
 prompt = f"""
 아래 [참고 정보]를 보고 질문에 답해줘.
 [참고 정보]
@@ -318,12 +346,18 @@ prompt = f"""
 
 질문: {question}
 """
+
+print(f"질문: {question}\n")
 response = llm.invoke(prompt)
+print(f"답변:\n{response.content}")
 ```
 
-이제 정확한 답변이 나옵니다. 하지만 실제로 써보면 한계가 바로 느껴집니다. 문서 하나면 괜찮지만, 수십 개 문서를 매번 통째로 붙이면 프롬프트가 엄청나게 길어집니다. LLM이 처리할 수 있는 텍스트 길이에는 한도(컨텍스트 윈도우)가 있습니다.
+step1과 달라진 부분은 `context_data`를 프롬프트에 직접 넣었다는 것뿐입니다. 이제 정확한 답변이 나옵니다. 하지만 한계도 바로 보입니다. 문서 하나면 괜찮지만, 수십 개 문서를 매번 통째로 붙이면 프롬프트가 엄청나게 길어집니다. LLM이 처리할 수 있는 텍스트 길이에는 한도(컨텍스트 윈도우)가 있습니다.
+
+
 
 ```bash
+# 실행
 python step2_context.py
 ```
 
@@ -334,107 +368,249 @@ python step2_context.py
 
 ### 실습 3 — step3_rag.py: RAG 파이프라인 구성
 
-RAG의 세 단계를 순서대로 만들어 봅니다.
-
-**1단계: 문서를 조각으로 나눠 벡터 DB에 저장**
-
-```python
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings
-from langchain_core.documents import Document
-
-docs = [
-    Document(page_content="[인사규정] 신입사원 휴가: 신입사원은 입사 후 처음 3년 동안은 법정 연차가 발생하지 않습니다...",
-             metadata={"source": "인사규정"}),
-    Document(page_content="[보안규정] 업무 보안: 모든 임직원은 승인된 보안 USB만 사용해야 합니다...",
-             metadata={"source": "보안규정"}),
-    Document(page_content="[복지규정] 식대 지원: 점심은 무제한 법인카드, 저녁은 오후 9시 이후 야근 시에만...",
-             metadata={"source": "복지규정"}),
-]
-
-embeddings = OllamaEmbeddings(model="nomic-embed-text")
-vectorstore = Chroma.from_documents(documents=docs, embedding=embeddings)
-```
-
-`OllamaEmbeddings`가 각 문서를 수백 차원의 숫자 배열(벡터)로 변환합니다. 이 벡터들이 ChromaDB에 저장됩니다.
-
-> **이 챕터의 임베딩 모델**: `nomic-embed-text`를 사용한다. CH04에서 한국어에 최적화된 `ko-sroberta-multitask`로 교체할 것이다.
-
-**2단계: 검색기와 LLM 체인 연결**
+step2에서는 문서를 수동으로 넣었습니다. 이번에는 **벡터 DB에 문서를 저장하고, 질문에 맞는 문서를 자동으로 찾아오는** RAG 파이프라인을 만듭니다. 아래 코드를 `ex01/step3_rag.py`에 작성합니다.
 
 ```python
 from langchain_classic.chains import RetrievalQA
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_core.documents import Document
 from langchain_core.prompts import PromptTemplate
 
+# 1. 더미 데이터 준비 — 문서 3개를 Document 객체로 만듭니다
+docs = [
+    Document(
+        page_content="[인사규정] 신입사원 휴가 및 연차: 신입사원은 입사 후 처음 3년 동안은 "
+        "법정 연차가 발생하지 않습니다. 대신 매월 1회의 유급 '리프레시 데이'를 "
+        "휴가로 사용할 수 있습니다.",
+        metadata={"source": "인사규정"},
+    ),
+    Document(
+        page_content="[보안규정] 업무 보안: 모든 임직원은 회사에서 지급한 승인된 보안 USB만 "
+        "사용해야 하며, 개인 USB나 외부 저장 매체 사용은 엄격히 금지됩니다.",
+        metadata={"source": "보안규정"},
+    ),
+    Document(
+        page_content="[복지규정] 식대 지원: 점심 식사는 무제한 법인카드로 지원하며, "
+        "저녁 식사는 오후 9시 이후 야근 시에만 사용이 가능합니다.",
+        metadata={"source": "복지규정"},
+    ),
+]
+
+# 2. VectorDB 생성 — 문서를 임베딩하여 ChromaDB에 저장
+print("문서를 학습(임베딩) 중입니다...")
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+vectorstore = Chroma.from_documents(documents=docs, embedding=embeddings)
+
+# 3. 검색기 + LLM 체인 연결
 retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
 
-template = """당신은 회사 규정을 설명하는 AI 비서입니다.
-아래 참고 정보를 바탕으로 질문에 답하세요.
+template = """당신은 회사의 규정에 대해 설명해주는 AI 비서입니다.
+아래의 참고 정보를 바탕으로 질문에 답하세요. 반드시 한국어로 답변해야 합니다.
 
 참고 정보: {context}
+
 질문: {question}
 답변:"""
 
+llm = ChatOllama(model="deepseek-r1:8b", temperature=0)
 qa_chain = RetrievalQA.from_chain_type(
-    llm=ChatOllama(model="deepseek-r1:8b", temperature=0),
+    llm=llm,
     retriever=retriever,
     return_source_documents=True,
-    chain_type_kwargs={"prompt": PromptTemplate(template=template,
-                                                input_variables=["context", "question"])}
+    chain_type_kwargs={
+        "prompt": PromptTemplate(template=template, input_variables=["context", "question"])
+    },
 )
+
+# 4. 질문하고 출처 확인
+question = "신입사원 휴가 규정에 대해 알려줘."
+print(f"\n질문: {question}")
+print("-" * 30)
+
+result = qa_chain.invoke({"query": question})
+
+print("\n--- 검색된 문서(근거) ---")
+for doc in result["source_documents"]:
+    print(f"[{doc.metadata['source']}]: {doc.page_content}")
+
+print("\n--- AI 답변 ---")
+print(result["result"])
 ```
 
-`k=3`은 "질문과 가장 비슷한 문서 조각 3개를 가져오라"는 설정입니다. `return_source_documents=True`를 주면 어떤 문서를 참고했는지도 함께 반환됩니다.
+코드가 길어 보이지만, 흐름은 네 단계입니다:
 
-**3단계: 질문하고 출처 확인**
+1. **문서 준비** — `Document` 객체 3개를 만듭니다. 각각 인사규정, 보안규정, 복지규정입니다.
+2. **벡터 DB 저장** — `OllamaEmbeddings`가 각 문서를 수백 차원의 숫자 배열(벡터)로 변환합니다. `Chroma.from_documents()`가 이 벡터들을 ChromaDB에 저장합니다.
+3. **검색기 + LLM 연결** — `k=3`은 "질문과 가장 비슷한 문서 3개를 가져오라"는 설정입니다. `RetrievalQA`가 검색기와 LLM을 체인으로 연결합니다.
+4. **질문 + 출처 확인** — `return_source_documents=True` 덕분에 어떤 문서를 참고했는지도 함께 반환됩니다.
 
-```python
-result = qa_chain.invoke({"query": "신입사원 휴가 규정에 대해 알려줘."})
+> **이 챕터의 임베딩 모델**: `nomic-embed-text`를 사용합니다. CH04에서 한국어에 최적화된 `ko-sroberta-multitask`로 교체합니다.
 
-# 어떤 문서를 참고했는지 확인
-for doc in result['source_documents']:
-    print(f"[{doc.metadata['source']}]: {doc.page_content[:50]}...")
-
-print(result['result'])
-```
 
 ```bash
+# 실행
 python step3_rag.py
 ```
 
 ![step3 실행 결과](../assets/CH01/01_step3-rag.png)
 *그림 1-7: step3_rag.py 실행 결과. [인사규정] 문서를 찾아서 답변하고, 어디서 가져왔는지 출처까지 보여준다.*
 
-이제 답변과 함께 어느 문서를 참고했는지가 나옵니다. 환각이 사라지고, 출처가 생겼습니다.
+이제 답변과 함께 어느 문서를 참고했는지가 나옵니다. step2에서는 문서를 수동으로 넣어줬지만, 이번에는 **질문에 맞는 문서를 자동으로 찾아왔습니다.** 환각이 사라지고, 출처가 생겼습니다.
 
 ---
 
-### 설명 — step3_rag_no_chunking.py: 청킹이 왜 필요한가
+### 실습 4 — step3_rag_no_chunking.py: 청킹이 왜 필요한가
 
-`step3_rag_no_chunking.py`는 모든 문서를 하나의 덩어리로 합쳐서 저장합니다. `step3_rag.py`와 비교하면 무슨 차이가 있을까요?
+step3에서 문서 3개를 **각각 따로** 벡터 DB에 저장했습니다. 이번에는 반대로 — 모든 문서를 **하나의 덩어리로 합쳐서** 저장하면 어떻게 되는지 비교합니다. 아래 코드를 `ex01/step3_rag_no_chunking.py`에 작성합니다.
 
-핵심 차이는 **검색 정확도**입니다. 문서를 조각내지 않으면, 질문과 관련 없는 규정(보안, 복지)까지 한꺼번에 들어와서 LLM이 정작 필요한 내용을 놓치기 쉽습니다. 직접 실행해서 두 결과를 비교해 보세요.
+```python
+from langchain_classic.chains import RetrievalQA
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_core.documents import Document
+from langchain_core.prompts import PromptTemplate
+
+# 1. 청킹 미적용: 모든 텍스트를 하나의 문자열로 합침 (통짜 데이터)
+context_all = """
+[인사규정] 신입사원 휴가 및 연차: 신입사원은 입사 후 처음 3년 동안은 법정 연차가 발생하지 않습니다. 대신 매월 1회의 유급 '리프레시 데이'를 휴가로 사용할 수 있습니다.
+[보안규정] 업무 보안: 모든 임직원은 회사에서 지급한 승인된 보안 USB만 사용해야 하며, 개인 USB나 외부 저장 매체 사용은 엄격히 금지됩니다.
+[복지규정] 식대 지원: 점심 식사는 무제한 법인카드로 지원하며, 저녁 식사는 오후 9시 이후 야근 시에만 사용이 가능합니다.
+"""
+
+# 하나의 거대한 문서로 만듦 -> 검색이 비효율적임
+docs_bad = [Document(page_content=context_all, metadata={"source": "전체규정"})]
+
+# 2. VectorDB 생성
+print("문서를 학습(임베딩) 중입니다... (청킹 미적용)")
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+vectorstore = Chroma.from_documents(documents=docs_bad, embedding=embeddings)
+
+# 3. 검색기 및 프롬프트 설정 (통째로 하나뿐이므로 k=1로 검색해도 전체가 다 나옴)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 1})
+
+template = """당신은 회사의 규정에 대해 설명해주는 AI 비서입니다.
+아래의 참고 정보를 바탕으로 질문에 답하세요. 반드시 한국어로 답변해야 합니다.
+
+참고 정보: {context}
+
+질문: {question}
+답변:"""
+PROMPT = PromptTemplate(template=template, input_variables=["context", "question"])
+
+# 4. RAG 체인 실행
+llm = ChatOllama(model="deepseek-r1:8b", temperature=0)
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=retriever,
+    chain_type_kwargs={"prompt": PROMPT},
+    return_source_documents=True,
+)
+
+question = "신입사원 휴가 규정에 대해 알려줘."
+print(f"\n질문: {question}")
+print("-" * 30)
+
+result = qa_chain.invoke({"query": question})
+print(f"\nAI 답변:\n{result['result']}")
+```
+
+step3과 비교하면 달라진 부분은 딱 하나입니다. 문서 3개를 **하나의 문자열**(`context_all`)로 합쳐서 `Document` 1개로 만들었습니다. 벡터 DB에 저장되는 문서가 하나뿐이므로 `k=1`로도 전체가 다 나옵니다.
+
+두 파일을 직접 실행해서 결과를 비교해 보세요.
 
 ```bash
-# 조각으로 나눈 경우 (step3_rag.py)
+# 실행: step3 — 조각으로 나눈 경우
 python step3_rag.py
-# → [인사규정] 문서만 정확히 찾아서 답변
 
-# 하나의 덩어리로 합친 경우 (step3_rag_no_chunking.py)
+# 실행: step3_no_chunking — 하나의 덩어리로 합친 경우
 python step3_rag_no_chunking.py
-# → 인사규정 + 보안규정 + 복지규정이 뒤섞여서 답변 정확도 하락
 ```
 
 ![청킹 비교 결과](../assets/CH01/01_no-chunking-compare.png)
 *그림 1-8: 청킹 여부에 따른 검색 결과 비교. 조각으로 나누면 관련 문서만 정확히 찾는다.*
 
-왜 문서를 조각으로 나눠야 하는지 체감할 수 있습니다. 청킹 전략의 상세 비교는 CH08(검색 품질 튜닝)에서 다룹니다.
+step3에서는 인사규정만 깔끔하게 찾아왔지만, 여기서는 인사규정 + 보안규정 + 복지규정이 통째로 들어옵니다. 관련 없는 내용이 섞이면 LLM이 정작 필요한 내용을 놓치기 쉽습니다. 문서를 조각으로 나누는 것, 즉 **청킹(Chunking)** 이 왜 필요한지 체감할 수 있습니다. 청킹 전략의 상세 비교는 CH08(검색 품질 튜닝)에서 다룹니다.
+
+---
+
+### 실습 5 — step4_rag.py: 추론이 필요한 질문
+
+step3까지의 질문은 "규정이 뭐야?" 같은 단순 검색이었습니다. 이번에는 **규정을 찾아서 읽고, 계산까지 해야 하는 질문**을 던져봅니다. 아래 코드를 `ex01/step4_rag.py`에 작성합니다.
+
+```python
+from langchain_classic.chains import RetrievalQA
+from langchain_chroma import Chroma
+from langchain_ollama import OllamaEmbeddings, ChatOllama
+from langchain_core.documents import Document
+from langchain_core.prompts import PromptTemplate
+
+# 1. 더미 데이터 준비
+docs = [
+    Document(page_content="[인사규정] 신입사원 휴가 및 연차: 신입사원은 입사 후 처음 3년 동안은 법정 연차가 발생하지 않습니다. 대신 매월 1회의 유급 '리프레시 데이'를 휴가로 사용할 수 있습니다.", metadata={"source": "인사규정"}),
+    Document(page_content="[보안규정] 업무 보안: 모든 임직원은 회사에서 지급한 승인된 보안 USB만 사용해야 하며, 개인 USB나 외부 저장 매체 사용은 엄격히 금지됩니다.", metadata={"source": "보안규정"}),
+    Document(page_content="[복지규정] 식대 지원: 점심 식사는 무제한 법인카드로 지원하며, 저녁 식사는 오후 9시 이후 야근 시에만 사용이 가능합니다.", metadata={"source": "복지규정"}),
+]
+
+# 2. VectorDB 생성
+print("문서를 학습(임베딩) 중입니다...")
+embeddings = OllamaEmbeddings(model="nomic-embed-text")
+vectorstore = Chroma.from_documents(documents=docs, embedding=embeddings)
+
+# 3. 검색기(Retriever) 설정
+retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+
+# 4. 프롬프트 템플릿
+template = """당신은 회사의 규정에 대해 설명해주는 AI 비서입니다.
+아래의 참고 정보를 바탕으로 질문에 답하세요. 반드시 한국어로 답변해야 합니다.
+
+참고 정보: {context}
+
+질문: {question}
+답변:"""
+
+PROMPT = PromptTemplate(
+    template=template, input_variables=["context", "question"]
+)
+
+# 5. RAG 체인 연결
+llm = ChatOllama(model="deepseek-r1:8b", temperature=0)
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=retriever,
+    return_source_documents=True,
+    chain_type_kwargs={"prompt": PROMPT},
+)
+
+# 6. 질문하기 — 추론이 필요한 복잡한 질문
+question = "입사 6개월차 신입인데 리프레시 데이 2번 썼어. 몇 번 남았는지 규정 기반으로 계산해줘."
+print(f"\n질문: {question}")
+print("-" * 30)
+
+result = qa_chain.invoke({"query": question})
+
+print("\n--- 검색된 문서(근거) ---")
+for doc in result["source_documents"]:
+    print(f"[{doc.metadata['source']}]: {doc.page_content}")
+
+print("\n--- AI 답변 ---")
+print(result["result"])
+```
+
+코드 구조는 step3과 거의 같습니다. 달라진 건 **질문**뿐입니다. "매월 1회 제공" → "6개월이면 6번" → "2번 썼으면 4번 남음"까지, 규정을 읽고 계산해야 하는 질문입니다.
+
+
+```bash
+# 실행
+python step4_rag.py
+```
+[수정] 여기에 실행결과 캡쳐 필요
+
+DeepSeek R1은 `<think>` 태그 안에서 단계별로 생각하는 **Chain-of-Thought** 추론을 합니다. 실행하면 검색된 문서(근거)와 함께, 계산 과정이 포함된 답변이 나옵니다.
 
 ---
 
 ### 더 알아보기
-
-**step4_rag.py** — 추론(Reasoning)이 필요한 복잡한 질문을 다룹니다. 예를 들어 *"입사 6개월차 신입인데 리프레시 데이 2번 썼어. 몇 번 남았는지 규정 기반으로 계산해줘."* 같은 질문입니다. 규정을 찾아서 읽고, 거기서 계산까지 해야 합니다. DeepSeek R1의 Chain-of-Thought 추론 능력을 확인할 수 있습니다.
 
 **RetrievalQA vs LCEL** — 이 챕터에서는 LangChain의 `RetrievalQA` 체인을 사용했습니다. 구버전 API지만 구조가 직관적이라 처음 RAG를 이해하기 좋습니다. CH05에서 더 유연한 LCEL(LangChain Expression Language) 파이프라인으로 교체합니다.
 

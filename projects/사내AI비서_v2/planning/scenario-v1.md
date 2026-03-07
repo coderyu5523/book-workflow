@@ -30,15 +30,15 @@
 
 | 버전 | 챕터 | 뭘 만드나 | 시나리오 속 위치 | 끝나면 뭐가 보이나 | 핵심 변경점 |
 |------|------|----------|--------------|--------------|------------|
-| v0.1 | CH01 | LLM 환각 체험 + RAG 맛보기 | "ChatGPT한테 물어봤더니..." | CLI: 환각 vs RAG 응답 비교 | LLM 단독 → Context Injection → RAG |
-| v0.2 | CH02 | FastAPI CRUD 사내 시스템 | "일단 사내 시스템부터 만들자" | API: 직원/연차/매출 CRUD 동작 | 데이터 모델 + REST API |
-| v0.3 | CH03 | 사내 문서 수집 + 표준 정리 | "문서를 넣으려는데 형식이 제각각이네" | 개념: 문서 표준 규칙 + 수집 전략 | (코드 없음, 개념 챕터) |
-| v0.4 | CH04 | VectorDB 구축 | "문서를 검색 가능한 지식으로 바꾸자" | CLI: 벡터 검색 결과 + 유사도 점수 | 파싱 → 청킹 → 임베딩 → ChromaDB |
-| v0.5 | CH05 | RAG Q&A 엔진 | "이제 질문하면 답해주는 엔진을 만들자" | CLI/API: 질문 → 답변 + 출처 표시 | LCEL 파이프라인 + 멀티턴 |
-| v0.6 | CH06 | 통합 에이전트 | "DB 조회랑 문서 검색을 합치자" | CLI: 정형+비정형 복합 질문 응답 | QueryRouter + MCP + ReAct Agent |
-| v0.7 | CH07 | 운영 안정화 | "실제로 쓰려면 캐시랑 로깅이 필요하네" | CLI: 데모 모드 + 토큰/캐시 통계 | Agent 표준화 + 캐시 + 모니터링 |
-| v0.8 | CH08 | 검색 튜닝 | "엉뚱한 문서를 가져오는데?" | CLI: 튜닝 전/후 검색 품질 비교 | 청킹/Retriever/리랭킹/하이브리드 |
-| v0.9 | CH09 | 질문+답변 튜닝 | "질문을 잘 이해 못하는데?" | CLI: 쿼리 변환 + 근거 포함 응답 | 고급 Retriever/Query Rewrite/근거 시스템 |
+| ex01 | CH01 | LLM 환각 체험 + RAG 맛보기 | "ChatGPT한테 물어봤더니..." | CLI: 환각 vs RAG 응답 비교 | LLM 단독 → Context Injection → RAG |
+| ex02 | CH02 | FastAPI CRUD 사내 시스템 | "일단 사내 시스템부터 만들자" | API: 직원/연차/매출 CRUD 동작 | 데이터 모델 + REST API |
+| ex03 | CH03 | 사내 문서 수집 + 표준 정리 | "문서를 넣으려는데 형식이 제각각이네" | 개념: 문서 표준 규칙 + 수집 전략 | (코드 없음, 개념 챕터) |
+| ex04 | CH04 | VectorDB 구축 | "문서를 검색 가능한 지식으로 바꾸자" | CLI: 벡터 검색 결과 + 유사도 점수 | 파싱 → 청킹 → 임베딩 → ChromaDB |
+| ex05 | CH05 | RAG Q&A 엔진 | "이제 질문하면 답해주는 엔진을 만들자" | CLI/API: 질문 → 답변 + 출처 표시 | LCEL 파이프라인 + 멀티턴 |
+| ex06 | CH06 | 통합 에이전트 | "DB 조회랑 문서 검색을 합치자" | CLI: 정형+비정형 복합 질문 응답 | QueryRouter + MCP + ReAct Agent |
+| ex07 | CH07 | 운영 안정화 | "실제로 쓰려면 캐시랑 로깅이 필요하네" | CLI: 데모 모드 + 토큰/캐시 통계 | Agent 표준화 + 캐시 + 모니터링 |
+| ex08 | CH08 | 검색 튜닝 | "엉뚱한 문서를 가져오는데?" | CLI: 튜닝 전/후 검색 품질 비교 | 청킹/Retriever/리랭킹/하이브리드 |
+| ex09 | CH09 | 질문+답변 튜닝 | "질문을 잘 이해 못하는데?" | CLI: 쿼리 변환 + 근거 포함 응답 | 고급 Retriever/Query Rewrite/근거 시스템 |
 | v1.0 | CH10 | 문서 처리 고급 + 평가 | "PDF 이미지도 처리하고 싶은데?" | CLI: 이미지 캡션 + 평가 리포트 | vLLM/OCR + 평가 프레임워크 |
 
 ---
@@ -95,13 +95,13 @@
 
 | 버전 | 폴더 | 원본 코드 | 실행 확인 |
 |------|------|----------|----------|
-| v0.1 | versions/v0.1/ | CH01_LLM의_한계와_RAG의_필요성/ | 미생성 |
-| v0.2 | versions/v0.2/ | CH02_FastAPI_기본_시스템/ | 미생성 |
-| v0.3 | — | (코드 없음, 개념 챕터) | — |
-| v0.4 | versions/v0.4/ | CH04_VectorDB_구축/ | 미생성 |
-| v0.5 | versions/v0.5/ | CH05_RAG_QA_엔진/ | 미생성 |
-| v0.6 | versions/v0.6/ | CH06_통합_에이전트_설계/ | 미생성 |
-| v0.7 | versions/v0.7/ | CH07_LangChain_연결/ | 미생성 |
-| v0.8 | versions/v0.8/ | CH08_RAG_튜닝/tuning/(실험1~4) | 미생성 |
-| v0.9 | versions/v0.9/ | CH08_RAG_튜닝/tuning/(실험5~6,9) | 미생성 |
+| ex01 | versions/ex01/ | CH01_LLM의_한계와_RAG의_필요성/ | 미생성 |
+| ex02 | versions/ex02/ | CH02_FastAPI_기본_시스템/ | 미생성 |
+| ex03 | — | (코드 없음, 개념 챕터) | — |
+| ex04 | versions/ex04/ | CH04_VectorDB_구축/ | 미생성 |
+| ex05 | versions/ex05/ | CH05_RAG_QA_엔진/ | 미생성 |
+| ex06 | versions/ex06/ | CH06_통합_에이전트_설계/ | 미생성 |
+| ex07 | versions/ex07/ | CH07_LangChain_연결/ | 미생성 |
+| ex08 | versions/ex08/ | CH08_RAG_튜닝/tuning/(실험1~4) | 미생성 |
+| ex09 | versions/ex09/ | CH08_RAG_튜닝/tuning/(실험5~6,9) | 미생성 |
 | v1.0 | versions/v1.0/ | CH08_RAG_튜닝/tuning/(실험7~8,10) | 미생성 |

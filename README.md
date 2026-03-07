@@ -22,13 +22,12 @@ projects/[책이름]/
 ├── code/               ← 여기에 완성 코드를 넣는다
 ├── planning/           ← STEP 1~4 산출물
 ├── chapters/           ← STEP 5 산출물
-├── versions/           ← 버전별 예제 코드 (STEP 3에서 생성)
-│   ├── v0.1/
-│   ├── v0.2/
-│   └── ...
-├── book/               ← 최종 원고
+├── versions/ex01~N/    ← 버전별 예제 코드 (STEP 3에서 생성)
+├── book/               ← 최종 원고 (front/body/back)
+├── assets/             ← 챕터별 이미지
 ├── questions/          ← 인사이트 질문 장바구니
 ├── review/             ← 검토 피드백
+├── answers.md          ← 모든 답변 누적
 └── progress.json       ← 상태 관리
 ```
 
@@ -49,11 +48,32 @@ projects/[책이름]/
 ## 구조
 
 ```
-.claude/skills/    ← 스킬 5개 카테고리 (writing, planning, code, visual, review)
-workflow/          ← 7 STEP 실행 가이드
-design/            ← 설계 문서 (v1~v3)
-projects/          ← 프로젝트별 산출물
+CLAUDE.md              ← 핵심 정책 + 명령어 라우팅 (~165줄)
+│
+├── .claude/skills/    ← 스킬 6개 카테고리 (on-demand 로딩)
+│   ├── CATALOG.md     ← 22개 스킬 전체 목록
+│   ├── writing/       ← 스토리텔링, 문체, 박스, 성장, 상수
+│   ├── code/          ← 코드 분석, 설명, 파일 분리
+│   ├── planning/      ← 갭 분석, 분량 관리
+│   ├── visual/        ← Mermaid, 이미지 플레이스홀더
+│   ├── screenshot/    ← 브라우저/터미널 캡처
+│   └── review/        ← 검토 판정, 체크리스트
+│
+├── workflow/          ← 7 STEP 실행 가이드
+│   ├── step1~7.md     ← 각 STEP 절차 상세
+│   └── review-guide.md
+│
+├── design/            ← 설계 문서 (v1~v3)
+└── projects/          ← 프로젝트별 산출물
 ```
+
+### 지침 로딩 방식
+
+| 계층 | 파일 | 로딩 시점 | 역할 |
+|------|------|----------|------|
+| 핵심 정책 | `CLAUDE.md` | 매 턴 자동 | 아이덴티티, 라우팅, 스타일 가드레일 |
+| 스킬 | `.claude/skills/*/SKILL.md` | 명령어 실행 시 on-demand | 상세 규칙, 예시, 상수 |
+| 워크플로우 | `workflow/step*.md` | 명령어 실행 시 Read | STEP별 절차 가이드 |
 
 ## 워크플로우 (7 STEP)
 
@@ -75,3 +95,10 @@ Phase 5 ── 완성
   STEP 6. 프롤로그 + 로드맵   "숲을 보여준다"
   STEP 7. 마무리              "서문, 에필로그, 부록"
 ```
+
+## 설계 원칙
+
+- **에이전트는 없다.** 하나의 AI가 STEP을 따라가며 스킬을 쓰고, 검토 모드로 점검한다.
+- **CLAUDE.md는 슬림하게.** 핵심 정책 + 라우팅만. 상세 규칙은 스킬에서 on-demand 로딩.
+- **스킬은 22개.** 각각 하나의 작업만 수행하는 원자적 도구. 필요할 때만 로드.
+- **검토 모드는 3개.** 인사이트(놓친 질문) + 의도감시(seed.md 대조) + 감수(3인 편집장).

@@ -1,8 +1,8 @@
 {
   "project": "사내AI비서_v2",
-  "title": "",
-  "status": "in_progress",
-  "current_step": "step_5_chapters",
+  "title": "AI도 모르는 우리 회사 이야기",
+  "status": "done",
+  "current_step": "step_7_finish",
   "created_at": "2026-03-04",
   "updated_at": "2026-03-05",
 
@@ -60,7 +60,7 @@
     },
     "step_5_chapters": {
       "name": "챕터 집필",
-      "status": "in_progress",
+      "status": "done",
       "chapters": [
         {
           "id": "CH01",
@@ -139,32 +139,84 @@
             "audit": "pass"
           },
           "questions_pending": 0
+        },
+        {
+          "id": "CH07",
+          "title": "실제로 써보니",
+          "version": "v0.7",
+          "status": "done",
+          "artifact": "chapters/07-실제로-써보니.md",
+          "review": {
+            "insight": "pass",
+            "intent_watch": "pass",
+            "audit": "pass"
+          },
+          "questions_pending": 0
+        },
+        {
+          "id": "CH08",
+          "title": "엉뚱한 문서를 가져온다",
+          "version": "v0.8",
+          "status": "done",
+          "artifact": "chapters/08-엉뚱한-문서를-가져온다.md",
+          "review": {
+            "insight": "pass",
+            "intent_watch": "pass",
+            "audit": "pass"
+          },
+          "questions_pending": 0
+        },
+        {
+          "id": "CH09",
+          "title": "질문을 제대로 이해 못한다",
+          "version": "v0.9",
+          "status": "done",
+          "artifact": "chapters/09-질문을-제대로-이해-못한다.md",
+          "review": {
+            "insight": "pass",
+            "intent_watch": "pass",
+            "audit": "pass"
+          },
+          "questions_pending": 0
+        },
+        {
+          "id": "CH10",
+          "title": "PDF 이미지까지 잡아라",
+          "version": "v1.0",
+          "status": "done",
+          "artifact": "chapters/10-PDF-이미지까지-잡아라.md",
+          "review": {
+            "insight": "pass",
+            "intent_watch": "pass",
+            "audit": "pass"
+          },
+          "questions_pending": 0
         }
       ]
     },
     "step_6_prologue": {
       "name": "프롤로그+로드맵",
-      "status": "pending",
+      "status": "done",
       "artifacts": {
-        "prologue": null,
-        "roadmap": null
+        "prologue": "book/front/prologue.md",
+        "roadmap": "book/front/roadmap.md"
       },
       "review": {
-        "audit": null
+        "audit": "pass"
       }
     },
     "step_7_finish": {
       "name": "마무리",
-      "status": "pending",
+      "status": "done",
       "artifacts": {
-        "preface": null,
-        "epilogue": null,
-        "appendix": null
+        "preface": "book/front/preface.md",
+        "epilogue": "book/back/epilogue.md",
+        "appendix": "book/back/appendix.md"
       },
-      "final_title": null,
-      "total_pages": null,
+      "final_title": "AI도 모르는 우리 회사 이야기 — LLM 환각부터 RAG 튜닝까지, 사내 AI 비서 ConnectHR 만들기",
+      "total_pages": 167,
       "review": {
-        "audit": null
+        "audit": "pass"
       }
     }
   },
