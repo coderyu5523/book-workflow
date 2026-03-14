@@ -2,6 +2,7 @@
 name: build
 description: "마크다운을 Typst 경유 PDF로 빌드하는 파이프라인 실행"
 allowed-tools: Bash(python3 *build_pdf_typst.py*)
+disable-model-invocation: true
 ---
 
 # build — PDF 빌드

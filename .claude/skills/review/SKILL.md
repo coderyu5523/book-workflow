@@ -2,6 +2,7 @@
 name: review
 model: claude-opus-4-6
 description: 검토 모드 — PASS/FAIL/CONDITIONAL_PASS 판정, 재시도 프로토콜, 3개 검토 모드(인사이트/의도감시/감수) 체크리스트. 각 STEP 산출물 검토 시 로드. D 시리즈(검증) 중 D1, D3, D4, D5 담당.
+disable-model-invocation: true
 ---
 
 # 검토 스킬

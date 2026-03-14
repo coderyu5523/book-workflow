@@ -65,17 +65,21 @@
 
 ## 코드 블록
 
+> 회의 피드백 #6: 코드블록은 위아래 두꺼운 회색 테두리만. 박스/radius 제거.
+
 ```typst
-fill: white                      // 흰 배경
-stroke: 1pt + rgb("#d1d5db")     // 회색 테두리
-inset: (x: 16pt, y: 14pt)       // 패딩 5~8mm
-radius: 8pt
-breakable: true                  // 긴 코드도 페이지를 넘길 수 있음
-weight: "bold"                   // 볼드 텍스트
-text(fill: rgb("#1a1a1a"))       // 어두운 텍스트
+fill: white                              // 흰 배경
+stroke: none                             // 좌우 테두리 없음
+inset: (x: 16pt, y: 14pt)               // 패딩
+breakable: true                          // 긴 코드도 페이지 넘김 가능
+weight: "bold"                           // 볼드 텍스트
+text(fill: rgb("#1a1a1a"))               // 어두운 텍스트
+// 위아래 두꺼운 회색 테두리
+above: line(length: 100%, stroke: 2pt + rgb("#d1d5db"))
+below: line(length: 100%, stroke: 2pt + rgb("#d1d5db"))
 ```
 
-**breakable: true** — 긴 코드 블록이 페이지 하단에서 잘리지 않고 빈 공간을 만드는 문제 해결.
+**핵심**: radius 제거, 좌우 테두리 없음. 위아래 두꺼운 회색 라인만.
 
 ## 인용 블록 (blockquote)
 

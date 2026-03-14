@@ -2,6 +2,7 @@
 name: planning
 model: claude-sonnet-4-6
 description: 기획 — 갭 분석, 분량 관리, 버전 분해, 기능 정렬. STEP 3(시나리오+버전), STEP 4(뼈대)에서 로드. B 시리즈(설계) 중 B1, B2, B6 + D6 담당.
+disable-model-invocation: true
 ---
 
 # 기획 스킬

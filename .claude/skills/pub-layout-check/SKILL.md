@@ -2,6 +2,7 @@
 name: layout-check
 description: "빌드된 PDF의 레이아웃을 분석하여 빈 페이지, 고아줄, 과도한 공백을 감지"
 allowed-tools: Bash(python3 *pdf_layout_checker.py*)
+disable-model-invocation: true
 ---
 
 # layout-check — 레이아웃 분석

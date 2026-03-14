@@ -6,6 +6,7 @@ metadata:
   author: DaleSeo
   version: "1.3.0"
 allowed-tools: Read Write Edit Grep Glob AskUserQuestion
+disable-model-invocation: true
 ---
 
 # humanizer: 한국어 AI 작문 패턴 감지 및 교정기

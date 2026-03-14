@@ -1,6 +1,7 @@
 ---
 name: screenshot
 description: 터미널 실행 결과와 브라우저 웹 UI를 PNG 스크린샷으로 생성하는 스킬. terminal_screenshot.py(터미널)와 Playwright MCP(브라우저)를 지원한다. 챕터 집필 완료 후 [CAPTURE NEEDED] 플레이스홀더를 실제 이미지로 교체할 때 사용.
+disable-model-invocation: true
 ---
 
 # 스크린샷 스킬

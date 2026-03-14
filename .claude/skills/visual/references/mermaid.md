@@ -38,30 +38,33 @@ Mermaid 안에서 `**` 또는 `*`를 사용하면 **렌더링이 깨진다.**
 
 ---
 
-## 3색 팔레트
+## 색상 팔레트 — 프라이머리 + 화이트
 
-모든 Mermaid 다이어그램은 아래 3가지 색상만 사용한다. 4색 이상 금지.
+모든 Mermaid 다이어그램은 **프라이머리(파란색) + 화이트** 2색 체계. 회색 배경 금지. 가독성 최우선.
 
 | 이름 | 용도 | classDef |
 |------|------|----------|
-| default | 기본 노드 (질문, 처리, 일반) | `fill:#87CEEB,stroke:#333,stroke-width:2px,color:#1a1a1a` |
-| danger | 부정/실패/경고 | `fill:#FFB6C1,stroke:#DC143C,stroke-width:2px,color:#1a1a1a` |
-| success | 긍정/완료/결과 | `fill:#90EE90,stroke:#333,stroke-width:2px,color:#1a1a1a` |
+| default | 일반 노드 (화이트 배경) | `fill:#ffffff,stroke:#333,stroke-width:1px,color:#1a1a1a` |
+| primary | 핵심 프로세스 (프라이머리 배경) | `fill:#3b82f6,stroke:#3b82f6,stroke-width:2px,color:#1a1a1a` |
 
-- `classDef default`로 선언하면 미지정 노드에 자동 적용
-- 특별한 의미가 없는 노드는 class 지정 불필요 (default가 적용됨)
+**도형 색상 규칙**.
+- 타원 (입출력). 화이트 배경 + 얇은 검정/연회색 테두리
+- 직사각형 (핵심 프로세스). 프라이머리 배경 + 프라이머리 테두리 + 검정 텍스트
+- 실린더 (데이터 저장소). 화이트 배경 + 얇은 검정/연회색 테두리
+- 점선 박스 (그룹핑). 화이트 배경 + 프라이머리 점선 테두리
+
+**핵심 프로세스(직사각형)만 프라이머리 배경, 나머지는 화이트 배경 + 얇은 테두리.**
 
 ```mermaid
 flowchart LR
-    A["일반 노드"] --> B["실패"]
-    A --> C["성공"]
+    A(["사용자 요청"]) --> B["Controller"]
+    B --> C["Service"]
+    C --> D[("Database")]
 
-    classDef default fill:#87CEEB,stroke:#333,stroke-width:2px,color:#1a1a1a
-    classDef danger fill:#FFB6C1,stroke:#DC143C,stroke-width:2px,color:#1a1a1a
-    classDef success fill:#90EE90,stroke:#333,stroke-width:2px,color:#1a1a1a
+    classDef default fill:#ffffff,stroke:#333,stroke-width:1px,color:#1a1a1a
+    classDef primary fill:#3b82f6,stroke:#3b82f6,stroke-width:2px,color:#1a1a1a
 
-    class B danger
-    class C success
+    class B,C primary
 ```
 
 ---
@@ -74,7 +77,7 @@ flowchart LR
 □ 엣지 텍스트가 `-- "텍스트" -->` 형식인가?
 □ 노드 7개 이하인가?
 □ `**` 또는 `*`가 Mermaid 안에 없는가?
-□ 3색 팔레트(default/danger/success)만 사용했는가?
+□ 프라이머리+화이트 2색 체계를 지켰는가? (회색 배경 없는가?)
 ```
 
 ---

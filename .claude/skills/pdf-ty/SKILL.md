@@ -1,3 +1,10 @@
+---
+name: pdf-ty
+description: "PDF 빌드 스킬 (Typst) - 마크다운을 Typst 경유 PDF로 빌드"
+model: claude-sonnet-4-6
+disable-model-invocation: true
+---
+
 # PDF 빌드 스킬 (Typst)
 
 model: claude-sonnet-4-6
