@@ -1,6 +1,36 @@
 {
   "version": 1,
   "skills": {
+    "agent-tools": {
+      "source": "inference-sh/skills",
+      "sourceType": "github",
+      "computedHash": "220054a640e514d0bb5be4af7eb9b54f2205b2f6de6a85bd1561f0b0b06d6013"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "6412eb4eb3b91595ebab937f0c69501240e7ba761b3d82510b5cf506ec5c7adc"
+    },
+    "humanize": {
+      "source": "humanizerai/agent-skills",
+      "sourceType": "github",
+      "computedHash": "d8898832c1e5648c9600d6b79b985b415d849da2cfa3b40cc4e6d51ea2d1511d"
+    },
+    "humanize-academic-writing": {
+      "source": "momo2young/humanize-academic-writing",
+      "sourceType": "github",
+      "computedHash": "91048fa27b9eea34850be5ec88b8c3fdd70528d759c9384579dd836ea191e005"
+    },
+    "humanizer": {
+      "source": "daleseo/korean-skills",
+      "sourceType": "github",
+      "computedHash": "f0eb2aa9e2515e99471fbd085d514141bfc4873f3683f76815a237d64c2cd834"
+    },
+    "nano-banana-2": {
+      "source": "toolshell/skills",
+      "sourceType": "github",
+      "computedHash": "a919bdc04509cc0e886c8633c51c807e1148d8b7a8e604dd64283e0680d57a73"
+    },
     "pdf": {
       "source": "anthropics/skills",
       "sourceType": "github",

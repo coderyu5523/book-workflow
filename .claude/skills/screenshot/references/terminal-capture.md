@@ -56,6 +56,59 @@ python3 "$SCRIPT" \
 | `/Users/me/.venv/bin/python src/main.py` | `python src/main.py` |
 | `/opt/homebrew/bin/python3 src/cli_search.py --query '연차'` | `python src/cli_search.py --query '연차'` |
 
+## Rich 실험 결과 캡처 (rich_capture.py)
+
+Rich Console의 `export_svg()`로 실험 결과를 SVG → PNG로 변환한다. Rich 테이블, 컬러 텍스트, 터미널 크롬이 완벽히 렌더링된다.
+
+```
+.claude/skills/screenshot/scripts/rich_capture.py  ← Rich SVG 캡처
+```
+
+```bash
+# 기본 (다크 배경)
+python3 .claude/skills/screenshot/scripts/rich_capture.py \
+  --module tuning.step1_chunk_experiment \
+  --step 1-2 \
+  --cwd projects/사내AI비서_v2/code/ex08 \
+  --png projects/사내AI비서_v2/assets/CH08/08_overlap.png \
+  --title "실험 1-2: 오버랩 비율 비교" \
+  --timeout 120
+
+# 화이트 배경 (--light 플래그)
+python3 .claude/skills/screenshot/scripts/rich_capture.py \
+  --module tuning.step1_chunk_experiment \
+  --step 1-2 \
+  --cwd projects/사내AI비서_v2/code/ex08 \
+  --png projects/사내AI비서_v2/assets/CH08/08_overlap.png \
+  --title "실험 1-2: 오버랩 비율 비교" \
+  --light
+```
+
+### 파라미터
+
+| 파라미터 | 필수 | 설명 |
+|----------|------|------|
+| `--module` | Y | 실험 모듈 (예: `tuning.step1_chunk_experiment`) |
+| `--step` | Y | 실험 단계 (예: `1-1`, `1-2`, `1-3`) |
+| `--cwd` | Y | 작업 디렉토리 (venv 포함) |
+| `--png` | Y | 출력 PNG 파일 경로 |
+| `--title` | - | 터미널 창 타이틀바 제목 |
+| `--light` | - | 화이트 배경 라이트 테마 적용 |
+| `--output` | - | SVG도 보존하려면 경로 지정 |
+| `--percentile` | - | 실험별 추가 파라미터 |
+| `--k` | - | 실험별 추가 파라미터 |
+
+### 동작 원리
+
+1. `Console(record=True)` 로 Rich 출력을 캡처
+2. 실험 모듈의 `console` 객체를 recording console로 패치
+3. `console.export_svg(title=..., theme=...)` 로 SVG 생성
+4. Playwright로 `svg.rich-terminal` 요소를 PNG 캡처
+
+### 라이트 테마
+
+`--light` 플래그를 추가하면 Rich의 `TerminalTheme`을 화이트 배경으로 교체한다. 인쇄용 PDF나 밝은 배경이 필요한 경우 사용.
+
 ## 배치 캡처 (capture.py)
 
 여러 스크린샷을 한 번에 생성:

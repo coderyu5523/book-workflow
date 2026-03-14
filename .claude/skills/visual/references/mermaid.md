@@ -38,6 +38,34 @@ Mermaid 안에서 `**` 또는 `*`를 사용하면 **렌더링이 깨진다.**
 
 ---
 
+## 3색 팔레트
+
+모든 Mermaid 다이어그램은 아래 3가지 색상만 사용한다. 4색 이상 금지.
+
+| 이름 | 용도 | classDef |
+|------|------|----------|
+| default | 기본 노드 (질문, 처리, 일반) | `fill:#87CEEB,stroke:#333,stroke-width:2px,color:#1a1a1a` |
+| danger | 부정/실패/경고 | `fill:#FFB6C1,stroke:#DC143C,stroke-width:2px,color:#1a1a1a` |
+| success | 긍정/완료/결과 | `fill:#90EE90,stroke:#333,stroke-width:2px,color:#1a1a1a` |
+
+- `classDef default`로 선언하면 미지정 노드에 자동 적용
+- 특별한 의미가 없는 노드는 class 지정 불필요 (default가 적용됨)
+
+```mermaid
+flowchart LR
+    A["일반 노드"] --> B["실패"]
+    A --> C["성공"]
+
+    classDef default fill:#87CEEB,stroke:#333,stroke-width:2px,color:#1a1a1a
+    classDef danger fill:#FFB6C1,stroke:#DC143C,stroke-width:2px,color:#1a1a1a
+    classDef success fill:#90EE90,stroke:#333,stroke-width:2px,color:#1a1a1a
+
+    class B danger
+    class C success
+```
+
+---
+
 ## 체크리스트
 
 ```
@@ -46,6 +74,7 @@ Mermaid 안에서 `**` 또는 `*`를 사용하면 **렌더링이 깨진다.**
 □ 엣지 텍스트가 `-- "텍스트" -->` 형식인가?
 □ 노드 7개 이하인가?
 □ `**` 또는 `*`가 Mermaid 안에 없는가?
+□ 3색 팔레트(default/danger/success)만 사용했는가?
 ```
 
 ---

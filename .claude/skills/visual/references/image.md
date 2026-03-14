@@ -128,6 +128,47 @@ The entire assembly of icons, lines, and text is perfectly centered globally
 within the 16:9 frame, leaving generous and equal white space on all sides.
 ```
 
+**Infographic Variant (비교/구조 인포그래픽):**
+```
+Black and white minimalist infographic. White background, black/dark gray elements only.
+Clean geometric shapes, thin lines, rounded corners on boxes. Modern sans-serif font. 16:9.
+Use inner boxes with dashed/solid borders to separate sections (입력/처리/결과).
+Header bars with dark gray background and white text for section titles.
+Thin dotted line dividers between comparison columns. Hairline-border tables at bottom.
+Korean labels throughout.
+```
+
+**프롬프트 예시 (비교형 인포그래픽):**
+```
+Black and white minimalist infographic. White background, black/dark gray elements only.
+Clean geometric shapes, thin lines, rounded corners on boxes. Modern sans-serif font. 16:9.
+
+Title (top center, bold): "확대경 vs 눈 — OCR vs Vision LLM"
+Thin horizontal rule below title.
+
+[Left box — rounded rectangle, thin black border, light gray fill (#F5F5F5)]
+  Header bar (dark gray background, white text): "확대경 — OCR"
+  [Inner box 1 — dashed border] 입력: 정보보안서약서 스캔본 아이콘
+  [Inner box 2 — solid border] 처리: 돋보기 아이콘 → 흩어진 글자 조각들
+  [Inner box 3 — solid border] 결과: 한 줄로 뭉개진 텍스트
+  Footer label: "글자만 읽음 — 구조·도장·하이라이트 무시"
+
+[Center — vertical dotted line divider, "vs" in circle at midpoint]
+
+[Right box — same structure]
+  Header bar: "눈 — 비전 LLM"
+  [Inner box 1] 입력: 같은 스캔본
+  [Inner box 2] 처리: 눈 아이콘 → 문서 전체 스캔
+  [Inner box 3] 결과: structured document icon + 트리 구조 텍스트
+  Footer label: "구조까지 이해 — 도장·맥락 파악"
+
+[Bottom — comparison table, hairline borders, alternating light gray rows]
+| 항목 | 확대경(OCR) | 눈(비전 LLM) |
+| 속도 | ⚡ 빠름 | 🐢 느림 |
+| 표/도장 | ✗ 추출 불가 | ✓ 내용 설명 |
+| 스캔 PDF | 글자만 | 구조까지 |
+```
+
 ### 공통 심볼 패턴
 
 | 대상 | 프롬프트 패턴 |

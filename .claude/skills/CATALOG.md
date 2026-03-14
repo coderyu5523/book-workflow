@@ -16,6 +16,9 @@
 | `visual/` | `claude-haiku-4-5-20251001` | B4, B5 | mermaid, image |
 | `screenshot/` | — | — | terminal-capture, browser-capture, capture.py |
 | `review/` | `claude-opus-4-6` | D1, D3, D4, D5 | review-rules |
+| `pdf/` | `claude-sonnet-4-6` | PDF 빌드 (WeasyPrint) | build-guide |
+| `pdf-ty/` | `claude-sonnet-4-6` | PDF 빌드 (Typst) | build-guide |
+| `pub-d2-diagram/` | `claude-sonnet-4-6` | D2 다이어그램 빌드 (O'Reilly mono) | SKILL.md |
 
 ---
 
