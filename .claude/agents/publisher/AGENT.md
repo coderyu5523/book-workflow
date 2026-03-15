@@ -1,7 +1,7 @@
 ---
 name: publisher
 description: 인쇄소 — pub 계열 6개 스킬 + pdf-ty. 마크다운→PDF 변환 + 레이아웃 최적화
-skills: [pub-build, pub-layout-check, pub-image-optimize, pub-page-fit, pub-typst-design, pdf-ty]
+skills: [publisher-index]
 rules: [.claude/rules/style.md, agents/publisher/AGENT.md]
 steps: [5, 7]
 ---

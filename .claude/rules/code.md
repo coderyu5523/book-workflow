@@ -23,3 +23,11 @@
 - [실습] 파일. 전체 코드. "아래 코드를 `파일명`에 작성합니다"로 시작
 - [설명] 파일. 핵심 흐름만 발췌. 전체 코드는 `code/exNN/` 참조
 - [참고] 파일. 코드 블록 없음. 메서드 표로 요약
+
+## 실험/실습 스크립트 출력
+
+- 터미널 출력에 장식선 금지 (`console.rule()`, `───` 등의 장식 구분선 사용 금지)
+- 제목은 `console.print("[bold]제목[/bold]")` 으로 간결하게 표시
+- Rich Table의 `title` 파라미터로 섹션 구분 (장식선 대신)
+- 모든 스크립트 출력은 Rich Console을 통해 출력 (print 대신 console.print)
+- 캡처 워크플로우: 스크립트가 Rich Console로 출력 → `book_capture.py --cmd`로 캡처

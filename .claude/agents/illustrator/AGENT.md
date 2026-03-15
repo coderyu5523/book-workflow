@@ -1,7 +1,7 @@
 ---
 name: illustrator
 description: 일러스트레이터 — 다이어그램 + 캡처 + 개념도. 시각 요소 전담
-skills: [visual, screenshot, design-doc-mermaid, pub-d2-diagram]
+skills: [illustrator-index]
 rules: [.claude/rules/style.md, agents/illustrator/AGENT.md]
 steps: [3, 4, 5]
 ---

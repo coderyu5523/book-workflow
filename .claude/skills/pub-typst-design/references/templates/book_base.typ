@@ -8,6 +8,19 @@
 //   #let book-description = [설명]
 //   #let book-header-title = "헤더 표시 제목"
 
+// ── 조판 설정 변수 ──
+// 행간: 줄과 줄 사이 간격 (pt 단위)
+#let body-leading = 8pt
+// 자간: 글자와 글자 사이 간격 (pt 단위, 0pt = 기본)
+#let body-tracking = 0pt
+// 제목-문단 간격: 제목 아래 본문까지의 여백 (행간과 동일)
+#let heading-gap = body-leading
+// 코드 블록: 구분선과 코드 사이 여백
+#let code-inset-x = 16pt
+#let code-inset-y = 6pt
+// 코드 블록: 구분선 두께
+#let code-rule-stroke = 2pt
+
 // ── 챕터 추적 (헤더용) ──
 #let chapter-title = state("chapter-title", none)
 
@@ -46,10 +59,11 @@
   size: 10pt,
   lang: "ko",
   fill: rgb("#1a1a1a"),
+  tracking: body-tracking,
 )
 
 #set par(
-  leading: 1.0em,
+  leading: body-leading,
   first-line-indent: 0pt,
   justify: true,
 )
@@ -58,106 +72,122 @@
 #show heading.where(level: 1): it => {
   chapter-title.update(it.body)
   pagebreak(weak: true)
-  v(60pt)  // 챕터 오프닝: 상단 1/3 여백 (출판 표준)
   block(
     width: 100%,
-    below: 16pt,
+    below: heading-gap,
     sticky: true,
     {
-      text(26pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
+      text(16pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
       v(8pt)
       line(length: 100%, stroke: 3pt + rgb("#2563eb"))
     }
   )
-  v(14pt)
+  v(heading-gap)
 }
 
 #show heading.where(level: 2): it => {
-  v(24pt)
+  v(18pt)
   block(
     width: 100%,
-    below: 8pt,
+    below: heading-gap,
     sticky: true,
-    inset: (left: 12pt),
-    stroke: (left: 4pt + rgb("#2563eb")),
-    text(16pt, weight: "bold", fill: rgb("#1e40af"))[#it.body]
+    text(10pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
   )
-  v(6pt)
+  v(heading-gap)
 }
 
 #show heading.where(level: 3): it => {
-  v(16pt)
+  v(14pt)
   block(
-    below: 6pt,
+    below: heading-gap,
     sticky: true,
-    text(13pt, weight: "semibold", fill: rgb("#1e3a5f"))[#it.body]
+    text(10pt, weight: "semibold", fill: rgb("#374151"))[#it.body]
   )
-  v(4pt)
+  v(heading-gap)
 }
 
 #show heading.where(level: 4): it => {
-  v(12pt)
+  v(10pt)
   block(
-    below: 4pt,
+    below: heading-gap,
     sticky: true,
-    text(11pt, weight: "semibold", fill: rgb("#374151"))[#it.body]
+    text(10pt, weight: "medium", fill: rgb("#555555"))[#it.body]
   )
-  v(2pt)
+  v(heading-gap)
 }
 
-// ── 코드 블록 (페이지 넘김 허용) ──
+// ── 코드 블록 (위아래 굵은 회색선만, 좌우 없음) ──
 #show raw.where(block: true): it => {
   set text(size: 8pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
   block(
     width: 100%,
     fill: white,
-    inset: (x: 16pt, y: 14pt),
-    radius: 8pt,
-    stroke: 1pt + rgb("#d1d5db"),
+    inset: (x: code-inset-x, y: code-inset-y),
+    radius: 0pt,
+    stroke: none,
     breakable: true,
     text(fill: rgb("#1a1a1a"))[#it]
   )
+  line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
 }
 
-// ── 인라인 코드 ──
+// ── 인라인 코드 (볼드 통일) ──
 #show raw.where(block: false): it => {
-  box(
-    fill: rgb("#f3f4f6"),
-    inset: (x: 4pt, y: 2pt),
-    radius: 3pt,
-    text(size: 8.5pt, fill: rgb("#1e40af"), font: ("Menlo", "KoPubDotum_Pro"))[#it]
-  )
+  text(weight: "bold", fill: rgb("#1e3a5f"))[#it.text]
 }
 
-// ── 인용 블록 (blockquote) ──
+// ── 인용 블록 — 디자인 A: 점선 박스 (기본 blockquote) ──
 #show quote.where(block: true): it => {
   block(
     width: 100%,
     above: 10pt,
     below: 10pt,
-    inset: (left: 14pt, right: 14pt, top: 10pt, bottom: 10pt),
-    stroke: (left: 3pt + rgb("#93b4e8")),
-    fill: rgb("#f5f8ff"),
-    radius: (right: 4pt),
+    inset: (x: 14pt, y: 10pt),
+    stroke: (
+      dash: "dashed",
+      paint: rgb("#aaaaaa"),
+      thickness: 1pt,
+    ),
+    radius: 0pt,
     {
       set par(justify: true, leading: 0.9em)
-      text(size: 9pt, fill: rgb("#4b5563"))[#it.body]
+      text(size: 9pt, fill: rgb("#333333"))[#it.body]
     }
   )
 }
 
-// ── 표 스타일 ──
+// ── 인용 블록 — 디자인 B: 회색 박스 + 프라이머리 라벨 (callout) ──
+// [라벨 - 본문] 형태로 한 줄에 이어서 표시
+#let callout-box(label, body) = {
+  block(
+    width: 100%,
+    above: 10pt,
+    below: 10pt,
+    inset: (x: 14pt, y: 10pt),
+    fill: rgb("#f5f5f5"),
+    radius: 4pt,
+    stroke: none,
+    {
+      set par(justify: true, leading: 0.9em)
+      text(size: 9pt)[#text(weight: "bold", fill: rgb("#2563eb"))[#label] #text(fill: rgb("#333333"))[\- #body]]
+    }
+  )
+}
+
+// ── 표 스타일 (B&W + 그레이, 가는 실선 테두리, 왼쪽 정렬) ──
 #set table(
-  stroke: (bottom: 0.5pt + rgb("#e5e7eb")),
+  stroke: 0.5pt + rgb("#d1d5db"),
   inset: (x: 10pt, y: 8pt),
-  fill: (_, y) => if y == 0 { rgb("#1e40af") } else if calc.odd(y) { rgb("#f8fafc") } else { white },
+  align: left,
+  fill: (_, y) => if y == 0 { rgb("#e5e5e5") } else if calc.odd(y) { rgb("#fafafa") } else { white },
 )
 
-#show table.cell.where(y: 0): set text(fill: white, weight: "medium")
+#show table.cell.where(y: 0): set text(fill: rgb("#1a1a1a"), weight: "bold")
 
 #show table: it => {
   set text(size: 8.5pt)
-  block(breakable: true)[#it]
+  align(left, block(breakable: true)[#it])
 }
 
 // ── 볼드/이탤릭 ──
@@ -213,17 +243,17 @@
   }
 })
 
-// ── 사이드 이미지 (2열 레이아웃) ──
-// 작은 이미지를 텍스트 옆에 나란히 배치합니다.
-// img-width: 이미지 열 너비 비율 (0.0~1.0), 나머지가 텍스트 열
-#let side-image(path, body, img-width: 0.35, gap: 16pt) = {
+// ── 2열 이미지 (이미지 2개 나란히) ──
+// 이미지 두 개를 좌우로 나란히 배치합니다.
+// caption1, caption2: 각 이미지의 캡션 (없으면 캡션 없이 배치)
+#let dual-image(path1, path2, caption1: none, caption2: none, gap: 16pt) = {
   v(8pt)
   grid(
-    columns: (img-width * 100% - gap / 2, 1fr),
+    columns: (1fr, 1fr),
     column-gutter: gap,
-    align: (center + horizon, left + top),
-    image(path, width: 100%),
-    body,
+    align: center,
+    if caption1 != none { figure(image(path1, width: 100%), caption: [#caption1]) } else { image(path1, width: 100%) },
+    if caption2 != none { figure(image(path2, width: 100%), caption: [#caption2]) } else { image(path2, width: 100%) },
   )
   v(8pt)
 }

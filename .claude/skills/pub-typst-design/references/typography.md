@@ -20,12 +20,12 @@
 | 용도 | 폰트 | 크기 | 비고 |
 |------|------|------|------|
 | 본문 | KoPubDotum_Pro, Apple SD Gothic Neo | 10pt | IT 서적 표준 9.5~10.5pt |
-| h1 (챕터) | Bold | 26pt | 본문 대비 2.6x (권장 2.5~3x) |
-| h2 (섹션) | Bold | 16pt | 본문 대비 1.6x (권장 1.6~2x) |
-| h3 (소제목) | SemiBold | 13pt | 본문 대비 1.3x (권장 1.2~1.4x) |
-| h4 (하위제목) | SemiBold | 11pt | 본문 대비 1.1x (권장 1~1.2x) |
+| h1 (챕터) | Bold | 16pt | 챕터 오프닝 전용 |
+| h2 (섹션) | Bold | 10pt | 본문과 동일 크기, 굵기로 구분. 숫자 접두사("1.") |
+| h3 (소제목) | SemiBold | 10pt | 진회색(#374151). 숫자 접두사("1.1") |
+| h4 (하위제목) | Medium | 10pt | 회색(#555555). 숫자 접두사("1.1.1") |
 | 코드 블록 | Menlo, KoPubDotum_Pro | 8pt | 본문보다 2pt 작게 (권장 8~9pt) |
-| 인라인 코드 | Menlo, KoPubDotum_Pro | 8.5pt | 연회색 배경 |
+| 인라인 코드 | 본문 폰트 (볼드) | 10pt | 배경 없이 볼드 처리 |
 | 캡션 | KoPubDotum_Pro | 8pt | 회색(#6b7280) |
 | 헤더 | KoPubDotum_Pro | 8pt | 회색(#999999) |
 | 푸터 | KoPubDotum_Pro | 9pt | 회색(#888888) |
@@ -57,11 +57,14 @@
 
 ### h2~h4
 
+- 모두 10pt 통일. weight(Bold/SemiBold/Medium)와 색상으로 레벨 구분
+- 마크다운 원문에서 숫자 접두사(1. / 1.1 / 1.1.1) 직접 작성
 - 모두 `sticky: true`로 heading이 페이지 하단에 혼자 남지 않도록 방지
+- **제목 아래 여백**: `heading-gap` 변수로 전 레벨 통일 (기본값 = `body-leading`)
 - **제목 위 여백 > 아래 여백** (소속 관계 표현)
-  - h2: 위 24pt, 아래 8pt+6pt
-  - h3: 위 16pt, 아래 6pt+4pt
-  - h4: 위 12pt, 아래 4pt+2pt
+  - h2: 위 18pt, 아래 heading-gap
+  - h3: 위 14pt, 아래 heading-gap
+  - h4: 위 10pt, 아래 heading-gap
 
 ## 코드 블록
 
@@ -81,21 +84,37 @@ below: line(length: 100%, stroke: 2pt + rgb("#d1d5db"))
 
 **핵심**: radius 제거, 좌우 테두리 없음. 위아래 두꺼운 회색 라인만.
 
-## 인용 블록 (blockquote)
+## 인용 블록 (blockquote) — 2가지 디자인
+
+### 디자인 A: 점선 박스 (기본)
+
+일반 blockquote에 적용. 라벨 키워드 없는 `>` 인용문.
 
 ```typst
-above/below: 10pt                       // 본문과 간격 (권장 10~15mm)
-inset: (left/right: 14pt, top/bottom: 10pt)  // 내부 패딩
-stroke: (left: 3pt + rgb("#93b4e8"))    // 파란 좌측 바
-fill: rgb("#f5f8ff")                     // 연파란 배경
-text(size: 9pt, fill: rgb("#4b5563"))    // 작은 회색 텍스트
-leading: 0.9em                           // 인용 전용 행간
+stroke: (dash: "dashed", paint: rgb("#aaaaaa"), thickness: 1pt)
+radius: 0pt
+text(size: 9pt, fill: rgb("#333333"))
+leading: 0.9em
 ```
+
+### 디자인 B: 회색 박스 + 프라이머리 라벨 (callout)
+
+`> **참고**: 설명...` 패턴 감지 시 자동 적용. 지원 라벨: 참고, 팁, Note, 주의.
+
+```typst
+fill: rgb("#f5f5f5")                     // 연회색 배경
+radius: 4pt
+stroke: none
+라벨: text(9pt, bold, fill: rgb("#2563eb"))  // 프라이머리 색
+본문: text(9pt, fill: rgb("#333333"))
+```
+
+후처리(typst_builder.py)에서 `#quote(block: true)[#strong[참고]: ...]` → `#callout-box([참고], [...])` 변환.
 
 ## 표 스타일
 
-- 헤더 행: 파란 배경(#1e40af) + 흰 텍스트
-- 홀수 행: 연회색(#f8fafc)
+- 헤더 행: 연회색 배경(#e5e5e5) + 검정 볼드 텍스트
+- 홀수 행: 연회색(#fafafa)
 - 짝수 행: 흰색
 - 테두리: 하단만 연회색 0.5pt
 
@@ -135,4 +154,4 @@ text(24pt, weight: "bold")[목차]
 | 캡션-이미지 간격 | 2pt |
 | 캡션 형식 | "그림 N-M: 설명" |
 | auto-image 기본 max-width | 0.7 (70%) |
-| side-image 기본 img-width | 0.35 (35%) |
+| dual-image 간격 | 16pt (column-gutter) |

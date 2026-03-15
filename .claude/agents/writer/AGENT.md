@@ -1,7 +1,7 @@
 ---
 name: writer
 description: 작가 — C 시리즈 5개 + humanizer. 이야기 파트 + 기술 파트 작성
-skills: [C1, C2, C3, C4, C5, humanizer]
+skills: [writer-index]
 rules: [.claude/rules/style.md, .claude/rules/code.md, agents/writer/AGENT.md]
 steps: [1, 4, 5, 6, 7]
 ---

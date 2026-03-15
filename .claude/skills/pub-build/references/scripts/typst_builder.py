@@ -392,7 +392,35 @@ def fix_typst_content(text: str) -> str:
     # 6. 남은 수평선을 Typst 방식으로
     text = text.replace('#horizontalrule', '#v(4pt)\n#block(width: 100%, height: 0.5pt, fill: rgb("#e5e7eb"))\n#v(4pt)')
 
-    # 7. 표 열 균등화: Pandoc이 생성한 퍼센트 기반 열(38.71%, 32.26%, ...)을 1fr로 변환
+    # 7. 라벨이 있는 blockquote → callout-box 변환
+    #    > **참고**: 텍스트 → #callout-box([참고], [텍스트])
+    def _replace_labeled_quote(m):
+        label = m.group(1)
+        body = m.group(2).strip()
+        return f'#callout-box([{label}], [{body}])'
+
+    text = re.sub(
+        r'#quote\(block: true\)\[\s*\n?#strong\[(참고|팁|Note|주의)\]:?\s*(.*?)\s*\]',
+        _replace_labeled_quote, text, flags=re.DOTALL
+    )
+
+    # 8. 표 정리: Pandoc이 생성하는 table.hline(), align: (auto,...) 제거
+    #    + figure(align(center)[#table(...)]) → 그냥 #table(...)로 언래핑 (왼쪽 정렬)
+    text = re.sub(r'\s*table\.hline\(\),?\n?', '\n', text)
+    text = re.sub(r'\s*align:\s*\((?:auto,?\s*)+\),?\n', '\n', text)
+    # figure + align(center) 래핑 제거: 표를 왼쪽 정렬로
+    text = re.sub(
+        r'#figure\(\s*align\(center\)\[#table\(',
+        '#table(',
+        text
+    )
+    text = re.sub(
+        r'\)\]\s*,\s*kind:\s*table\s*\)',
+        ')',
+        text
+    )
+
+    # 9. 표 열 균등화: Pandoc이 생성한 퍼센트 기반 열(38.71%, 32.26%, ...)을 1fr로 변환
     #    짧은 열이 과도하게 넓고 긴 텍스트 열이 좁아지는 문제 해결
     def _equalize_table_columns(m):
         pct_list = m.group(1)

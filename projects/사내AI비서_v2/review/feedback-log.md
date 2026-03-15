@@ -1,3 +1,35 @@
+## 2026-03-15 STEP 5 — CH08 코드 구조 리팩터링 후 재검토
+
+### 검토 유형: 의도감시 + 감수
+### 배경
+step2_reranker.py, step3_hybrid_search.py를 step1_chunk_experiment/과 동일한 패키지 구조로 리팩터링 후, 챕터 내용과의 정합성 검증.
+
+### 자체 검증 (D4 포맷-검증기)
+- **파일 구조도 불일치**: 챕터의 파일 계층 구조가 단일 파일(step2_reranker.py)로 표기 → 패키지 구조로 수정 완료
+- **실행 명령 불일치**: `python tuning/step2_reranker.py` → `python -m tuning.step2_reranker` 수정 완료
+- **파일 참조 불일치**: `step2_reranker.py의 핵심` → `step2_reranker/reranker.py의 핵심` 수정 완료
+
+### 의도감시 검토
+- **판정**: PASS
+- **7항목 결과**: 의도 일치 ✅ / 범위 이탈 ✅ / 코드 성격 ✅ / 깊이 적절 ✅ / 비유 독립 ✅ / 핵심 유지 ✅ / 상수 준수 ✅ (구조 수정 후)
+
+### 감수 검토
+- **기술 감수자**: (1) step 1-5 Retriever 튜닝 캡처 이미지 플레이스홀더 부재 — 다른 실험은 모두 있음. (2) --max-queries 옵션(step2/step3) 챕터 미언급.
+- **독자 대변인**: Percentile 설명 구간(약 40줄) 집중력 분산 위험. 결과 표 정리는 독자 친화적.
+- **이야기 편집장**: 도입부 강점 유지. 기술 파트 전환 문장 추가 권장(낮음).
+
+### 종합 판정: CONDITIONAL_PASS
+- **수정 완료 사항**:
+  - [필수] 파일 구조도: 패키지 구조(step2_reranker/, step3_hybrid_search/) 반영 완료
+  - [필수] 실행 명령: `python -m tuning.step2_reranker`, `python -m tuning.step3_hybrid_search` 반영 완료
+  - [필수] 파일 참조: reranker.py, retrievers.py 경로 반영 완료
+- **미수정 권장 사항**:
+  - step 1-5 캡처 이미지 플레이스홀더 추가 (높음)
+  - --max-queries 옵션 안내 (중간)
+  - 기술 파트 전환 문장 (낮음)
+
+---
+
 ## 2026-03-05 STEP 7 — 서문 + 에필로그 + 부록
 
 ### 감수 검토

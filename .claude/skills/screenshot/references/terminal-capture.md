@@ -3,21 +3,96 @@
 ## 스크립트 위치
 
 ```
-.claude/skills/screenshot/scripts/terminal_screenshot.py  ← 핵심 엔진
+.claude/skills/screenshot/scripts/terminal_screenshot.py  ← 터미널 컬러 캡처
+.claude/skills/screenshot/scripts/book_capture.py          ← 서적용 캡처 (추천)
 .claude/skills/screenshot/scripts/capture.py               ← 배치 래퍼
 ```
 
-## One-Command PNG 생성
+---
 
-`--png` 옵션으로 HTML 생성 + Playwright 캡처를 한 번에 수행한다.
+## 방식 1: 서적용 캡처 (book_capture.py) — 추천
+
+Rich SVG export → Playwright PNG 파이프라인.
+흰 배경 + 검정 텍스트 + 볼드만 유지. 표 정렬 완벽, 오른쪽 여백 없음.
+
+### 원리
+
+1. 명령 실행 → ANSI 출력 획득 (`FORCE_COLOR=1`, `COLUMNS=200`)
+2. Rich `Text.from_ansi()` → `Console.export_svg()` (흰배경/검정 테마)
+3. SVG에 고정폭 한글 웹폰트(Nanum Gothic Coding) 주입
+4. `rich.cells.cell_len`으로 콘텐츠 너비를 정확히 계산 → 타이트한 SVG
+5. Playwright로 SVG element를 PNG로 캡처 (element screenshot → 여백 없음)
+
+### CLI 사용법
 
 ```bash
-python3 {SCRIPT} "{ACTUAL_COMMAND}" \
-  --png {OUTPUT_PNG} \
-  --display "{DISPLAY_COMMAND}" \
-  --cwd {WORKING_DIR} \
-  --title "{TITLE}" \
-  --timeout 120
+SCRIPT=".claude/skills/screenshot/scripts/book_capture.py"
+
+python3 "$SCRIPT" \
+    --cmd ".venv/bin/python -m tuning.step1_chunk_experiment --step 1-1" \
+    --cwd "projects/사내AI비서_v2/code/ex08" \
+    --output "projects/사내AI비서_v2/assets/CH08/08_chunk-size.png" \
+    --title "step 1-1: 청크 크기 실험"
+```
+
+### 파라미터
+
+| 파라미터 | 필수 | 설명 |
+|----------|------|------|
+| `--cmd` | Y | 실행할 셸 명령 (venv 경로 포함 가능) |
+| `--output` | Y | 출력 PNG 경로 |
+| `--cwd` | - | 명령 실행 디렉토리 (기본: 현재) |
+| `--title` | - | 타이틀바 제목 (기본: 빈 타이틀바) |
+| `--columns` | - | COLUMNS 환경변수 (기본: 200) |
+| `--max-lines` | - | 최대 줄 수 (기본: 무제한) |
+| `--title-filter` | - | 본문 내 제목 행 식별 키워드 (쉼표 구분) |
+| `--title-replace` | - | 본문 내 제목 행 교체 텍스트 |
+| `--title-pad` | - | 본문 내 제목 앞 공백 수 (기본: 28) |
+| `--font-wait` | - | 폰트 로딩 대기 ms (기본: 1000) |
+
+### 제목 장식선 정리
+
+Rich 실험 출력에 `═══ step 1-1: 청크 크기 실험 ═══` 같은 장식선이 있으면
+`--title-filter`와 `--title-replace`로 깔끔하게 교체한다.
+
+```bash
+python3 "$SCRIPT" \
+    --cmd ".venv/bin/python -m tuning.step1_chunk_experiment --step 1-1" \
+    --cwd "projects/사내AI비서_v2/code/ex08" \
+    --output "assets/CH08/08_chunk-size.png" \
+    --title-filter "step 1-1:,청크 크기 실험" \
+    --title-replace "step 1-1: 청크 크기 실험"
+```
+
+### Python 호출
+
+```python
+from book_capture import book_capture_png
+
+book_capture_png(
+    cmd=".venv/bin/python -m tuning.step1_chunk_experiment --step 1-1",
+    output="assets/CH08/08_chunk-size.png",
+    cwd="projects/사내AI비서_v2/code/ex08",
+    title="step 1-1: 청크 크기 실험",
+)
+```
+
+---
+
+## 방식 2: 터미널 컬러 캡처 (terminal_screenshot.py)
+
+macOS 스타일 프레임(점 3개) + ANSI 컬러 → HTML → Playwright PNG.
+컬러 출력이 필요한 일반 터미널 캡처용.
+
+```bash
+SCRIPT=".claude/skills/screenshot/scripts/terminal_screenshot.py"
+
+python3 "$SCRIPT" "{ACTUAL_COMMAND}" \
+    --png {OUTPUT_PNG} \
+    --display "{DISPLAY_COMMAND}" \
+    --cwd {WORKING_DIR} \
+    --title "{TITLE}" \
+    --timeout 120
 ```
 
 ### 파라미터
@@ -32,82 +107,16 @@ python3 {SCRIPT} "{ACTUAL_COMMAND}" \
 | `--timeout` | - | 타임아웃 초 (기본 60, 임베딩 등은 120 권장) |
 | `--output` | - | HTML도 보존하려면 경로 지정 |
 
-## 예시
+### Display Command 규칙
 
-```bash
-SCRIPT=".claude/skills/screenshot/scripts/terminal_screenshot.py"
-CH04="projects/사내AI비서_v2/code/CH04_벡터DB_구축"
-
-python3 "$SCRIPT" \
-  "$CH04/.venv/bin/python src/main.py" \
-  --png "projects/사내AI비서_v2/assets/CH04/04_main-pipeline.png" \
-  --display "python src/main.py" \
-  --cwd "$CH04" \
-  --title "전체 파이프라인 실행" \
-  --timeout 120
-```
-
-## Display Command 규칙
-
-`--display`에는 독자가 따라할 수 있는 깨끗한 명령어를 지정한다:
+`--display`에는 독자가 따라할 수 있는 깨끗한 명령어를 지정한다.
 
 | Bad (절대경로) | Good (--display) |
 |---|---|
 | `/Users/me/.venv/bin/python src/main.py` | `python src/main.py` |
 | `/opt/homebrew/bin/python3 src/cli_search.py --query '연차'` | `python src/cli_search.py --query '연차'` |
 
-## Rich 실험 결과 캡처 (rich_capture.py)
-
-Rich Console의 `export_svg()`로 실험 결과를 SVG → PNG로 변환한다. Rich 테이블, 컬러 텍스트, 터미널 크롬이 완벽히 렌더링된다.
-
-```
-.claude/skills/screenshot/scripts/rich_capture.py  ← Rich SVG 캡처
-```
-
-```bash
-# 기본 (다크 배경)
-python3 .claude/skills/screenshot/scripts/rich_capture.py \
-  --module tuning.step1_chunk_experiment \
-  --step 1-2 \
-  --cwd projects/사내AI비서_v2/code/ex08 \
-  --png projects/사내AI비서_v2/assets/CH08/08_overlap.png \
-  --title "실험 1-2: 오버랩 비율 비교" \
-  --timeout 120
-
-# 화이트 배경 (--light 플래그)
-python3 .claude/skills/screenshot/scripts/rich_capture.py \
-  --module tuning.step1_chunk_experiment \
-  --step 1-2 \
-  --cwd projects/사내AI비서_v2/code/ex08 \
-  --png projects/사내AI비서_v2/assets/CH08/08_overlap.png \
-  --title "실험 1-2: 오버랩 비율 비교" \
-  --light
-```
-
-### 파라미터
-
-| 파라미터 | 필수 | 설명 |
-|----------|------|------|
-| `--module` | Y | 실험 모듈 (예: `tuning.step1_chunk_experiment`) |
-| `--step` | Y | 실험 단계 (예: `1-1`, `1-2`, `1-3`) |
-| `--cwd` | Y | 작업 디렉토리 (venv 포함) |
-| `--png` | Y | 출력 PNG 파일 경로 |
-| `--title` | - | 터미널 창 타이틀바 제목 |
-| `--light` | - | 화이트 배경 라이트 테마 적용 |
-| `--output` | - | SVG도 보존하려면 경로 지정 |
-| `--percentile` | - | 실험별 추가 파라미터 |
-| `--k` | - | 실험별 추가 파라미터 |
-
-### 동작 원리
-
-1. `Console(record=True)` 로 Rich 출력을 캡처
-2. 실험 모듈의 `console` 객체를 recording console로 패치
-3. `console.export_svg(title=..., theme=...)` 로 SVG 생성
-4. Playwright로 `svg.rich-terminal` 요소를 PNG 캡처
-
-### 라이트 테마
-
-`--light` 플래그를 추가하면 Rich의 `TerminalTheme`을 화이트 배경으로 교체한다. 인쇄용 PDF나 밝은 배경이 필요한 경우 사용.
+---
 
 ## 배치 캡처 (capture.py)
 
@@ -120,19 +129,21 @@ python3 .claude/skills/screenshot/scripts/capture.py batch --config screenshots.
 `screenshots.json` 예시:
 ```json
 {
-  "cwd": "projects/사내AI비서_v2/code/CH04_벡터DB_구축",
-  "assets_dir": "projects/사내AI비서_v2/assets/CH04",
+  "cwd": "projects/사내AI비서_v2/code/ex08",
+  "assets_dir": "projects/사내AI비서_v2/assets/CH08",
   "venv": ".venv",
   "timeout": 120,
   "screenshots": [
     {
-      "cmd": "python src/main.py",
-      "filename": "04_main-pipeline.png",
-      "title": "전체 파이프라인 실행"
+      "cmd": "python -m tuning.step1_chunk_experiment --step 1-1",
+      "filename": "08_chunk-size.png",
+      "title": "실험 1-1: 청크 크기 비교"
     }
   ]
 }
 ```
+
+---
 
 ## 검증 체크리스트
 
@@ -153,11 +164,17 @@ pip install playwright && playwright install chromium
 ```
 
 ### 한글 깨짐
-- 인터넷 연결 필요 (Google Fonts Noto Sans KR 로드)
+- book_capture.py: Google Fonts Nanum Gothic Coding 로드 (인터넷 필요)
+- terminal_screenshot.py: Google Fonts Noto Sans KR 로드 (인터넷 필요)
 - 오프라인: macOS `Apple SD Gothic Neo` 폴백
 
 ### 이미지 잘림
-`--output`으로 HTML을 보존하고 브라우저에서 직접 확인한다.
+- terminal_screenshot: `--output`으로 HTML을 보존하고 브라우저에서 직접 확인
+- book_capture: SVG가 element screenshot으로 잘리므로 잘림 문제 없음
 
 ### 타임아웃
 임베딩 모델 로드가 포함된 명령어는 `--timeout 120` 이상을 사용한다.
+
+### 오른쪽 여백 (trailing 공백)
+book_capture.py는 자동으로 trailing 공백을 제거하고 `cell_len`으로 타이트하게 맞춘다.
+terminal_screenshot.py 사용 시 여백이 발생하면 book_capture.py로 전환한다.

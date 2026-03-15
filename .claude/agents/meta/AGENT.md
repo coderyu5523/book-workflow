@@ -19,17 +19,27 @@ steps: [1, 2, 3, 4, 5, 6, 7]
 
 없음. progress.json 관리 + 디스패치만.
 
+## 에이전트 매핑
+
+| 한글 역할명 | subagent_type | 스킬 인덱스 |
+|------------|---------------|------------|
+| 설계분석관 | `analyst-architect` | `@analyst-architect` |
+| 작가 | `writer` | `@writer` |
+| 편집장 | `editor` | `@editor` |
+| 일러스트레이터 | `illustrator` | `@illustrator` |
+| 인쇄소 | `publisher` | `@publisher` |
+
 ## 디스패치 테이블
 
 | 명령어 | STEP | 디스패치 순서 |
 |--------|------|-------------|
-| 씨앗 심기 | 1 | 분석관(A1,A3) → 작가(C2) → 편집장(인사이트+감수) |
-| 코드 분석 | 2 | 분석관(A1~A4 + Context7 최신화 검증) → 편집장(인사이트+감수) |
-| 시나리오 설계 | 3 | 분석관(A5) → 설계사(B1,B2) → 일러스트레이터(다이어그램) → 편집장(인사이트+감수) |
-| 뼈대 세우기 | 4 | 설계사(B3~B6 + Context7 공식문서 갭분석) → 일러스트레이터(B4렌더링, B5시각화) → 작가(C4) → 편집장(D6+인사이트+감수) |
-| 챕터 작성 N | 5 | 작가(C1~C5+humanizer) → 일러스트레이터(다이어그램+캡처) → 편집장(D1~D5+3개 검토) → FAIL 시 Why Agent |
-| 프롤로그 생성 | 6 | 작가(C2, 일기체 스타일) → 편집장(감수) |
-| 마무리 | 7 | 작가(C2,C4) → 편집장(D6+감수) → 인쇄소(최종 빌드) |
+| 씨앗 심기 | 1 | `analyst-architect`(A1,A3) → `writer`(C2) → `editor`(인사이트+감수) |
+| 코드 분석 | 2 | `analyst-architect`(A1~A4 + Context7 최신화 검증) → `editor`(인사이트+감수) |
+| 시나리오 설계 | 3 | `analyst-architect`(A5,B1,B2) → `illustrator`(다이어그램) → `editor`(인사이트+감수) |
+| 뼈대 세우기 | 4 | `analyst-architect`(B3~B6 + Context7 공식문서 갭분석) → `illustrator`(B4렌더링, B5시각화) → `writer`(C4) → `editor`(D6+인사이트+감수) |
+| 챕터 작성 N | 5 | `writer`(C1~C5+humanizer) → `illustrator`(다이어그램+캡처) → `editor`(D1~D5+3개 검토) → FAIL 시 why-분석기 스킬 |
+| 프롤로그 생성 | 6 | `writer`(C2, 일기체 스타일) → `editor`(감수) |
+| 마무리 | 7 | `writer`(C2,C4) → `editor`(D6+감수) → `publisher`(최종 빌드) |
 
 ## 운영 절차
 
@@ -43,8 +53,8 @@ steps: [1, 2, 3, 4, 5, 6, 7]
 
 | 경로 변경 | 감시 에이전트 | 동작 |
 |----------|------------|------|
-| `chapters/*.md` | 작가 + 편집장 | 작가: 톤/비유/구조 자체 점검. 편집장: 의도감시(D5) |
-| `code/` | 작가 + 편집장 | 작가: 기술 파트 코드 일치 확인. 편집장: 코드-챕터 불일치 감지 |
-| `book/front/*.md` | 작가 + 편집장 | 작가: 프롤로그 톤 점검. 편집장: 구조 일관성 |
-| `book/body/*.md` | 작가 + 인쇄소 | 작가: 본문 품질 점검. 인쇄소: PDF 리빌드 필요 감지 |
-| `book/back/*.md` | 작가 + 편집장 | 작가: 에필로그/부록 톤 점검. 편집장: 구조 일관성 |
+| `chapters/*.md` | `writer` + `editor` | writer: 톤/비유/구조 자체 점검. editor: 의도감시(D5) |
+| `code/` | `writer` + `editor` | writer: 기술 파트 코드 일치 확인. editor: 코드-챕터 불일치 감지 |
+| `book/front/*.md` | `writer` + `editor` | writer: 프롤로그 톤 점검. editor: 구조 일관성 |
+| `book/body/*.md` | `writer` + `publisher` | writer: 본문 품질 점검. publisher: PDF 리빌드 필요 감지 |
+| `book/back/*.md` | `writer` + `editor` | writer: 에필로그/부록 톤 점검. editor: 구조 일관성 |

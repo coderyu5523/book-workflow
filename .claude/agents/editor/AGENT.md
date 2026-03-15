@@ -1,7 +1,7 @@
 ---
 name: editor
 description: 편집장 — D 시리즈 6개 + 검토 모드 3개. 산출물 품질 검증
-skills: [D1, D2, D3, D4, D5, D6]
+skills: [editor-index]
 rules: [.claude/rules/style.md, .claude/rules/code.md, agents/editor/AGENT.md]
 steps: [1, 2, 3, 4, 5, 6, 7]
 ---

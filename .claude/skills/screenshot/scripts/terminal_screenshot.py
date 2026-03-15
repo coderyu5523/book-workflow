@@ -17,7 +17,6 @@ terminal_screenshot.py — 명령어 실행 결과를 터미널 스타일 PNG �
 """
 
 import argparse
-import re
 import subprocess
 import sys
 import os
@@ -30,7 +29,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&family=Noto+Sans+KR:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500&display=swap');
 
   html, body {{
     margin: 0;
@@ -47,9 +46,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                  'Menlo', 'Monaco', 'Courier New', monospace;
   }}
   .terminal {{
-    width: fit-content;
-    min-width: 600px;
-    max-width: 1200px;
+    width: 1400px;
     margin: 0 auto;
     border-radius: 10px;
     overflow: hidden;
@@ -100,9 +97,10 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     color: #222222;
     font-size: 13px;
     line-height: 1.7;
-    white-space: pre;
-    font-family: 'Nanum Gothic Coding', 'D2Coding', 'Menlo', 'Monaco',
-                 'Courier New', monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic',
+                 'Menlo', 'Monaco', 'Courier New', monospace;
   }}
   .output .err {{ color: #cc0000; font-weight: 500; }}
   .output .ok  {{ color: #2a9d2a; font-weight: 500; }}
@@ -110,12 +108,6 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="terminal">
-  <div class="titlebar">
-    <div class="dot red"></div>
-    <div class="dot yellow"></div>
-    <div class="dot green"></div>
-    <div class="title">{title}</div>
-  </div>
   <div class="body">
     <div class="prompt">{command}</div>
     <div class="output">{output}</div>
@@ -134,56 +126,8 @@ def escape_html(text: str) -> str:
             .replace('"', "&quot;"))
 
 
-ANSI_COLOR_MAP = {
-    '30': '#000', '31': '#cc0000', '32': '#2a9d2a', '33': '#aa8800',
-    '34': '#0066cc', '35': '#aa00aa', '36': '#008888', '37': '#aaa',
-    '90': '#555', '91': '#ff5555', '92': '#55ff55', '93': '#ffff55',
-    '94': '#5555ff', '95': '#ff55ff', '96': '#55ffff', '97': '#fff',
-}
-
-_ANSI_RE = re.compile(r'\x1b\[([0-9;]*)m')
-
-
-def ansi_to_html(text: str) -> str:
-    """ANSI 이스케이프 시퀀스를 HTML span 태그로 변환"""
-    result = []
-    open_spans = 0
-    last_end = 0
-
-    for match in _ANSI_RE.finditer(text):
-        result.append(escape_html(text[last_end:match.start()]))
-        codes = match.group(1).split(';') if match.group(1) else ['0']
-
-        if codes == ['0'] or codes == ['']:
-            result.append('</span>' * open_spans)
-            open_spans = 0
-        else:
-            styles = []
-            for code in codes:
-                if code == '1':
-                    styles.append('font-weight:bold')
-                elif code == '2':
-                    styles.append('opacity:0.7')
-                elif code == '3':
-                    styles.append('font-style:italic')
-                elif code in ANSI_COLOR_MAP:
-                    styles.append(f'color:{ANSI_COLOR_MAP[code]}')
-            if styles:
-                result.append(f'<span style="{";".join(styles)}">')
-                open_spans += 1
-
-        last_end = match.end()
-
-    result.append(escape_html(text[last_end:]))
-    result.append('</span>' * open_spans)
-    return ''.join(result)
-
-
 def colorize_output(text: str) -> str:
-    """ANSI 코드가 있으면 HTML로 변환, 없으면 키워드 기반 색상 적용"""
-    if '\x1b[' in text:
-        return ansi_to_html(text)
-
+    """에러/성공 키워드에 색상 클래스 적용"""
     lines = []
     for line in text.split("\n"):
         lower = line.lower()
@@ -198,9 +142,8 @@ def colorize_output(text: str) -> str:
 
 def run_and_capture(command: str, cwd: str = None, timeout: int = 60) -> tuple[str, int]:
     env = os.environ.copy()
+    env["COLUMNS"] = "130"
     env["FORCE_COLOR"] = "1"
-    env["COLUMNS"] = "100"
-    env["TERM"] = "xterm-256color"
     try:
         result = subprocess.run(
             command,
@@ -236,11 +179,9 @@ def capture_png(html_path: str, png_path: str) -> bool:
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page = browser.new_page(viewport={"width": 1500, "height": 800})
         page.goto(f"file://{os.path.abspath(html_path)}")
         page.wait_for_load_state("networkidle")
-        # 웹폰트 로딩 완료 대기
-        page.wait_for_function("document.fonts.ready.then(() => true)", timeout=10000)
         # .terminal 요소만 캡처 → 여백 없이 딱 맞게
         terminal = page.locator(".terminal")
         terminal.screenshot(path=str(png_out))

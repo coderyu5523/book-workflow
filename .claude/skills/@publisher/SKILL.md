@@ -1,6 +1,6 @@
 ---
 name: publisher-index
-description: 인쇄소 스킬 인덱스 — pub 계열 6개 + pdf-ty 포인터
+description: 인쇄소(subagent_type: publisher) 스킬 인덱스 — pub 계열 6개 + pdf-ty 포인터
 ---
 
 # 인쇄소 스킬 인덱스

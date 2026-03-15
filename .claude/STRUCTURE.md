@@ -10,16 +10,12 @@
 
 ```
 .claude/agents/
-├── meta/AGENT.md           — 오케스트레이터. 디스패치 테이블
-├── analyst/AGENT.md        — 분석관. A 시리즈 스킬 + 규칙
-├── architect/AGENT.md      — 설계사. B 시리즈 스킬 + 규칙
-├── writer/AGENT.md         — 작가. C 시리즈 + humanizer + 규칙
+├── meta/AGENT.md              — 오케스트레이터. 디스패치 테이블
+├── analyst-architect/AGENT.md — 설계분석관. A+B 시리즈 스킬 + 규칙
+├── writer/AGENT.md            — 작가. C 시리즈 + humanizer + 규칙
 ├── editor/AGENT.md         — 편집장. D 시리즈 + 검토 체크리스트 + 규칙
 ├── illustrator/AGENT.md    — 일러스트레이터. visual + screenshot + 규칙
-├── publisher/AGENT.md      — 인쇄소. pub 계열 PDF 빌드 + 규칙
-└── why/
-    ├── AGENT.md            — Why Agent. 규칙 업데이트
-    └── why-log.md          — 변경 이력 (포인터 대상)
+└── publisher/AGENT.md      — 인쇄소. pub 계열 PDF 빌드 + 규칙
 ```
 
 ### 글로벌 규칙 (자동 로드)
@@ -35,8 +31,7 @@
 
 ```
 .claude/skills/
-├── @analyst/SKILL.md        — 포인터 인덱스 (이름 + 경로만)
-├── @architect/SKILL.md      — 포인터 인덱스
+├── @analyst-architect/SKILL.md — 포인터 인덱스 (A+B 시리즈)
 ├── @editor/SKILL.md         — 포인터 인덱스
 ├── @illustrator/SKILL.md    — 포인터 인덱스
 ├── @publisher/SKILL.md      — 포인터 인덱스
@@ -56,6 +51,7 @@
 ├── review/                  — 실제 스킬 (SKILL.md + references/)
 ├── screenshot/              — 실제 스킬 (SKILL.md + references/)
 ├── visual/                  — 실제 스킬 (SKILL.md + references/)
+├── why/                     — 실제 스킬 (SKILL.md + references/) — 실패 분석, 메타코딩 직접 호출
 └── writing/                 — 실제 스킬 (SKILL.md + references/)
 ```
 
@@ -87,5 +83,5 @@ projects/{책이름}/
 ├── questions/pending|done/ — 인사이트 질문 장바구니
 └── review/
     ├── feedback-log.md     — 편집장 피드백
-    └── why-log.md          — Why Agent 변경 이력
+    └── why-log.md          — why-분석기 스킬 변경 이력
 ```

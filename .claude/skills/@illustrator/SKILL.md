@@ -1,6 +1,6 @@
 ---
 name: illustrator-index
-description: 일러스트레이터 스킬 인덱스 — 다이어그램 + 캡처 + 시각화 포인터
+description: 일러스트레이터(subagent_type: illustrator) 스킬 인덱스 — 다이어그램 + 캡처 + 시각화 포인터
 ---
 
 # 일러스트레이터 스킬 인덱스

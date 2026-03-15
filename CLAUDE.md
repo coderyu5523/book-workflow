@@ -13,19 +13,20 @@
 
 ```
 메타코딩 (오케스트레이터) — STEP 디스패치 + progress.json 관리
-├── 분석관 (Analyst)         ← A 시리즈 5개
-├── 설계사 (Architect)       ← B 시리즈 6개
-├── 작가 (Writer)            ← C 시리즈 5개 + humanizer
-├── 편집장 (Editor)          ← D 시리즈 6개 + 검토 모드 3개
-├── 일러스트레이터 (Illustrator) ← visual + screenshot + diagram
-├── 인쇄소 (Publisher)       ← pub 계열 6개 + pdf-ty
-└── Why Agent               ← 실패 분석 → "하지 마라" 규칙 추가
+├── 설계분석관 (Analyst-Architect) ← A 시리즈 5개 + B 시리즈 6개
+├── 작가 (Writer)                 ← C 시리즈 5개 + humanizer
+├── 편집장 (Editor)               ← D 시리즈 6개 + 검토 모드 3개
+├── 일러스트레이터 (Illustrator)    ← visual + screenshot + diagram
+└── 인쇄소 (Publisher)            ← pub 계열 6개 + pdf-ty
+
+메타코딩 직접 호출 스킬:
+└── why-분석기                    ← 실패 분석 → "하지 마라" 규칙 추가
 ```
 
 | 개념 | 정체 | 역할 |
 |------|------|------|
 | **STEP** | 흐름 | 1~7번까지 순서대로 진행하는 워크플로우 단계 |
-| **에이전트** | 전문가 | 역할별 규칙과 스킬을 가진 서브 에이전트 (8개, `.claude/agents/`) |
+| **에이전트** | 전문가 | 역할별 규칙과 스킬을 가진 서브 에이전트 (6개, `.claude/agents/`) |
 | **스킬** | 도구 | 하나의 작업만 수행하고 결과를 돌려주는 원자적 도구 (`.claude/skills/`) |
 | **검토 모드** | 체크리스트 | 산출물 품질을 검증하는 관점과 질문 목록 (3개, 편집장 소유) |
 
@@ -63,11 +64,11 @@ Phase 5 ── 완성
 | 명령어 | STEP | 디스패치 순서 | 산출물 |
 |--------|------|-------------|--------|
 | `새 책 만들기` | — | 메타코딩 단독 | 프로젝트 디렉토리 |
-| `씨앗 심기` | 1 | 분석관 → 작가 → 편집장 | `planning/seed.md` |
-| `코드 분석` | 2 | 분석관(+Context7) → 편집장 | `planning/code-analysis.md` |
-| `시나리오 설계` | 3 | 분석관 → 설계사 → 일러스트레이터 → 편집장 | `planning/scenario.md` + `versions/` |
-| `뼈대 세우기` | 4 | 설계사(+Context7) → 일러스트레이터 → 작가 → 편집장 | `planning/outline.md` |
-| `챕터 작성 [N]` | 5 | 작가 → 일러스트레이터 → 편집장 → FAIL 시 Why Agent | `chapters/NN-제목.md` |
+| `씨앗 심기` | 1 | 설계분석관 → 작가 → 편집장 | `planning/seed.md` |
+| `코드 분석` | 2 | 설계분석관(+Context7) → 편집장 | `planning/code-analysis.md` |
+| `시나리오 설계` | 3 | 설계분석관 → 일러스트레이터 → 편집장 | `planning/scenario.md` + `versions/` |
+| `뼈대 세우기` | 4 | 설계분석관(+Context7) → 일러스트레이터 → 작가 → 편집장 | `planning/outline.md` |
+| `챕터 작성 [N]` | 5 | 작가 → 일러스트레이터 → 편집장 → FAIL 시 why-분석기 스킬 | `chapters/NN-제목.md` |
 | `검토 [챕터]` | — | 편집장 단독 | `review/feedback-log.md` |
 | `프롤로그 생성` | 6 | 작가 → 편집장 | `book/front/prologue.md` |
 | `마무리` | 7 | 작가 → 편집장 → 인쇄소 | `book/back/` |
