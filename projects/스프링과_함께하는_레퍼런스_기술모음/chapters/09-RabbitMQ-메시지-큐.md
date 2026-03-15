@@ -73,13 +73,19 @@ rabbitmq-consumer/
 
 ## 기술 파트
 
+<img src="../assets/CH09/diagram/09_exercise-flow.png" width="720" alt="RabbitMQ 실습 흐름">
+
+*그림 9-1: 이번 챕터의 실습 흐름*
+
 ### 9.1 시나리오와 전체 구조
 
 전체 흐름을 정리합니다.
 
 GitHub에 README가 수정되면 Producer가 주기적으로 폴링하여 변경을 감지합니다. 변경이 감지되면 Producer는 메시지를 RabbitMQ의 Exchange에 발행합니다. Exchange는 Routing Key를 보고 해당 Queue에 메시지를 넣습니다. Consumer는 Queue를 구독하고 있다가 메시지가 도착하면 로컬 파일에 반영합니다.
 
-<!-- [GEMINI PROMPT] 전체 흐름도: GitHub(README 수정) → Producer(폴링+감지) → Exchange(github.events) → Queue(repo-updates) → Consumer(파일 반영). 왼쪽에서 오른쪽으로 화살표 4개. RabbitMQ 영역을 점선 박스로 감싸서 Exchange와 Queue를 포함. 깔끔한 다이어그램 스타일 -->
+<img src="../assets/CH09/gemini/09_rabbitmq-flow.png" width="720" alt="GitHub에서 Consumer까지의 RabbitMQ 전체 흐름도">
+
+*그림 9-1: 전체 흐름 — GitHub 변경이 Producer를 거쳐 RabbitMQ를 통해 Consumer에 전달된다*
 
 핵심 개념 세 가지를 짚고 넘어갑니다.
 
@@ -112,19 +118,19 @@ docker-compose up -d
 
 브라우저에서 `http://localhost:15672` 에 접속합니다. 기본 계정은 `guest / guest` 입니다.
 
-<img src="../assets/CH09/03_rabbitmq-login.png" width="720" alt="RabbitMQ 로그인 화면">
+<img src="../assets/CH09/terminal/03_rabbitmq-login.png" width="720" alt="RabbitMQ 로그인 화면">
 
 *그림 9-1: RabbitMQ 관리 콘솔 로그인 화면*
 
 로그인하면 관리 콘솔 메인 화면이 나옵니다.
 
-<img src="../assets/CH09/01_rabbitmq-management-ui.png" width="720" alt="RabbitMQ 관리 콘솔 메인">
+<img src="../assets/CH09/terminal/01_rabbitmq-management-ui.png" width="720" alt="RabbitMQ 관리 콘솔 메인">
 
 *그림 9-2: RabbitMQ 관리 콘솔 -- 연결, 채널, Exchange, Queue 상태를 한눈에 볼 수 있다*
 
 GitHub에 테스트용 레포를 하나 만들어 둡니다. 레포 이름은 `config-readme` 로 하고 README.md 파일을 생성합니다.
 
-<img src="../assets/CH09/02_github-config-readme-repo.png" width="720" alt="config-readme 레포 생성">
+<img src="../assets/CH09/terminal/02_github-config-readme-repo.png" width="720" alt="config-readme 레포 생성">
 
 *그림 9-3: GitHub에 config-readme 레포 생성 -- 이 레포의 README 변경을 감지할 것이다*
 
@@ -228,19 +234,19 @@ public class RabbitDTO {
 
 Producer를 실행합니다.
 
-<img src="../assets/CH09/06_producer-bootrun.png" width="720" alt="Producer 서버 실행">
+<img src="../assets/CH09/terminal/06_producer-bootrun.png" width="720" alt="Producer 서버 실행">
 
 *그림 9-4: Producer 서버 실행 -- 60초마다 GitHub을 폴링한다*
 
 GitHub에서 README를 수정하고 커밋합니다.
 
-<img src="../assets/CH09/07_github-readme-edit.png" width="720" alt="GitHub README 수정">
+<img src="../assets/CH09/terminal/07_github-readme-edit.png" width="720" alt="GitHub README 수정">
 
 *그림 9-5: GitHub에서 README 수정*
 
 Producer 로그에서 변경 감지를 확인합니다.
 
-<img src="../assets/CH09/08_producer-detect-log.png" width="720" alt="Producer 변경 감지 로그">
+<img src="../assets/CH09/terminal/08_producer-detect-log.png" width="720" alt="Producer 변경 감지 로그">
 
 *그림 9-6: Producer가 SHA 변경을 감지하고 메시지를 발행한 로그*
 
@@ -305,67 +311,67 @@ Consumer는 Queue 이름만 알면 됩니다. Exchange나 Routing Key는 Produce
 
 세 서버를 모두 실행합니다. Docker(RabbitMQ), Producer, Consumer 순서입니다.
 
-<img src="../assets/CH09/13_all-servers-running.png" width="720" alt="전체 서버 실행 상태">
+<img src="../assets/CH09/terminal/13_all-servers-running.png" width="720" alt="전체 서버 실행 상태">
 
 *그림 9-7: Docker, Producer, Consumer 세 서버가 모두 실행 중이다*
 
 RabbitMQ 관리 콘솔에서 Exchange 탭을 확인합니다.
 
-<img src="../assets/CH09/04_exchanges-tab.png" width="720" alt="Exchanges 탭 상태">
+<img src="../assets/CH09/terminal/04_exchanges-tab.png" width="720" alt="Exchanges 탭 상태">
 
 *그림 9-8: Exchanges 탭 -- Producer가 등록한 github.events Exchange가 보인다*
 
 Exchange 상세에서 Binding 정보를 확인합니다.
 
-<img src="../assets/CH09/09_exchange-detail.png" width="720" alt="Exchange 상세">
+<img src="../assets/CH09/terminal/09_exchange-detail.png" width="720" alt="Exchange 상세">
 
 *그림 9-9: Exchange 상세 -- repo-updates Queue에 readme.changed Routing Key로 바인딩되어 있다*
 
 Queue 상세에서 메시지 수와 상태를 확인합니다.
 
-<img src="../assets/CH09/10_queue-detail.png" width="720" alt="Queue 상세">
+<img src="../assets/CH09/terminal/10_queue-detail.png" width="720" alt="Queue 상세">
 
 *그림 9-10: Queue 상세 -- repo-updates Queue의 메시지 수와 소비 상태가 보인다*
 
 Binding 정보도 확인합니다. Exchange에서 Queue로의 연결 규칙입니다.
 
-<img src="../assets/CH09/11_binding-detail.png" width="720" alt="Binding 상세">
+<img src="../assets/CH09/terminal/11_binding-detail.png" width="720" alt="Binding 상세">
 
 *그림 9-11: Binding 확인 -- readme.changed Routing Key로 바인딩되어 있다*
 
 이제 GitHub에서 README를 수정하고 커밋합니다.
 
-<img src="../assets/CH09/14_github-readme-commit.png" width="720" alt="GitHub README 커밋">
+<img src="../assets/CH09/terminal/14_github-readme-commit.png" width="720" alt="GitHub README 커밋">
 
 *그림 9-12: GitHub에서 README를 수정하고 커밋한다*
 
 Producer가 변경을 감지합니다.
 
-<img src="../assets/CH09/15_producer-polling-log.png" width="720" alt="Producer 폴링 감지 로그">
+<img src="../assets/CH09/terminal/15_producer-polling-log.png" width="720" alt="Producer 폴링 감지 로그">
 
 *그림 9-13: Producer가 SHA 변경을 감지하고 메시지를 발행한다*
 
 Consumer가 메시지를 수신합니다.
 
-<img src="../assets/CH09/16_consumer-receive-log.png" width="720" alt="Consumer 메시지 수신 로그">
+<img src="../assets/CH09/terminal/16_consumer-receive-log.png" width="720" alt="Consumer 메시지 수신 로그">
 
 *그림 9-14: Consumer가 메시지를 수신하고 파일 반영을 시작한다*
 
 로컬 README 파일이 자동으로 업데이트됩니다.
 
-<img src="../assets/CH09/17_consumer-readme-updated.png" width="720" alt="Consumer README 자동 업데이트">
+<img src="../assets/CH09/terminal/17_consumer-readme-updated.png" width="720" alt="Consumer README 자동 업데이트">
 
 *그림 9-15: 로컬 README 파일이 GitHub의 내용으로 자동 업데이트되었다*
 
 백업 파일도 생성되었는지 확인합니다.
 
-<img src="../assets/CH09/18_backup-file-confirm.png" width="720" alt="백업 파일 확인">
+<img src="../assets/CH09/terminal/18_backup-file-confirm.png" width="720" alt="백업 파일 확인">
 
 *그림 9-16: 이전 내용이 백업 파일로 저장되어 있다*
 
 관리 콘솔에서 Queue에 들어온 메시지 내용을 직접 확인할 수도 있습니다. Queue 상세 화면에서 Get Messages를 클릭합니다.
 
-<img src="../assets/CH09/12_get-messages-payload.png" width="720" alt="Queue 메시지 payload 확인">
+<img src="../assets/CH09/terminal/12_get-messages-payload.png" width="720" alt="Queue 메시지 payload 확인">
 
 *그림 9-17: Queue 메시지 payload -- repo, sha, content, timestamp가 JSON으로 들어 있다*
 

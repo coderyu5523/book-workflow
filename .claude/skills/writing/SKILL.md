@@ -2,7 +2,7 @@
 name: writing
 model: claude-sonnet-4-6
 description: 스토리텔링 기반 기술 서적 집필. STEP 5(챕터 집필), STEP 6(프롤로그), STEP 7(마무리)에서 로드. C 시리즈(콘텐츠 생성) + 톤 검증 담당.
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # 집필 스킬

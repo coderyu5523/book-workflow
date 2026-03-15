@@ -1,7 +1,7 @@
 ---
 name: pub-page-fit
 description: "레이아웃 분석 결과를 기반으로 고아줄, 빈 공간, 이미지 밀림 등을 해결하는 전략"
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # page-fit — 페이지 밀도 조정

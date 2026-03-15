@@ -23,7 +23,7 @@ VISION_MODEL = os.getenv("VISION_MODEL", "qwen2.5vl:7b")
 VISION_PROVIDER = os.getenv("VISION_PROVIDER", "ollama")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_VISION_MODEL = os.getenv("OPENAI_VISION_MODEL", "gpt-4o-mini")
-VISION_TIMEOUT = int(os.getenv("VISION_TIMEOUT", "120"))
+VISION_TIMEOUT = int(os.getenv("VISION_TIMEOUT", "600"))
 
 
 # ---------------------------------------------------------------------------

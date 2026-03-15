@@ -73,31 +73,19 @@ spring-presign-url-start → end/
     └── resize_function.py      [설명] Lambda 리사이즈 코드 (Python)
 ```
 
+<img src="../assets/CH05/diagram/05_exercise-flow.png" width="720" alt="Presigned URL 실습 흐름">
+
+*그림 5-1: 이번 챕터의 실습 흐름*
+
 ### 5.1 아키텍처 구조
 
 전체 흐름은 5단계입니다.
 
-<!-- [GEMINI PROMPT] 시퀀스 다이어그램 (화살표 3개)
-참여자: Client, Spring, S3
-1. Client → Spring: "Presigned URL 발급 요청"
-2. Spring → Client: "Presigned URL 응답"
-3. Client → S3: "Presigned URL로 이미지 직접 업로드"
-배경: 흰색, 폰트: 맑은고딕, 화살표 색: #333
-캡션: "그림 5-1a: 업로드 단계 -- 서버는 URL만 발급하고 파일은 클라이언트가 S3에 직접 올린다" -->
-
-<img src="../assets/CH05/placeholder_5-1a_upload-flow.png" width="720" alt="Client가 Spring에 Presigned URL을 요청하고 받은 URL로 S3에 직접 업로드하는 흐름">
+<img src="../assets/CH05/gemini/05_upload-flow.png" width="720" alt="Client가 Spring에 Presigned URL을 요청하고 받은 URL로 S3에 직접 업로드하는 흐름">
 
 *그림 5-1a: 업로드 단계 -- 서버는 URL만 발급하고 파일은 클라이언트가 S3에 직접 올린다*
 
-<!-- [GEMINI PROMPT] 시퀀스 다이어그램 (화살표 3개)
-참여자: S3, Lambda, Spring
-1. S3 → Lambda: "ObjectCreated 이벤트 발생"
-2. Lambda → S3: "리사이즈 이미지 저장"
-3. Client → Spring: "/complete 호출 → DB 메타 저장"
-배경: 흰색, 폰트: 맑은고딕, 화살표 색: #333
-캡션: "그림 5-1b: 후처리 단계 -- Lambda가 자동으로 리사이즈하고 Spring은 결과만 기록한다" -->
-
-<img src="../assets/CH05/placeholder_5-1b_resize-flow.png" width="720" alt="S3에 이미지가 올라오면 Lambda가 리사이즈하고 Client가 Spring에 완료를 알리는 흐름">
+<img src="../assets/CH05/gemini/05_resize-flow.png" width="720" alt="S3에 이미지가 올라오면 Lambda가 리사이즈하고 Client가 Spring에 완료를 알리는 흐름">
 
 *그림 5-1b: 후처리 단계 -- Lambda가 자동으로 리사이즈하고 Spring은 결과만 기록한다*
 
@@ -156,7 +144,7 @@ cloud.aws.credentials.secret-key=${AWS_SECRET_KEY}
 
 환경 변수로 관리하면 코드에 키가 노출되지 않습니다. `.env` 파일이나 IDE 환경 변수에 실제 값을 넣습니다. AWS 계정 설정이 처음이라면 5.6절을 먼저 진행합니다.
 
-<img src="../assets/CH05/07_env-file.png" width="720" alt="환경 변수 설정 파일">
+<img src="../assets/CH05/terminal/07_env-file.png" width="720" alt="환경 변수 설정 파일">
 
 *그림 5-2: 환경 변수 설정 -- AWS 키를 환경 변수로 관리하면 코드에 노출되지 않는다*
 
@@ -192,11 +180,11 @@ public ImageResponse.PresignedDTO generatePresignedUrl(
 
 Postman으로 테스트해 보겠습니다.
 
-<img src="../assets/CH05/08_postman-presign-request.png" width="720" alt="Postman에서 presigned URL 발급을 요청하는 화면">
+<img src="../assets/CH05/terminal/08_postman-presign-request.png" width="720" alt="Postman에서 presigned URL 발급을 요청하는 화면">
 
 *그림 5-3: Presigned URL 요청 -- fileName과 contentType을 JSON으로 보낸다*
 
-<img src="../assets/CH05/09_postman-presign-response.png" width="720" alt="Postman에서 presigned URL 응답을 확인하는 화면">
+<img src="../assets/CH05/terminal/09_postman-presign-response.png" width="720" alt="Postman에서 presigned URL 응답을 확인하는 화면">
 
 *그림 5-4: Presigned URL 응답 -- presignedUrl과 key가 반환된다*
 
@@ -204,23 +192,23 @@ Postman으로 테스트해 보겠습니다.
 
 발급받은 Presigned URL로 S3에 직접 이미지를 업로드합니다. Postman에서 PUT 요청을 보냅니다.
 
-<img src="../assets/CH05/10_postman-s3-put-header.png" width="720" alt="Postman에서 S3 PUT 요청 헤더를 설정하는 화면">
+<img src="../assets/CH05/terminal/10_postman-s3-put-header.png" width="720" alt="Postman에서 S3 PUT 요청 헤더를 설정하는 화면">
 
 *그림 5-5: S3 PUT 헤더 -- Content-Type을 presigned 요청과 동일하게 맞춘다*
 
-<img src="../assets/CH05/11_postman-s3-put-binary.png" width="720" alt="Postman에서 S3에 바이너리 파일을 첨부하는 화면">
+<img src="../assets/CH05/terminal/11_postman-s3-put-binary.png" width="720" alt="Postman에서 S3에 바이너리 파일을 첨부하는 화면">
 
 *그림 5-6: S3 PUT Body -- Binary 탭에서 이미지 파일을 직접 선택한다*
 
-<img src="../assets/CH05/12_postman-s3-put-response.png" width="720" alt="Postman에서 S3 PUT 응답 200을 확인하는 화면">
+<img src="../assets/CH05/terminal/12_postman-s3-put-response.png" width="720" alt="Postman에서 S3 PUT 응답 200을 확인하는 화면">
 
 *그림 5-7: S3 업로드 성공 -- 200 OK가 반환되면 S3에 파일이 올라간 것이다*
 
-<img src="../assets/CH05/13_s3-original-confirm.png" width="720" alt="AWS 콘솔에서 S3 original 폴더에 파일이 올라간 것을 확인하는 화면">
+<img src="../assets/CH05/terminal/13_s3-original-confirm.png" width="720" alt="AWS 콘솔에서 S3 original 폴더에 파일이 올라간 것을 확인하는 화면">
 
 *그림 5-8: S3 확인 -- original 폴더에 업로드한 이미지가 저장되어 있다*
 
-<img src="../assets/CH05/14_s3-original-image.png" width="720" alt="S3에 저장된 원본 이미지를 미리보기하는 화면">
+<img src="../assets/CH05/terminal/14_s3-original-image.png" width="720" alt="S3에 저장된 원본 이미지를 미리보기하는 화면">
 
 *그림 5-9: 원본 이미지 확인 -- S3에 저장된 이미지를 미리보기로 확인할 수 있다*
 
@@ -230,7 +218,7 @@ Postman으로 테스트해 보겠습니다.
 
 S3에 이미지가 올라오면 자동으로 리사이즈하는 **Lambda** 함수를 만듭니다. Lambda는 AWS에서 제공하는 서버리스 함수입니다. 서버를 따로 띄울 필요 없이 이벤트가 발생하면 코드가 실행됩니다. 외부 창고에 상주하는 직원처럼 "물건이 들어오면 축소본 만들기"를 자동으로 수행합니다.
 
-<img src="../assets/CH05/05_lambda-create.png" width="720" alt="AWS Lambda 함수를 생성하는 화면">
+<img src="../assets/CH05/terminal/05_lambda-create.png" width="720" alt="AWS Lambda 함수를 생성하는 화면">
 
 *그림 5-10: Lambda 함수 생성 -- Python 3.x 런타임으로 함수를 만든다*
 
@@ -258,33 +246,33 @@ s3.put_object(Bucket=bucket, Key=resized_key,
 
 Pillow는 Lambda에 기본 내장되어 있지 않으므로 Layer로 추가해야 합니다.
 
-<img src="../assets/CH05/16_lambda-layer-add.png" width="720" alt="Lambda에 Layer를 추가하는 화면">
+<img src="../assets/CH05/terminal/16_lambda-layer-add.png" width="720" alt="Lambda에 Layer를 추가하는 화면">
 
 *그림 5-11: Pillow Layer 추가 -- Lambda에 이미지 처리 라이브러리를 Layer로 추가한다*
 
-<img src="../assets/CH05/17_lambda-layer-arn.png" width="720" alt="Pillow Layer ARN을 입력하는 화면">
+<img src="../assets/CH05/terminal/17_lambda-layer-arn.png" width="720" alt="Pillow Layer ARN을 입력하는 화면">
 
 *그림 5-12: Layer ARN -- Pillow Layer의 ARN을 지정한다*
 
-<img src="../assets/CH05/18_lambda-layer-confirm.png" width="720" alt="Layer가 추가된 것을 확인하는 화면">
+<img src="../assets/CH05/terminal/18_lambda-layer-confirm.png" width="720" alt="Layer가 추가된 것을 확인하는 화면">
 
 *그림 5-13: Layer 확인 -- Pillow Layer가 정상적으로 추가되었다*
 
 S3 이벤트 트리거를 설정합니다. `original/` 폴더에 파일이 올라오면 Lambda가 자동으로 실행되도록 연결합니다.
 
-<img src="../assets/CH05/06_lambda-trigger.png" width="720" alt="Lambda에 S3 트리거를 설정하는 화면">
+<img src="../assets/CH05/terminal/06_lambda-trigger.png" width="720" alt="Lambda에 S3 트리거를 설정하는 화면">
 
 *그림 5-14: S3 트리거 설정 -- original/ prefix로 ObjectCreated 이벤트를 연결한다*
 
-<img src="../assets/CH05/15_lambda-code-deploy.png" width="720" alt="Lambda 코드를 배포하는 화면">
+<img src="../assets/CH05/terminal/15_lambda-code-deploy.png" width="720" alt="Lambda 코드를 배포하는 화면">
 
 *그림 5-15: Lambda 배포 -- 코드를 작성하고 Deploy 버튼으로 배포한다*
 
-<img src="../assets/CH05/19_lambda-test.png" width="720" alt="Lambda 테스트 실행 결과">
+<img src="../assets/CH05/terminal/19_lambda-test.png" width="720" alt="Lambda 테스트 실행 결과">
 
 *그림 5-16: Lambda 테스트 -- 테스트 이벤트로 함수가 정상 실행되는지 확인한다*
 
-<img src="../assets/CH05/20_s3-resized-confirm.png" width="720" alt="S3 resized 폴더에 리사이즈된 이미지가 저장된 것을 확인하는 화면">
+<img src="../assets/CH05/terminal/20_s3-resized-confirm.png" width="720" alt="S3 resized 폴더에 리사이즈된 이미지가 저장된 것을 확인하는 화면">
 
 *그림 5-17: 리사이즈 확인 -- resized 폴더에 축소된 이미지가 자동으로 생성되었다*
 
@@ -323,15 +311,15 @@ public ImageResponse.DTO completeUpload(
 
 Postman으로 /complete를 호출합니다.
 
-<img src="../assets/CH05/21_postman-complete-request.png" width="720" alt="Postman에서 /complete 요청을 보내는 화면">
+<img src="../assets/CH05/terminal/21_postman-complete-request.png" width="720" alt="Postman에서 /complete 요청을 보내는 화면">
 
 *그림 5-18: /complete 요청 -- originalKey를 JSON으로 보낸다*
 
-<img src="../assets/CH05/22_postman-complete-response.png" width="720" alt="Postman에서 /complete 응답을 확인하는 화면">
+<img src="../assets/CH05/terminal/22_postman-complete-response.png" width="720" alt="Postman에서 /complete 응답을 확인하는 화면">
 
 *그림 5-19: /complete 응답 -- originalUrl과 resizedUrl이 모두 저장되어 반환된다*
 
-<img src="../assets/CH05/23_h2-console-confirm.png" width="720" alt="H2 콘솔에서 DB에 저장된 데이터를 확인하는 화면">
+<img src="../assets/CH05/terminal/23_h2-console-confirm.png" width="720" alt="H2 콘솔에서 DB에 저장된 데이터를 확인하는 화면">
 
 *그림 5-20: DB 확인 -- H2 콘솔에서 원본 URL과 리사이즈 URL이 저장된 것을 확인한다*
 
@@ -362,11 +350,11 @@ public ImageResponse.DTO getImageDetail(
 | 4 | GET /list | 저장된 이미지 목록 확인 |
 | 5 | GET /{id} | 특정 이미지 상세 확인 |
 
-<img src="../assets/CH05/24_postman-list-response.png" width="720" alt="Postman에서 이미지 목록을 조회하는 화면">
+<img src="../assets/CH05/terminal/24_postman-list-response.png" width="720" alt="Postman에서 이미지 목록을 조회하는 화면">
 
 *그림 5-21: 목록 조회 -- 저장된 모든 이미지의 원본 URL과 리사이즈 URL이 반환된다*
 
-<img src="../assets/CH05/25_postman-detail-response.png" width="720" alt="Postman에서 이미지 상세를 조회하는 화면">
+<img src="../assets/CH05/terminal/25_postman-detail-response.png" width="720" alt="Postman에서 이미지 상세를 조회하는 화면">
 
 *그림 5-22: 상세 조회 -- 특정 이미지의 전체 정보가 반환된다*
 
@@ -376,11 +364,11 @@ public ImageResponse.DTO getImageDetail(
 
 **S3 버킷 생성**
 
-<img src="../assets/CH05/01_aws-s3-bucket.png" width="720" alt="AWS S3 버킷 생성 화면">
+<img src="../assets/CH05/terminal/01_aws-s3-bucket.png" width="720" alt="AWS S3 버킷 생성 화면">
 
 *그림 5-23: S3 버킷 생성 -- 리전을 선택하고 버킷 이름을 지정한다*
 
-<img src="../assets/CH05/02_s3-folder-structure.png" width="720" alt="S3 버킷 내 original, resized 폴더 구조">
+<img src="../assets/CH05/terminal/02_s3-folder-structure.png" width="720" alt="S3 버킷 내 original, resized 폴더 구조">
 
 *그림 5-24: 폴더 구조 -- original과 resized 두 개의 폴더를 만든다*
 
@@ -393,11 +381,11 @@ public ImageResponse.DTO getImageDetail(
 
 **IAM 사용자**
 
-<img src="../assets/CH05/03_iam-user-create.png" width="720" alt="IAM 사용자 생성 화면">
+<img src="../assets/CH05/terminal/03_iam-user-create.png" width="720" alt="IAM 사용자 생성 화면">
 
 *그림 5-25: IAM 사용자 생성 -- S3 접근용 사용자를 만든다*
 
-<img src="../assets/CH05/04_iam-access-key.png" width="720" alt="IAM 액세스 키 생성 화면">
+<img src="../assets/CH05/terminal/04_iam-access-key.png" width="720" alt="IAM 액세스 키 생성 화면">
 
 *그림 5-26: 액세스 키 발급 -- Access Key와 Secret Key를 발급받아 환경 변수에 설정한다*
 
@@ -411,7 +399,7 @@ public ImageResponse.DTO getImageDetail(
 
 React 등 프론트엔드에서 S3에 직접 업로드하려면 CORS 설정이 필요합니다.
 
-<img src="../assets/CH05/26_s3-cors-setting.png" width="720" alt="S3 CORS 설정 화면">
+<img src="../assets/CH05/terminal/26_s3-cors-setting.png" width="720" alt="S3 CORS 설정 화면">
 
 *그림 5-27: S3 CORS -- 프론트엔드에서 S3에 직접 요청할 수 있도록 CORS를 설정한다*
 

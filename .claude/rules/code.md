@@ -37,3 +37,4 @@
 - Rich Table의 `title` 파라미터로 섹션 구분 (장식선 대신)
 - 모든 스크립트 출력은 Rich Console을 통해 출력 (print 대신 console.print)
 - 캡처 워크플로우: 스크립트가 Rich Console로 출력 → `book_capture.py --cmd`로 캡처
+- 캡처 실행 전에 대상 스크립트에 `console.rule()` 잔존 여부를 grep으로 점검하라 → why-log.md#2026-03-15-26

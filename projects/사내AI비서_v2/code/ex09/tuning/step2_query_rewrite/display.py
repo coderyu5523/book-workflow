@@ -105,8 +105,6 @@ def show_multi_query_results(
 
 def show_summary() -> None:
     """Query Rewrite 기법 비교 요약 테이블을 출력합니다."""
-    console.rule("[bold green]실험 완료[/bold green]")
-
     table = Table(title="Query Rewrite 기법 비교")
     table.add_column("기법", style="cyan")
     table.add_column("핵심 원리", style="white")

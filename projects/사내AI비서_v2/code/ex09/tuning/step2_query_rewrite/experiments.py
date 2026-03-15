@@ -98,7 +98,7 @@ def run_all(
     num_queries: int = 3,
 ) -> None:
     """실험 2-1 ~ 2-3 을 모두 실행합니다."""
-    console.rule("[bold blue]ex09 step2: Query Rewrite 실험[/bold blue]")
+    console.print("[bold]ex09 step2: Query Rewrite 실험[/bold]")
 
     embeddings = _load_embeddings()
 

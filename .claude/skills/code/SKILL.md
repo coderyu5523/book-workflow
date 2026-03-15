@@ -2,7 +2,7 @@
 name: code
 model: claude-sonnet-4-6
 description: 코드 분석 + 기술 파트 코드 설명. STEP 2(코드 해부)에서 코드 분석, STEP 4~5(코드 태깅, 기술 파트)에서 코드 구조화. A 시리즈(코드 분석) + B3, B4 담당.
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # 코드 스킬

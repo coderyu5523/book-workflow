@@ -15,29 +15,43 @@
 
 ## 0.5. 경로 규칙
 
-모든 이미지(Gemini 생성, 실습 캡처)는 **챕터별 단일 폴더**에 저장한다.
+모든 이미지는 **챕터별 폴더 + 유형별 서브폴더**에 저장한다. 플랫하게 넣지 마라 → why-log.md#2026-03-15-5
 
 ```
 projects/{책이름}/
-├── chapters/NN-제목.md        <- 챕터 원고
+├── chapters/NN-제목.md
 ├── assets/
-│   ├── CH01/                  <- CH01의 모든 이미지
+│   ├── CH01/
+│   │   ├── diagram/           <- D2 다이어그램 (.d2 + .png)
+│   │   ├── gemini/            <- Gemini 인포그래픽 (.png)
+│   │   └── terminal/          <- 터미널/UI 캡처 (.png)
 │   ├── CH02/
+│   │   ├── diagram/
+│   │   ├── gemini/
+│   │   └── terminal/
 │   └── ...
 ```
+
+| 서브폴더 | 내용 | 생성 도구 |
+|----------|------|----------|
+| `diagram/` | 흐름도, 아키텍처 | D2 |
+| `gemini/` | 개념 인포그래픽, 비유 이미지 | Gemini Image API |
+| `terminal/` | 터미널 출력, UI 스크린샷 | 캡처 스크립트 |
 
 **두 가지 경로를 플레이스홀더에 모두 명시:**
 
 | 용도 | 경로 기준 | 형식 | 예시 |
 |------|----------|------|------|
-| `path:` (스크립트용) | 프로젝트 루트 | `assets/CH{N}/{id}.png` | `assets/CH01/01_chapter-opening.png` |
-| `![alt](src)` (마크다운) | 챕터 파일 위치 | `../assets/CH{N}/{id}.png` | `../assets/CH01/01_chapter-opening.png` |
+| `path:` (스크립트용) | 프로젝트 루트 | `assets/CH{N}/{type}/{id}.png` | `assets/CH01/gemini/01_docker-image-container.png` |
+| `<img src=` (마크다운) | 챕터 파일 위치 | `../assets/CH{N}/{type}/{id}.png` | `../assets/CH01/gemini/01_docker-image-container.png` |
 
 > **주의**: 챕터 파일이 `chapters/` 안에 있으므로 `![alt](assets/...)` 는 오류. 반드시 `../assets/...` 를 사용한다.
 
 ---
 
 ## 1. 플레이스홀더 삽입 (2가지 방식)
+
+**"GEMINI PROMPT"는 Gemini Image API 전용이다. D2나 Mermaid로 대체하지 마라. 스타일이 다르다** → why-log.md#2026-03-15-7
 
 ### 방식 A — 개념 이미지: Gemini 프롬프트 플레이스홀더
 

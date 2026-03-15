@@ -47,17 +47,17 @@ def main() -> None:
         return
 
     if args.step == "2-1":
-        console.rule("[bold blue]실험 2-1: 약어/동의어 확장[/bold blue]")
+        console.print("[bold]실험 2-1: 약어/동의어 확장[/bold]")
         queries = [args.query] if args.query else None
         run_abbreviation_experiment(queries)
 
     elif args.step == "2-2":
-        console.rule("[bold blue]실험 2-2: HyDE[/bold blue]")
+        console.print("[bold]실험 2-2: HyDE[/bold]")
         embeddings = _load_embeddings()
         run_hyde_experiment(args.query, embeddings=embeddings)
 
     elif args.step == "2-3":
-        console.rule("[bold blue]실험 2-3: Multi-Query[/bold blue]")
+        console.print("[bold]실험 2-3: Multi-Query[/bold]")
         embeddings = _load_embeddings()
         run_multi_query_experiment(
             args.query, num_queries=args.num_queries, embeddings=embeddings,

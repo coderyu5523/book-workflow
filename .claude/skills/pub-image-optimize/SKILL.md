@@ -2,7 +2,7 @@
 name: pub-image-optimize
 description: "이미지 공백 자동 제거(autocrop) + Typst auto-image 자동 크기 조절"
 allowed-tools: Bash(python3 *image_optimizer.py*)
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # image-optimize — 이미지 최적화

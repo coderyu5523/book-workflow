@@ -81,7 +81,7 @@ def run_reranker_experiment(max_queries: int | None = None) -> None:
     Args:
         max_queries: 실행할 최대 쿼리 수 (None이면 전체).
     """
-    console.rule("[bold blue]ex08 step2: ReRanker 실험[/bold blue]")
+    console.print("[bold]ex08 step2: ReRanker 실험[/bold]")
 
     reranker = create_reranker(use_simple=False)
 
@@ -111,7 +111,6 @@ def run_reranker_experiment(max_queries: int | None = None) -> None:
 
         calculate_rank_change(comparison["before"], comparison["after"])
 
-    console.rule("[bold green]실험 완료[/bold green]")
     console.print(
         "\n[bold]리랭킹 효과 요약:[/bold]\n"
         "  - top_k=10으로 넓게 검색 후 Cross-Encoder로 top_k=5 정제\n"

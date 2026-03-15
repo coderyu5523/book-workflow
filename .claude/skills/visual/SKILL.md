@@ -2,7 +2,7 @@
 name: visual
 model: claude-haiku-4-5-20251001
 description: Mermaid 다이어그램 + 이미지 플레이스홀더 + 시각 요소 규칙. 다이어그램 생성, 이미지 삽입, 시각 요소 작업 시 로드.
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # 시각 요소 스킬

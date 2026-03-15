@@ -8,6 +8,7 @@ Usage:
 """
 
 import argparse
+import os
 import sys
 import time
 from pathlib import Path
@@ -32,7 +33,7 @@ def _find_pdf(pdf_path: str | None) -> Path | None:
     # data/docs 에서 첫 번째 PDF
     docs_dir = DATA_DIR / "docs"
     if docs_dir.exists():
-        pdfs = list(docs_dir.glob("*.pdf"))
+        pdfs = list(docs_dir.rglob("*.pdf"))
         if pdfs:
             return pdfs[0]
 
@@ -49,7 +50,7 @@ def run_step_1_1(pdf_path: Path) -> dict | None:
     from .display import show_parse_result
     from .parser import parse_pdf_ocr
 
-    console.rule("[bold blue]Step 1-1: OCR 파싱 (EasyOCR)[/bold blue]")
+    console.print("[bold]Step 1-1: OCR 파싱 (EasyOCR)[/bold]")
     console.print(f"  대상: {pdf_path.name}")
 
     start = time.time()
@@ -66,7 +67,7 @@ def run_step_1_2(pdf_path: Path) -> dict | None:
     from .display import show_parse_result
     from .parser import parse_pdf_vllm
 
-    console.rule("[bold blue]Step 1-2: Vision LLM 파싱[/bold blue]")
+    console.print("[bold]Step 1-2: Vision LLM 파싱[/bold]")
     console.print(f"  대상: {pdf_path.name}")
 
     start = time.time()
@@ -88,7 +89,7 @@ def main() -> None:
     )
     parser.add_argument("--pdf_path", type=str, default=None, help="테스트 PDF 경로")
     parser.add_argument("--dpi", type=int, default=150, help="렌더링 DPI (기본: 150)")
-    parser.add_argument("--timeout", type=int, default=120, help="Vision LLM 타임아웃 (초)")
+    parser.add_argument("--timeout", type=int, default=600, help="Vision LLM 타임아웃 (초, 기본: 600)")
 
     args = parser.parse_args()
 
@@ -96,7 +97,10 @@ def main() -> None:
     if not pdf_path:
         sys.exit(1)
 
-    console.rule("[bold magenta]ex10 Step 1: 문서 파싱 전략 비교[/bold magenta]")
+    # --timeout CLI 인자를 환경변수로 전달 (parser.py에서 참조)
+    os.environ["VISION_TIMEOUT"] = str(args.timeout)
+
+    console.print("[bold]ex10 Step 1: 문서 파싱 전략 비교[/bold]")
 
     ocr_result = None
     vllm_result = None
@@ -112,7 +116,6 @@ def main() -> None:
         console.print()
         show_comparison(ocr_result, vllm_result, pdf_path.name)
 
-    console.rule("[bold green]Step 1 완료[/bold green]")
 
 
 if __name__ == "__main__":

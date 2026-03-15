@@ -32,7 +32,7 @@ def _find_pdf(pdf_path: str | None) -> Path | None:
 
     docs_dir = DATA_DIR / "docs"
     if docs_dir.exists():
-        pdfs = list(docs_dir.glob("*.pdf"))
+        pdfs = list(docs_dir.rglob("*.pdf"))
         if pdfs:
             return pdfs[0]
 
@@ -49,7 +49,7 @@ def run_step_2_1(pdf_path: Path, threshold: int) -> list[dict]:
     from .display import show_page_result, show_summary
     from .hybrid_parser import process_image_hybrid
 
-    console.rule("[bold blue]Step 2-1: 하이브리드 파싱 (OCR → Vision)[/bold blue]")
+    console.print("[bold]Step 2-1: 하이브리드 파싱 (OCR → Vision)[/bold]")
     console.print(f"  대상: {pdf_path.name}  |  임계값: {threshold}자")
 
     doc = fitz.open(str(pdf_path))
@@ -75,7 +75,7 @@ def run_step_2_2(pdf_path: Path) -> list[dict]:
     from .display import show_page_result, show_summary
     from .hybrid_parser import process_image_textlayer
 
-    console.rule("[bold blue]Step 2-2: 텍스트 레이어 → Vision 파싱[/bold blue]")
+    console.print("[bold]Step 2-2: 텍스트 레이어 → Vision 파싱[/bold]")
     console.print(f"  대상: {pdf_path.name}")
 
     doc = fitz.open(str(pdf_path))
@@ -113,7 +113,7 @@ def main() -> None:
     if not pdf_path:
         sys.exit(1)
 
-    console.rule("[bold magenta]ex10 Step 2: 하이브리드 파싱 전략[/bold magenta]")
+    console.print("[bold]ex10 Step 2: 하이브리드 파싱 전략[/bold]")
 
     if args.step in ("2-1", "all"):
         run_step_2_1(pdf_path, args.threshold)
@@ -121,7 +121,6 @@ def main() -> None:
     if args.step in ("2-2", "all"):
         run_step_2_2(pdf_path)
 
-    console.rule("[bold green]Step 2 완료[/bold green]")
 
 
 if __name__ == "__main__":

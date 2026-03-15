@@ -25,7 +25,7 @@ console = Console()
 # ── step 1-1: 청크 크기 실험 ─────────────────────────────────────
 def run_chunk_size_experiment(percentile: int = 70) -> None:
     """청크 크기(300 / 500 / 1000자) 별 결과를 비교합니다."""
-    console.rule("[bold blue]step 1-1: 청크 크기 실험[/bold blue]")
+    console.print("[bold]step 1-1: 청크 크기 실험[/bold]")
 
     text = SAMPLE_DOCUMENT
     console.print(f"[green]샘플 문서 로드:[/green] {len(text)}자")
@@ -57,7 +57,7 @@ def run_chunk_size_experiment(percentile: int = 70) -> None:
 # ── step 1-2: 오버랩 비율 실험 ───────────────────────────────────
 def run_overlap_experiment() -> None:
     """오버랩 비율(10% / 20% / 30%) 별 결과를 비교합니다."""
-    console.rule("[bold blue]step 1-2: 오버랩 비율 실험[/bold blue]")
+    console.print("[bold]step 1-2: 오버랩 비율 실험[/bold]")
 
     text = SAMPLE_DOCUMENT
     chunk_size = 500
@@ -83,7 +83,7 @@ def run_overlap_experiment() -> None:
 # ── step 1-3: 전략 비교 (긴 문서) ────────────────────────────────
 def run_strategy_comparison(percentile: int = 70) -> None:
     """Fixed / Recursive / Semantic 전략을 긴 문서로 비교합니다."""
-    console.rule("[bold blue]step 1-3: 청킹 전략 비교 (긴 문서)[/bold blue]")
+    console.print("[bold]step 1-3: 청킹 전략 비교 (긴 문서)[/bold]")
 
     text = SAMPLE_DOCUMENT
     console.print(f"[green]샘플 문서 로드:[/green] {len(text)}자")
@@ -138,7 +138,7 @@ def run_strategy_comparison(percentile: int = 70) -> None:
 # ── step 1-4: 짧은 문서 실험 ─────────────────────────────────────
 def run_short_doc_experiment(percentile: int = 70) -> None:
     """짧은 문서에 각 전략을 적용했을 때 결과를 비교합니다."""
-    console.rule("[bold blue]step 1-4: 짧은 문서 실험[/bold blue]")
+    console.print("[bold]step 1-4: 짧은 문서 실험[/bold]")
 
     text = SHORT_DOCUMENT
     console.print(f"[green]짧은 문서 로드:[/green] {len(text)}자")
@@ -171,7 +171,7 @@ def run_retriever_experiment(
     department: str | None = None,
 ) -> None:
     """k값 / threshold / metadata filter 를 실험합니다."""
-    console.rule("[bold blue]step 1-5: Retriever 파라미터 튜닝[/bold blue]")
+    console.print("[bold]step 1-5: Retriever 파라미터 튜닝[/bold]")
     console.print("[cyan]인메모리 샘플 데이터 모드로 실행합니다.[/cyan]")
 
     retriever = InMemoryRetriever(SAMPLE_DOCUMENTS)
@@ -192,7 +192,6 @@ def run_retriever_experiment(
     )
     print_experiment_table("메타데이터 필터별 검색 결과", filter_results)
 
-    console.rule("[bold green]실험 완료[/bold green]")
     console.print(
         f"\n[bold]권장 Retriever 설정:[/bold]\n"
         f"  - k={k} (일반적인 RAG 최적값)\n"

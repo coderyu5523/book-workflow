@@ -87,8 +87,6 @@ def show_compression_results(results: list[dict], query: str) -> None:
 
 def show_summary() -> None:
     """고급 Retriever 비교 요약 테이블을 출력합니다."""
-    console.rule("[bold green]실험 완료[/bold green]")
-
     table = Table(title="고급 Retriever 비교 요약")
     table.add_column("Retriever", style="cyan")
     table.add_column("핵심 원리", style="white")

@@ -41,7 +41,7 @@ def build_vectordb(collection_name: str = "eval_documents") -> chromadb.Collecti
     # 기존 컬렉션이 있으면 삭제 후 재생성
     try:
         client.delete_collection(collection_name)
-    except ValueError:
+    except (ValueError, Exception):
         pass
 
     collection = client.create_collection(

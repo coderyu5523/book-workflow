@@ -1,7 +1,7 @@
 ---
 name: pub-typst-design
 description: "Typst 템플릿의 타이포그래피, 페이지 설정, 스타일 규칙 관리"
-disable-model-invocation: true
+# disable-model-invocation: true
 ---
 
 # typst-design — Typst 템플릿 디자인

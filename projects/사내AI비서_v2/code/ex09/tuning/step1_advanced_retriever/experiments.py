@@ -118,7 +118,7 @@ def run_compression_experiment(
 
 def run_all(query: str | None = None, top_k: int = 2) -> None:
     """실험 1-1 ~ 1-3 을 모두 실행합니다."""
-    console.rule("[bold blue]ex09 step1: 고급 Retriever 실험[/bold blue]")
+    console.print("[bold]ex09 step1: 고급 Retriever 실험[/bold]")
 
     embeddings = _load_embeddings()
 

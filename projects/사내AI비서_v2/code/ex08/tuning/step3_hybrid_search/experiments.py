@@ -48,7 +48,7 @@ def run_alpha_experiment(
 # ── 메인 실험 ────────────────────────────────────────────────────
 def run_hybrid_search_experiment(*, max_queries: int | None = None) -> None:
     """하이브리드 검색 전체 실험을 실행합니다."""
-    console.rule("[bold blue]ex08 step3: 하이브리드 검색 실험[/bold blue]")
+    console.print("[bold]ex08 step3: 하이브리드 검색 실험[/bold]")
 
     console.print("[cyan]BM25 검색기 초기화 중...[/cyan]")
     bm25_retriever = BM25Retriever(SAMPLE_DOCUMENTS, SAMPLE_METADATAS)
@@ -87,7 +87,6 @@ def run_hybrid_search_experiment(*, max_queries: int | None = None) -> None:
     ensemble = EnsembleRetriever(bm25_retriever, vector_retriever, alpha=0.5)
     print_hybrid_demo(ensemble, demo_query)
 
-    console.rule("[bold green]실험 완료[/bold green]")
     console.print(
         "\n[bold]하이브리드 검색 권장 설정:[/bold]\n"
         "  - 일반 질문 (의미 검색 중심): alpha=0.7\n"

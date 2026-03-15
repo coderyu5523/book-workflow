@@ -25,7 +25,7 @@ def run_step_2_1(k: int) -> dict | None:
     from .display import show_question_details, show_summary
     from .evaluator import run_evaluation
 
-    console.rule("[bold blue]Step 2-1: Precision@K & Recall@K[/bold blue]")
+    console.print("[bold]Step 2-1: Precision@K & Recall@K[/bold]")
 
     result = run_evaluation(k=k)
     if "error" in result:
@@ -45,7 +45,7 @@ def run_step_2_2(k: int) -> dict | None:
     from .display import show_summary
     from .evaluator import run_evaluation
 
-    console.rule("[bold blue]Step 2-2: Hallucination Rate[/bold blue]")
+    console.print("[bold]Step 2-2: Hallucination Rate[/bold]")
 
     result = run_evaluation(k=k)
     if "error" in result:
@@ -70,7 +70,7 @@ def run_step_2_3(k: int) -> dict | None:
     from .display import show_summary
     from .evaluator import run_evaluation
 
-    console.rule("[bold blue]Step 2-3: Mean Reciprocal Rank (MRR)[/bold blue]")
+    console.print("[bold]Step 2-3: Mean Reciprocal Rank (MRR)[/bold]")
 
     result = run_evaluation(k=k)
     if "error" in result:
@@ -95,7 +95,7 @@ def run_compare() -> None:
     from .display import show_comparison
     from .evaluator import run_evaluation
 
-    console.rule("[bold blue]K 값별 성능 비교[/bold blue]")
+    console.print("[bold]K 값별 성능 비교[/bold]")
 
     results = []
     for k_val in [1, 3, 5, 10]:
@@ -122,7 +122,7 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    console.rule("[bold magenta]ex10 Step 3: RAG 평가 프레임워크[/bold magenta]")
+    console.print("[bold]ex10 Step 3: RAG 평가 프레임워크[/bold]")
 
     if args.step == "2-1":
         run_step_2_1(args.k)
@@ -151,7 +151,6 @@ def main() -> None:
         console.print()
         run_compare()
 
-    console.rule("[bold green]Step 3 완료[/bold green]")
 
 
 if __name__ == "__main__":

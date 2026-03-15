@@ -57,6 +57,10 @@ spring-hls/
 └── templates/index.mustache   [참고] HLS.js 플레이어 UI
 ```
 
+<img src="../assets/CH07/diagram/07_exercise-flow.png" width="720" alt="HLS 실습 흐름">
+
+*그림 7-1: 이번 챕터의 실습 흐름*
+
 ### 7.1 HLS 스트리밍이란
 
 영상을 브라우저에서 바로 재생하려면 파일을 잘게 쪼개서 순서대로 보내야 합니다. HLS는 이 과정을 HTTP 위에서 처리하는 표준 방식입니다.
@@ -65,11 +69,9 @@ spring-hls/
 
 전체 흐름은 이렇습니다. 사용자가 영상을 업로드하면 서버가 FFmpeg으로 원본을 ts 조각으로 변환합니다. 변환이 끝나면 m3u8 목록 파일이 생성됩니다. 브라우저는 m3u8을 요청해서 목록을 받고 ts 조각을 하나씩 가져와 재생합니다.
 
-<!-- [GEMINI PROMPT] HLS 스트리밍 전체 흐름 다이어그램
-참여자: 사용자, Spring 서버, FFmpeg, 브라우저
-흐름: 사용자→서버(업로드) → 서버→FFmpeg(인코딩) → FFmpeg→서버(m3u8+ts) → 브라우저→서버(m3u8 요청) → 서버→브라우저(ts 순차 전송)
-배경: 흰색, 폰트: 맑은고딕, 화살표 색: #333, 화살표 6개 이하
-캡션: "그림 7-1: 업로드부터 브라우저 재생까지의 HLS 흐름" -->
+<img src="../assets/CH07/gemini/07_hls-flow.png" width="720" alt="업로드부터 브라우저 재생까지의 HLS 스트리밍 흐름">
+
+*그림 7-1: 업로드부터 브라우저 재생까지의 HLS 흐름*
 
 ### 7.2 업로드 API 구현
 
@@ -103,7 +105,7 @@ public String saveOriginalVideo(MultipartFile file) throws IOException {
 
 Postman으로 영상을 업로드한 결과입니다.
 
-<img src="../assets/CH07/01_postman-upload.png" width="720" alt="Postman에서 영상 업로드 후 HLS 변환 완료 응답을 받는 화면">
+<img src="../assets/CH07/terminal/01_postman-upload.png" width="720" alt="Postman에서 영상 업로드 후 HLS 변환 완료 응답을 받는 화면">
 
 *그림 7-2: 영상 업로드 -- Postman으로 파일을 보내면 HLS 변환이 시작된다*
 
@@ -139,7 +141,7 @@ FFmpegBuilder builder720 = new FFmpegBuilder()
 
 변환이 끝나면 서버에 파일이 생성됩니다.
 
-<img src="../assets/CH07/02_hls-files-generated.png" width="720" alt="HLS 변환 후 생성된 m3u8과 ts 파일 목록">
+<img src="../assets/CH07/terminal/02_hls-files-generated.png" width="720" alt="HLS 변환 후 생성된 m3u8과 ts 파일 목록">
 
 *그림 7-3: HLS 파일 생성 -- m3u8 목록 파일과 ts 조각 파일이 만들어졌다*
 
@@ -180,23 +182,23 @@ if (Hls.isSupported()) {
 
 Postman으로 m3u8 엔드포인트를 확인합니다.
 
-<img src="../assets/CH07/03_postman-m3u8-check.png" width="720" alt="Postman에서 m3u8 엔드포인트 응답을 확인하는 화면">
+<img src="../assets/CH07/terminal/03_postman-m3u8-check.png" width="720" alt="Postman에서 m3u8 엔드포인트 응답을 확인하는 화면">
 
 *그림 7-4: m3u8 엔드포인트 확인 -- 재생 목록이 정상적으로 반환된다*
 
 720p와 1080p의 m3u8 응답입니다.
 
-<img src="../assets/CH07/04_m3u8-720p-response.png" width="720" alt="720p m3u8 응답 내용">
+<img src="../assets/CH07/terminal/04_m3u8-720p-response.png" width="720" alt="720p m3u8 응답 내용">
 
 *그림 7-5: 720p m3u8 응답 -- ts 조각 파일 목록과 재생 시간이 기록되어 있다*
 
-<img src="../assets/CH07/05_m3u8-1080p-response.png" width="720" alt="1080p m3u8 응답 내용">
+<img src="../assets/CH07/terminal/05_m3u8-1080p-response.png" width="720" alt="1080p m3u8 응답 내용">
 
 *그림 7-6: 1080p m3u8 응답 -- 같은 구조지만 해상도가 다르다*
 
 브라우저에서 실제로 재생하면서 DevTools Network 탭을 열어 봅니다.
 
-<img src="../assets/CH07/06_browser-player-devtools.png" width="720" alt="브라우저에서 HLS 영상이 재생되며 DevTools에 ts 파일 요청이 나타나는 화면">
+<img src="../assets/CH07/terminal/06_browser-player-devtools.png" width="720" alt="브라우저에서 HLS 영상이 재생되며 DevTools에 ts 파일 요청이 나타나는 화면">
 
 *그림 7-7: 브라우저 재생 -- ts 조각이 순차적으로 요청되며 영상이 끊기지 않고 재생된다*
 

@@ -65,6 +65,10 @@ docker-elasticsearch/
 
 ## 기술 파트
 
+<img src="../assets/CH08/diagram/08_exercise-flow.png" width="720" alt="ES 실습 흐름">
+
+*그림 8-1: 이번 챕터의 실습 흐름*
+
 ### 8.1 왜 Elasticsearch가 필요한가
 
 LIKE 검색의 문제를 정리합니다.
@@ -73,7 +77,9 @@ LIKE 검색의 문제를 정리합니다.
 
 Elasticsearch는 **역인덱스(Inverted Index)** 구조를 씁니다. 문서가 저장될 때 내용을 단어 단위로 쪼개고 "이 단어가 어떤 문서에 있는지"를 기록합니다.
 
-<!-- [GEMINI PROMPT] 역인덱스 구조도: 왼쪽에 문서 3개(Doc1, Doc2, Doc3), 오른쪽에 단어 목록(갤럭시→Doc1,Doc3 / 아이폰→Doc2 / 노트→Doc1,Doc2,Doc3). 화살표 5개 이하. 깔끔한 다이어그램 스타일 -->
+<img src="../assets/CH08/gemini/08_inverted-index.png" width="720" alt="역인덱스 구조도 — 단어에서 문서로의 매핑">
+
+*그림 8-1: 역인덱스 구조 — 단어 목록에서 해당 문서를 바로 찾는다*
 
 일반 인덱스가 "문서 → 단어" 방향이라면 역인덱스는 "단어 → 문서" 방향입니다. 검색할 때 단어 목록에서 해당 키워드를 찾으면 문서 번호가 바로 나옵니다. 데이터가 백만 건이어도 키워드 목록에서 한 번 찾는 것으로 끝납니다.
 
@@ -106,11 +112,11 @@ services:
 
 네트워크 설정과 Spring Boot 앱 컨테이너는 전체 docker-compose.yml을 참고합니다. 실행 후 `localhost:9200` 에 접속하면 Elasticsearch 상태를 확인할 수 있습니다.
 
-<img src="../assets/CH08/01_docker-compose-up.png" width="720" alt="Docker Compose 실행 화면">
+<img src="../assets/CH08/terminal/01_docker-compose-up.png" width="720" alt="Docker Compose 실행 화면">
 
 *그림 8-1: docker-compose up -- Elasticsearch, Kibana, Spring Boot 앱이 함께 올라간다*
 
-<img src="../assets/CH08/02_es-health-check.png" width="720" alt="ES 9200 응답 확인">
+<img src="../assets/CH08/terminal/02_es-health-check.png" width="720" alt="ES 9200 응답 확인">
 
 *그림 8-2: localhost:9200 응답 -- Elasticsearch가 정상 동작하고 있다*
 
@@ -190,11 +196,11 @@ public DeviceDocument saveDevices(DeviceDocument doc) {
 
 Postman으로 데이터를 저장하고 결과를 확인합니다.
 
-<img src="../assets/CH08/03_postman-bulk-save.png" width="720" alt="Postman 데이터 저장 요청">
+<img src="../assets/CH08/terminal/03_postman-bulk-save.png" width="720" alt="Postman 데이터 저장 요청">
 
 *그림 8-3: Postman으로 데이터 저장 -- 요청이 성공하면 저장된 Document가 응답으로 온다*
 
-<img src="../assets/CH08/04_h2-data-confirm.png" width="720" alt="H2 DB 데이터 확인">
+<img src="../assets/CH08/terminal/04_h2-data-confirm.png" width="720" alt="H2 DB 데이터 확인">
 
 *그림 8-4: H2 콘솔 확인 -- RDB에도 같은 데이터가 들어가 있다*
 
@@ -224,7 +230,7 @@ public List<DeviceEntity> searchAll(String keyword) {
 
 색인 카드함에서 "갤럭시" 카드를 찾아 "3번, 7번 책장"이라는 위치를 확인한 뒤 해당 책장에서 책을 꺼내오는 것과 같습니다.
 
-<img src="../assets/CH08/11_postman-normal-search.png" width="720" alt="Postman 정상 검색">
+<img src="../assets/CH08/terminal/11_postman-normal-search.png" width="720" alt="Postman 정상 검색">
 
 *그림 8-5: Postman 검색 -- "갤럭시"로 검색하면 관련 데이터가 반환된다*
 
@@ -242,15 +248,15 @@ public List<DeviceEntity> searchAll(String keyword) {
 
 Kibana Dev Tools에서 직접 테스트해 봅니다. `localhost:5601` 에 접속합니다.
 
-<img src="../assets/CH08/05_kibana-home.png" width="720" alt="Kibana 메인 화면">
+<img src="../assets/CH08/terminal/05_kibana-home.png" width="720" alt="Kibana 메인 화면">
 
 *그림 8-6: Kibana 메인 화면 -- 왼쪽 메뉴에서 Dev Tools를 찾는다*
 
-<img src="../assets/CH08/06_kibana-devtools-open.png" width="720" alt="Kibana Dev Tools 검색">
+<img src="../assets/CH08/terminal/06_kibana-devtools-open.png" width="720" alt="Kibana Dev Tools 검색">
 
 *그림 8-7: Dev Tools 진입 -- 검색 쿼리를 직접 실행할 수 있는 콘솔이 열린다*
 
-<img src="../assets/CH08/07_kibana-devtools-console.png" width="720" alt="Dev Tools 콘솔 화면">
+<img src="../assets/CH08/terminal/07_kibana-devtools-console.png" width="720" alt="Dev Tools 콘솔 화면">
 
 *그림 8-8: Dev Tools 콘솔 -- 왼쪽에 쿼리를 작성하고 오른쪽에서 결과를 확인한다*
 
@@ -287,25 +293,25 @@ GET /devices/_search
 
 "갈럭시"로 검색했지만 "갤럭시"가 포함된 문서가 나옵니다. 편집 거리 1 이내이므로 AUTO가 허용한 것입니다.
 
-<img src="../assets/CH08/10_kibana-fuzzy-search.png" width="720" alt="Kibana Fuzzy 검색 결과">
+<img src="../assets/CH08/terminal/10_kibana-fuzzy-search.png" width="720" alt="Kibana Fuzzy 검색 결과">
 
 *그림 8-9: Kibana Fuzzy 검색 -- "갈럭시"로 검색해도 "갤럭시" 문서가 나온다*
 
 Kibana에서 직접 문서를 삽입할 수도 있습니다.
 
-<img src="../assets/CH08/08_kibana-insert-doc.png" width="720" alt="Kibana 문서 삽입">
+<img src="../assets/CH08/terminal/08_kibana-insert-doc.png" width="720" alt="Kibana 문서 삽입">
 
 *그림 8-10: Kibana에서 문서 직접 삽입 -- PUT 요청으로 ES에 문서를 넣을 수 있다*
 
 한 가지 주의할 점이 있습니다. Kibana에서 ES에 직접 넣은 데이터는 RDB에 들어가지 않습니다. 이중 저장은 Spring Boot 앱을 통해서만 동작합니다. 색인 카드함에 카드만 넣고 책장에는 책을 꽂지 않은 상태입니다.
 
-<img src="../assets/CH08/09_h2-no-kibana-insert.png" width="720" alt="Kibana 삽입 후 H2 미반영">
+<img src="../assets/CH08/terminal/09_h2-no-kibana-insert.png" width="720" alt="Kibana 삽입 후 H2 미반영">
 
 *그림 8-11: H2 확인 -- Kibana에서 넣은 데이터는 RDB에 없다*
 
 Postman에서 오타 검색도 확인합니다.
 
-<img src="../assets/CH08/12_postman-fuzzy-search.png" width="720" alt="Postman 오타 검색">
+<img src="../assets/CH08/terminal/12_postman-fuzzy-search.png" width="720" alt="Postman 오타 검색">
 
 *그림 8-12: Postman Fuzzy 검색 -- 앱을 통한 오타 검색도 정상 동작한다*
 

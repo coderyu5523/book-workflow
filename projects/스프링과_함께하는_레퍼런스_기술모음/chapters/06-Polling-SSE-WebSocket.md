@@ -69,6 +69,10 @@ spring-websoket/
 └── templates/index.mustache     [설명] SockJS + STOMP 클라이언트
 ```
 
+<img src="../assets/CH06/diagram/06_exercise-flow.png" width="720" alt="실시간 통신 실습 흐름">
+
+*그림 6-1: 이번 챕터의 실습 흐름*
+
 ### 6.1 실시간 통신이란
 
 웹에서 "실시간"을 구현하는 방식은 크게 세 가지입니다.
@@ -83,13 +87,9 @@ spring-websoket/
 
 식당 비유로 정리하면 Polling은 카운터에 직접 물어보기, SSE는 진동벨, WebSocket은 전화입니다. 카운터에 물어보는 건 손님이 움직여야 하고 진동벨은 가게만 신호를 보내고 전화는 양쪽이 자유롭게 대화합니다.
 
-<!-- [GEMINI PROMPT] 세 방식의 통신 방향 비교 다이어그램
-참여자: Client, Server (3쌍 가로 배치)
-좌: Polling — Client→Server 화살표 + Server→Client 화살표 (반복 표시)
-중: SSE — Server→Client 화살표만 (단방향)
-우: WebSocket — Client↔Server 양방향 화살표
-배경: 흰색, 폰트: 맑은고딕, 화살표 색: #333, 화살표 5개 이하
-캡션: "그림 6-1: 세 방식의 통신 방향 비교" -->
+<img src="../assets/CH06/gemini/06_communication-compare.png" width="720" alt="Polling, SSE, WebSocket 세 방식의 통신 방향 비교">
+
+*그림 6-1: 세 방식의 통신 방향 비교*
 
 ### 6.2 Polling 구현 (Ajax)
 
@@ -136,7 +136,7 @@ setInterval(loadMessages, 2000);
 
 DevTools의 Network 탭을 열면 2초 간격으로 요청이 반복되는 것을 확인할 수 있습니다.
 
-<img src="../assets/CH06/01_polling-devtools.png" width="720" alt="DevTools Network 탭에서 2초마다 /chats 요청이 반복되는 화면">
+<img src="../assets/CH06/terminal/01_polling-devtools.png" width="720" alt="DevTools Network 탭에서 2초마다 /chats 요청이 반복되는 화면">
 
 *그림 6-2: Polling DevTools -- 2초마다 /chats 요청이 반복된다. 새 메시지가 없어도 요청은 계속 나간다*
 
@@ -212,19 +212,19 @@ sse.addEventListener("chat", (e) => {
 
 DevTools에서 SSE 연결을 확인합니다.
 
-<img src="../assets/CH06/02_sse-connect.png" width="720" alt="DevTools에서 SSE 연결 요청을 확인하는 화면">
+<img src="../assets/CH06/terminal/02_sse-connect.png" width="720" alt="DevTools에서 SSE 연결 요청을 확인하는 화면">
 
 *그림 6-3: SSE 연결 -- /chats/connect 요청이 한 번만 나가고 연결이 유지된다*
 
-<img src="../assets/CH06/03_sse-connected-event.png" width="720" alt="SSE connect 이벤트가 수신된 화면">
+<img src="../assets/CH06/terminal/03_sse-connected-event.png" width="720" alt="SSE connect 이벤트가 수신된 화면">
 
 *그림 6-4: connect 이벤트 -- 연결 즉시 서버가 "connected" 메시지를 보내온다*
 
-<img src="../assets/CH06/04_sse-chat-event.png" width="720" alt="SSE chat 이벤트로 새 메시지가 수신된 화면">
+<img src="../assets/CH06/terminal/04_sse-chat-event.png" width="720" alt="SSE chat 이벤트로 새 메시지가 수신된 화면">
 
 *그림 6-5: chat 이벤트 -- 다른 사용자가 채팅을 보내면 서버가 자동으로 밀어준다*
 
-<img src="../assets/CH06/05_sse-realtime-ui.png" width="720" alt="브라우저 두 개에서 실시간으로 채팅이 동기화되는 화면">
+<img src="../assets/CH06/terminal/05_sse-realtime-ui.png" width="720" alt="브라우저 두 개에서 실시간으로 채팅이 동기화되는 화면">
 
 *그림 6-6: 실시간 동기화 -- 두 브라우저에서 새로고침 없이 채팅이 바로 표시된다*
 
@@ -283,15 +283,15 @@ stompClient.send("/app/chats", {},
 
 DevTools에서 WebSocket 연결을 확인합니다.
 
-<img src="../assets/CH06/06_ws-devtools.png" width="720" alt="DevTools에서 WebSocket 연결을 확인하는 화면">
+<img src="../assets/CH06/terminal/06_ws-devtools.png" width="720" alt="DevTools에서 WebSocket 연결을 확인하는 화면">
 
 *그림 6-7: WebSocket 연결 -- /ws 엔드포인트로 한 번 연결되면 끊기지 않는다*
 
-<img src="../assets/CH06/07_ws-subscribe.png" width="720" alt="STOMP SUBSCRIBE 프레임을 확인하는 화면">
+<img src="../assets/CH06/terminal/07_ws-subscribe.png" width="720" alt="STOMP SUBSCRIBE 프레임을 확인하는 화면">
 
 *그림 6-8: STOMP 구독 -- /topic/chats를 구독하면 서버가 보내는 메시지를 받을 준비가 된다*
 
-<img src="../assets/CH06/08_ws-send-receive.png" width="720" alt="WebSocket으로 메시지를 보내고 받는 화면">
+<img src="../assets/CH06/terminal/08_ws-send-receive.png" width="720" alt="WebSocket으로 메시지를 보내고 받는 화면">
 
 *그림 6-9: 양방향 통신 -- 클라이언트가 보낸 메시지가 구독자 전원에게 전달된다*
 

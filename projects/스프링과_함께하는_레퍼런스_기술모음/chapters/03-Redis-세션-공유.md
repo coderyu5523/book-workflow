@@ -63,11 +63,15 @@ docker-session-share/
     └── (app1과 동일 구조)                 [참고]
 ```
 
+<img src="../assets/CH03/diagram/03_architecture.png" width="720" alt="Redis 세션 공유 아키텍처">
+
+*그림 3-1: Redis 세션 공유 아키텍처*
+
 ### 3.1 전체 아키텍처
 
 클라이언트의 요청이 서비스에 도착하기까지의 흐름입니다.
 
-<img src="../assets/CH03/01_architecture-overview.png" width="720" alt="Client에서 Nginx를 거쳐 Spring A, Spring B로 분기되고 두 서버 모두 Redis를 바라보는 구조">
+<img src="../assets/CH03/terminal/01_architecture-overview.png" width="720" alt="Client에서 Nginx를 거쳐 Spring A, Spring B로 분기되고 두 서버 모두 Redis를 바라보는 구조">
 
 *그림 3-1: 전체 아키텍처 -- 클라이언트 요청은 Nginx를 거쳐 서버 A 또는 B로 전달되고 세션은 Redis에 저장된다*
 
@@ -80,7 +84,7 @@ docker-session-share/
 | 3 | Spring -> Redis | 세션 조회/저장 |
 | 4 | Spring -> Client | 응답 반환 |
 
-<img src="../assets/CH03/02_server-ab-role.png" width="720" alt="서버 A와 B가 각각 독립적으로 Redis를 바라보는 구조">
+<img src="../assets/CH03/terminal/02_server-ab-role.png" width="720" alt="서버 A와 B가 각각 독립적으로 Redis를 바라보는 구조">
 
 *그림 3-2: 서버 A, B 역할 -- 두 서버는 동일한 애플리케이션이며 Redis를 통해 세션을 공유한다*
 
@@ -111,7 +115,7 @@ spring.data.redis.port=${SPRING_REDIS_PORT:6379}
 
 `store-type=redis` 한 줄이 핵심입니다. 이 설정만으로 `HttpSession` 의 저장소가 서버 메모리에서 Redis로 바뀝니다. `SPRING_REDIS_HOST` 는 Docker 환경에서 컨테이너 이름으로 주입됩니다.
 
-<img src="../assets/CH03/04_session-share-code.png" width="720" alt="세션 공유 코드 설명">
+<img src="../assets/CH03/terminal/04_session-share-code.png" width="720" alt="세션 공유 코드 설명">
 
 *그림 3-3: 세션 공유 코드 흐름 -- application.properties 설정만으로 세션 저장소가 Redis로 전환된다*
 
@@ -137,7 +141,7 @@ public String home(HttpServletRequest request, Model model) {
 
 Nginx가 URL 경로를 보고 요청을 서버 A 또는 B로 보냅니다.
 
-<img src="../assets/CH03/03_nginx-routing.png" width="720" alt="Nginx 경로 기반 라우팅 설명">
+<img src="../assets/CH03/terminal/03_nginx-routing.png" width="720" alt="Nginx 경로 기반 라우팅 설명">
 
 *그림 3-4: Nginx 라우팅 -- `/app1` 경로는 서버 A로, `/app2` 경로는 서버 B로 전달된다*
 
@@ -166,7 +170,7 @@ http {
 
 전체 인프라를 하나의 파일로 정의합니다. 아래 코드를 `docker-compose.yml` 에 작성합니다.
 
-<img src="../assets/CH03/05_docker-compose-structure.png" width="720" alt="docker-compose 구성 설명">
+<img src="../assets/CH03/terminal/05_docker-compose-structure.png" width="720" alt="docker-compose 구성 설명">
 
 *그림 3-5: docker-compose 구성 -- Nginx, Spring A, Spring B, Redis 4개 컨테이너가 하나의 네트워크에서 동작한다*
 
@@ -218,7 +222,7 @@ docker-compose up --build
 
 먼저 `localhost/app1/` 에 접속합니다.
 
-<img src="../assets/CH03/06_app1-count1.png" width="720" alt="/app1 접속 시 count=1">
+<img src="../assets/CH03/terminal/06_app1-count1.png" width="720" alt="/app1 접속 시 count=1">
 
 *그림 3-6: /app1 접속 -- App1-Server에서 응답하고 count가 1이다*
 
@@ -226,7 +230,7 @@ docker-compose up --build
 
 이번에는 `localhost/app2/` 에 접속합니다.
 
-<img src="../assets/CH03/07_app2-count2.png" width="720" alt="/app2 접속 시 count=2">
+<img src="../assets/CH03/terminal/07_app2-count2.png" width="720" alt="/app2 접속 시 count=2">
 
 *그림 3-7: /app2 접속 -- App2-Server에서 응답하지만 count가 2로 이어진다*
 
@@ -234,13 +238,13 @@ docker-compose up --build
 
 다시 `localhost/app1/` 에 접속합니다.
 
-<img src="../assets/CH03/08_app1-count3.png" width="720" alt="다시 /app1 접속 시 count=3">
+<img src="../assets/CH03/terminal/08_app1-count3.png" width="720" alt="다시 /app1 접속 시 count=3">
 
 *그림 3-8: 다시 /app1 접속 -- count가 3으로 이어진다. 서버가 바뀌어도 세션이 유지된다*
 
 count가 3입니다. 서버 A -> 서버 B -> 서버 A로 요청이 오갔지만 세션이 끊기지 않았습니다.
 
-<img src="../assets/CH03/09_session-share-summary.png" width="720" alt="왜 Redis 세션 공유가 필요한가 정리">
+<img src="../assets/CH03/terminal/09_session-share-summary.png" width="720" alt="왜 Redis 세션 공유가 필요한가 정리">
 
 *그림 3-9: Redis 세션 공유 정리 -- 서버가 여러 대여도 세션을 외부 저장소에 두면 로그인이 유지된다*
 

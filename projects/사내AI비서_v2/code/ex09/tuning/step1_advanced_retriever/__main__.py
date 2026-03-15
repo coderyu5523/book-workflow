@@ -50,13 +50,13 @@ def main() -> None:
     embeddings = _load_embeddings()
 
     if args.step == "1-1":
-        console.rule("[bold blue]실험 1-1: ParentDocumentRetriever[/bold blue]")
+        console.print("[bold]실험 1-1: ParentDocumentRetriever[/bold]")
         run_parent_doc_experiment(args.query, top_k=args.top_k, embeddings=embeddings)
     elif args.step == "1-2":
-        console.rule("[bold blue]실험 1-2: SelfQueryRetriever[/bold blue]")
+        console.print("[bold]실험 1-2: SelfQueryRetriever[/bold]")
         run_self_query_experiment(args.query, top_k=args.top_k, embeddings=embeddings)
     elif args.step == "1-3":
-        console.rule("[bold blue]실험 1-3: ContextualCompressionRetriever[/bold blue]")
+        console.print("[bold]실험 1-3: ContextualCompressionRetriever[/bold]")
         run_compression_experiment(args.query, top_k=args.top_k, embeddings=embeddings)
 
 

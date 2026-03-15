@@ -87,6 +87,20 @@ def autocrop_all_assets(assets_dir: Path, mermaid_out: Path):
 # 전처리 함수
 # ══════════════════════════════════════
 
+def convert_html_img_to_md(text: str) -> str:
+    """HTML <img> 태그를 마크다운 이미지 문법으로 변환.
+    <img src="path" alt="desc" width="720"> → ![desc](path)"""
+    def _replace(m):
+        attrs = m.group(1)
+        src = re.search(r'src="([^"]+)"', attrs)
+        alt = re.search(r'alt="([^"]*)"', attrs)
+        if src:
+            alt_text = alt.group(1) if alt else ""
+            return f'![{alt_text}]({src.group(1)})'
+        return m.group(0)
+    return re.sub(r'<img\s+([^>]+)/?\s*>', _replace, text)
+
+
 def fix_image_paths(text: str, source_file: Path) -> str:
     """마크다운 이미지 상대경로 → 절대경로로 변환 (file:// 없이)"""
     source_dir = source_file.parent
@@ -152,6 +166,7 @@ def build_integrated_md(front: list, chapters: list, back: list) -> str:
             print(f"   처리 중: {f.name}")
             content = f.read_text(encoding="utf-8")
             content = clean_comments(content)
+            content = convert_html_img_to_md(content)
             content = fix_image_paths(content, f)
             content = remove_story_part_heading(content)
             content = fix_br_tags(content)
@@ -567,6 +582,7 @@ def build_chapter(md_file: Path, config: dict) -> Path | None:
     # 1. 전처리
     content = md_file.read_text(encoding="utf-8")
     content = clean_comments(content)
+    content = convert_html_img_to_md(content)
     content = fix_image_paths(content, md_file)
     content = remove_story_part_heading(content)
     content = fix_br_tags(content)
