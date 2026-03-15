@@ -18,8 +18,7 @@ import typst_builder
 # ── 프로젝트 경로 ──
 BASE = Path(__file__).resolve().parent.parent  # projects/사내AI비서_v2
 BOOK = BASE / "book"
-CHAPTERS = BOOK / "body_v2"
-FRONT = BOOK / "front"
+CHAPTERS = BASE / "chapters"
 BACK = BOOK / "back"
 ASSETS = BASE / "assets"
 
@@ -30,9 +29,7 @@ CONFIG = {
     "mermaid_out": BOOK / "mermaid_output",
     "template": BOOK / "templates" / "book.typ",
     "font_path": Path.home() / "Library" / "Fonts",
-    "front": [
-        FRONT / "prologue.md",
-    ],
+    "front": [],
     "chapters": [
         CHAPTERS / "00-들어가며.md",
         CHAPTERS / "01-환각과-RAG의-첫-만남.md",
