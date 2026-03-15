@@ -64,7 +64,8 @@ steps: [1, 2, 3, 4]
 4. A4.의존성-매퍼 → 컴포넌트 의존성
 5. Context7 호출 → 기술스택 최신화 검증 + 호환성 교차 검증
 6. seed.md 의도 필터 적용 → 의도 안/밖 분류
-7. 산출물: `planning/code-analysis.md`
+7. **Git 레포 정보 수집** → 완성본 레포명 + 예제 레포명을 저자에게 질문. answers.md에 기록
+8. 산출물: `planning/code-analysis.md`
 
 ### STEP 3 (시나리오) — 버전 분해 + 학습 순서
 

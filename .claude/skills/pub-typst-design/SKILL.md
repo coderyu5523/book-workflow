@@ -54,6 +54,23 @@ disable-model-invocation: true
 | `auto-image(path, alt, max-width)` | 1열 중앙 정렬, 페이지 공간에 맞게 자동 축소 |
 | `dual-image(path1, path2, caption1, caption2, gap)` | 2열 이미지 나란히 배치 |
 
+## 디자인 샘플
+
+| 파일 | 용도 |
+|------|------|
+| [sample_test.md](references/samples/sample_test.md) | 샘플 마크다운 (heading, 코드, 표, 인용, 이미지 테스트) |
+| [sample_test.pdf](references/samples/sample_test.pdf) | 빌드 결과 PDF (디자인 기준) |
+| [build_sample.py](references/samples/build_sample.py) | 샘플 빌드 스크립트 |
+| [sample_diagram.d2](references/samples/sample_diagram.d2) | D2 다이어그램 예시 |
+| [sample_diagram.png](references/samples/sample_diagram.png) | D2 렌더링 결과 |
+
+디자인 수정 시 `sample_test.md`로 빌드하여 결과를 `sample_test.pdf`와 비교한다.
+
+## 주의사항
+
+- 마크다운 heading 레벨(h1/h2/h3)을 변경하면 반드시 `book_base.typ`의 `outline(depth:)` 값을 함께 점검하라 → why-log.md#2026-03-15-3
+- 프로젝트의 `book_base.typ`은 반드시 스킬 원본의 **심볼릭 링크**로 유지하라. 복사본은 수정이 전파되지 않는다 → why-log.md#2026-03-15-4
+
 ## 참조
 
 - [typography.md](references/typography.md) — 타이포그래피 규칙 상세

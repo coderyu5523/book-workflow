@@ -112,7 +112,7 @@ def analyze_layout(pdf_path: str, skip_pages: set = None) -> list[dict]:
             })
 
         # ── 과도한 하단 공백 (내용은 있지만 아래가 비어있음) ──
-        elif usage_pct < 45 and total_lines > 4:
+        elif usage_pct < 60 and total_lines > 4:
             issues.append({
                 "page": page_num,
                 "type": "low_usage",
@@ -234,8 +234,7 @@ def print_page_usage(pdf_path: str, skip_pages: set = None):
             continue
 
         max_y = max(b["bbox"][3] for b in all_blocks)
-        min_y = min(b["bbox"][1] for b in all_blocks)
-        usage = (max_y - min_y) / CONTENT_HEIGHT * 100
+        usage = (max_y - content_top) / CONTENT_HEIGHT * 100
         usage = min(usage, 100)
 
         bar_len = int(usage / 100 * 40)

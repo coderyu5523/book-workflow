@@ -46,7 +46,9 @@ HTML_TEMPLATE = """<!DOCTYPE html>
                  'Menlo', 'Monaco', 'Courier New', monospace;
   }}
   .terminal {{
-    width: 1400px;
+    width: max-content;
+    min-width: 800px;
+    padding-right: 40px;
     margin: 0 auto;
     border-radius: 10px;
     overflow: hidden;
@@ -104,12 +106,20 @@ HTML_TEMPLATE = """<!DOCTYPE html>
   }}
   .output .err {{ color: #cc0000; font-weight: 500; }}
   .output .ok  {{ color: #2a9d2a; font-weight: 500; }}
+  .main-title {{
+    font-size: 16px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 8px;
+  }}
 </style>
 </head>
 <body>
 <div class="terminal">
   <div class="body">
-    <div class="prompt">{command}</div>
+    <div class="main-title">{title}</div>
     <div class="output">{output}</div>
   </div>
 </div>

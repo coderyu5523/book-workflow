@@ -1,0 +1,1 @@
+/Users/nomadlab/Desktop/김주혁/workspace/coding-study/집필에이전트 v2/.claude/skills/pub-layout-check/references/scripts/pdf_layout_checker.py

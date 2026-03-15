@@ -36,6 +36,12 @@ steps: [5, 7]
 - 기본 1열 배치
 - 2열은 비유 이미지 2개일 때만
 
+### 페이지 공백 검수
+- PDF 빌드 후 페이지 하단 1/3 이상 공백이 있으면 조치 → why-log.md#2026-03-15-5
+- 조치 방법: (1) 해당 이미지 max-width 축소 (2) 이미지 위치 조정 (3) 텍스트 재배치
+- 공백 해소를 위해 이미지 위치를 맥락에 맞게 앞뒤로 이동할 수 있다
+- `build_chapter()`가 layout-check 후 자동으로 이미지 축소 + 재빌드를 최대 3회 반복한다 → why-log.md#2026-03-15-10
+
 ### 코드블록
 - 위아래 두꺼운 회색 테두리만
 
@@ -43,8 +49,11 @@ steps: [5, 7]
 - 마크다운 기본 디자인 대신 커스텀 디자인
 
 ### 다이어그램
-- 프라이머리 컬러 + 테두리 + 화이트 배경
+- D2만 사용 (Mermaid 미사용)
+- 프라이머리 컬러(파란 계열) + 테두리 + 화이트 배경만 허용
 - 모든 도형 배경 화이트, 회색 금지
+- 빨강/초록/노랑 등 강조색 금지. danger/success 등 의미 색상도 화이트로 통일 → why-log.md#2026-03-15-7
+- 새 D2 생성 시 반드시 샘플 디자인(`references/samples/sample_diagram.d2`)의 classes를 복사하여 사용 → why-log.md#2026-03-15-6
 
 ### 챕터 오프닝
 - 고정 머릿말 디자인
@@ -69,9 +78,16 @@ build → layout-check → 판단 → image-optimize/page-fit → rebuild
 
 ```
 projects/{프로젝트}/book/
-├── build_pdf_typst.py
+├── build_pdf_typst.py          # --chapter 01 (개별) / --all (전체) / (통합)
 ├── pdf_layout_checker.py
 ├── image_optimizer.py
+├── chapter_pdfs/               # 챕터별 개별 PDF 출력
 └── templates/
     └── book.typ
 ```
+
+## 디자인 샘플
+
+디자인 변경 시 반드시 샘플로 검증한다.
+- 샘플 경로: `skills/pub-typst-design/references/samples/`
+- `sample_test.md` → 빌드 → `sample_test.pdf`와 비교

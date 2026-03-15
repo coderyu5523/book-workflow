@@ -56,7 +56,7 @@
 // ── 폰트 설정 ──
 #set text(
   font: ("KoPubDotum_Pro", "Apple SD Gothic Neo"),
-  size: 10pt,
+  size: 8pt,
   lang: "ko",
   fill: rgb("#1a1a1a"),
   tracking: body-tracking,
@@ -118,7 +118,8 @@
 
 // ── 코드 블록 (위아래 굵은 회색선만, 좌우 없음) ──
 #show raw.where(block: true): it => {
-  set text(size: 8pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  set text(size: 6pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  v(6pt)
   line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
   block(
     width: 100%,
@@ -130,11 +131,12 @@
     text(fill: rgb("#1a1a1a"))[#it]
   )
   line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
+  v(6pt)
 }
 
 // ── 인라인 코드 (볼드 통일) ──
 #show raw.where(block: false): it => {
-  text(weight: "bold", fill: rgb("#1e3a5f"))[#it.text]
+  text(weight: "bold", fill: rgb("#1e3a5f"), font: ("Menlo", "KoPubDotum_Pro"))[#it]
 }
 
 // ── 인용 블록 — 디자인 A: 점선 박스 (기본 blockquote) ──
@@ -152,13 +154,13 @@
     radius: 0pt,
     {
       set par(justify: true, leading: 0.9em)
-      text(size: 9pt, fill: rgb("#333333"))[#it.body]
+      text(fill: rgb("#333333"))[#it.body]
     }
   )
 }
 
 // ── 인용 블록 — 디자인 B: 회색 박스 + 프라이머리 라벨 (callout) ──
-// [라벨 - 본문] 형태로 한 줄에 이어서 표시
+// 라벨이 있으면 [라벨 본문], 없으면 [본문]만 표시
 #let callout-box(label, body) = {
   block(
     width: 100%,
@@ -170,7 +172,11 @@
     stroke: none,
     {
       set par(justify: true, leading: 0.9em)
-      text(size: 9pt)[#text(weight: "bold", fill: rgb("#2563eb"))[#label] #text(fill: rgb("#333333"))[\- #body]]
+      if label == [] or label == none {
+        text(fill: rgb("#333333"))[#body]
+      } else {
+        text[#text(weight: "bold", fill: rgb("#2563eb"))[#label] #text(fill: rgb("#333333"))[#body]]
+      }
     }
   )
 }
@@ -186,7 +192,8 @@
 #show table.cell.where(y: 0): set text(fill: rgb("#1a1a1a"), weight: "bold")
 
 #show table: it => {
-  set text(size: 8.5pt)
+  set text(size: 1em)
+  set par(justify: false)
   align(left, block(breakable: true)[#it])
 }
 
@@ -227,7 +234,7 @@
     // 남은 공간에 맞게 축소 시도
     let available = size.height - caption-h - 24pt
     let ratio = available / img-size.height
-    if ratio >= 0.5 {
+    if ratio >= 0.35 {
       target-width * ratio
     } else {
       target-width  // 너무 작아지면 원래 크기 (다음 페이지로)
@@ -311,7 +318,7 @@
   #outline(
     title: none,
     indent: 1.5em,
-    depth: 2,
+    depth: 3,
   )
 ]
 
