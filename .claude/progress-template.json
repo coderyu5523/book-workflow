@@ -59,12 +59,9 @@
       "chapters": []
     },
     "step_6_prologue": {
-      "name": "프롤로그+로드맵",
+      "name": "프롤로그",
       "status": "pending",
-      "artifacts": {
-        "prologue": null,
-        "roadmap": null
-      },
+      "artifact": null,
       "review": {
         "audit": null
       }
@@ -73,8 +70,7 @@
       "name": "마무리",
       "status": "pending",
       "artifacts": {
-        "preface": null,
-        "afterword": null,
+        "epilogue": null,
         "appendix": null
       },
       "final_title": null,
@@ -91,6 +87,11 @@
     "version": "v0.1",
     "status": "pending",
     "artifact": null,
+    "images": {
+      "total_placeholders": 0,
+      "completed": 0,
+      "status": "pending"
+    },
     "review": {
       "insight": null,
       "intent_watch": null,
