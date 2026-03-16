@@ -48,6 +48,21 @@ steps: [1, 2, 3, 4]
 - 공식 문서 기반 [필수/권장/선택/경고] 체크리스트 생성
 - 갭 분석 결과를 outline.md에 포함
 
+### Context7 MCP 불가 시 폴백
+
+Context7 MCP 서버가 연결되지 않거나 응답이 없을 경우:
+
+1. 사용자에게 안내 메시지를 출력한다.
+   ```
+   Context7 MCP 서버가 연결되지 않았습니다.
+   공식 문서 기반 검증을 위해 Context7 MCP를 추가해 주세요.
+
+   설치: claude mcp add context7 -- npx -y @upstash/context7-mcp@latest
+   참고: https://github.com/upstash/context7
+   ```
+2. MCP 없이도 작업은 중단하지 않는다. 로컬 코드(`code/`)와 기존 분석 결과만으로 진행한다.
+3. MCP 없이 진행한 항목에 `[Context7 미검증]` 태그를 붙여 산출물에 표시한다.
+
 ## STEP별 절차
 
 ### STEP 1 (씨앗) — 코드 사전 스캔
