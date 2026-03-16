@@ -48,13 +48,31 @@
 | 터미널 캡처 | screenshot 스킬 → `scripts/terminal_screenshot.py` |
 | 브라우저 캡처 | screenshot 스킬 → Playwright MCP |
 | 개념도 | `[GEMINI PROMPT]`의 프롬프트를 유저가 Gemini에 직접 입력 |
-| 다이어그램 | illustrator에게 Mermaid/D2 렌더링 요청 |
+| 다이어그램 | publisher(인쇄소)가 D2/Mermaid → 이미지 렌더링 |
 
 이미지 생성 후 해당 이미지의 파일명을 교체한다.
 
-### 세션이 끊겼을 때
+### 챕터 완료 후 세션 선택 (가장 중요)
 
-`이어하기` → `prompts/next-session-*.md` 파일을 읽어서 컨텍스트를 복구한다.
+챕터 완료 시 `prompts/next-session-CH[N+1].md`가 자동 생성된다. 유저에게 선택지를 제시한다.
+
+```
+CH[N] 완료!
+
+다음 작업을 선택하세요:
+1. 다음 챕터를 새 세션에서 시작 (프롬프트 생성 완료)
+2. 이 세션에서 바로 다음 챕터 이어서 작성
+3. 이미지 작업 먼저 진행
+```
+
+세션이 끊겼을 때는 `이어하기` → `prompts/next-session-*.md`를 읽어 컨텍스트를 복구한다.
+
+| 완료 시점 | 생성되는 프롬프트 |
+|----------|-----------------|
+| STEP 4 완료 | `next-session-CH01.md` |
+| CH[N] 완료 | `next-session-CH[N+1].md` |
+| 마지막 챕터 완료 | `next-session-마무리.md` |
+| STEP 7 완료 | `next-session-인쇄소.md` |
 
 ### 마무리할 때
 
@@ -71,23 +89,74 @@
 
 ## 워크플로우 (7 STEP)
 
+```mermaid
+flowchart TD
+    START([새 책 만들기]) --> S1
+
+    subgraph P1["Phase 1 — 의도 확립"]
+        S1["STEP 1. 씨앗\n'이 책은 뭐다'"]
+    end
+
+    subgraph P2["Phase 2 — 재료 파악"]
+        S2["STEP 2. 코드 해부\n'재료가 뭐가 있지'"]
+    end
+
+    subgraph P3["Phase 3 — 이야기 설계"]
+        S3["STEP 3. 시나리오 + 버전\n'어떤 순서로 이야기하지'"]
+        S4["STEP 4. 뼈대 세우기\n'목차와 코드 실습 배치'"]
+        S3 --> S4
+    end
+
+    subgraph P4["Phase 4 — 집필"]
+        S5["STEP 5. 챕터 집필"]
+        S5a["Phase 5a — 글 + 다이어그램\nwriter → illustrator → editor"]
+        S5b["Phase 5b — 스크린샷\n(유저 요청)"]
+        S5d["세션 프롬프트 생성\nnext-session-CH[N+1].md"]
+        S5c{{"다음 챕터\n있음?"}}
+        S5 --> S5a --> S5b --> S5d --> S5c
+        S5c -- "예\n(새 세션)" --> S5
+    end
+
+    subgraph P5["Phase 5 — 완성"]
+        S6["STEP 6. 프롤로그 + 로드맵\n'숲을 보여준다'"]
+        S7["STEP 7. 마무리\n'서문, 맺음말, 부록'"]
+        S6 --> S7
+    end
+
+    S1 --> S2 --> S3
+    S4 --> S5
+    S5c -- "아니오" --> S6
+    S7 --> PUB([PDF 빌드 — publisher])
+
+    style P1 fill:#dbeafe,stroke:#3b82f6
+    style P2 fill:#dbeafe,stroke:#3b82f6
+    style P3 fill:#dbeafe,stroke:#3b82f6
+    style P4 fill:#fef3c7,stroke:#f59e0b
+    style P5 fill:#d1fae5,stroke:#10b981
+    style START fill:#fff,stroke:#333
+    style PUB fill:#fff,stroke:#333
 ```
-Phase 1 ── 의도 확립
-  STEP 1. 씨앗              "이 책은 뭐다"
 
-Phase 2 ── 재료 파악
-  STEP 2. 코드 해부          "재료가 뭐가 있지"
+### 에이전트 디스패치
 
-Phase 3 ── 이야기 설계
-  STEP 3. 시나리오 + 버전     "어떤 순서로 이야기하지"
-  STEP 4. 뼈대 세우기         "목차와 코드 실습 배치"
+```mermaid
+flowchart LR
+    MAIN["메인 세션\n(지휘)"] --> AA["analyst-architect\nSTEP 2-4"]
+    MAIN --> W["writer\nSTEP 5-7"]
+    MAIN --> I["illustrator\nSTEP 5"]
+    MAIN --> E["editor\nSTEP 5-7"]
+    MAIN --> PUB["publisher\nD2 렌더링 + PDF 빌드"]
 
-Phase 4 ── 집필
-  STEP 5. 챕터 집필 (반복)    "쓴다"
+    W -- "초안" --> I
+    I -- "다이어그램 삽입" --> E
+    E -- "검토 피드백" --> W
 
-Phase 5 ── 완성
-  STEP 6. 프롤로그 + 로드맵   "숲을 보여준다"
-  STEP 7. 마무리              "서문, 맺음말, 부록"
+    style MAIN fill:#3b82f6,stroke:#3b82f6,color:#fff
+    style AA fill:#dbeafe,stroke:#3b82f6
+    style W fill:#dbeafe,stroke:#3b82f6
+    style I fill:#dbeafe,stroke:#3b82f6
+    style E fill:#dbeafe,stroke:#3b82f6
+    style PUB fill:#d1fae5,stroke:#10b981
 ```
 
 ---
