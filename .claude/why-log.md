@@ -17,7 +17,7 @@
     근본 원인: 서적 캡처 시 스타일 규칙(블랙/볼드/여백)이 부재.
   rule_added_to:
     - .claude/rules/style.md
-    - .claude/rules/auto-chapters.md
+    - .claude/rules/structure.md
 
 - id: "2026-03-15-2"
   date: 2026-03-15
@@ -39,7 +39,7 @@
     기술 파트 시작 시 git clone → 파일 트리 → start/end 안내 형식 필수.
     근본 원인: heading 레벨과 목차 depth의 연관을 점검하지 않음.
   rule_added_to:
-    - .claude/rules/auto-chapters.md
+    - .claude/rules/structure.md
 
 - id: "2026-03-15-4"
   date: 2026-03-15
@@ -73,7 +73,7 @@
     img 경로만 바꾸고 파일을 이동하지 않아 이미지 깨짐.
   rule_added_to:
     - .claude/agents/publisher/AGENT.md
-    - .claude/rules/auto-chapters.md
+    - .claude/rules/structure.md
 
 - id: "2026-03-15-7"
   date: 2026-03-15
@@ -191,7 +191,7 @@
   detail: >
     CH01만 정상 출력. CH02 이후 <br> 누락으로 PDF에서 줄바꿈 깨짐.
   rule_added_to:
-    - .claude/rules/auto-chapters.md
+    - .claude/rules/structure.md
 
 - id: "2026-03-15-20"
   date: 2026-03-15
@@ -264,7 +264,7 @@
   detail: >
     디스패치 테이블의 에이전트 전체가 호출되었는지 검증하지 않아 누락 발생.
   rule_added_to:
-    - .claude/agents/meta/AGENT.md
+    - .claude/rules/structure.md
 
 - id: "2026-03-16-2"
   date: 2026-03-16
@@ -274,5 +274,5 @@
     챕터 작성 시 일러스트레이터를 건너뛰고 writer → editor만 호출하여
     다이어그램/캡처가 누락된 채 챕터가 완료 처리됨.
   rule_added_to:
-    - .claude/agents/meta/AGENT.md
+    - .claude/rules/structure.md
 ```

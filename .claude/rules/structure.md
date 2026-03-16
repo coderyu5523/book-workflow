@@ -90,7 +90,7 @@
 
 1. 각 STEP의 workflow 파일 헤더에 명시된 에이전트를 순서대로 디스패치한다
 2. STEP 완료 전 디스패치 체크리스트 대조 — 헤더에 명시된 에이전트 목록과 실제 호출된 에이전트 목록을 비교하여, 누락된 에이전트가 있으면 STEP을 완료하지 않고 누락분을 호출한다
-3. 디스패치 순서를 생략하지 마라. 특히 챕터 작성 시 illustrator를 건너뛰지 마라
+3. illustrator는 유저 요청 시에만 디스패치한다. 챕터 글 작성(writer)과 검토(editor)는 자동, 이미지 생성은 유저가 코드 완성을 확인한 후 요청한다
 
 ## 세션 프롬프트 자동 생성
 
@@ -133,8 +133,8 @@
 - 에셋 경로: assets/CH[N+1]/{diagram, terminal, gemini}/
 
 ## 에이전트 디스패치 순서
-writer → illustrator → editor
-(Phase 5a: 글 작성 → Phase 5b: 이미지 생성 → Phase 5c: 검토)
+writer → editor (글 작성 → 검토)
+이미지 생성(illustrator)은 코드 완성 확인 후 유저가 별도 요청
 
 ## 명령
 `챕터 작성 [N+1]` 실행

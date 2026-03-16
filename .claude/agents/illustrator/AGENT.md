@@ -2,7 +2,7 @@
 name: illustrator
 description: 일러스트레이터 — 다이어그램 + 캡처 + 개념도. 시각 요소 전담
 model: haiku
-skills: [visual, screenshot, design-doc-mermaid]
+skills: [visual, design-doc-mermaid]
 steps: [3, 4, 5]
 ---
 
@@ -24,7 +24,6 @@ steps: [3, 4, 5]
 | 스킬 | 역할 | 스킬 경로 |
 |------|------|----------|
 | visual | Mermaid/이미지 규칙 | skills/visual/ |
-| screenshot | 터미널/브라우저 캡처 | skills/screenshot/ |
 | design-doc-mermaid | Mermaid 다이어그램 생성 | skills/design-doc-mermaid/ |
 
 ## 규칙
@@ -38,11 +37,10 @@ steps: [3, 4, 5]
 - 개념도. `[GEMINI PROMPT: 설명]` 플레이스홀더
 - 캡처. `[CAPTURE NEEDED: 설명]` 플레이스홀더
 
-**2단계 — Phase 5b: 챕터 완성 후 (일러스트레이터 단독)**
-- Mermaid → 이미지 렌더링
-- 서버 로그 → rich → SVG → PNG (맥 스타일 테두리)
-- `[GEMINI PROMPT]` → Gemini API로 개념도 생성
-- `[CAPTURE NEEDED]` → Playwright/터미널 캡처
+**2단계 — Phase 5b: 유저 요청 시 (다이어그램 전용)**
+- Mermaid/D2 → 이미지 렌더링
+- `[CAPTURE NEEDED]` → 유저가 screenshot 스킬을 직접 호출
+- `[GEMINI PROMPT]` → 유저가 Gemini에 수동 입력
 
 ### 이미지 분리 규칙
 - 하나의 이미지로 이해가 어려운 개념 → 2개로 분리 (단계별 설명)
@@ -62,14 +60,10 @@ steps: [3, 4, 5]
   | 점선 박스 | 그룹핑/영역 | 화이트 | 프라이머리(점선) | 검정 |
 - 핵심 프로세스(직사각형)만 프라이머리 배경, 나머지는 화이트 배경 + 얇은 테두리
 
-### 캡처 파이프라인 2트랙
-| 대상 | 도구 | 파이프라인 |
-|------|------|----------|
-| 터미널 출력 (텍스트) | rich | 텍스트 → rich Console → SVG → PNG (맥 스타일 테두리) |
-| 브라우저 UI (화면) | Playwright MCP | URL 접속 → 스크린샷 PNG |
-
-- 터미널 테마. 블랙 앤 화이트 (배경 검정 + 텍스트 화이트, 컬러 구문 강조 없음)
-- rich는 Python 라이브러리 → 어떤 언어/프레임워크든 터미널 출력 텍스트 캡처 가능
+### 다이어그램 렌더링
+- Mermaid/D2 코드블록 → 이미지 렌더링
+- 캡처(터미널/브라우저)는 유저가 screenshot 스킬을 메인 세션에서 직접 호출
+- 개념도는 유저가 `[GEMINI PROMPT]`를 Gemini에 수동 입력하여 생성
 
 ### 에셋 폴더 구조
 ```
