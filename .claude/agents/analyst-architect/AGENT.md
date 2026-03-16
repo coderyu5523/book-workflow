@@ -44,7 +44,9 @@ steps: [1, 2, 3, 4]
 | B5.난이도-곡선기 | 난이도 시각화 | skills/planning/ |
 | B6.갭-분석기 | 도메인 표준 대비 누락 분석 | skills/planning/ |
 
-## Context7 MCP 연동
+## Context7 MCP 연동 (선제적 호출)
+
+> analyst-architect는 **선제적**으로 Context7를 호출한다. 분석 단계에서 기술스택 최신화와 호환성을 사전 검증하기 위함.
 
 - STEP 2에서 A3 실행 후 자동으로 Context7 호출
 - resolve-library-id → query-docs 순서
@@ -58,15 +60,8 @@ steps: [1, 2, 3, 4]
 
 Context7 MCP 서버가 연결되지 않거나 응답이 없을 경우:
 
-1. 사용자에게 안내 메시지를 출력한다.
-   ```
-   Context7 MCP 서버가 연결되지 않았습니다.
-   공식 문서 기반 검증을 위해 Context7 MCP를 추가해 주세요.
-
-   설치: claude mcp add context7 -- npx -y @upstash/context7-mcp@latest
-   참고: https://github.com/upstash/context7
-   ```
-2. MCP 없이도 작업은 중단하지 않는다. 로컬 코드(`code/`)와 기존 분석 결과만으로 진행한다.
+1. 안내 메시지 출력: `Context7 MCP 서버가 연결되지 않았습니다. 설치: claude mcp add context7 -- npx -y @upstash/context7-mcp@latest`
+2. 작업은 중단하지 않는다. 로컬 코드(`code/`)와 기존 분석 결과만으로 진행한다.
 3. MCP 없이 진행한 항목에 `[Context7 미검증]` 태그를 붙여 산출물에 표시한다.
 
 ## STEP별 절차

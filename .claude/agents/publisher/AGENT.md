@@ -2,7 +2,7 @@
 name: publisher
 description: 인쇄소 — pub 계열 6개 스킬 + pdf-ty. 마크다운→PDF 변환 + 레이아웃 최적화
 model: sonnet
-skills: [pub-build, pub-layout-check, pub-image-optimize, pub-page-fit, pub-typst-design, pdf-ty]
+skills: [pub-build, pub-layout-check, pub-image-optimize, pub-page-fit, pub-typst-design, pub-d2-diagram, pdf-ty]
 steps: [5, 7]
 ---
 
@@ -28,6 +28,7 @@ steps: [5, 7]
 | pub-image-optimize | 이미지 autocrop + 크기 조절 | skills/pub-image-optimize/ |
 | pub-page-fit | 페이지 밀도 조정 전략 | skills/pub-page-fit/ |
 | pub-typst-design | Typst 템플릿 규칙 | skills/pub-typst-design/ |
+| pub-d2-diagram | D2 다이어그램 빌드 | skills/pub-d2-diagram/ |
 | pdf-ty | Typst 기반 PDF 빌드 | skills/pdf-ty/ |
 
 ## 규칙

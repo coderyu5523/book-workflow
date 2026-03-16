@@ -13,7 +13,7 @@
 | `writing/` | `claude-sonnet-4-6` | C1, C2, C3, C4, C5, D2 | storytelling, style, box-style, project-buildup |
 | `planning/` | `claude-sonnet-4-6` | B1, B2, B6, D6 | gap-analysis, pagination |
 | `code/` | `claude-sonnet-4-6` | A1, A2, A3, A4, A5, B3, B4 | code-analysis, code-explanation |
-| `visual/` | `claude-haiku-4-5-20251001` | B4, B5 | mermaid, image |
+| `visual/` | `claude-haiku-4-5-20251001` | B5 | mermaid, image |
 | `screenshot/` | — | — | terminal-capture, browser-capture, capture.py |
 | `review/` | `claude-opus-4-6` | D1, D3, D4, D5 | review-rules |
 
@@ -52,7 +52,7 @@
 | A5. diff-생성기 | 버전A, 버전B → 차이 요약 | code/ |
 | B1. 기능-정렬기 | 기능 목록 + 의존성 → 난이도순 정렬 | planning/ |
 | B2. 스냅샷-설계기 | 정렬된 기능 + 시나리오 → 버전별 스냅샷 | planning/ |
-| B4. 계층-생성기 | 태그 붙은 파일 목록 → 트리 시각화 | code/, visual/ |
+| B4. 계층-생성기 | 태그 붙은 파일 목록 → 트리 시각화 | code/ |
 | B5. 난이도-곡선기 | 챕터 목록 + 개념 수 → 난이도 곡선 | visual/ |
 
 ## Tier 3 — 목록 (6개)
@@ -72,9 +72,9 @@
 
 | STEP | 사용 스킬 |
 |------|----------|
-| 1. 씨앗 | C2 |
+| 1. 씨앗 | C2 + 인사이트 검토(D6) |
 | 2. 코드 해부 | A1, A2, A3, A4 |
-| 3. 시나리오+버전 | A5, B1, B2 |
+| 3. 시나리오+버전 | A5, B1, B2 + 인사이트 검토(B5, D6) |
 | 4. 뼈대 | B3, B4, B5, B6, C4, D6 |
 | 5. 챕터 집필 | C1, C2, C3, C5, D1, D2, D3, D4 |
 | 6. 프롤로그 | C2 |
@@ -102,7 +102,7 @@
 | B1 | 기능-정렬기 | B.설계 | 3 | — | planning/ |
 | B2 | 스냅샷-설계기 | B.설계 | 3 | — | planning/ |
 | B3 | 코드-태거 | B.설계 | 4 | — | code/ |
-| B4 | 계층-생성기 | B.설계 | 4 | — | code/, visual/ |
+| B4 | 계층-생성기 | B.설계 | 4 | — | code/ |
 | B5 | 난이도-곡선기 | B.설계 | 4 | 인사이트, 감수 | visual/ |
 | B6 | 갭-분석기 | B.설계 | 4 | 인사이트 | planning/ |
 | C1 | 비유-생성기 | C.글쓰기 | 5 | — | writing/ |
