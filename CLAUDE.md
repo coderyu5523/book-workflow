@@ -8,46 +8,35 @@
 
 ---
 
-## 핵심 컨셉: 스토리텔링
+## 핵심 컨셉
 
-이 시스템이 만드는 책은 **교과서가 아니라 이야기**다.
-
-- **어려운 용어는 비유로 풀어 설명한다.** "API는 식당의 웨이터와 같습니다." 식으로.
-- **각 챕터는 하나의 에피소드다.** 주인공(독자)이 문제를 만나고, 해결 방법을 찾아가는 여정.
-- **딱딱한 정의 대신 상황을 먼저 보여준다.** "HTTP 상태 코드란..."이 아니라 "코드를 실행했는데 404가 떴습니다."
-- **독자와 대화하듯 쓴다.** "여기서 한 가지 궁금한 점이 생기지 않나요?" 같은 문장으로 끌어들인다.
-- **실패 경험도 이야기한다.** 에러를 만나고 → 원인을 찾고 → 해결하는 과정을 자연스럽게 보여준다.
+이 시스템이 만드는 책은 **교과서가 아니라 이야기**다. 글쓰기 원칙은 `.claude/rules/style.md` 참조.
 
 ---
 
-## 설계 철학: 세 가지 개념만 쓴다
+## 설계 철학
 
 | 개념 | 정체 | 역할 |
 |------|------|------|
 | **STEP** | 흐름 | 1~7번까지 순서대로 진행하는 워크플로우 단계 |
+| **에이전트** | 전문가 | 각 역할을 담당하는 서브에이전트 (writer, editor, illustrator, publisher, analyst-architect) |
 | **스킬** | 도구 | 하나의 작업만 수행하고 결과를 돌려주는 원자적 도구 (22개) |
 | **검토 모드** | 체크리스트 | 산출물 품질을 검증하는 관점과 질문 목록 (3개) |
 
-에이전트는 없다. 하나의 AI가 STEP을 따라가며 스킬을 쓰고, 검토 모드로 점검한다.
-
----
+메인 세션이 workflow를 따라가며 전문 에이전트를 디스패치하고, 각 에이전트가 스킬을 써서 산출물을 만든다.
 
 ## 전체 워크플로우 (7 STEP)
 
 ```
 Phase 1 ── 의도 확립
   STEP 1. 씨앗              "이 책은 뭐다"
-
 Phase 2 ── 재료 파악
   STEP 2. 코드 해부          "재료가 뭐가 있지"
-
 Phase 3 ── 이야기 설계
   STEP 3. 시나리오 + 버전     "어떤 순서로 이야기하지"
   STEP 4. 뼈대 세우기         "목차와 코드 실습 배치"
-
 Phase 4 ── 집필
   STEP 5. 챕터 집필 (반복)    "쓴다"
-
 Phase 5 ── 완성
   STEP 6. 프롤로그 + 로드맵   "숲을 보여준다"
   STEP 7. 마무리              "서문, 맺음말, 부록"
@@ -57,98 +46,38 @@ Phase 5 ── 완성
 
 ## 명령어
 
-사용자가 아래 명령어를 입력하면 해당 워크플로우를 실행한다.
+| 명령어 | STEP | 산출물 | 상세 |
+|--------|------|--------|------|
+| `새 책 만들기` | — | 프로젝트 디렉토리 | 아래 참조 |
+| `씨앗 심기` | 1 | `planning/seed.md` | `workflow/step1-씨앗.md` |
+| `코드 분석` | 2 | `planning/code-analysis.md` | `workflow/step2-코드해부.md` |
+| `시나리오 설계` | 3 | `planning/scenario.md` + `versions/` | `workflow/step3-시나리오.md` |
+| `뼈대 세우기` | 4 | `planning/outline.md` | `workflow/step4-뼈대.md` |
+| `챕터 작성 [N]` | 5 | `chapters/NN-제목.md` | `workflow/step5-챕터집필.md` |
+| `검토 [챕터]` | — | `review/feedback-log.md` | `workflow/review-guide.md` |
+| `프롤로그 생성` | 6 | `book/프롤로그.md` | `workflow/step6-프롤로그.md` |
+| `마무리` | 7 | `book/에필로그.md` 등 | `workflow/step7-마무리.md` |
+| `이어하기` | — | — | `prompts/next-session-*.md` 읽기 |
+| `현재 상태` | — | 터미널 출력 | progress.json 기반 |
 
 ### `새 책 만들기`
-- 새 책 프로젝트를 시작한다.
-- 먼저 책 이름(프로젝트 폴더명)을 물어본다.
-- `projects/[책이름]/` 디렉토리 구조를 생성한다 (아래 "프로젝트 폴더 구조" 참조).
-- **디렉토리 생성 시 주의**: `mkdir -p path/{a,b}` 형태의 brace expansion을 사용하지 않는다. 각 디렉토리를 개별적으로 생성하거나, 한 줄에 하나씩 나열한다.
-  ```bash
-  mkdir -p projects/[책이름]/planning
-  mkdir -p projects/[책이름]/chapters
-  mkdir -p projects/[책이름]/book/front
-  mkdir -p projects/[책이름]/book/body
-  mkdir -p projects/[책이름]/book/back
-  mkdir -p projects/[책이름]/versions
-  mkdir -p projects/[책이름]/questions/pending
-  mkdir -p projects/[책이름]/questions/done
-  mkdir -p projects/[책이름]/code
-  mkdir -p projects/[책이름]/review
-  ```
-- `.claude/progress-template.json`을 복사하여 `projects/[책이름]/progress.json` 생성.
-- **완성 코드 입력 안내**: `code/` 폴더에 완성 코드를 넣거나 GitHub URL을 달라고 안내한다.
-- 코드 사전 스캔 → STEP 1(씨앗 심기) 순서로 진행한다.
 
-### `씨앗 심기`
-- STEP 1 진행. `workflow/step1-씨앗.md` 참조.
-- **코드 사전 스캔** 후 코드 맥락이 반영된 선택지로 질문을 진행한다.
-- 6개 질문 + 인사이트 질문으로 의도를 확립한다.
-- 산출물: `planning/seed.md`
-
-### `코드 분석`
-- STEP 2 진행. `workflow/step2-코드해부.md` 참조.
-- 완성 코드를 의도 필터로 분석한다.
-- 산출물: `planning/code-analysis.md`
-
-### `시나리오 설계`
-- STEP 3 진행. `workflow/step3-시나리오.md` 참조.
-- 시나리오 + 버전 분해 + 버전별 예제 코드 생성.
-- 산출물: `planning/scenario.md` + `versions/`
-
-### `뼈대 세우기`
-- STEP 4 진행. `workflow/step4-뼈대.md` 참조.
-- 코드 실습 분류 + 여정 설계 + 목차 + 갭 분석.
-- 산출물: `planning/outline.md`
-
-### `챕터 작성 [번호]`
-- STEP 5 해당 챕터 진행. `workflow/step5-챕터집필.md` 참조.
-- 이야기 파트 + 기술 파트 작성. 3개 검토 모드 모두 발동.
-- 산출물: `chapters/NN-제목.md`
-
-### `검토 [챕터]`
-- 작성된 챕터에 대해 검토를 재실행한다.
-- `workflow/review-guide.md`의 체크리스트를 따른다.
-- 피드백을 `review/feedback-log.md`에 기록한다.
-
-### `프롤로그 생성`
-- STEP 6 진행. `workflow/step6-프롤로그.md` 참조.
-- 코드 없이 전체 개념을 이야기로 엮는다.
-- 산출물: `book/front/prologue.md`, `book/front/roadmap.md`
-
-### `마무리`
-- STEP 7 진행. `workflow/step7-마무리.md` 참조.
-- 서문, 맺음말, 부록, 최종 제목 확정.
-- 산출물: `book/front/preface.md`, `book/back/afterword.md`, `book/back/appendix.md`
-
-### `현재 상태`
-- `progress.json`을 읽어서 아래 형식으로 출력한다:
-
+책 이름을 묻고 `projects/[책이름]/` 디렉토리 구조를 생성한다.
+**디렉토리 생성 시 주의**: `mkdir -p path/{a,b}` 형태의 brace expansion을 사용하지 않는다.
+```bash
+mkdir -p projects/[책이름]/planning
+mkdir -p projects/[책이름]/chapters
+mkdir -p projects/[책이름]/book/output
+mkdir -p projects/[책이름]/versions
+mkdir -p projects/[책이름]/assets
+mkdir -p projects/[책이름]/questions/pending
+mkdir -p projects/[책이름]/questions/done
+mkdir -p projects/[책이름]/prompts
+mkdir -p projects/[책이름]/code
+mkdir -p projects/[책이름]/review
 ```
-📖 [프로젝트명] — [제목]
-   현재: STEP N. [이름] (in_progress)
-
-── STEP 진행 ──────────────────────
-[x] STEP 1. 씨앗           → seed-v2.md (pass)
-[x] STEP 2. 코드 해부       → code-analysis-v1.md (pass)
-[x] STEP 3. 시나리오+버전   → scenario-v1.md (pass)
-[x] STEP 4. 뼈대           → outline-v1.md (conditional_pass)
-[~] STEP 5. 챕터 집필       → 2/5 완료
-[ ] STEP 6. 프롤로그+로드맵
-[ ] STEP 7. 마무리
-
-── 챕터 상태 ──────────────────────
-[x] CH01 Hello World가 뜨기까지 (v0.1) — pass
-[~] CH02 글 목록을 보여주자 (v0.2) — 작성 중 / 질문 2개
-[ ] CH03 데이터를 저장하는 순간 (v0.3)
-[ ] CH04 우리 집에 자물쇠 달기 (v0.4)
-[ ] CH05 세상에 내보내기 (v0.5)
-
-── 미답변 질문: 2개 ───────────────
-   questions/pending/ 확인 필요
-
-진행률: ████████░░░░░░░ 45%
-```
+`.claude/progress-template.json` → `projects/[책이름]/progress.json` 복사.
+`code/` 폴더에 완성 코드를 넣거나 GitHub URL을 달라고 안내 → 코드 사전 스캔 → STEP 1.
 
 ---
 
@@ -157,77 +86,26 @@ Phase 5 ── 완성
 ```
 projects/[책이름]/
 ├── progress.json               ← 상태 관리 (세션 끊김 시 복구용)
-├── answers.md                  ← 모든 답변 누적
+├── answers.md                  ← 모든 STEP 질문 답변 누적
 ├── planning/                   ← STEP 1~4 산출물
-│   ├── seed-v1.md
-│   ├── code-analysis-v1.md
-│   ├── scenario-v1.md
-│   └── outline-v1.md
-├── chapters/                   ← STEP 5 산출물
-├── book/
-│   ├── front/                  ← 프롤로그, 로드맵, 서문
-│   ├── body/                   ← 본문 챕터 (최종본)
-│   └── back/                   ← 맺음말, 부록
-├── versions/                   ← 버전별 예제 코드
-│   ├── v0.1/
-│   ├── v0.2/
-│   └── ...
+├── chapters/                   ← STEP 5 산출물 (원본, 에셋 경로 유지)
+├── book/                       ← 인쇄소 조립 폴더 (출판용 복사본)
+│   └── output/book.pdf
+├── code/                       ← 유저가 제공한 원천 소스코드
+├── versions/                   ← code/를 기반으로 만든 버전별 예제 코드
+├── assets/                     ← 챕터별 이미지
 ├── questions/                  ← 인사이트 질문 장바구니
 │   ├── pending/
 │   └── done/
-├── code/                       ← 완성 코드 (코드 워크플로우 산출물)
-│   └── README.md
-└── review/
-    └── feedback-log.md
+├── prompts/                    ← 세션 전환용 프롬프트 파일
+└── review/                     ← 검토 모드 피드백 + 수정 이력
 ```
-
-### 산출물 버전 관리
-
-파일명에 `-vN` 접미사를 붙인다. 절대 덮어쓰지 않는다.
-
-```
-planning/seed-v1.md → planning/seed-v2.md → ...
-```
-
-### progress.json — 상태 관리
-
-세션이 끊기거나 다시 시작할 때 현재 상태를 복구하는 파일.
-템플릿: `.claude/progress-template.json` / 예시: `.claude/progress-example.json`
-
-**운영 규칙**:
-1. **STEP 시작 시**: 해당 step의 status를 `in_progress`로, `current_step` 업데이트
-2. **산출물 생성 시**: artifact 경로와 artifact_version 업데이트
-3. **검토 완료 시**: review 결과(pass/conditional_pass/fail) 업데이트
-4. **STEP 완료 시**: status를 `done`으로
-5. **챕터 추가 시**: step_5_chapters.chapters 배열에 push
-6. **세션 재개 시**: progress.json 읽고 `current_step` + 미완료 항목 확인 후 이어가기
-7. **`현재 상태` 명령어**: progress.json 기반으로 요약 출력
 
 ---
 
 ## 상수 — 절대 질문하지 않는다
 
-저자에게 묻지 않고 모든 단계에서 자동 적용되는 규칙.
-
-### 문체 상수
-
-| 상수 | 값 |
-|------|-----|
-| 포맷 | 짧은 쿡북 (100p 권장, 초과 허용) |
-| 스타일 | 스토리텔링 |
-| 톤 | 대화체 |
-| 언어 수준 | 쉽게 (비유 필수) |
-| 비유 길이 | 제한 없음 |
-
-### 구조 상수
-
-| 상수 | 값 |
-|------|-----|
-| 챕터 내부 구조 | 이야기 파트 → 기술 파트 |
-| 코드 분류 | 실습 / 설명 / 참고 3단계 |
-| 성장 방식 | 버전별 성장 (챕터 = 한 버전) |
-| 코드 성격 | 교육용 (실무 코드 금지) |
-| 용어 정리 | 비유 → 기술 파트에서 정식 정의 필수 |
+저자에게 묻지 않고 자동 적용. 문체/구조 상수는 `.claude/rules/style.md`, `.claude/rules/code.md` 참조.
 
 ### 독자 상수
 
@@ -237,98 +115,17 @@ planning/seed-v1.md → planning/seed-v2.md → ...
 | 책 유형 | 개념서 |
 | 코드 비중 | 낮음 (이야기 파트에 코드 없음, 기술 파트에서만) |
 
-### 챕터 내부 구조
-
-```
-┌─────────────────────────────────────┐
-│  이야기 파트 (코드 없음)              │
-│  - 도입 (경험, 상황)                 │
-│  - 개념 (비유)                       │
-│  - 시나리오 진행 (이번 버전에서 뭘 바꾸나)│
-│  - "이것만은 기억하자" + 다음 예고     │
-├─────────────────────────────────────┤
-│  기술 파트 (이야기 끝난 후)            │
-│  - 용어 정리 (비유→정식 정의)          │
-│  - 파일 계층 구조 [실습/설명/참고]      │
-│  - 실습 코드 + 설명 코드              │
-│  - 더 알아보기                       │
-└─────────────────────────────────────┘
-```
-
----
-
-## 글쓰기 규칙
-
-1. **이야기 먼저**: 모든 챕터는 이야기 파트로 시작한다.
-2. **비유는 자유롭게**: 길이 제한 없음. 용어의 정식 설명이 길어지면 기술 파트로 넘긴다.
-3. **기술은 뒤에서**: 이야기 파트가 끝난 후 기술 파트에서 상세 설명.
-4. **비유 → 정의 필수**: 비유로 넘어간 용어는 기술 파트에서 반드시 정식 정의.
-5. **한 챕터 한 버전**: 챕터가 끝나면 결과물이 한 단계 성장.
-6. **점진적 깊이**: 쉬운 것 → 어려운 것.
-7. **코드 최소화**: 이야기 파트에 코드 없음. 기술 파트에서만.
-8. **챕터 닫기**: "이것만은 기억하자" + 다음 버전 예고.
-9. **기술은 저자가 결정**: AI가 제안, 저자가 최종 결정.
-10. **실패 먼저**: 정답부터 알려주지 않는다. 실수 → 에러 → 해결 순서.
-
 ---
 
 ## 검토 모드 (3개)
 
-검토 모드는 에이전트가 아니다. 산출물을 만든 후 "모자를 바꿔 쓰고" 체크리스트를 돌리는 것.
-상세 체크리스트는 `workflow/review-guide.md` 참조.
+산출물 완성 후 체크리스트를 돌리는 검증 단계. 상세: `workflow/review-guide.md`
 
 | 검토 모드 | 발동 시점 | 핵심 |
 |-----------|----------|------|
-| **인사이트 검토** | STEP 1~5 | 저자가 놓친 부분을 짚어주는 추가 질문 |
-| **의도감시 검토** | STEP 5 | seed.md 의도에서 벗어나지 않았는지 7항목 검증 |
-| **감수 검토** | 전 STEP | 기술 감수자 + 독자 대변인 + 이야기 편집장 3인 관점 |
-
-### STEP별 발동 조합
-
-| STEP | 인사이트 | 의도감시 | 감수 |
-|------|---------|---------|------|
-| 1. 씨앗 | O | — | O |
-| 2. 코드 해부 | O | — | O |
-| 3. 시나리오+버전 | O | — | O |
-| 4. 뼈대 | O | — | O |
-| 5. 챕터 집필 | O | O | O |
-| 6. 프롤로그 | — | — | O |
-| 7. 마무리 | — | — | O |
-
----
-
-## 스킬 (22개)
-
-스킬은 `.claude/skills/`에서 관리한다 (v1 구조 동일):
-- `.claude/skills/CATALOG.md` — 22개 스킬 전체 카탈로그 (Tier 1~3 + STEP 매핑)
-- `.claude/skills/writing/` — 스토리텔링, 문체, 박스 스타일, 버전별 성장
-- `.claude/skills/planning/` — 갭 분석, 분량 관리
-- `.claude/skills/code/` — 코드 설명 패턴 (기술 파트)
-- `.claude/skills/visual/` — Mermaid 다이어그램
-- `.claude/skills/review/` — 검토 판정 규칙, 체크리스트
-
----
-
-## 워크플로우 진행 규칙
-
-1. **한 STEP씩 진행**: 각 STEP의 산출물이 완성된 후 다음 STEP으로 넘어간다.
-2. **자연스러운 대화**: 질문을 딱딱하게 나열하지 않고, 대화하듯 자연스럽게 진행한다.
-3. **답변 즉시 저장**: 사용자가 답변할 때마다 `answers.md`에 기록한다.
-4. **STEP 완료 안내**: 각 STEP이 끝나면 다음 STEP 명령어를 안내한다.
-5. **되돌아가기 허용**: 이전 STEP 산출물을 수정하고 싶으면 새 버전으로 생성한다.
-6. **기본값 제안**: 답변이 어려운 항목은 합리적인 기본값을 제안한다.
-7. **인사이트 질문**: 단순히 "뭐야?"가 아니라 "이건 생각해봤어?" 형태로 묻는다.
-8. **의도가 필터다**: seed.md의 의도가 이후 모든 결정의 기준이다.
-9. **상수는 질문하지 않는다**: 톤, 스타일, 챕터 구조, 코드 분류 등은 자동 적용한다.
-
----
-
-## 출력 형식
-
-- 모든 파일은 Markdown 형식으로 작성한다.
-- 파일명은 한글 사용 가능하되, 번호 접두사를 붙인다 (예: `01-시작하기.md`).
-- 코드 블록에는 반드시 언어 태그를 명시한다.
-- 이미지 위치는 `![설명](이미지경로)` 형태로 자리만 잡아두고, 추후 추가한다.
+| **인사이트** | STEP 1~5 | 저자가 놓친 부분을 짚어주는 추가 질문 |
+| **의도감시** | STEP 5 | seed.md 의도에서 벗어나지 않았는지 검증 |
+| **감수** | 전 STEP | 기술 감수자 + 독자 대변인 + 이야기 편집장 3인 관점 |
 
 ---
 
@@ -344,9 +141,10 @@ planning/seed-v1.md → planning/seed-v2.md → ...
 
 | 위치 | 내용 |
 |------|------|
-| `.claude/skills/` | 스킬 5개 카테고리 (writing, planning, code, visual, review) |
+| `.claude/rules/style.md` | 톤, 편집, 금지패턴, 글쓰기 원칙, 출력 형식 |
+| `.claude/rules/code.md` | 코드블록, 파일유형, Git레포, 스크립트 출력 규칙 |
+| `.claude/rules/structure.md` | 버전관리, 워크플로우 진행, progress.json, 질문/선택 규칙 |
 | `.claude/skills/CATALOG.md` | 22개 스킬 카탈로그 |
-| `workflow/step[N]-*.md` | 각 STEP별 실행 가이드 |
+| `.claude/agents/` | 에이전트 5개 (analyst-architect, writer, editor, illustrator, publisher) |
+| `workflow/step[N]-*.md` | STEP별 실행 가이드 |
 | `workflow/review-guide.md` | 검토 모드 체크리스트 |
-| `design/v3/워크플로우-설계-v3.md` | 전체 설계 (상수, 변수, STEP 상세) |
-| `design/v3/스킬-검토모드-구조-v3.md` | 스킬 + 검토 모드 상세 설계 |
