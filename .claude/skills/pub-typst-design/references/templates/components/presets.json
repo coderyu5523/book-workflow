@@ -1,0 +1,28 @@
+{
+  "1": {
+    "name": "클래식 블루",
+    "description": "10pt, 파란 악센트, 둥근 코드블록, 여유로운 배치",
+    "components": {
+      "body": "d1",
+      "heading": "d1",
+      "code": "d1",
+      "inline_code": "d1",
+      "quote": "d1",
+      "table": "d1",
+      "toc": "d1"
+    }
+  },
+  "2": {
+    "name": "컴팩트 모노",
+    "description": "8pt, B&W, 위아래 실선 코드블록, 밀도 높은 배치",
+    "components": {
+      "body": "d2",
+      "heading": "d2",
+      "code": "d2",
+      "inline_code": "d2",
+      "quote": "d2",
+      "table": "d2",
+      "toc": "d2"
+    }
+  }
+}

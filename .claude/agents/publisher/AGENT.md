@@ -40,6 +40,9 @@ steps: [5, 7]
 ### 이미지
 - 기본 1열 배치
 - 2열은 비유 이미지 2개일 때만
+- 테두리 프리셋: CONFIG `image_border_preset`으로 제어 (plain/clean-border/shadow/primary-shadow/minimal)
+- 개념도(gemini/)와 나머지(terminal/diagram/)에 각각 다른 style 적용
+- 프리셋 샘플: `skills/pub-typst-design/references/samples/image-border-samples.typ`
 
 ### 페이지 공백 검수
 - PDF 빌드 후 페이지 하단 1/3 이상 공백이 있으면 조치 → why-log.md#2026-03-15-5
@@ -91,8 +94,23 @@ projects/{프로젝트}/book/
     └── book.typ
 ```
 
+## 디자인 선택 (첫 빌드 시)
+
+1. 카탈로그 안내: `skills/pub-typst-design/references/samples/component-catalog.pdf` 확인 요청
+2. 컴포넌트별 선택 요청 (기본값: 전체 1번 클래식 블루)
+3. 선택 결과 → `--design` 인자로 전달
+4. progress.json에 선택 저장
+
+```bash
+# 프리셋
+python3 book/build_pdf_typst.py --design 1
+
+# 믹스매치
+python3 book/build_pdf_typst.py --design "body=2,heading=1,code=2,table=2"
+```
+
 ## 디자인 샘플
 
 디자인 변경 시 반드시 샘플로 검증한다.
-- 샘플 경로: `skills/pub-typst-design/references/samples/`
-- `sample_test.md` → 빌드 → `sample_test.pdf`와 비교
+- 컴포넌트 카탈로그: `skills/pub-typst-design/references/samples/component-catalog.pdf`
+- 이미지 테두리 샘플: `skills/pub-typst-design/references/samples/image-border-samples.typ`

@@ -299,6 +299,26 @@ def _get_image_aspect_ratio(path: str) -> float | None:
         return None
 
 
+def _detect_image_style(path: str, preset: str = "plain") -> str:
+    """이미지 경로와 프리셋명으로 style 값을 결정.
+    프리셋은 (개념도용, 나머지용) 튜플로 매핑.
+    개념도 = gemini/ 경로의 이미지."""
+    is_gemini = 'gemini/' in path
+
+    presets = {
+        'clean-border': ('bordered', 'minimal'),
+        'shadow': ('shadow', 'shadow'),
+        'primary-shadow': ('bordered-shadow', 'shadow'),
+        'minimal': ('minimal', 'minimal'),
+    }
+
+    pair = presets.get(preset)
+    if pair is None:
+        return 'plain'
+    concept_style, other_style = pair
+    return concept_style if is_gemini else other_style
+
+
 def _detect_image_max_width(path: str) -> str:
     """이미지 경로 패턴으로 유형별 최대 너비(비율) 결정.
     Mermaid 이미지는 종횡비를 감지하여 자동 조절:
@@ -328,18 +348,21 @@ def _detect_image_max_width(path: str) -> str:
         return '0.6'     # 최대 60% (auto-image가 페이지에 맞춰 자동 축소)
 
 
-def fix_typst_content(text: str) -> str:
-    """Pandoc 출력의 Typst 코드를 후처리"""
+def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
+    """Pandoc 출력의 Typst 코드를 후처리.
+    image_border_preset: 이미지 테두리 프리셋명 (plain, clean-border, shadow, primary-shadow, minimal)"""
 
     # 1. 이미지 수정: !#link("path")[alt] → #auto-image (페이지 공간 자동 조절)
     def fix_image(m):
         path = m.group(1)
         alt = m.group(2).strip()
         max_w = _detect_image_max_width(path)
+        style = _detect_image_style(path, image_border_preset)
+        style_param = f', style: "{style}"' if style != "plain" else ""
         if alt:
-            return f'#auto-image("{path}", alt: [{alt}], max-width: {max_w})'
+            return f'#auto-image("{path}", alt: [{alt}], max-width: {max_w}{style_param})'
         else:
-            return f'#auto-image("{path}", max-width: {max_w})'
+            return f'#auto-image("{path}", max-width: {max_w}{style_param})'
 
     text = re.sub(r'!#link\("([^"]+)"\)\[([^\]]*)\]', fix_image, text)
 
@@ -347,7 +370,9 @@ def fix_typst_content(text: str) -> str:
     def fix_box_image(m):
         path = m.group(1)
         max_w = _detect_image_max_width(path)
-        return f'#auto-image("{path}", max-width: {max_w})'
+        style = _detect_image_style(path, image_border_preset)
+        style_param = f', style: "{style}"' if style != "plain" else ""
+        return f'#auto-image("{path}", max-width: {max_w}{style_param})'
 
     text = re.sub(r'#box\(image\("([^"]+)"\)\)', fix_box_image, text)
 
@@ -356,10 +381,12 @@ def fix_typst_content(text: str) -> str:
         path = m.group(1)
         alt = ' '.join(m.group(2).split()) if m.group(2) else ""
         max_w = _detect_image_max_width(path)
+        style = _detect_image_style(path, image_border_preset)
+        style_param = f', style: "{style}"' if style != "plain" else ""
         if alt:
-            return f'#auto-image("{path}", alt: [{alt}], max-width: {max_w})'
+            return f'#auto-image("{path}", alt: [{alt}], max-width: {max_w}{style_param})'
         else:
-            return f'#auto-image("{path}", max-width: {max_w})'
+            return f'#auto-image("{path}", max-width: {max_w}{style_param})'
 
     text = re.sub(
         r'#figure\(image\("([^"]+)"\)\s*,\s*caption:\s*\[([^\]]*)\]\s*\)',
@@ -406,17 +433,27 @@ def fix_typst_content(text: str) -> str:
     return text
 
 
-def merge_template_and_content(template_path: Path, content: str) -> str:
+def merge_template_and_content(template_path: Path, content: str,
+                               design: str | None = None) -> str:
     """템플릿 + Pandoc 변환 내용을 하나의 .typ 파일로 합침
 
-    template_path가 가리키는 디렉토리에 book_base.typ이 있으면
-    프로젝트 설정(book.typ) + 범용 스타일(book_base.typ) + 본문 순서로 합침.
-    없으면 기존처럼 단일 템플릿 + 본문.
+    design이 지정되면 컴포넌트 어셈블러로 book_base를 조립.
+    없으면 기존 book_base.typ 파일을 사용 (하위호환).
     """
     template = template_path.read_text(encoding="utf-8")
-    base_path = template_path.parent / "book_base.typ"
-    if base_path.exists():
-        base = base_path.read_text(encoding="utf-8")
+
+    if design is not None:
+        from design_assembler import parse_design_arg, assemble_book_base
+        selection = parse_design_arg(design)
+        base = assemble_book_base(selection)
+    else:
+        base_path = template_path.parent / "book_base.typ"
+        if base_path.exists():
+            base = base_path.read_text(encoding="utf-8")
+        else:
+            base = ""
+
+    if base:
         return template + "\n" + base + "\n" + content
     return template + "\n" + content
 
@@ -490,6 +527,10 @@ def build(config: dict):
         output_md:   Path      — 통합 마크다운 출력 경로
         output_typ:  Path      — 최종 Typst 출력 경로
         output_pdf:  Path      — PDF 출력 경로
+
+    config 선택 키:
+        image_border_preset: str — 이미지 테두리 프리셋
+            "plain" (기본), "clean-border", "shadow", "primary-shadow", "minimal"
     """
     global _mermaid_counter
 
@@ -531,8 +572,10 @@ def build(config: dict):
     # 5. 후처리 + 템플릿 병합
     print("\n[4/6] 후처리 + 템플릿 병합...")
     raw_content = temp_typ.read_text(encoding="utf-8")
-    fixed_content = fix_typst_content(raw_content)
-    final_typ = merge_template_and_content(config['template'], fixed_content)
+    image_border_preset = config.get('image_border_preset', 'plain')
+    fixed_content = fix_typst_content(raw_content, image_border_preset=image_border_preset)
+    design = config.get('design')
+    final_typ = merge_template_and_content(config['template'], fixed_content, design=design)
     output_typ.write_text(final_typ, encoding="utf-8")
     temp_typ.unlink(missing_ok=True)
     print(f"   최종 Typst: {output_typ.name}")
