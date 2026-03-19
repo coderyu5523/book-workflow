@@ -23,6 +23,7 @@ ASSEMBLY_ORDER = [
     ("_shared", "00-variables.typ"),
     ("_shared", "01-page.typ"),
     ("_variant", "body_{sel}.typ"),
+    ("_variant", "chapter_opening_{sel}.typ"),
     ("_variant", "heading_{sel}.typ"),
     ("_variant", "code_{sel}.typ"),
     ("_variant", "inline_code_{sel}.typ"),
@@ -34,7 +35,7 @@ ASSEMBLY_ORDER = [
     ("_variant", "toc_{sel}.typ"),
 ]
 
-VARIANT_KEYS = ["body", "heading", "code", "inline_code", "quote", "table", "toc"]
+VARIANT_KEYS = ["body", "chapter_opening", "heading", "code", "inline_code", "quote", "table", "toc"]
 
 
 def load_preset(preset_id: str) -> dict[str, str]:

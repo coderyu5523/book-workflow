@@ -4,6 +4,7 @@
     "description": "10pt, 파란 악센트, 둥근 코드블록, 여유로운 배치",
     "components": {
       "body": "d1",
+      "chapter_opening": "d1",
       "heading": "d1",
       "code": "d1",
       "inline_code": "d1",
@@ -17,6 +18,7 @@
     "description": "8pt, B&W, 위아래 실선 코드블록, 밀도 높은 배치",
     "components": {
       "body": "d2",
+      "chapter_opening": "d2",
       "heading": "d2",
       "code": "d2",
       "inline_code": "d2",

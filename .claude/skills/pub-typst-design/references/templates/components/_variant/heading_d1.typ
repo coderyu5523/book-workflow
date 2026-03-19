@@ -1,20 +1,5 @@
 // ── 제목 스타일: Design 1 (클래식 블루) ──
-#show heading.where(level: 1): it => {
-  chapter-title.update(it.body)
-  pagebreak(weak: true)
-  v(60pt)  // 챕터 오프닝: 상단 1/3 여백 (출판 표준)
-  block(
-    width: 100%,
-    below: 16pt,
-    sticky: true,
-    {
-      text(26pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
-      v(8pt)
-      line(length: 100%, stroke: 3pt + rgb("#2563eb"))
-    }
-  )
-  v(14pt)
-}
+// h1(챕터 오프닝)은 chapter_opening_d1.typ에서 정의
 
 #show heading.where(level: 2): it => {
   v(24pt)

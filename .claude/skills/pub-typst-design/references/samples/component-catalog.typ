@@ -93,14 +93,93 @@
     table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "bold")[1. 클래식 블루]],
     table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "bold")[2. 컴팩트 모노]],
     [본문], [10pt, 행간 1.0em], [8pt, 행간 8pt],
-    [제목], [h1: 26pt, h2: 파란 좌측바], [h1: 16pt, h2: 10pt 심플],
+    [챕터 오프닝], [상단 60pt 여백 + 26pt 제목], [여백 없음 + 16pt 제목],
+    [제목], [h2: 파란 좌측바, h3: 13pt], [h2: 10pt 심플, h3: 10pt],
     [코드블록], [둥근 테두리 박스 (radius 8pt)], [위아래 회색 실선],
     [인라인코드], [회색 배경 박스], [볼드 텍스트만],
     [인용], [파란 좌측선 + 연한 배경], [점선 박스],
     [표], [파란 헤더 + 흰 글씨], [회색 헤더 + 검정 글씨],
     [목차], [depth: 2], [depth: 3],
+    [이미지 테두리], [#text(size: 7.5pt)[plain / bordered / shadow / bordered-shadow / minimal]], [#text(size: 7.5pt)[디자인 공통 (image\_border\_preset으로 제어)]],
+    [이미지 레이아웃], [#text(size: 7.5pt)[auto-image / side-image / dual-image]], [#text(size: 7.5pt)[디자인 공통 (함수 파라미터로 제어)]],
   )
 ]
+
+// ══════════════════════════════════════
+// 챕터 오프닝 (chapter_opening)
+// ══════════════════════════════════════
+#pagebreak()
+#label-box("챕터 오프닝", "chapter_opening", "챕터 시작 페이지 레이아웃 (h1)")
+#v(12pt)
+
+#text(11pt, weight: "bold", fill: rgb("#1e40af"))[챕터 오프닝 1 — 클래식 블루 (넓은 여백)]
+#v(6pt)
+#block(
+  width: 100%,
+  height: 200pt,
+  inset: 12pt,
+  stroke: 0.5pt + rgb("#d1d5db"),
+  radius: 4pt,
+  fill: white,
+)[
+  // 상단 여백 시뮬레이션
+  #v(50pt)
+  #block(width: 100%, below: 16pt, {
+    text(26pt, weight: "bold", fill: rgb("#1a1a1a"))[Ch.1: 환각과 RAG의 첫 만남]
+    v(8pt)
+    line(length: 100%, stroke: 3pt + rgb("#2563eb"))
+  })
+  #v(8pt)
+  #block(
+    width: 100%,
+    inset: (left: 10pt, y: 6pt),
+    stroke: (left: 2pt + rgb("#93b4e8")),
+    fill: rgb("#f5f8ff"),
+    radius: (right: 4pt),
+  )[
+    #text(8pt, fill: rgb("#4b5563"))[
+      한 줄 요약: LLM은 우리 회사 문서를 읽은 적이 없다.\
+      핵심 개념: LLM 환각, Context Injection, RAG
+    ]
+  ]
+]
+#v(4pt)
+#text(8pt, fill: rgb("#6b7280"))[상단 60pt 여백으로 출판 표준의 여유로운 챕터 시작. 26pt 큰 제목 + 파란 밑줄.]
+
+#v(16pt)
+
+#text(11pt, weight: "bold", fill: rgb("#1e40af"))[챕터 오프닝 2 — 컴팩트 모노 (최소 여백)]
+#v(6pt)
+#block(
+  width: 100%,
+  height: 200pt,
+  inset: 12pt,
+  stroke: 0.5pt + rgb("#d1d5db"),
+  radius: 4pt,
+  fill: white,
+)[
+  // 여백 없이 바로 시작
+  #block(width: 100%, below: 8pt, {
+    text(16pt, weight: "bold", fill: rgb("#1a1a1a"))[Ch.1: 환각과 RAG의 첫 만남]
+    v(8pt)
+    line(length: 100%, stroke: 3pt + rgb("#2563eb"))
+  })
+  #v(4pt)
+  #block(
+    width: 100%,
+    inset: (x: 10pt, y: 6pt),
+    stroke: (dash: "dashed", paint: rgb("#aaaaaa"), thickness: 1pt),
+  )[
+    #text(8pt, fill: rgb("#333333"))[
+      한 줄 요약: LLM은 우리 회사 문서를 읽은 적이 없다.\
+      핵심 개념: LLM 환각, Context Injection, RAG
+    ]
+  ]
+  #v(8pt)
+  #text(8pt)[사내 AI 비서 시스템은 RAG 기술을 활용하여 사내 문서에서 정확한 답변을 제공합니다. FastAPI로 백엔드를 구성하고, ChromaDB에 문서를 벡터화하여 저장합니다. 이 챕터에서는 LLM 환각의 원인을 살펴보고 RAG가 이를 어떻게 해결하는지 알아봅니다.]
+]
+#v(4pt)
+#text(8pt, fill: rgb("#6b7280"))[상단 여백 없이 바로 시작. 16pt 제목 + 본문이 곧바로 이어져 페이지 활용 극대화.]
 
 // ══════════════════════════════════════
 // 본문 (body)
@@ -140,7 +219,7 @@
 // 제목 (heading)
 // ══════════════════════════════════════
 #pagebreak()
-#label-box("제목", "heading", "h1~h4 스타일")
+#label-box("제목", "heading", "h2~h4 스타일 (h1은 챕터 오프닝)")
 #v(12pt)
 
 #text(11pt, weight: "bold", fill: rgb("#1e40af"))[제목 1 — 클래식 블루]
@@ -151,14 +230,7 @@
   stroke: 0.5pt + rgb("#d1d5db"),
   radius: 4pt,
 )[
-  // h1
-  #block(width: 100%, below: 16pt, {
-    text(26pt, weight: "bold", fill: rgb("#1a1a1a"))[1장 시작하기]
-    v(8pt)
-    line(length: 100%, stroke: 3pt + rgb("#2563eb"))
-  })
   // h2
-  #v(8pt)
   #block(
     width: 100%,
     below: 8pt,
@@ -183,14 +255,7 @@
   stroke: 0.5pt + rgb("#d1d5db"),
   radius: 4pt,
 )[
-  // h1
-  #block(width: 100%, below: 8pt, {
-    text(16pt, weight: "bold", fill: rgb("#1a1a1a"))[1장 시작하기]
-    v(8pt)
-    line(length: 100%, stroke: 3pt + rgb("#2563eb"))
-  })
   // h2
-  #v(8pt)
   #text(10pt, weight: "bold", fill: rgb("#1a1a1a"))[환경 설정]
   #v(6pt)
   // h3
@@ -393,3 +458,192 @@
   \
   #text(9pt, fill: rgb("#6b7280"))[목차 스타일은 동일하며, 표시 깊이만 다릅니다. 실제 목차는 빌드된 PDF에서 확인할 수 있습니다.]
 ]
+
+// ══════════════════════════════════════
+// 이미지 테두리 (image border)
+// ══════════════════════════════════════
+#pagebreak()
+#label-box("이미지 테두리", "image_border", "auto-image의 style 파라미터")
+#v(8pt)
+
+#text(9pt, fill: rgb("#6b7280"))[빌드 시 `image_border_preset` 설정으로 프로젝트 전체에 적용합니다. 개념도(gemini/)와 나머지(terminal/diagram/)에 각각 다른 style이 매핑됩니다.]
+#v(12pt)
+
+// ── plain ──
+#text(10pt, weight: "bold", fill: rgb("#1e40af"))[1. plain — 효과 없음 (기본값)]
+#v(4pt)
+#align(center, image("sample-diagram.png", width: 55%))
+
+#v(12pt)
+
+// ── bordered ──
+#text(10pt, weight: "bold", fill: rgb("#1e40af"))[2. bordered — 프라이머리 컬러 테두리]
+#v(4pt)
+#align(center, block(
+  stroke: 2pt + rgb("#2563eb"),
+  radius: 4pt,
+  clip: true,
+  image("sample-diagram.png", width: 55%)
+))
+
+#v(12pt)
+
+// ── shadow ──
+#text(10pt, weight: "bold", fill: rgb("#1e40af"))[3. shadow — 그림자 효과]
+#v(4pt)
+#align(center, block(
+  stroke: (
+    left: 0.5pt + rgb("#e0e0e0"),
+    top: 0.5pt + rgb("#e0e0e0"),
+    right: 2pt + rgb("#c0c0c0"),
+    bottom: 2pt + rgb("#c0c0c0"),
+  ),
+  radius: 4pt,
+  clip: true,
+  image("sample-diagram.png", width: 55%)
+))
+
+#pagebreak()
+#label-box("이미지 테두리", "image_border", "계속")
+#v(12pt)
+
+// ── bordered-shadow ──
+#text(10pt, weight: "bold", fill: rgb("#1e40af"))[4. bordered-shadow — 테두리 + 그림자]
+#v(4pt)
+#align(center, block(
+  stroke: (
+    left: 2pt + rgb("#2563eb"),
+    top: 2pt + rgb("#2563eb"),
+    right: 3pt + rgb("#1d4ed8"),
+    bottom: 3pt + rgb("#1d4ed8"),
+  ),
+  radius: 4pt,
+  clip: true,
+  image("sample-diagram.png", width: 55%)
+))
+
+#v(12pt)
+
+// ── minimal ──
+#text(10pt, weight: "bold", fill: rgb("#1e40af"))[5. minimal — 얇은 회색 테두리]
+#v(4pt)
+#align(center, block(
+  stroke: 0.5pt + rgb("#e5e7eb"),
+  radius: 2pt,
+  clip: true,
+  image("sample-diagram.png", width: 55%)
+))
+
+#v(16pt)
+
+// ── 프리셋 매핑 표 ──
+#text(11pt, weight: "bold")[프리셋 → style 매핑]
+#v(6pt)
+#{
+  set text(size: 8.5pt)
+  table(
+    columns: (1fr, 1fr, 1fr),
+    stroke: (bottom: 0.5pt + rgb("#e5e7eb")),
+    inset: (x: 10pt, y: 8pt),
+    fill: (_, y) => if y == 0 { rgb("#1e40af") } else if calc.odd(y) { rgb("#f8fafc") } else { white },
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[프리셋명]],
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[개념도 (gemini/)]],
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[나머지]],
+    [clean-border], [bordered], [minimal],
+    [shadow], [shadow], [shadow],
+    [primary-shadow], [bordered-shadow], [shadow],
+    [minimal], [minimal], [minimal],
+  )
+}
+
+// ══════════════════════════════════════
+// 이미지 레이아웃 (image layout)
+// ══════════════════════════════════════
+#pagebreak()
+#label-box("이미지 레이아웃", "image_layout", "auto-image / side-image / dual-image")
+#v(12pt)
+
+#text(11pt, weight: "bold", fill: rgb("#1e40af"))[레이아웃 1 — 1열 기본 (auto-image)]
+#v(4pt)
+#text(9pt, fill: rgb("#6b7280"))[가장 기본적인 배치. 이미지가 페이지 너비의 일정 비율을 차지하며, 남은 공간에 맞춰 자동 축소됩니다.]
+#v(8pt)
+#align(center, block(
+  stroke: 0.5pt + rgb("#e5e7eb"),
+  radius: 4pt,
+  clip: true,
+  image("sample-diagram.png", width: 70%)
+))
+#align(center, text(8pt, fill: rgb("#6b7280"))[LLM 단독 vs RAG 비교])
+
+#v(20pt)
+
+#text(11pt, weight: "bold", fill: rgb("#1e40af"))[레이아웃 2 — 텍스트 + 이미지 (side-image)]
+#v(4pt)
+#text(9pt, fill: rgb("#6b7280"))[작은 이미지를 텍스트 옆에 나란히 배치합니다. 비유 이미지에 적합합니다.]
+#v(8pt)
+#grid(
+  columns: (45%, 1fr),
+  column-gutter: 16pt,
+  align: (center + horizon, left + top),
+  image("sample-diagram.png", width: 100%),
+  [
+    #text(9pt)[
+      왼쪽 경로는 LLM 단독 방식입니다. 질문이 바로 LLM에 들어가고, 학습 데이터만으로 답변합니다. 사내 문서에 대한 질문에는 환각이 발생합니다.
+
+      오른쪽 경로는 RAG 방식입니다. 질문이 먼저 검색 엔진을 거쳐 벡터DB에서 관련 문서를 찾고, 이를 LLM에 컨텍스트로 전달하여 정확한 답변을 생성합니다.
+    ]
+  ],
+)
+
+#v(20pt)
+
+#text(11pt, weight: "bold", fill: rgb("#1e40af"))[레이아웃 3 — 이미지 2개 나란히 (dual-image)]
+#v(4pt)
+#text(9pt, fill: rgb("#6b7280"))[이미지 두 개를 좌우로 나란히 배치합니다. 비교 설명에 적합합니다.]
+#v(8pt)
+#grid(
+  columns: (1fr, 1fr),
+  column-gutter: 16pt,
+  align: center,
+  [
+    #block(
+      stroke: 0.5pt + rgb("#e5e7eb"),
+      radius: 4pt,
+      clip: true,
+      image("sample-diagram.png", width: 100%)
+    )
+    #v(4pt)
+    #text(8pt, fill: rgb("#6b7280"))[LLM 단독 vs RAG 비교]
+  ],
+  [
+    #block(
+      stroke: 2pt + rgb("#2563eb"),
+      radius: 4pt,
+      clip: true,
+      image("sample-diagram.png", width: 100%)
+    )
+    #v(4pt)
+    #text(8pt, fill: rgb("#6b7280"))[같은 이미지, bordered 스타일 적용]
+  ],
+)
+
+#v(20pt)
+
+// ── 레이아웃 함수 요약 ──
+#text(11pt, weight: "bold")[레이아웃 함수 요약]
+#v(6pt)
+#{
+  set text(size: 8.5pt)
+  table(
+    columns: (1fr, 1.5fr, 1.5fr),
+    stroke: (bottom: 0.5pt + rgb("#e5e7eb")),
+    inset: (x: 10pt, y: 8pt),
+    fill: (_, y) => if y == 0 { rgb("#1e40af") } else if calc.odd(y) { rgb("#f8fafc") } else { white },
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[함수]],
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[용도]],
+    table.cell(fill: rgb("#1e40af"))[#text(fill: white, weight: "medium")[파라미터]],
+    [`auto-image`], [1열 이미지 (기본)], [max-width, style, alt],
+    [`side-image`], [텍스트 + 이미지 2열], [img-width (기본 35%), gap],
+    [`dual-image`], [이미지 2개 나란히], [caption1, caption2, gap],
+  )
+}

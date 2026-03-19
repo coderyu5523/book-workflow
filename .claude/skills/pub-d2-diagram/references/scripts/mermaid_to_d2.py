@@ -245,6 +245,17 @@ _RE_EDGE = re.compile(
     + _NODE_WITH_OPT_BRACKET
 )
 
+# 체인 엣지 계속 패턴: --> NODE (앞에 src 없이, 문자열 시작부터 매칭)
+_RE_CHAIN_CONT = re.compile(
+    r'\s*(?:'
+    r'-->\s*\|([^|]*)\|\s*'       # -->|label|
+    r'|--\s*"([^"]*)"\s*-->\s*'   # -- "label" -->
+    r'|-->\s*'                     # -->
+    r'|-+\s*"([^"]*)"\s*-+>\s*'   # -- "label" --> (variant)
+    r')\s*'
+    + _NODE_WITH_OPT_BRACKET
+)
+
 # subgraph 패턴
 _RE_SUBGRAPH = re.compile(
     r'subgraph\s+(\w+)\s*\["?([^"\]]*)"?\]', re.IGNORECASE
@@ -283,6 +294,32 @@ def _map_classdef_to_d2(name: str, style_str: str) -> str:
     if name.lower() == "default":
         return "process"
     return "process"
+
+
+def _register_node_from_line(line: str, node_id: str,
+                              graph: MermaidGraph,
+                              current_subgraph: Subgraph | None) -> None:
+    """엣지에 포함된 노드를 graph.nodes에 등록."""
+    if node_id in graph.nodes:
+        if current_subgraph and node_id not in current_subgraph.node_ids:
+            current_subgraph.node_ids.append(node_id)
+        return
+    for nm in _RE_NODE_BRACKET.finditer(line):
+        if nm.group(1) == node_id:
+            raw_label = (nm.group(2) or nm.group(3) or nm.group(4)
+                         or nm.group(5) or nm.group(6) or nm.group(7) or "")
+            shape = "diamond" if (nm.group(4) is not None or nm.group(5) is not None) else "rectangle"
+            graph.nodes[node_id] = Node(
+                id=node_id,
+                label=_clean_label(raw_label) if raw_label else node_id,
+                shape=shape,
+            )
+            if current_subgraph and node_id not in current_subgraph.node_ids:
+                current_subgraph.node_ids.append(node_id)
+            return
+    graph.nodes[node_id] = Node(id=node_id, label=node_id)
+    if current_subgraph and node_id not in current_subgraph.node_ids:
+        current_subgraph.node_ids.append(node_id)
 
 
 def parse_mermaid(code: str) -> MermaidGraph:
@@ -343,38 +380,29 @@ def parse_mermaid(code: str) -> MermaidGraph:
         if "~~~" in line:
             continue
 
-        # 엣지 파싱 (엣지 안에 노드 정의가 포함될 수 있음)
+        # 엣지 파싱 — 체인 엣지 지원 (A --> B --> C → 2개 엣지)
         m = _RE_EDGE.search(line)
         if m:
             src_id = m.group(1)
-            # groups: 1=src_id, 2=-->|label|, 3=--"label"-->, 4=--"label"-->variant
-            # 5=dst_id
             label = m.group(2) or m.group(3) or m.group(4) or ""
             dst_id = m.group(5)
-            label = _clean_label(label)
-            graph.edges.append(Edge(src=src_id, dst=dst_id, label=label))
+            graph.edges.append(Edge(src=src_id, dst=dst_id, label=_clean_label(label)))
+            _register_node_from_line(line, src_id, graph, current_subgraph)
+            _register_node_from_line(line, dst_id, graph, current_subgraph)
 
-            # 엣지에 포함된 노드 인라인 정의 추출
-            for node_id in (src_id, dst_id):
-                if node_id not in graph.nodes:
-                    # 같은 줄에서 노드 정의 찾기
-                    for nm in _RE_NODE_BRACKET.finditer(line):
-                        if nm.group(1) == node_id:
-                            raw_label = nm.group(2) or nm.group(3) or nm.group(4) or nm.group(5) or nm.group(6) or nm.group(7) or ""
-                            shape = "diamond" if (nm.group(4) is not None or nm.group(5) is not None) else "rectangle"
-                            graph.nodes[node_id] = Node(
-                                id=node_id,
-                                label=_clean_label(raw_label) if raw_label else node_id,
-                                shape=shape,
-                            )
-                            if current_subgraph and node_id not in current_subgraph.node_ids:
-                                current_subgraph.node_ids.append(node_id)
-                            break
-                    else:
-                        # 정의 없으면 ID를 라벨로 사용
-                        graph.nodes[node_id] = Node(id=node_id, label=node_id)
-                        if current_subgraph and node_id not in current_subgraph.node_ids:
-                            current_subgraph.node_ids.append(node_id)
+            # 체인 계속: B --> C --> D ...
+            remaining = line[m.end():]
+            prev_dst = dst_id
+            while remaining.strip():
+                cm = _RE_CHAIN_CONT.match(remaining)
+                if not cm:
+                    break
+                chain_label = cm.group(1) or cm.group(2) or cm.group(3) or ""
+                chain_dst = cm.group(4)
+                graph.edges.append(Edge(src=prev_dst, dst=chain_dst, label=_clean_label(chain_label)))
+                _register_node_from_line(line, chain_dst, graph, current_subgraph)
+                prev_dst = chain_dst
+                remaining = remaining[cm.end():]
             continue
 
         # 독립 노드 정의 (엣지 없이)
@@ -487,16 +515,25 @@ def generate_d2(graph: MermaidGraph) -> str:
                 pass  # 이미 출력됨
 
     # subgraph에 속하지 않는 엣지 또는 subgraph 간 엣지
-    subgraph_internal: set[tuple[str, str]] = set()
+    subgraph_internal: set[tuple[str, str, str]] = set()
     for sg in graph.subgraphs:
         sg_set = set(sg.node_ids)
         for edge in graph.edges:
             if edge.src in sg_set and edge.dst in sg_set:
                 subgraph_internal.add((edge.src, edge.dst, edge.label))
 
+    # 노드 → 서브그래프 소속 매핑 (크로스 서브그래프 엣지용)
+    node_to_sg: dict[str, str] = {}
+    for sg in graph.subgraphs:
+        for nid in sg.node_ids:
+            node_to_sg[nid] = sg.id
+
     for edge in graph.edges:
         if (edge.src, edge.dst, edge.label) not in subgraph_internal:
-            parts.append(_d2_edge_line(edge))
+            # 크로스 서브그래프 엣지: fully-qualified 경로 사용
+            q_src = f"{node_to_sg[edge.src]}.{edge.src}" if edge.src in node_to_sg else edge.src
+            q_dst = f"{node_to_sg[edge.dst]}.{edge.dst}" if edge.dst in node_to_sg else edge.dst
+            parts.append(_d2_edge_line(Edge(src=q_src, dst=q_dst, label=edge.label)))
 
     # 끝
     parts.append("")

@@ -70,10 +70,20 @@ steps: [5, 7]
 
 ### 1. 디자인 선택 (첫 빌드 시 1회)
 
-1. 카탈로그 안내 → `component-catalog.pdf` 열어서 보여줌
+1. 카탈로그 열기 → 아래 명령으로 유저에게 보여줌
 2. 컴포넌트별 번호 선택 요청 (기본값: 전체 1번)
-3. 선택 결과 → `--design` 인자로 변환
+3. 유저의 한글 선택을 `--design` 인자로 변환
 4. progress.json에 선택 저장 (이후 빌드에서 재사용)
+
+> **PDF 열기 규칙**: OS 기본 뷰어로 연다. VSCode는 PDF 렌더링이 불안정하므로 사용하지 않는다.
+> - macOS (darwin) → `open`
+> - Windows → `start`
+> - Linux → `xdg-open`
+
+유저가 한글로 선택하면 영문 키로 변환한다.
+- 본문→body, 제목→heading, 코드블록→code, 인라인코드→inline_code
+- 인용→quote, 표→table, 목차→toc
+- 이미지 테두리→image_border_preset (별도 설정)
 
 ### 2. D2 다이어그램 변환
 
