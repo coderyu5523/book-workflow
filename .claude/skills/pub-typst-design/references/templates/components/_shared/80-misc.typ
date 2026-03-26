@@ -17,5 +17,5 @@
 
 // ── 링크 스타일 ──
 #show link: it => {
-  text(fill: rgb("#2563eb"))[#it]
+  text(fill: color-primary)[#it]
 }

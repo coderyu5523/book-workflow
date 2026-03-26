@@ -348,7 +348,18 @@ def _detect_image_max_width(path: str) -> str:
         return '0.6'     # 최대 60% (auto-image가 페이지에 맞춰 자동 축소)
 
 
-def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
+def _detect_image_category(path: str) -> str:
+    """이미지 경로로 카테고리 분류 (변수 기반 모드용)"""
+    if '/gemini/' in path or 'chapter-opening' in path:
+        return 'gemini'
+    elif '/terminal/' in path:
+        return 'terminal'
+    elif '/diagram/' in path or 'mermaid_' in path:
+        return 'diagram'
+    return 'default'
+
+
+def fix_typst_content(text: str, image_border_preset: str = "plain", use_image_variables: bool = False) -> str:
     """Pandoc 출력의 Typst 코드를 후처리.
     image_border_preset: 이미지 테두리 프리셋명 (plain, clean-border, shadow, primary-shadow, minimal)"""
 
@@ -356,6 +367,14 @@ def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
     def fix_image(m):
         path = m.group(1)
         alt = m.group(2).strip()
+        if use_image_variables:
+            cat = _detect_image_category(path)
+            width_var = f'img-{cat}-width'
+            style_var = f'img-{cat}-style'
+            if alt:
+                return f'#auto-image("{path}", alt: [{alt}], max-width: {width_var}, style: {style_var})'
+            else:
+                return f'#auto-image("{path}", max-width: {width_var}, style: {style_var})'
         max_w = _detect_image_max_width(path)
         style = _detect_image_style(path, image_border_preset)
         style_param = f', style: "{style}"' if style != "plain" else ""
@@ -369,6 +388,11 @@ def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
     # 2. 이미지 수정: #box(image("path")) → #auto-image
     def fix_box_image(m):
         path = m.group(1)
+        if use_image_variables:
+            cat = _detect_image_category(path)
+            width_var = f'img-{cat}-width'
+            style_var = f'img-{cat}-style'
+            return f'#auto-image("{path}", max-width: {width_var}, style: {style_var})'
         max_w = _detect_image_max_width(path)
         style = _detect_image_style(path, image_border_preset)
         style_param = f', style: "{style}"' if style != "plain" else ""
@@ -380,6 +404,14 @@ def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
     def fix_figure_image(m):
         path = m.group(1)
         alt = ' '.join(m.group(2).split()) if m.group(2) else ""
+        if use_image_variables:
+            cat = _detect_image_category(path)
+            width_var = f'img-{cat}-width'
+            style_var = f'img-{cat}-style'
+            if alt:
+                return f'#auto-image("{path}", alt: [{alt}], max-width: {width_var}, style: {style_var})'
+            else:
+                return f'#auto-image("{path}", max-width: {width_var}, style: {style_var})'
         max_w = _detect_image_max_width(path)
         style = _detect_image_style(path, image_border_preset)
         style_param = f', style: "{style}"' if style != "plain" else ""
@@ -434,7 +466,10 @@ def fix_typst_content(text: str, image_border_preset: str = "plain") -> str:
 
 
 def merge_template_and_content(template_path: Path, content: str,
-                               design: str | None = None) -> str:
+                               design: str | None = None,
+                               design_state: dict | None = None,
+                               skip_cover: bool = False,
+                               skip_toc: bool = False) -> str:
     """템플릿 + Pandoc 변환 내용을 하나의 .typ 파일로 합침
 
     design이 지정되면 컴포넌트 어셈블러로 book_base를 조립.
@@ -445,7 +480,8 @@ def merge_template_and_content(template_path: Path, content: str,
     if design is not None:
         from design_assembler import parse_design_arg, assemble_book_base
         selection = parse_design_arg(design)
-        base = assemble_book_base(selection)
+        base = assemble_book_base(selection, design_state=design_state,
+                                  skip_cover=skip_cover, skip_toc=skip_toc)
     else:
         base_path = template_path.parent / "book_base.typ"
         if base_path.exists():
@@ -461,6 +497,33 @@ def merge_template_and_content(template_path: Path, content: str,
 # ══════════════════════════════════════
 # Typst 컴파일
 # ══════════════════════════════════════
+
+def typst_compile_svg(typ_path: Path, svg_dir: Path,
+                      font_path: Path | None = None) -> int:
+    """Typst → 페이지별 SVG 컴파일. 생성된 페이지 수 반환."""
+    svg_dir.mkdir(parents=True, exist_ok=True)
+    for old in svg_dir.glob("page_*.svg"):
+        old.unlink()
+
+    svg_pattern = str(svg_dir / "page_{p}.svg")
+    cmd = [
+        'typst', 'compile',
+        str(typ_path), svg_pattern,
+        '--format', 'svg',
+        '--root', '/',
+    ]
+    if font_path:
+        cmd.extend(['--font-path', str(font_path)])
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print(f"   [오류] Typst SVG 컴파일 실패:\n{result.stderr}")
+        raise RuntimeError(result.stderr)
+
+    page_count = len(list(svg_dir.glob("page_*.svg")))
+    print(f"   SVG 컴파일 완료: {page_count}페이지")
+    return page_count
+
 
 def typst_compile(typ_path: Path, pdf_path: Path,
                   font_path: Path | None = None) -> bool:
@@ -505,6 +568,128 @@ def check_dependencies() -> bool:
         print(f"   {tool}: {version}")
 
     return True
+
+
+# ══════════════════════════════════════
+# Stage 1: raw .typ 생성 (캐시용)
+# ══════════════════════════════════════
+
+def build_raw_typ(front: list, chapters: list, back: list,
+                  mermaid_out: Path, assets_dir: Path,
+                  md_output: Path,
+                  image_border_preset: str = "plain",
+                  use_image_variables: bool = False) -> str:
+    """Stage 1: MD 파일들 → 통합 MD → Pandoc → 후처리된 raw .typ 콘텐츠.
+
+    템플릿/디자인 병합 전 단계까지만 실행하고 결과 문자열을 반환.
+    디자인 변경 시 이 결과를 캐시하여 Stage 2만 재실행하면 ~200ms로 처리 가능.
+    """
+    global _mermaid_counter
+    _mermaid_counter = 0
+
+    # 이미지 공백 제거
+    autocrop_all_assets(assets_dir, mermaid_out)
+
+    # 통합 MD
+    integrated = build_integrated_md(front, chapters, back, mermaid_out)
+    md_output.parent.mkdir(parents=True, exist_ok=True)
+    md_output.write_text(integrated, encoding="utf-8")
+
+    # Pandoc 변환
+    raw_typ_path = md_output.with_suffix('.raw.typ')
+    if not md_to_typst(md_output, raw_typ_path):
+        raise RuntimeError("Pandoc 변환 실패")
+
+    # 후처리
+    raw = raw_typ_path.read_text(encoding="utf-8")
+    fixed = fix_typst_content(raw, image_border_preset=image_border_preset, use_image_variables=use_image_variables)
+    raw_typ_path.unlink(missing_ok=True)
+
+    print(f"   Stage 1 완료: raw .typ ({len(fixed)} chars)")
+    return fixed
+
+
+# ══════════════════════════════════════
+# 부분 빌드 함수
+# ══════════════════════════════════════
+
+def build_partial(md_content: str, config: dict,
+                  design_state: dict | None = None,
+                  include_cover: bool = False) -> Path | None:
+    """선택된 블록만 PDF로 빌드 (경량 빌드)
+
+    Parameters:
+        md_content: 선택된 블록들의 마크다운 텍스트
+        config: 빌드 설정 (build()와 동일한 키)
+        design_state: 에디터 디자인 상태 딕셔너리
+        include_cover: 표지 페이지 포함 여부
+    Returns:
+        생성된 PDF 경로, 실패 시 None
+    """
+    import tempfile
+
+    title = config.get('title', 'Book')
+    print(f"{title} 부분 PDF 생성 (Typst)")
+    print("-" * 40)
+
+    # 0. 의존성 확인
+    if not check_dependencies():
+        return None
+
+    # 1. 임시 MD 파일 생성
+    book_dir = config['output_md'].parent
+    tmp_md = book_dir / "_preview_partial.md"
+    tmp_md.write_text(md_content, encoding="utf-8")
+    print(f"   임시 MD: {tmp_md.name} ({len(md_content)} chars)")
+
+    # 2. 전처리 (이미지 경로, br 태그 등)
+    mermaid_out = config.get('mermaid_out', book_dir / '_mermaid_images')
+    processed = build_integrated_md([], [tmp_md], [], mermaid_out)
+    tmp_md.write_text(processed, encoding="utf-8")
+
+    # 3. Pandoc 변환
+    print("   Pandoc 변환...")
+    tmp_raw_typ = book_dir / "_preview_partial.raw.typ"
+    if not md_to_typst(tmp_md, tmp_raw_typ):
+        print("   [오류] Pandoc 변환 실패")
+        return None
+
+    # 4. 후처리
+    raw_content = tmp_raw_typ.read_text(encoding="utf-8")
+    image_border_preset = config.get('image_border_preset', 'plain')
+    fixed_content = fix_typst_content(raw_content, image_border_preset=image_border_preset)
+
+    # 5. 템플릿 병합 (디자인 상태 반영)
+    design = config.get('design')
+    # design이 없으면 design_state의 components로 생성
+    if not design and design_state:
+        components = design_state.get('components', {})
+        if components:
+            design = ",".join(f"{k}={v}" for k, v in components.items())
+
+    final_typ = merge_template_and_content(
+        config['template'], fixed_content,
+        design=design, design_state=design_state,
+        skip_cover=not include_cover, skip_toc=not include_cover
+    )
+
+    out_typ = book_dir / "_preview_partial.typ"
+    out_pdf = book_dir / "_preview_partial.pdf"
+    out_typ.write_text(final_typ, encoding="utf-8")
+
+    # 6. Typst 컴파일
+    print("   Typst 컴파일...")
+    if not typst_compile(out_typ, out_pdf, config.get('font_path')):
+        print("   [오류] Typst 컴파일 실패")
+        return None
+
+    # 7. 임시 파일 정리
+    for f in [tmp_md, tmp_raw_typ, out_typ]:
+        f.unlink(missing_ok=True)
+
+    size_kb = out_pdf.stat().st_size / 1024
+    print(f"   완료: {out_pdf.name} ({size_kb:.0f} KB)")
+    return out_pdf
 
 
 # ══════════════════════════════════════
@@ -575,7 +760,9 @@ def build(config: dict):
     image_border_preset = config.get('image_border_preset', 'plain')
     fixed_content = fix_typst_content(raw_content, image_border_preset=image_border_preset)
     design = config.get('design')
-    final_typ = merge_template_and_content(config['template'], fixed_content, design=design)
+    design_state = config.get('design_state')
+    final_typ = merge_template_and_content(config['template'], fixed_content,
+                                           design=design, design_state=design_state)
     output_typ.write_text(final_typ, encoding="utf-8")
     temp_typ.unlink(missing_ok=True)
     print(f"   최종 Typst: {output_typ.name}")

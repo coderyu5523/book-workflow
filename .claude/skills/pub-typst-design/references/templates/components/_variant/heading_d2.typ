@@ -7,9 +7,9 @@
     below: heading-gap,
     sticky: true,
     {
-      text(16pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
+      text(h1-size, weight: "bold", fill: color-text)[#it.body]
       v(8pt)
-      line(length: 100%, stroke: 3pt + rgb("#2563eb"))
+      line(length: 100%, stroke: 3pt + color-primary)
     }
   )
   v(heading-gap)
@@ -21,7 +21,7 @@
     width: 100%,
     below: heading-gap,
     sticky: true,
-    text(10pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
+    text(h2-size, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
   )
   v(heading-gap)
 }
@@ -31,7 +31,7 @@
   block(
     below: heading-gap,
     sticky: true,
-    text(10pt, weight: "semibold", fill: rgb("#374151"))[#it.body]
+    text(h3-size, weight: "semibold", fill: rgb("#374151"))[#it.body]
   )
   v(heading-gap)
 }
@@ -41,7 +41,7 @@
   block(
     below: heading-gap,
     sticky: true,
-    text(10pt, weight: "medium", fill: rgb("#555555"))[#it.body]
+    text(h4-size, weight: "medium", fill: rgb("#555555"))[#it.body]
   )
   v(heading-gap)
 }

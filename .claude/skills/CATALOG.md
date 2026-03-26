@@ -1,4 +1,4 @@
-# 스킬 카탈로그 (23개)
+# 스킬 카탈로그 (23개 + PM 13개)
 
 하나의 작업만 수행하고 결과를 돌려주는 원자적 도구. 판단하지 않는다.
 
@@ -118,3 +118,25 @@
 | D5 | 의도-대조기 | D.검증 | — | 의도감시 | review/ |
 | D6 | 분량-계산기 | D.검증 | 4, 7 | 인사이트, 감수 | planning/ |
 | E1 | 이미지-분석기 | E.이미지 | 5 | — | image-analyzer/ |
+
+---
+
+## PM 스킬 (pm-strategist 에이전트 전용, 13개)
+
+외부 설치 스킬 3개에서 파생된 PM 전략 스킬. `pm-strategist` 에이전트가 소유한다.
+
+| # | 스킬 | 시리즈 | 하는 일 | 출처 스킬 |
+|---|------|--------|---------|----------|
+| PM1 | 비전-설계 | PM.전략 | 제품 비전 + From→To 내러티브 | product-management |
+| PM2 | 포지셔닝 | PM.전략 | April Dunford 포지셔닝 | product-management + marketing-strategy-pmm |
+| PM3 | 로드맵 | PM.전략 | Outcome 기반 Now/Next/Later | product-management |
+| PM4 | 우선순위 | PM.전략 | RICE/ICE 스코어링 + Kill 조건 | product-management |
+| PM5 | PMF-측정 | PM.전략 | Sean Ellis 설문 + 리텐션 | product-management |
+| F1 | 밸류-래더 | F.퍼널 | 가치 사다리 설계 | funnel-architect |
+| F2 | 퍼널-타입 | F.퍼널 | 목적별 퍼널 유형 선택 | funnel-architect |
+| F3 | 훅-스토리-오퍼 | F.퍼널 | 전환 카피 프레임워크 | funnel-architect |
+| F4 | 트래픽-온도 | F.퍼널 | Cold/Warm/Hot 매칭 | funnel-architect |
+| G1 | ICP-정의 | G.GTM | 이상적 고객 프로필 | marketing-strategy-pmm |
+| G2 | 경쟁-분석 | G.GTM | 배틀카드 + Win/Loss | marketing-strategy-pmm |
+| G3 | 런치-플레이북 | G.GTM | 출시 전/중/후 체크리스트 | marketing-strategy-pmm |
+| G4 | 메시징 | G.GTM | 메시징 계층 구조 | marketing-strategy-pmm |

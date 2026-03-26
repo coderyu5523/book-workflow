@@ -13,7 +13,7 @@
     radius: 0pt,
     {
       set par(justify: true, leading: 0.9em)
-      text(fill: rgb("#333333"))[#it.body]
+      text(size: quote-size, fill: rgb("#333333"))[#it.body]
     }
   )
 }
@@ -31,9 +31,9 @@
     {
       set par(justify: true, leading: 0.9em)
       if label == [] or label == none {
-        text(fill: rgb("#333333"))[#body]
+        text(size: quote-size, fill: rgb("#333333"))[#body]
       } else {
-        text[#text(weight: "bold", fill: rgb("#2563eb"))[#label] #text(fill: rgb("#333333"))[#body]]
+        text(size: quote-size)[#text(weight: "bold", fill: color-primary)[#label] #text(fill: rgb("#333333"))[#body]]
       }
     }
   )

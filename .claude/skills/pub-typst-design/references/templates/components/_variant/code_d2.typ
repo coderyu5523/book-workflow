@@ -1,6 +1,6 @@
 // ── 코드 블록: Design 2 (위아래 회색 실선) ──
 #show raw.where(block: true): it => {
-  set text(size: 6pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  set text(size: code-size, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   v(6pt)
   line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
   block(

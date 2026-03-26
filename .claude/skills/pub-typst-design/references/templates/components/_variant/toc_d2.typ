@@ -4,9 +4,9 @@
 #page(numbering: none, header: none, footer: none)[
   #v(30pt)
   #block(width: 100%, below: 12pt, {
-    text(24pt, weight: "bold", fill: rgb("#1a1a1a"))[목차]
+    text(24pt, weight: "bold", fill: color-text)[목차]
     v(6pt)
-    line(length: 100%, stroke: 3pt + rgb("#2563eb"))
+    line(length: 100%, stroke: 3pt + color-primary)
   })
   #v(12pt)
 
@@ -20,6 +20,6 @@
   #outline(
     title: none,
     indent: 1.5em,
-    depth: 3,
+    depth: toc-depth,
   )
 ]

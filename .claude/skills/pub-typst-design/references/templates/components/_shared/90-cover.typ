@@ -5,11 +5,11 @@
   #v(1fr)
   #align(center)[
     // 상단 장식선
-    #line(length: 40%, stroke: 2pt + rgb("#2563eb"))
+    #line(length: 40%, stroke: 2pt + color-primary)
     #v(24pt)
-    #text(42pt, weight: "bold", fill: rgb("#1e40af"), tracking: 2pt)[#book-title]
+    #text(42pt, weight: "bold", fill: color-primary-dark, tracking: 2pt)[#book-title]
     #v(16pt)
-    #line(length: 60%, stroke: 0.5pt + rgb("#93c5fd"))
+    #line(length: 60%, stroke: 0.5pt + color-primary-light)
     #v(16pt)
     #text(15pt, fill: rgb("#374151"), weight: "medium")[#book-subtitle]
     #v(48pt)

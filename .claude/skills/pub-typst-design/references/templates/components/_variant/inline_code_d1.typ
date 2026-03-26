@@ -4,6 +4,6 @@
     fill: rgb("#f3f4f6"),
     inset: (x: 4pt, y: 2pt),
     radius: 3pt,
-    text(size: 8.5pt, fill: rgb("#1e40af"), font: ("Menlo", "KoPubDotum_Pro"))[#it]
+    text(size: inline-code-size, fill: color-code-text, font: ("D2Coding", "RIDIBatang"))[#it]
   )
 }

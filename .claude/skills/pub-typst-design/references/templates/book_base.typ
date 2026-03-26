@@ -42,7 +42,7 @@
 
 // ── 폰트 설정 ──
 #set text(
-  font: ("KoPubDotum_Pro", "Apple SD Gothic Neo"),
+  font: ("RIDIBatang", "Apple SD Gothic Neo"),
   size: 10pt,
   lang: "ko",
   fill: rgb("#1a1a1a"),
@@ -107,7 +107,7 @@
 
 // ── 코드 블록 (페이지 넘김 허용) ──
 #show raw.where(block: true): it => {
-  set text(size: 8pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  set text(size: 8pt, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   block(
     width: 100%,
     fill: white,
@@ -125,7 +125,7 @@
     fill: rgb("#f3f4f6"),
     inset: (x: 4pt, y: 2pt),
     radius: 3pt,
-    text(size: 8.5pt, fill: rgb("#1e40af"), font: ("Menlo", "KoPubDotum_Pro"))[#it]
+    text(size: 8.5pt, fill: rgb("#1e40af"), font: ("D2Coding", "RIDIBatang"))[#it]
   )
 }
 

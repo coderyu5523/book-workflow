@@ -11,7 +11,7 @@
 )
 
 #set text(
-  font: ("KoPubDotum_Pro", "Apple SD Gothic Neo"),
+  font: ("RIDIBatang", "Apple SD Gothic Neo"),
   size: 9pt,
   lang: "ko",
   fill: rgb("#1a1a1a"),
@@ -216,7 +216,7 @@
   radius: 8pt,
   stroke: 1pt + rgb("#d1d5db"),
 )[
-  #set text(size: 8pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  #set text(size: 8pt, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   ```python
   from fastapi import FastAPI
   from langchain.vectorstores import Chroma
@@ -235,7 +235,7 @@
   fill: white,
   inset: (x: 16pt, y: 6pt),
 )[
-  #set text(size: 6pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  #set text(size: 6pt, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   ```python
   from fastapi import FastAPI
   from langchain.vectorstores import Chroma
@@ -261,7 +261,7 @@
   stroke: 0.5pt + rgb("#d1d5db"),
   radius: 4pt,
 )[
-  FastAPI에서 #box(fill: rgb("#f3f4f6"), inset: (x: 4pt, y: 2pt), radius: 3pt, text(size: 8.5pt, fill: rgb("#1e40af"), font: ("Menlo", "KoPubDotum_Pro"))[vectorstore.similarity_search()]) 메서드를 호출하면 유사도 검색이 실행됩니다.
+  FastAPI에서 #box(fill: rgb("#f3f4f6"), inset: (x: 4pt, y: 2pt), radius: 3pt, text(size: 8.5pt, fill: rgb("#1e40af"), font: ("D2Coding", "RIDIBatang"))[vectorstore.similarity_search()]) 메서드를 호출하면 유사도 검색이 실행됩니다.
 ]
 
 #v(12pt)
@@ -273,7 +273,7 @@
   stroke: 0.5pt + rgb("#d1d5db"),
   radius: 4pt,
 )[
-  FastAPI에서 #text(weight: "bold", fill: rgb("#1e3a5f"), font: ("Menlo", "KoPubDotum_Pro"))[vectorstore.similarity_search()] 메서드를 호출하면 유사도 검색이 실행됩니다.
+  FastAPI에서 #text(weight: "bold", fill: rgb("#1e3a5f"), font: ("D2Coding", "RIDIBatang"))[vectorstore.similarity_search()] 메서드를 호출하면 유사도 검색이 실행됩니다.
 ]
 
 // ══════════════════════════════════════

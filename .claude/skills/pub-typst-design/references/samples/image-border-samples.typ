@@ -12,7 +12,7 @@
 )
 
 #set text(
-  font: ("KoPubDotum_Pro", "Apple SD Gothic Neo"),
+  font: ("RIDIBatang", "Apple SD Gothic Neo"),
   size: 10pt,
   lang: "ko",
   fill: rgb("#1a1a1a"),

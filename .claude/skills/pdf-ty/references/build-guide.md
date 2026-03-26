@@ -54,14 +54,14 @@ typst compile output.typ output.pdf --font-path ~/Library/Fonts/
 ### 폰트를 찾을 수 없다
 
 ```
-error: failed to find font "KoPubDotum_Pro"
+error: failed to find font "RIDIBatang"
 ```
 
-**해결**: `--font-path`에 KoPub Dotum Pro 폰트가 있는 디렉토리를 지정합니다.
+**해결**: `--font-path`에 RIDIBatang, D2Coding 폰트가 있는 디렉토리를 지정합니다.
 
 ```bash
 # 현재 설치된 폰트 확인
-typst fonts --font-path ~/Library/Fonts/ | grep KoPub
+typst fonts --font-path ~/Library/Fonts/ | grep -E "RIDI|D2"
 ```
 
 ### Mermaid 렌더링 실패

@@ -8,9 +8,9 @@
     below: 16pt,
     sticky: true,
     {
-      text(26pt, weight: "bold", fill: rgb("#1a1a1a"))[#it.body]
+      text(h1-size, weight: "bold", fill: color-text)[#it.body]
       v(8pt)
-      line(length: 100%, stroke: 3pt + rgb("#2563eb"))
+      line(length: 100%, stroke: 3pt + color-primary)
     }
   )
   v(14pt)
@@ -23,8 +23,8 @@
     below: 8pt,
     sticky: true,
     inset: (left: 12pt),
-    stroke: (left: 4pt + rgb("#2563eb")),
-    text(16pt, weight: "bold", fill: rgb("#1e40af"))[#it.body]
+    stroke: (left: 4pt + color-primary),
+    text(h2-size, weight: "bold", fill: color-primary-dark)[#it.body]
   )
   v(6pt)
 }
@@ -34,7 +34,7 @@
   block(
     below: 6pt,
     sticky: true,
-    text(13pt, weight: "semibold", fill: rgb("#1e3a5f"))[#it.body]
+    text(h3-size, weight: "semibold", fill: rgb("#1e3a5f"))[#it.body]
   )
   v(4pt)
 }
@@ -44,7 +44,7 @@
   block(
     below: 4pt,
     sticky: true,
-    text(11pt, weight: "semibold", fill: rgb("#374151"))[#it.body]
+    text(h4-size, weight: "semibold", fill: rgb("#374151"))[#it.body]
   )
   v(2pt)
 }

@@ -5,12 +5,12 @@
     above: 10pt,
     below: 10pt,
     inset: (left: 14pt, right: 14pt, top: 10pt, bottom: 10pt),
-    stroke: (left: 3pt + rgb("#93b4e8")),
-    fill: rgb("#f5f8ff"),
+    stroke: (left: 3pt + color-quote-border),
+    fill: color-quote-bg,
     radius: (right: 4pt),
     {
       set par(justify: true, leading: 0.9em)
-      text(size: 9pt, fill: rgb("#4b5563"))[#it.body]
+      text(size: quote-size, fill: rgb("#4b5563"))[#it.body]
     }
   )
 }
@@ -23,15 +23,15 @@
     above: 10pt,
     below: 10pt,
     inset: (left: 14pt, right: 14pt, top: 10pt, bottom: 10pt),
-    stroke: (left: 3pt + rgb("#93b4e8")),
-    fill: rgb("#f5f8ff"),
+    stroke: (left: 3pt + color-quote-border),
+    fill: color-quote-bg,
     radius: (right: 4pt),
     {
       set par(justify: true, leading: 0.9em)
       if label == [] or label == none {
-        text(size: 9pt, fill: rgb("#4b5563"))[#body]
+        text(size: quote-size, fill: rgb("#4b5563"))[#body]
       } else {
-        text(size: 9pt)[#text(weight: "bold", fill: rgb("#2563eb"))[#label] #text(fill: rgb("#4b5563"))[#body]]
+        text(size: quote-size)[#text(weight: "bold", fill: color-primary)[#label] #text(fill: rgb("#4b5563"))[#body]]
       }
     }
   )

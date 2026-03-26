@@ -60,6 +60,9 @@ Phase 5 ── 완성
 | `이미지 분석` | 5 | `[GEMINI PROMPT]` 플레이스홀더 | illustrator + image-analyzer 스킬 |
 | `이어하기` | — | — | `prompts/next-session-*.md` 읽기 |
 | `현재 상태` | — | 터미널 출력 | progress.json 기반 |
+| `PM 전략 [서비스]` | — | `docs/pm/[서비스]-전략.md` | pm-strategist 에이전트 |
+| `퍼널 설계 [범위]` | — | `docs/pm/[범위]-퍼널.md` | pm-strategist 에이전트 |
+| `GTM [대상]` | — | `docs/pm/[대상]-GTM.md` | pm-strategist 에이전트 |
 
 ### `새 책 만들기`
 
@@ -146,6 +149,6 @@ projects/[책이름]/
 | `.claude/rules/code.md` | 코드블록, 파일유형, Git레포, 스크립트 출력 규칙 |
 | `.claude/rules/structure.md` | 버전관리, 워크플로우 진행, progress.json, 질문/선택 규칙 |
 | `.claude/skills/CATALOG.md` | 22개 스킬 카탈로그 |
-| `.claude/agents/` | 에이전트 5개 (analyst-architect, writer, editor, illustrator, publisher) |
+| `.claude/agents/` | 에이전트 6개 (analyst-architect, writer, editor, illustrator, publisher, pm-strategist) |
 | `.claude/workflow/step[N]-*.md` | STEP별 실행 가이드 |
 | `.claude/workflow/review-guide.md` | 검토 모드 체크리스트 |
