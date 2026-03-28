@@ -54,6 +54,7 @@ CONFIG = {
     "output_typ": BOOK / "ConnectHR_통합본.typ",
     "output_pdf": BOOK / "ConnectHR_통합본.pdf",
     "output_dir": BOOK / "chapter_pdfs",
+    "mermaid_out": BOOK / "_mermaid_images",
 }
 
 

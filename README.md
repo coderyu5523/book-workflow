@@ -83,7 +83,113 @@ CH[N] 완료!
 
 ### PDF 빌드 (인쇄소)
 
-STEP 7 완료 후 publisher 에이전트가 PDF를 생성한다. 4단계 워크플로우로 진행.
+STEP 7 완료 후 publisher 에이전트가 PDF를 생성한다. 두 가지 방법이 있다.
+
+#### 인쇄소 시작
+
+Claude Code에서 아래 중 하나로 시작한다.
+
+```
+인쇄소 시작           # publisher 에이전트가 프리뷰 에디터 제안
+PDF 빌드              # 위와 동일
+```
+
+publisher가 프리뷰 에디터 사용 여부를 물어본다.
+
+```
+프리뷰 에디터를 사용하면 브라우저에서 실시간으로 디자인을 확인할 수 있습니다.
+
+1. 네, 프리뷰 에디터로 작업합니다 (Recommended)
+2. 아니요, CLI에서 바로 PDF를 빌드합니다
+```
+
+#### .pdf-build/ 스테이징 구조
+
+프리뷰 서버가 시작되면 소스 MD 파일을 `.pdf-build/`로 복사한다. 모든 빌드 중간 산출물도 이 폴더에 저장된다.
+
+```
+projects/사내AI비서_v2/.pdf-build/
+├── md/                         ← 소스에서 복사한 원본 MD
+│   ├── front/
+│   │   ├── prologue.md         ← book/front/에서 복사
+│   │   ├── prologue-v1.md      ← 이전 버전도 함께 복사
+│   │   ├── preface.md
+│   │   └── toc.md
+│   ├── chapters/
+│   │   ├── 00-들어가며.md       ← chapters/에서 복사
+│   │   ├── 01-환각과-RAG의-첫-만남.md
+│   │   └── ...
+│   └── back/
+│       ├── epilogue.md          ← book/back/에서 복사
+│       └── appendix.md
+├── integrated.md               ← Stage 1: 통합 MD
+├── final.typ                   ← Stage 2: 디자인 조립 결과
+├── preview_svg/                ← SVG 프리뷰 페이지
+├── preview.pdf                 ← 검증용 PDF
+└── _mermaid_images/            ← Mermaid 렌더링
+```
+
+버전 파일(`-v1`, `-v2`)이 있으면 전부 복사하되, 버전 없는 파일(최신)만 기본 선택된다. 이전 버전으로 빌드하고 싶으면 체크박스에서 전환한다.
+
+소스 파일이 변경되면 "Restage" 버튼으로 다시 복사한다.
+
+#### 방법 A: 프리뷰 에디터 (권장)
+
+브라우저에서 실시간으로 디자인을 확인하며 PDF를 만드는 방법이다.
+
+**사전 준비**
+
+```bash
+typst --version    # Typst 컴파일러
+pandoc --version   # Pandoc 변환기
+python3 --version  # Python 3.10+
+```
+
+**실행**
+
+```bash
+python3 .claude/skills/pub-studio/references/preview.py                    # 프로젝트 자동 감지
+python3 .claude/skills/pub-studio/references/preview.py 사내AI비서_v2       # 프로젝트 지정
+python3 .claude/skills/pub-studio/references/preview.py --port 8080        # 포트 지정
+python3 .claude/skills/pub-studio/references/preview.py --file book/통합본.typ  # 파일 모드
+```
+
+서버가 시작되면 `http://localhost:3333`이 자동으로 열린다.
+
+**작업 순서**
+
+| 순서 | 할 일 | 조작 |
+|------|-------|------|
+| 1 | 파일 확인 | 사이드바 파일 목록에서 빌드할 챕터 확인 (버전 파일은 기본 해제) |
+| 2 | 디자인 프리셋 선택 | 사이드바 → 프리셋 (d1 클래식 블루 / d2 컴팩트 모노) |
+| 3 | 첫 빌드 | "Build" 클릭 → SVG 프리뷰 생성 (5-10초) |
+| 4 | 디자인 미세 조정 | 폰트/여백/색상 슬라이더 → 즉시 프리뷰 갱신 (~200ms) |
+| 5 | 커스텀 디자인 저장 | "저장된 디자인" → 이름 입력 → 저장 (다음에 불러오기 가능) |
+| 6 | 이미지 크기 조절 | 이미지 패널 → 개별 이미지 width 슬라이더 |
+| 7 | 레이아웃 자동 검수 | "Verified Build" → 빈 페이지, 고아줄 자동 수정 (최대 3라운드) |
+| 8 | 수동 이슈 확인 | Layout Issues 탭 → 페이지별 사용률 + 이슈 목록 |
+| 9 | PDF 내보내기 | "Export PDF" → `book/output/`에 최종 PDF 생성 |
+
+**빌드 속도가 다른 이유 (2단계 캐시)**
+
+| 변경 내용 | 재빌드 범위 | 소요 시간 |
+|-----------|------------|----------|
+| 디자인만 변경 (폰트, 여백, 색상) | Stage 2만 재실행 | ~200ms |
+| MD 글 내용 변경 | Stage 1 + Stage 2 전체 | ~5-10초 |
+
+**Verified Build가 자동으로 고치는 것**
+
+| 이슈 유형 | 자동 수정 | 방법 |
+|-----------|----------|------|
+| 빈 페이지 (`blank_page`) | O | pagebreak 제거 |
+| 고아 콘텐츠 (`orphan_content`) | O | 이전 페이지 이미지 5% 축소 |
+| 큰 이미지 (`large_image`) | O | 이미지 width 10% 단계 축소 |
+| 낮은 페이지 사용률 (`low_usage`) | X | Layout 탭에서 직접 확인 |
+| 밀림 패턴 (`push_pattern`) | X | Layout 탭에서 직접 확인 |
+
+#### 방법 B: CLI 빌드
+
+프리뷰 없이 터미널에서 바로 PDF를 빌드하는 방법이다.
 
 **1단계: 디자인 선택** (첫 빌드 시 1회)
 
@@ -215,14 +321,20 @@ CLAUDE.md                  ← 핵심 정책 + 명령어 라우팅
 │   │   ├── editor/             ← 품질 검증 (3인 편집위원회)
 │   │   ├── illustrator/        ← 다이어그램 렌더링
 │   │   └── publisher/          ← PDF 빌드
-│   ├── skills/            ← 스킬 6개 카테고리 (on-demand 로딩)
-│   │   ├── CATALOG.md     ← 22개 스킬 전체 목록
+│   ├── skills/            ← 스킬 카테고리 (on-demand 로딩)
+│   │   ├── CATALOG.md     ← 22개 + 인쇄소 6개 스킬 전체 목록
 │   │   ├── writing/       ← 스토리텔링, 문체
 │   │   ├── code/          ← 코드 분석, 설명
 │   │   ├── planning/      ← 갭 분석, 분량 관리
 │   │   ├── visual/        ← Mermaid, 이미지 플레이스홀더
 │   │   ├── screenshot/    ← 터미널/브라우저 캡처
-│   │   └── review/        ← 검토 판정, 체크리스트
+│   │   ├── review/        ← 검토 판정, 체크리스트
+│   │   ├── pub-studio/    ← 프리뷰 에디터 + 검증 빌드 (통합)
+│   │   ├── pub-build/     ← MD→Typst→PDF 빌드 파이프라인
+│   │   ├── pub-typst-design/ ← Typst 템플릿 + 컴포넌트
+│   │   ├── pub-layout-check/ ← PDF 레이아웃 분석
+│   │   ├── pub-page-fit/  ← 레이아웃 자동수정 전략
+│   │   └── pub-image-optimize/ ← 이미지 공백제거 + 크기조절
 │   └── workflow/          ← 7 STEP 실행 가이드
 │       ├── step1~7.md     ← 각 STEP 절차 상세
 │       └── review-guide.md

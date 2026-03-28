@@ -275,4 +275,51 @@
     다이어그램/캡처가 누락된 채 챕터가 완료 처리됨.
   rule_added_to:
     - .claude/rules/structure.md
+
+# ── 2026-03-27 pub-studio 모듈화 ─────────────────────
+
+- id: "2026-03-27-1"
+  date: 2026-03-27
+  category: build
+  summary: 개별 이미지 목록 빈 상태 — stage 조건이 fetchImages 차단
+  detail: >
+    builder.js의 if (data.stage === 1) fetchImages() 조건이 stage 2
+    캐시 빌드 시 이미지 목록 갱신을 차단. 조건 제거로 해소.
+  rule_added_to:
+    - static/js/builder.js
+
+- id: "2026-03-27-2"
+  date: 2026-03-27
+  category: build
+  summary: MD 문단 간격 미적용 — Typst par spacing 누락
+  detail: >
+    design_assembler.py에서 #set block(spacing:)만 설정.
+    Typst 문단 간격은 #set par(spacing:)도 필요.
+    block은 블록 요소 간 간격, par은 문단 내 줄 간격 제어.
+  rule_added_to:
+    - scripts/design_assembler.py
+
+- id: "2026-03-27-3"
+  date: 2026-03-27
+  category: design
+  summary: ES Module export let은 외부 모듈에서 재할당 불가
+  detail: >
+    export let foo; 후 다른 모듈에서 import { foo }; foo = 1; 하면
+    TypeError. export const shared = {} 객체의 프로퍼티로 가변 상태를
+    관리하는 패턴으로 해소.
+  rule_added_to:
+    - static/js/state.js
+
+- id: "2026-03-27-4"
+  date: 2026-03-27
+  category: design
+  summary: CSS 변형 하드코딩 → 동적 생성으로 전환
+  detail: >
+    book.css의 [data-design="d1"]/[data-design="d2"] 14개 규칙이
+    하드코딩. 커스텀 변형(d3+)을 지원하려면 동적 CSS 생성 필수.
+    BUILTIN_VARIANTS JSON + renderVariantCSS() + <style> 주입 패턴 채택.
+  rule_added_to:
+    - static/js/state.js
+    - static/js/renderer.js
+    - static/css/book.css
 ```

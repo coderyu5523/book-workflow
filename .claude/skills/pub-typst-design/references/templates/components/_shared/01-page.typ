@@ -17,9 +17,12 @@
     if page-num > 2 {
       set text(8pt, fill: rgb("#999999"))
       grid(
-        columns: (1fr, 1fr),
+        columns: (auto, 1fr),
+        column-gutter: 12pt,
         align(left)[#book-header-title],
-        align(right)[#chapter-title.get()],
+        align(right, box(clip: true, width: 100%, inset: (y: 2pt))[
+          #chapter-title.get()
+        ]),
       )
       v(2pt)
       line(length: 100%, stroke: 0.3pt + rgb("#dddddd"))

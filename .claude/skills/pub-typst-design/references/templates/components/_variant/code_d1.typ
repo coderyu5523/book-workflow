@@ -1,13 +1,14 @@
 // ── 코드 블록: Design 1 (둥근 테두리 박스) ──
+// ──OVERRIDES──
 #show raw.where(block: true): it => {
-  set text(size: 8pt, weight: "bold", font: ("Menlo", "KoPubDotum_Pro"))
+  set text(size: code-size, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   block(
     width: 100%,
-    fill: white,
-    inset: (x: 16pt, y: 14pt),
-    radius: 8pt,
-    stroke: 1pt + rgb("#d1d5db"),
+    fill: code-fill,
+    inset: (x: code-inset-x, y: code-inset-y),
+    radius: code-radius,
+    stroke: code-stroke-width + code-stroke-color,
     breakable: true,
-    text(fill: rgb("#1a1a1a"))[#it]
+    text(fill: color-text)[#it]
   )
 }

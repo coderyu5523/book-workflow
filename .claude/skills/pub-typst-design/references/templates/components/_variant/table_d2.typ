@@ -1,15 +1,22 @@
 // ── 표 스타일: Design 2 (회색 헤더, 검정 글씨, 좌측 정렬) ──
+#let table-stroke-color = rgb("#d1d5db")
+#let table-header-text-color = rgb("#1a1a1a")
+#let table-header-weight = "bold"
+#let table-odd-fill = rgb("#fafafa")
+// ──OVERRIDES──
 #set table(
-  stroke: 0.5pt + rgb("#d1d5db"),
-  inset: (x: 10pt, y: 8pt),
+  stroke: table-stroke-width + table-stroke-color,
+  inset: (x: table-inset-x, y: table-inset-y),
   align: left,
-  fill: (_, y) => if y == 0 { rgb("#e5e5e5") } else if calc.odd(y) { rgb("#fafafa") } else { white },
+  fill: (_, y) => if y == 0 { rgb("#e5e5e5") } else if calc.odd(y) { table-odd-fill } else { white },
 )
 
-#show table.cell.where(y: 0): set text(fill: rgb("#1a1a1a"), weight: "bold")
+#show table.cell.where(y: 0): set text(fill: table-header-text-color, weight: table-header-weight)
 
 #show table: it => {
-  set text(size: 1em)
+  set text(size: table-size)
   set par(justify: false)
+  v(table-margin-top)
   align(left, block(breakable: true)[#it])
+  v(table-margin-bottom)
 }

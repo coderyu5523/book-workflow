@@ -1,0 +1,95 @@
+{
+  "_version": 1,
+  "designs": {
+    "6": {
+      "created_at": "2026-03-28T01:17:11",
+      "updated_at": "2026-03-28T01:17:11",
+      "state": {
+        "preset": "1",
+        "components": {
+          "body": "d1",
+          "heading": "d2",
+          "code": "d1",
+          "inline_code": "d2",
+          "quote": "d1",
+          "table": "d2",
+          "toc": "d1"
+        },
+        "fonts": {
+          "body": "\"RIDIBatang\", serif",
+          "code": "\"D2Coding\", monospace"
+        },
+        "typo": {
+          "size": 12,
+          "tracking": 0.5,
+          "leading": 1.5,
+          "paragraphGap": 25
+        },
+        "margins": {
+          "top": 20,
+          "bottom": 28,
+          "left": 20,
+          "right": 20
+        },
+        "images": {
+          "gemini": {
+            "preset": "bordered",
+            "width": 50
+          },
+          "terminal": {
+            "preset": "minimal",
+            "width": 100
+          },
+          "diagram": {
+            "preset": "minimal",
+            "width": 100
+          }
+        },
+        "colors": {
+          "primary": "#2563eb",
+          "text": "#1a1a1a",
+          "codeText": "#1e40af",
+          "quoteBg": "#f5f8ff"
+        },
+        "page": {
+          "format": "A4_국배판",
+          "outputMode": "ebook"
+        },
+        "typoSizes": {
+          "h1": 16,
+          "h2": 14,
+          "h3": 14,
+          "h4": 14,
+          "code": 10,
+          "quote": 10,
+          "table": 8,
+          "inlineCode": 8
+        },
+        "tocDepth": 2,
+        "tocSpacing": 4,
+        "tableWidth": 100,
+        "tableAlign": "left",
+        "tableFirstColRatio": 1,
+        "tableOverrides": {},
+        "componentStyles": {
+          "body": {
+            "strong_fontWeight": "900",
+            "strong_color": "#3776c8"
+          },
+          "code": {
+            "borderRadius": "8"
+          },
+          "heading": {
+            "h2_marginTop": "25",
+            "h2_marginBottom": "2"
+          },
+          "table": {
+            "table_marginTop": "6",
+            "table_marginBottom": "8"
+          }
+        },
+        "imageOverrides": {}
+      }
+    }
+  }
+}

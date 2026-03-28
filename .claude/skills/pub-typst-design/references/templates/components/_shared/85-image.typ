@@ -31,7 +31,7 @@
   // 스타일별 이미지 래핑
   let styled-img = if style == "bordered" {
     block(
-      stroke: 2pt + rgb("#2563eb"),
+      stroke: 2pt + color-primary,
       radius: 4pt,
       clip: true,
       image(path, width: final-width)
@@ -51,8 +51,8 @@
   } else if style == "bordered-shadow" {
     block(
       stroke: (
-        left: 2pt + rgb("#2563eb"),
-        top: 2pt + rgb("#2563eb"),
+        left: 2pt + color-primary,
+        top: 2pt + color-primary,
         right: 3pt + rgb("#1d4ed8"),
         bottom: 3pt + rgb("#1d4ed8"),
       ),
