@@ -202,17 +202,34 @@ def render_mermaid_diagrams(text: str, mermaid_out: Path) -> str:
 def fix_image_paths(text: str, source_file: Path) -> str:
     """마크다운 이미지 상대경로 → 절대경로로 변환 (file:// 없이)"""
     source_dir = source_file.parent
+    # 프로젝트 루트 추정 (chapters/ 또는 book/ 상위)
+    project_root = source_dir
+    for parent in source_file.parents:
+        if (parent / "assets").exists():
+            project_root = parent
+            break
 
     def replace_img(m):
         alt = m.group(1)
         rel_path = m.group(2)
         if rel_path.startswith('file://'):
             return f'![{alt}]({rel_path[7:]})'
+        # 1차: 소스 파일 기준 상대경로
         abs_path = (source_dir / rel_path).resolve()
         if abs_path.exists():
             return f'![{alt}]({abs_path})'
-        else:
-            return f'*[이미지: {alt}]*'
+        # 2차: 프로젝트 루트 기준
+        abs_path2 = (project_root / rel_path).resolve()
+        if abs_path2.exists():
+            return f'![{alt}]({abs_path2})'
+        # 3차: assets/ 하위에서 파일명으로 검색
+        filename = Path(rel_path).name
+        for found in project_root.rglob(filename):
+            if found.is_file():
+                return f'![{alt}]({found})'
+        # 못 찾으면 플레이스홀더 텍스트 (Typst 컴파일 에러 방지)
+        print(f"   [경고] 이미지 없음: {rel_path}")
+        return f'*\\[이미지 누락: {alt}\\]*'
 
     return re.sub(r'!\[([^\]]*)\]\(([^)]+)\)', replace_img, text)
 
@@ -257,6 +274,7 @@ def build_integrated_md(front: list, chapters: list, back: list,
             content = fix_image_paths(content, f)
             content = render_mermaid_diagrams(content, mermaid_out)
             content = fix_br_tags(content)
+            content = re.sub(r'\n{3,}', '\n\n', content)
             parts.append(content)
             parts.append("\n\n---\n\n")
 
@@ -436,6 +454,8 @@ def fix_typst_content(text: str, image_border_preset: str = "plain", use_image_v
         # alt: 파라미터가 이미 있으면 건드리지 않음
         if 'alt:' in img_call:
             return m.group(0)
+        # 자동 번호 부여를 위해 수동 "그림 N-N:" 접두어 제거
+        caption = re.sub(r'^그림\s*[\d서]+-\d+\s*[:：]\s*', '', caption)
         # max-width: 앞에 alt: 삽입
         return img_call.replace('max-width:', f'alt: [{caption}], max-width:')
 

@@ -12,15 +12,34 @@ from pathlib import Path
 from models import ImageInfo
 
 # #auto-image("path", alt: [...], max-width: 0.7, style: "plain") 파싱용
+# style은 "quoted" 또는 variable-name 모두 매칭
 _AUTO_IMAGE_RE = re.compile(
     r'#auto-image\(\s*"([^"]+)"'          # 경로 (group 1)
-    r'(?:,\s*alt:\s*\[[^\]]*\])?'          # alt (optional)
-    r'(?:,\s*max-width:\s*([\w.\-]+))?'    # max-width (group 2) — 숫자 or 변수명
-    r'(?:,\s*style:\s*"([^"]*)")?'         # style (group 3)
-    r'\s*\)'
+    r'(?:,\s*alt:\s*\[([^\]]*)\])?'        # alt (group 2, captured)
+    r'(?:,\s*max-width:\s*([\w.\-]+))?'    # max-width (group 3) — 숫자 or 변수명
+    r'(?:,\s*style:\s*(?:"([^"]*)"|[\w\-]+))?' # style (group 4, quoted만 캡처)
+    r'[^)]*\)'                             # 나머지 인자 + 닫기
 )
 
 # 카테고리 감지 패턴
+_CH_RE = re.compile(r'CH(\d+)', re.IGNORECASE)
+
+
+def _compute_figure_labels(images: dict):
+    """챕터 기반 그림 번호를 각 ImageInfo에 할당."""
+    ch_counters = {}
+    front_counter = 0
+    for img in sorted(images.values(), key=lambda i: i.rel_path):
+        m = _CH_RE.search(img.rel_path)
+        if m:
+            ch = int(m.group(1))
+            ch_counters[ch] = ch_counters.get(ch, 0) + 1
+            img.figure_label = f"그림 {ch}-{ch_counters[ch]}"
+        else:
+            front_counter += 1
+            img.figure_label = f"그림 서-{front_counter}"
+
+
 _CATEGORY_PATTERNS = {
     "gemini": re.compile(r"gemini|concept|개념", re.IGNORECASE),
     "terminal": re.compile(r"terminal|console|터미널", re.IGNORECASE),
@@ -68,8 +87,9 @@ class ImageRegistry:
 
         for match in _AUTO_IMAGE_RE.finditer(raw_typ):
             path = match.group(1)
-            raw_width = match.group(2)
-            style = match.group(3) or "plain"
+            alt = match.group(2) or ""
+            raw_width = match.group(3)
+            style = match.group(4) or "plain"
 
             # 기존 오버라이드 보존
             existing = self._images.get(path)
@@ -92,8 +112,10 @@ class ImageRegistry:
                 default_style=style,
                 override_width=override_width,
                 override_style=override_style,
+                alt=alt,
             )
 
+        _compute_figure_labels(found)
         self._images = found
         return list(found.values())
 

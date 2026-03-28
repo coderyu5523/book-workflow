@@ -8,6 +8,7 @@
 """
 
 import json
+import re
 from pathlib import Path
 
 COMPONENTS_DIR = (
@@ -35,6 +36,141 @@ ASSEMBLY_ORDER = [
 ]
 
 VARIANT_KEYS = ["body", "heading", "code", "inline_code", "quote", "table", "toc"]
+
+OVERRIDE_MARKER = "// ──OVERRIDES──"
+
+# variants.json 위치 (커스텀 변형 저장소)
+VARIANTS_FILE = Path(__file__).resolve().parents[2] / "pub-studio" / "references" / "variants.json"
+
+# CSS property key → Typst variable name
+# prefix_camelCase → typst-kebab-case
+COMPONENT_STYLE_MAP = {
+    "heading": {
+        "h1_marginTop": "h1-top",
+        "h1_fontWeight": "h1-weight",
+        "h1_color": "h1-fill",
+        "h1_marginBottom": "h1-below",
+        "h2_marginTop": "h2-top",
+        "h2_fontWeight": "h2-weight",
+        "h2_color": "h2-fill",
+        "h2_paddingLeft": "h2-inset-left",
+        "h2_marginBottom": "h2-below",
+        "h3_marginTop": "h3-top",
+        "h3_fontWeight": "h3-weight",
+        "h3_color": "h3-fill",
+        "h3_marginBottom": "h3-below",
+        "h4_marginTop": "h4-top",
+        "h4_fontWeight": "h4-weight",
+        "h4_color": "h4-fill",
+        "h4_marginBottom": "h4-below",
+    },
+    "body": {
+        "p_textIndent": "_set_par_indent",
+        "p_textAlign": "_set_par_justify",
+        "strong_fontWeight": "_show_strong_weight",
+        "strong_color": "strong-fill",
+        "emph_color": "emph-fill",
+    },
+    "code": {
+        "background": "code-fill",
+        "borderRadius": "code-radius",
+    },
+    "inline_code": {
+        "color": "inline-code-text-color",
+        "background": "inline-code-fill",
+        "borderRadius": "inline-code-radius",
+    },
+    "quote": {
+        "color": "quote-text-color",
+        "background": "color-quote-bg",
+    },
+    "table": {
+        "th_color": "table-header-text-color",
+        "th_fontWeight": "table-header-weight",
+        "oddTd_background": "table-odd-fill",
+        "table_marginTop": "table-margin-top",
+        "table_marginBottom": "table-margin-bottom",
+    },
+}
+
+
+def _css_value_to_typst(key: str, value: str) -> str:
+    """CSS 속성값을 Typst 값으로 변환."""
+    if not value:
+        return ""
+
+    # 특수 핸들러 (body set rules)
+    if key.startswith("_set_"):
+        return value
+
+    # weight: CSS number → Typst int, named → Typst string
+    if "weight" in key.lower() or "Weight" in key:
+        if value.isdigit():
+            return value  # 800 → 800 (정수)
+        return f'"{value}"'  # "bold" → "bold" (문자열)
+
+    # color: hex → rgb(), var() → 무시
+    if "color" in key.lower() or "fill" in key.lower() or "Color" in key:
+        if value.startswith("var("):
+            return ""
+        if value.startswith("#"):
+            return f'rgb("{value}")'
+        return ""
+
+    # length: px/pt/em → Typst length
+    m = re.match(r"^([\d.]+)\s*(px|pt|em|mm)?$", value)
+    if m:
+        num, unit = m.group(1), m.group(2) or "pt"
+        if unit == "px":
+            unit = "pt"
+        return f"{num}{unit}"
+
+    return f'"{value}"'
+
+
+def generate_component_override(component: str, props: dict) -> str:
+    """단일 컴포넌트의 componentStyles → Typst 오버라이드 스니펫.
+
+    heading, code 등: #let 변수 오버라이드
+    body: #set par() 오버라이드
+    """
+    if not props:
+        return ""
+
+    style_map = COMPONENT_STYLE_MAP.get(component, {})
+    if not style_map:
+        return ""
+
+    lines = []
+
+    for css_key, typst_target in style_map.items():
+        val = props.get(css_key)
+        if val is None:
+            continue
+
+        # body: #set rules
+        if typst_target == "_set_par_indent":
+            typst_val = _css_value_to_typst("length", val)
+            if typst_val:
+                lines.append(f"#set par(first-line-indent: {typst_val})")
+        elif typst_target == "_set_par_justify":
+            if val == "justify":
+                lines.append("#set par(justify: true)")
+            else:
+                lines.append("#set par(justify: false)")
+        elif typst_target == "_show_strong_weight":
+            # CSS font-weight → Typst weight
+            weight_map = {"400": "regular", "500": "medium", "600": "semibold",
+                          "700": "bold", "800": "extrabold", "900": "black"}
+            tw = weight_map.get(str(val), str(val))
+            lines.append(f'#show strong: set text(weight: "{tw}")')
+        else:
+            # #let variable override
+            typst_val = _css_value_to_typst(typst_target, val)
+            if typst_val:
+                lines.append(f"#let {typst_target} = {typst_val}")
+
+    return "\n".join(lines)
 
 
 def load_preset(preset_id: str) -> dict[str, str]:
@@ -135,7 +271,7 @@ def generate_overrides(design_state: dict) -> tuple[str, str, str]:
     if typo.get("tracking") is not None:
         size_lines.append(f'#set text(tracking: {typo["tracking"]}pt)')
     if typo.get("paragraphGap") is not None:
-        size_lines.append(f'#set block(spacing: {typo["paragraphGap"]}pt)')
+        size_lines.append(f'#set par(spacing: {typo["paragraphGap"]}pt)')
 
     # 개별 요소 크기 (Slot 2.5: body 직후, heading/code 직전)
     typo_sizes = design_state.get("typoSizes", {})
@@ -153,6 +289,11 @@ def generate_overrides(design_state: dict) -> tuple[str, str, str]:
     toc_depth = design_state.get("tocDepth")
     if toc_depth is not None:
         size_lines.append(f'#let toc-depth = {int(toc_depth)}')
+
+    # 목차 간격 (문단 간격과 독립)
+    toc_spacing = design_state.get("tocSpacing")
+    if toc_spacing is not None:
+        size_lines.append(f'#let toc-spacing = {toc_spacing}pt')
 
     # 페이지 (#set page — cascading)
     PAGE_SIZES = {
@@ -182,6 +323,29 @@ def generate_overrides(design_state: dict) -> tuple[str, str, str]:
     return ("\n".join(var_lines), "\n".join(page_lines), "\n".join(size_lines))
 
 
+def _load_custom_variant(component: str, variant_id: str) -> dict | None:
+    """variants.json에서 커스텀 변형의 properties를 로드."""
+    if not VARIANTS_FILE.exists():
+        return None
+    try:
+        with open(VARIANTS_FILE, encoding="utf-8") as f:
+            store = json.load(f)
+        return store.get("variants", {}).get(component, {}).get(variant_id)
+    except (json.JSONDecodeError, KeyError):
+        return None
+
+
+def _inject_at_marker(content: str, override: str) -> str:
+    """파일 내용의 // ──OVERRIDES── 마커 위치에 오버라이드를 주입.
+
+    마커가 없으면 파일 앞에 주입 (fallback).
+    """
+    if OVERRIDE_MARKER in content:
+        before, after = content.split(OVERRIDE_MARKER, 1)
+        return before + OVERRIDE_MARKER + f"\n{override}\n" + after
+    return f"{override}\n{content}"
+
+
 def assemble_book_base(selection: dict[str, str],
                        design_state: dict | None = None,
                        skip_cover: bool = False,
@@ -193,8 +357,10 @@ def assemble_book_base(selection: dict[str, str],
     skip_toc=True면 toc_*.typ 건너뜀.
     """
     var_override, page_override, size_override = ("", "", "")
+    component_styles = {}
     if design_state:
         var_override, page_override, size_override = generate_overrides(design_state)
+        component_styles = design_state.get("componentStyles", {})
 
     parts = []
     for i, (subdir, pattern) in enumerate(ASSEMBLY_ORDER):
@@ -208,11 +374,43 @@ def assemble_book_base(selection: dict[str, str],
             key = pattern.split("_{sel}")[0]
             filename = pattern.replace("{sel}", selection[key])
         else:
+            key = None
             filename = pattern
         filepath = COMPONENTS_DIR / subdir / filename
-        if not filepath.exists():
-            raise FileNotFoundError(f"컴포넌트 파일 없음: {filepath}")
-        parts.append(filepath.read_text(encoding="utf-8"))
+
+        # d3+ 커스텀 변형: .typ 파일 없으면 d1 기반 + variants.json 오버라이드
+        custom_variant_props = None
+        if not filepath.exists() and key:
+            variant_id = selection[key]
+            if variant_id not in ("d1", "d2"):
+                custom_variant_props = _load_custom_variant(key, variant_id)
+                fallback = pattern.replace("{sel}", "d1")
+                filepath = COMPONENTS_DIR / subdir / fallback
+            if not filepath.exists():
+                raise FileNotFoundError(f"컴포넌트 파일 없음: {filepath}")
+
+        file_content = filepath.read_text(encoding="utf-8")
+
+        # 커스텀 변형 properties → 오버라이드 주입
+        if custom_variant_props:
+            props = {k: v for k, v in custom_variant_props.items() if k != "name"}
+            comp_override = generate_component_override(key, props)
+            if comp_override:
+                file_content = _inject_at_marker(
+                    file_content,
+                    f"// ── custom variant: {key}/{selection[key]} ──\n{comp_override}",
+                )
+
+        # 변형 파일에 componentStyles 오버라이드 주입 (마커 기반)
+        if key and component_styles.get(key):
+            comp_override = generate_component_override(key, component_styles[key])
+            if comp_override:
+                file_content = _inject_at_marker(
+                    file_content,
+                    f"// ── componentStyles: {key} ──\n{comp_override}",
+                )
+
+        parts.append(file_content)
 
         # Slot 0.5: 변수 오버라이드 (00-variables 직후)
         if i == 0 and var_override:

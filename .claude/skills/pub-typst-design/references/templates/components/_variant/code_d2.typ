@@ -1,16 +1,21 @@
 // ── 코드 블록: Design 2 (위아래 회색 실선) ──
+#let code-fill = white
+#let code-radius = 0pt
+#let code-stroke-width = 0pt
+#let code-stroke-color = white
+// ──OVERRIDES──
 #show raw.where(block: true): it => {
   set text(size: code-size, weight: "bold", font: ("D2Coding", "RIDIBatang"))
   v(6pt)
   line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
   block(
     width: 100%,
-    fill: white,
+    fill: code-fill,
     inset: (x: code-inset-x, y: code-inset-y),
-    radius: 0pt,
+    radius: code-radius,
     stroke: none,
     breakable: true,
-    text(fill: rgb("#1a1a1a"))[#it]
+    text(fill: color-text)[#it]
   )
   line(length: 100%, stroke: code-rule-stroke + rgb("#999999"))
   v(6pt)

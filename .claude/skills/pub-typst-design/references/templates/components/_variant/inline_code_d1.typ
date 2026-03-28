@@ -1,9 +1,10 @@
 // ── 인라인 코드: Design 1 (회색 배경 박스) ──
+// ──OVERRIDES──
 #show raw.where(block: false): it => {
   box(
-    fill: rgb("#f3f4f6"),
+    fill: inline-code-fill,
     inset: (x: 4pt, y: 2pt),
-    radius: 3pt,
-    text(size: inline-code-size, fill: color-code-text, font: ("D2Coding", "RIDIBatang"))[#it]
+    radius: inline-code-radius,
+    text(size: inline-code-size, fill: inline-code-text-color, font: ("D2Coding", "RIDIBatang"))[#it]
   )
 }

@@ -1,50 +1,37 @@
 // ── 제목 스타일: Design 1 (클래식 블루) ──
+// D1은 00-variables.typ 기본값 사용 (변수 재정의 없음)
+// ──OVERRIDES──
 #show heading.where(level: 1): it => {
   chapter-title.update(it.body)
+  counter(figure).update(0)
   pagebreak(weak: true)
-  v(60pt)  // 챕터 오프닝: 상단 1/3 여백 (출판 표준)
-  block(
-    width: 100%,
-    below: 16pt,
-    sticky: true,
-    {
-      text(h1-size, weight: "bold", fill: color-text)[#it.body]
-      v(8pt)
-      line(length: 100%, stroke: 3pt + color-primary)
-    }
-  )
-  v(14pt)
+  block(above: h1-top, below: 0pt, width: 100%, sticky: true)[
+    #text(h1-size, weight: h1-weight, fill: h1-fill)[#it.body]
+    #v(8pt)
+    #line(length: 100%, stroke: 3pt + color-primary)
+  ]
+  v(h1-below)
 }
 
 #show heading.where(level: 2): it => {
-  v(24pt)
-  block(
-    width: 100%,
-    below: 8pt,
-    sticky: true,
-    inset: (left: 12pt),
-    stroke: (left: 4pt + color-primary),
-    text(h2-size, weight: "bold", fill: color-primary-dark)[#it.body]
-  )
-  v(6pt)
+  block(above: h2-top, below: 0pt, width: 100%, sticky: true,
+    inset: (left: h2-inset-left),
+    stroke: (left: 4pt + color-primary))[
+    #text(h2-size, weight: h2-weight, fill: h2-fill)[#it.body]
+  ]
+  v(h2-below)
 }
 
 #show heading.where(level: 3): it => {
-  v(16pt)
-  block(
-    below: 6pt,
-    sticky: true,
-    text(h3-size, weight: "semibold", fill: rgb("#1e3a5f"))[#it.body]
-  )
-  v(4pt)
+  block(above: h3-top, below: 0pt, sticky: true)[
+    #text(h3-size, weight: h3-weight, fill: h3-fill)[#it.body]
+  ]
+  v(h3-below)
 }
 
 #show heading.where(level: 4): it => {
-  v(12pt)
-  block(
-    below: 4pt,
-    sticky: true,
-    text(h4-size, weight: "semibold", fill: rgb("#374151"))[#it.body]
-  )
-  v(2pt)
+  block(above: h4-top, below: 0pt, sticky: true)[
+    #text(h4-size, weight: h4-weight, fill: h4-fill)[#it.body]
+  ]
+  v(h4-below)
 }

@@ -112,7 +112,169 @@ class BuildPipeline:
             skip_cover=skip_cover,
             skip_toc=skip_toc,
         )
+
+        # 4. 표 열 너비 자동 맞춤 + 수동 오버라이드
+        ds = design_state.to_server_dict()
+        table_overrides = ds.get("tableOverrides", {})
+        final_typ = self._auto_table_columns(final_typ, table_overrides)
+
         return final_typ
+
+    @staticmethod
+    def _auto_table_columns(text: str, overrides: dict | None = None) -> str:
+        """각 표의 셀 내용을 분석하여 열 너비를 자동 비례 배분.
+
+        overrides: { "0": [30, 40, 30], "2": [20, 50, 30] } — 표 인덱스별 수동 비율(%)
+        """
+        import re
+        overrides = overrides or {}
+
+        # #table( 위치를 찾아 각 테이블 범위를 파싱
+        table_starts = [m.start() for m in re.finditer(r'#table\s*\(', text)]
+        if not table_starts:
+            return text
+
+        result = []
+        prev_end = 0
+
+        for idx, start in enumerate(table_starts):
+            # 테이블 범위 찾기 (괄호 매칭)
+            depth = 0
+            i = start
+            while i < len(text):
+                if text[i] == '(':
+                    depth += 1
+                elif text[i] == ')':
+                    depth -= 1
+                    if depth == 0:
+                        break
+                i += 1
+            table_end = i + 1
+            table_text = text[start:table_end]
+
+            # columns: 패턴 찾기
+            col_match = re.search(r'columns:\s*(?:\(([^)]*)\)|(\d+))', table_text)
+            if not col_match:
+                result.append(text[prev_end:table_end])
+                prev_end = table_end
+                continue
+
+            # 열 수 파악
+            if col_match.group(2):
+                ncols = int(col_match.group(2))
+            else:
+                ncols = max(len(re.findall(r'fr\b', col_match.group(1))),
+                            len(re.findall(r'auto', col_match.group(1))))
+            if ncols < 2:
+                result.append(text[prev_end:table_end])
+                prev_end = table_end
+                continue
+
+            # 수동 오버라이드 확인
+            if str(idx) in overrides:
+                widths = overrides[str(idx)]
+                frs = [f'{w}fr' for w in widths]
+                new_cols = f'columns: ({", ".join(frs)})'
+                new_table = table_text[:col_match.start()] + new_cols + table_text[col_match.end():]
+                result.append(text[prev_end:start] + new_table)
+                prev_end = table_end
+                continue
+
+            # 자동 맞춤: 셀 내용 분석 (한글 2배 폭 가중치)
+            import unicodedata
+            def _vlen(s):
+                return sum(2 if unicodedata.east_asian_width(c) in ('W', 'F') else 1 for c in s)
+
+            cells = re.findall(r'\[([^\]]*)\]', table_text)
+            max_len = [1] * ncols
+            for ci, cell in enumerate(cells):
+                col = ci % ncols
+                clean = re.sub(r'#\w+\[([^\]]*)\]', r'\1', cell)
+                clean = re.sub(r'#\w+', '', clean)
+                clean = clean.replace('\\', '').strip()
+                max_len[col] = max(max_len[col], _vlen(clean))
+
+            # fr 비율 계산 (전체 합 기준 비례, 최소 0.5fr)
+            total = max(sum(max_len), 1)
+            frs = [f'{max(0.5, round(l / total * ncols, 1))}fr' for l in max_len]
+            new_cols = f'columns: ({", ".join(frs)})'
+            new_table = table_text[:col_match.start()] + new_cols + table_text[col_match.end():]
+            result.append(text[prev_end:start] + new_table)
+            prev_end = table_end
+
+        result.append(text[prev_end:])
+        return ''.join(result)
+
+    @staticmethod
+    def extract_table_info(text: str, page_count: int = 0) -> list[dict]:
+        """최종 .typ에서 표 메타데이터를 추출. 표 목록 UI용."""
+        import re
+        tables = []
+        chapter_table_counters: dict[int, int] = {}
+        text_len = max(len(text), 1)
+
+        for m in re.finditer(r'#table\s*\(', text):
+            start = m.start()
+            depth = 0
+            i = start
+            while i < len(text):
+                if text[i] == '(':
+                    depth += 1
+                elif text[i] == ')':
+                    depth -= 1
+                    if depth == 0:
+                        break
+                i += 1
+            table_text = text[start:i + 1]
+
+            col_m = re.search(r'columns:\s*(?:\(([^)]*)\)|(\d+))', table_text)
+            if not col_m:
+                continue
+            ncols = int(col_m.group(2)) if col_m.group(2) else len(re.findall(r'fr\b|auto', col_m.group(1)))
+
+            # 헤더 셀 추출
+            cells = re.findall(r'\[([^\]]*)\]', table_text)
+            headers = []
+            for ci in range(min(ncols, len(cells))):
+                clean = re.sub(r'#\w+\[([^\]]*)\]', r'\1', cells[ci])
+                clean = re.sub(r'#\w+', '', clean).strip()
+                headers.append(clean)
+
+            # 현재 columns 값 추출
+            col_vals = re.findall(r'([\d.]+)fr', col_m.group(0))
+            widths = [float(v) for v in col_vals] if col_vals else [1.0] * ncols
+
+            # 챕터 번호: 가장 가까운 H1 역탐색
+            preceding = text[:start]
+            h1_matches = list(re.finditer(r'^= (.+)$', preceding, re.MULTILINE))
+            chapter_num = 0
+            nearest_heading = ""
+            if h1_matches:
+                last_h1 = h1_matches[-1].group(1).strip()
+                nearest_heading = last_h1[:40]
+                ch_num_m = re.search(r'(\d+)', last_h1)
+                if ch_num_m:
+                    chapter_num = int(ch_num_m.group(1))
+
+            chapter_table_counters[chapter_num] = chapter_table_counters.get(chapter_num, 0) + 1
+            if chapter_num > 0:
+                label = f"표 {chapter_num}-{chapter_table_counters[chapter_num]}"
+            else:
+                label = f"표 서-{chapter_table_counters[0]}"
+
+            # 추정 페이지
+            est_page = max(1, round(start / text_len * page_count)) if page_count > 0 else 0
+
+            tables.append({
+                "idx": len(tables),
+                "cols": ncols,
+                "headers": headers,
+                "widths": widths,
+                "label": label,
+                "heading": nearest_heading,
+                "est_page": est_page,
+            })
+        return tables
 
     # ── 컴파일 ──
 

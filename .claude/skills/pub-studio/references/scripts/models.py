@@ -22,6 +22,8 @@ class ImageInfo:
     aspect_ratio: float | None = None  # width / height
     override_width: float | None = None
     override_style: str | None = None
+    alt: str = ""
+    figure_label: str = ""
 
     @property
     def effective_width(self) -> float:
@@ -43,6 +45,8 @@ class ImageInfo:
             "override_style": self.override_style,
             "effective_width": self.effective_width,
             "effective_style": self.effective_style,
+            "alt": self.alt,
+            "figure_label": self.figure_label,
         }
 
 
@@ -156,6 +160,10 @@ class DesignState:
         "code": 8, "quote": 9, "table": 8.5, "inlineCode": 8.5,
     })
     toc_depth: int = 2
+    toc_spacing: float = 4
+    table_first_col_ratio: float = 1.0
+    table_overrides: dict[str, list] = field(default_factory=dict)
+    component_styles: dict[str, dict] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict) -> DesignState:
@@ -175,6 +183,10 @@ class DesignState:
             page=d.get("page", defaults.page),
             typo_sizes=d.get("typoSizes", d.get("typo_sizes", defaults.typo_sizes)),
             toc_depth=d.get("tocDepth", d.get("toc_depth", 2)),
+            toc_spacing=d.get("tocSpacing", d.get("toc_spacing", 4)),
+            table_first_col_ratio=d.get("tableFirstColRatio", d.get("table_first_col_ratio", 1.0)),
+            table_overrides=d.get("tableOverrides", d.get("table_overrides", {})),
+            component_styles=d.get("componentStyles", d.get("component_styles", {})),
         )
 
     def to_dict(self) -> dict:
@@ -191,6 +203,10 @@ class DesignState:
             "page": self.page,
             "typoSizes": self.typo_sizes,
             "tocDepth": self.toc_depth,
+            "tocSpacing": self.toc_spacing,
+            "tableFirstColRatio": self.table_first_col_ratio,
+            "tableOverrides": self.table_overrides,
+            "componentStyles": self.component_styles,
         }
 
     def to_server_dict(self) -> dict:
@@ -203,4 +219,8 @@ class DesignState:
             "page": self.page,
             "images": self.images,
             "tocDepth": self.toc_depth,
+            "tocSpacing": self.toc_spacing,
+            "tableFirstColRatio": self.table_first_col_ratio,
+            "tableOverrides": self.table_overrides,
+            "componentStyles": self.component_styles,
         }

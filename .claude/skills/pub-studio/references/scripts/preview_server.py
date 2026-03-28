@@ -38,6 +38,7 @@ ROOT = Path(__file__).resolve().parents[5]  # 프로젝트 루트 (.claude/skill
 PROJECTS_DIR = ROOT / "projects"
 HTML_FILE = Path(__file__).resolve().parent.parent / "preview_editor.html"  # references/preview_editor.html
 DESIGNS_FILE = Path(__file__).resolve().parent.parent / "designs.json"  # references/designs.json (글로벌)
+VARIANTS_FILE = Path(__file__).resolve().parent.parent / "variants.json"  # references/variants.json (커스텀 변형)
 DEFAULT_PORT = 3333
 BUILD_DIR_NAME = ".pdf-build"  # 스테이징 디렉토리명
 
@@ -108,6 +109,13 @@ def stage_files(project_path: Path) -> dict:
         for f in src_dir.glob("*.md"):
             shutil.copy2(f, md_dir / group / f.name)
             staged[group] += 1
+
+    # assets 심링크 생성 (이미지 상대경로 해결: ../assets/CH01/ → 실제 assets/)
+    assets_src = project_path / "assets"
+    assets_link = md_dir / "assets"
+    if assets_src.exists() and not assets_link.exists():
+        assets_link.symlink_to(assets_src.resolve())
+        print(f"  심링크: .pdf-build/md/assets → {assets_src}")
 
     total = sum(staged.values())
     print(f"  스테이징: {total}개 파일 → .pdf-build/md/")
@@ -586,6 +594,21 @@ class PreviewServer:
             return {"ok": False, "error": str(e)[-2000:]}
 
         duration = round(time.time() - start, 2)
+
+        # 표 메타데이터 추출
+        table_info = []
+        try:
+            typ_file = self._build_dir / "final.typ"
+            if typ_file.exists():
+                pc = self._cache.page_count
+                if pc == 0:
+                    svg_dir = self._build_dir / "preview_svg"
+                    if svg_dir.exists():
+                        pc = len(list(svg_dir.glob("*.svg")))
+                table_info = BuildPipeline.extract_table_info(typ_file.read_text(encoding="utf-8"), pc)
+        except Exception:
+            pass
+
         return {
             "ok": True,
             "page_count": self._cache.page_count,
@@ -593,6 +616,7 @@ class PreviewServer:
             "duration": duration,
             "stage": stage_run if stage_run else "cached",
             "mode": self._cache.mode,
+            "tables": table_info,
         }
 
     def _build_svg_file_mode(self, data: dict, design_state: DesignState, config: dict) -> int:
@@ -845,6 +869,69 @@ class PreviewServer:
         )
         return {"ok": True}
 
+    # ── 커스텀 변형 API ──
+
+    def _load_variants_store(self) -> dict:
+        if VARIANTS_FILE.exists():
+            return json.loads(VARIANTS_FILE.read_text(encoding="utf-8"))
+        return {"_version": 1, "variants": {}}
+
+    def _save_variants_store(self, store: dict):
+        VARIANTS_FILE.write_text(
+            json.dumps(store, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    def handle_get_variants(self) -> dict:
+        """컴포넌트별 커스텀 변형 목록 반환."""
+        store = self._load_variants_store()
+        return {"ok": True, "variants": store.get("variants", {})}
+
+    def handle_post_variant_save(self, data: dict) -> dict:
+        """변형 생성/수정. builtIn(d1/d2)은 수정 불가."""
+        component = data.get("component", "").strip()
+        variant_id = data.get("variantId", "").strip()
+        name = data.get("name", "").strip()
+        properties = data.get("properties", {})
+
+        if not component or not variant_id:
+            return {"error": "component, variantId 필수"}
+        if variant_id in ("d1", "d2"):
+            return {"error": "내장 변형(d1/d2)은 수정할 수 없습니다"}
+        if not name:
+            name = variant_id
+
+        store = self._load_variants_store()
+        variants = store.setdefault("variants", {})
+        comp_variants = variants.setdefault(component, {})
+        comp_variants[variant_id] = {
+            "name": name,
+            "builtIn": False,
+            "properties": properties,
+        }
+        self._save_variants_store(store)
+        return {"ok": True, "variantId": variant_id}
+
+    def handle_post_variant_delete(self, data: dict) -> dict:
+        """커스텀 변형 삭제. builtIn(d1/d2)은 삭제 불가."""
+        component = data.get("component", "").strip()
+        variant_id = data.get("variantId", "").strip()
+
+        if not component or not variant_id:
+            return {"error": "component, variantId 필수"}
+        if variant_id in ("d1", "d2"):
+            return {"error": "내장 변형(d1/d2)은 삭제할 수 없습니다"}
+
+        store = self._load_variants_store()
+        comp_variants = store.get("variants", {}).get(component, {})
+        if variant_id not in comp_variants:
+            return {"error": f"'{variant_id}' 변형을 찾을 수 없습니다"}
+        del comp_variants[variant_id]
+        if not comp_variants:
+            del store["variants"][component]
+        self._save_variants_store(store)
+        return {"ok": True}
+
     # ── 서버 시작 ──
 
     def start(self):
@@ -914,6 +1001,17 @@ class PreviewServer:
                 elif path == "/api/designs":
                     include_full = query.get("full") == "true"
                     self._serve_json(server.handle_get_designs(include_full))
+                elif path == "/api/variants":
+                    self._serve_json(server.handle_get_variants())
+                elif path.startswith("/static/"):
+                    rel = path[len("/static/"):]
+                    static_dir = Path(__file__).resolve().parent.parent / "static"
+                    file_path = (static_dir / rel).resolve()
+                    if file_path.is_relative_to(static_dir) and file_path.is_file():
+                        ctype, _ = mimetypes.guess_type(str(file_path))
+                        self._serve_file(file_path, ctype or "application/octet-stream")
+                    else:
+                        self.send_error(404)
                 elif path.startswith(("/assets/", "/chapters/", "/book/", "/.pdf-build/")):
                     file_path = server._project_path / path.lstrip("/")
                     if file_path.exists() and file_path.is_file():
@@ -947,6 +1045,8 @@ class PreviewServer:
                     "/api/switch-mode": server.handle_post_switch_mode,
                     "/api/designs/save": server.handle_post_design_save,
                     "/api/designs/delete": server.handle_post_design_delete,
+                    "/api/variants/save": server.handle_post_variant_save,
+                    "/api/variants/delete": server.handle_post_variant_delete,
                     "/api/combine-md": server.handle_post_combine_md,
                     "/api/restage": server.handle_post_restage,
                 }

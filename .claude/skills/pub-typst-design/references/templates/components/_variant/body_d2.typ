@@ -17,6 +17,7 @@
 #let quote-size = 9pt
 #let table-size = 8pt
 #let inline-code-size = 8pt
+// ──OVERRIDES──
 
 #set text(
   font: ("RIDIBatang", "Apple SD Gothic Neo"),
