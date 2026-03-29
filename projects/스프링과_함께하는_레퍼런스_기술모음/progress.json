@@ -191,7 +191,7 @@
       "name": "마무리",
       "status": "done",
       "artifacts": {
-        "preface": "book/front/preface.md",
+        "preface": "book/front/머릿말.md",
         "afterword": "book/back/afterword.md"
       },
       "final_title": "처음 만나는 스프링 주변 기술 — Docker부터 RabbitMQ까지 9가지 실습",

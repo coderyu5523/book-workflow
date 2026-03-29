@@ -44,8 +44,10 @@ CONFIG = {
     "assets_dir": ASSETS,
     "template": BOOK / "templates" / "book.typ",
     "font_path": Path.home() / "Library" / "Fonts",
+    "pre_toc": [
+        FRONT / "머릿말.md",
+    ],
     "front": [
-        FRONT / "preface.md",
         FRONT / "prologue.md",
     ],
     "chapters": CHAPTER_FILES,
@@ -57,6 +59,22 @@ CONFIG = {
     "output_pdf": BOOK / "처음_만나는_스프링_주변_기술_통합본.pdf",
     "output_dir": BOOK / "chapter_pdfs",
     "mermaid_out": BOOK / "_mermaid_images",
+    "cover_data": {
+        "series": "특이점이 온 개발자",
+        "series_sub": "개념편",
+        "authors": "최주호, 류재성, 김주혁",
+        "badges": ["Docker", "OAuth2", "Redis", "S3", "SSE",
+                   "WebSocket", "HLS", "Elasticsearch", "RabbitMQ"],
+        "publisher": "오픈스킬북스",
+        "accent_color": (180, 120, 30),
+        "top_descs": ["Docker부터 RabbitMQ까지 한 권으로 정리하고 싶을 때",
+                      "Spring 주변 기술이 처음일 때",
+                      "이야기로 시작하는 실습서가 필요할 때"],
+        "main_words": [
+            ("Spring", 55, True, "L", -2, "dark"),
+            ("Infra", 55, True, "R", 0, "gray"),
+        ],
+    },
 }
 
 

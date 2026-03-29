@@ -39,6 +39,7 @@ ASSEMBLY_ORDER = [
 VARIANT_KEYS = ["body", "chapter_opening", "heading", "code", "inline_code", "quote", "table", "toc"]
 
 OVERRIDE_MARKER = "// ──OVERRIDES──"
+PRE_TOC_MARKER = "// ── PRE_TOC_CONTENT ──"
 
 # variants.json 위치 (커스텀 변형 저장소)
 VARIANTS_FILE = Path(__file__).resolve().parents[2] / "pub-studio" / "references" / "variants.json"
@@ -416,6 +417,10 @@ def assemble_book_base(selection: dict[str, str],
                 )
 
         parts.append(file_content)
+
+        # Slot: PRE_TOC 마커 (90-cover 직후, toc 직전)
+        if pattern == "90-cover.typ" and not skip_cover:
+            parts.append(f"\n{PRE_TOC_MARKER}\n")
 
         # Slot 0.5: 변수 오버라이드 (00-variables 직후)
         if i == 0 and var_override:

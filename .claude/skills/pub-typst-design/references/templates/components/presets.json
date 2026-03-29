@@ -28,7 +28,7 @@
     }
   },
   "3": {
-    "name": "디자인 6",
+    "name": "집필 에이전트 pod",
     "description": "heading 미니멀 + inline_code 굵게 + table 그레이 헤더",
     "components": {
       "body": "d1",
@@ -38,6 +38,19 @@
       "inline_code": "d2",
       "quote": "d1",
       "table": "d2",
+      "toc": "d1"
+    }
+  },
+  "4": {
+    "name": "집필 에이전트 전자책",
+    "description": "",
+    "components": {
+      "body": "d1",
+      "heading": "d1",
+      "code": "d1",
+      "inline_code": "d1",
+      "quote": "d1",
+      "table": "d1",
       "toc": "d1"
     }
   }

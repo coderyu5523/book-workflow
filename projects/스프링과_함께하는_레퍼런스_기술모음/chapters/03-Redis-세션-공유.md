@@ -1,6 +1,8 @@
 # Ch.3 Redis — 세션 공유
 
-## 서버 2대의 배신
+## 3. Redis 세션 공유
+
+### 3.1 세션이 사라진다
 
 카카오 로그인을 붙인 서비스가 잘 돌아가고 있었습니다. 사용자가 조금씩 늘자 **팀장** 이 슬랙을 보냈습니다.
 
@@ -21,6 +23,8 @@
 (서버를 늘렸을 뿐인데 왜 로그인이 풀리지.)
 
 ---
+
+### 3.2 공유 노트 한 권
 
 음식점을 떠올려 보겠습니다.
 
@@ -80,7 +84,7 @@ docker-session-share/
 
 Nginx 설정 파일은 `nginx/nginx.conf` 에 위치합니다. 이 파일이 `/app1` 경로를 서버 A로, `/app2` 경로를 서버 B로 보내는 라우팅 규칙을 담고 있습니다. docker-compose.yml의 `volumes` 설정으로 컨테이너 안의 Nginx가 이 파일을 읽습니다.
 
-### 3.1 전체 아키텍처
+### 3.3 전체 아키텍처
 
 클라이언트의 요청이 서비스에 도착하기까지의 흐름입니다.
 
@@ -103,7 +107,7 @@ Nginx 설정 파일은 `nginx/nginx.conf` 에 위치합니다. 이 파일이 `/a
 
 서버 A와 서버 B는 완전히 같은 코드입니다. 다른 점은 `SERVER_NAME` 환경 변수뿐입니다. 어느 서버에서 응답했는지 화면에 표시하기 위한 값입니다.
 
-### 3.2 Spring Session + Redis 설정
+### 3.4 Spring Session + Redis 설정
 
 Spring Boot가 세션을 Redis에 저장하도록 설정합니다. 먼저 의존성을 추가합니다. 아래 코드를 `build.gradle` 에 작성합니다.
 
@@ -150,7 +154,7 @@ public String home(HttpServletRequest request, Model model) {
 
 `request.getSession()` 이 반환하는 세션 객체가 이미 Redis에 연결되어 있습니다. `getAttribute` 로 읽고 `setAttribute` 로 쓰면 Redis에 자동으로 반영됩니다. 기존 코드를 한 줄도 바꾸지 않아도 됩니다.
 
-### 3.3 Nginx 경로 기반 라우팅
+### 3.5 Nginx 경로 기반 라우팅
 
 Nginx가 URL 경로를 보고 요청을 서버 A 또는 B로 보냅니다.
 
@@ -179,7 +183,7 @@ http {
 
 `upstream` 은 "이 이름으로 요청하면 이 서버로 보내라"는 별칭입니다. `/app1` 으로 들어온 요청은 `app1:8080` 으로, `/app2` 는 `app2:8080` 으로 전달됩니다. 루트 경로(`/`)는 `/app1/` 으로 리다이렉트합니다. `proxy_set_header` 는 원래 요청의 호스트와 IP 정보를 뒷단 서버에 전달합니다.
 
-### 3.4 docker-compose 구성
+### 3.6 docker-compose 구성
 
 전체 인프라를 하나의 파일로 정의합니다. 아래 코드를 `docker-compose.yml` 에 작성합니다.
 
@@ -223,7 +227,7 @@ services:
 
 컨테이너는 4개입니다. Nginx가 앞에서 요청을 받고 app1과 app2가 처리하며 redis가 세션을 저장합니다. `depends_on` 으로 실행 순서를 지정합니다. Redis가 먼저 뜨고 Spring 앱이 뜨고 Nginx가 마지막에 뜹니다. `SPRING_REDIS_HOST=redis` 는 Docker 네트워크 안에서 redis 컨테이너를 호스트명으로 찾으라는 뜻입니다.
 
-### 3.5 실행 & 세션 공유 확인
+### 3.7 실행 & 세션 공유 확인
 
 모든 파일이 준비되었으면 실행합니다.
 

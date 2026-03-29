@@ -195,6 +195,8 @@ def scan_project(project_path: Path) -> dict:
         if not group_dir.exists():
             continue
         for f in sorted(group_dir.glob("*.md")):
+            if f.name == "목차.md":
+                continue
             entry = {
                 "name": f.name,
                 "path": f"{BUILD_DIR_NAME}/md/{sub}/{f.name}",

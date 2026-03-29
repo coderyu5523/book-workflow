@@ -4,7 +4,7 @@ import { state, shared } from './state.js';
 import { render, syncFromRange, syncFromNum } from './renderer.js';
 import { showToast, switchTab, toggleSection, goToPreviewPage, goToPrevPage, goToNextPage, switchLayoutSubTab, onEditorInput } from './ui.js';
 import { fetchProject } from './api.js';
-import { applyPreset, setComponent, updateFont, updateTypo, updateTypoSizes, updateTocDepth, updatePageFormat, setOutputMode, updateMargin, setImgPreset, updateImgWidth, updateColor, exportConfig, resetAll, fetchDesigns, saveDesign, loadDesign, deleteDesign, fetchPresets, saveAsPreset, deletePreset } from './design.js';
+import { applyPreset, applyPresetFromJSON, setComponent, updateFont, updateTypo, updateTypoSizes, updateTocDepth, updatePageFormat, setOutputMode, updateMargin, setImgPreset, updateImgWidth, updateColor, exportConfig, resetAll, fetchDesigns, saveDesign, loadDesign, deleteDesign, fetchPresets, saveAsPreset, deletePreset, renamePreset, updatePresetValues } from './design.js';
 import { scheduleDesignRebuild, buildSvgPreview, exportPdf, restageFiles, combineMd } from './builder.js';
 import { fetchFiles, toggleFileSelectAll, toggleFileGroup, onFileCheckChange } from './files.js';
 import { openFileEditor, saveFileContent, closeFileEditor, openMdModal, closeMdModal, buildFromModal, initKeyboardShortcuts, initResizeHandles } from './editor.js';
@@ -30,7 +30,7 @@ Object.assign(window, {
   applyPreset, setComponent, updateFont, updateTypo, updateTypoSizes, updateTocDepth,
   updatePageFormat, setOutputMode, updateMargin, setImgPreset, updateImgWidth, updateColor,
   exportConfig, resetAll, saveDesign, loadDesign, deleteDesign,
-  saveAsPreset, deletePreset,
+  saveAsPreset, deletePreset, applyPresetFromJSON, renamePreset, updatePresetValues,
 
   // builder
   scheduleDesignRebuild, buildSvgPreview, exportPdf, restageFiles, combineMd,

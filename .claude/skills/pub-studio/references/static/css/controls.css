@@ -30,6 +30,9 @@ input[type="color"] { width: 26px; height: 26px; border: 1px solid #d1d5db; bord
 .saved-design-item:hover { background:#f0f4ff; }
 .saved-design-item .dname { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#374151; }
 .saved-design-item .ddate { font-size:10px; color:#9ca3af; margin-right:6px; white-space:nowrap; }
+.saved-design-item .preset-actions { display:flex; align-items:center; gap:2px; flex-shrink:0; }
+.saved-design-item .preset-act { color:#d1d5db; cursor:pointer; padding:2px 4px; border-radius:3px; font-size:12px; }
+.saved-design-item .preset-act:hover { background:#e0e7ff; color:#4f46e5; }
 .saved-design-item .ddel { color:#d1d5db; cursor:pointer; padding:2px 4px; border-radius:3px; font-size:13px; flex-shrink:0; }
 .saved-design-item .ddel:hover { background:#fee2e2; color:#ef4444; }
 

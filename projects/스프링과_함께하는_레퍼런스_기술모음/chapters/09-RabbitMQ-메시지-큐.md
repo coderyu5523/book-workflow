@@ -1,6 +1,8 @@
 # Ch.9 RabbitMQ 메시지 큐
 
-## 수동 동기화의 한계
+## 9. RabbitMQ 메시지 큐
+
+### 9.1 수동 동기화의 한계
 
 설정 파일을 GitHub에서 관리하고 있었습니다. 누군가 README를 수정하면 서버 쪽 파일도 바꿔야 했습니다. 처음에는 수동으로 했습니다. GitHub에서 파일을 열고, 복사하고, 서버에 붙여넣고. 하루에 한두 번이면 참을 만했습니다.
 
@@ -25,6 +27,8 @@
 (직접 호출하면 보내는 쪽이 받는 쪽 상태까지 신경 써야 하는구나.)
 
 ---
+
+### 9.2 우체국과 사서함
 
 우체국을 떠올려 봅니다.
 
@@ -79,7 +83,7 @@ rabbitmq-consumer/
 
 *이번 챕터의 실습 흐름*
 
-### 9.1 시나리오와 전체 구조
+### 9.3 시나리오와 전체 구조
 
 전체 흐름을 정리합니다.
 
@@ -99,7 +103,7 @@ GitHub에 README가 수정되면 Producer가 주기적으로 폴링하여 변경
 
 Exchange와 Queue를 연결하는 규칙을 **Binding** 이라고 합니다. "이 우편번호의 편지는 이 사서함에 넣어라"는 규칙을 등록하는 것입니다.
 
-### 9.2 실습 환경
+### 9.4 실습 환경
 
 RabbitMQ를 Docker로 실행합니다. 아래 코드를 `docker-compose.yml` 에 작성합니다.
 
@@ -157,7 +161,7 @@ GitHub에 테스트용 레포를 하나 만들어 둡니다. 레포 이름은 `c
 
 *GitHub에 config-readme 레포 생성 -- 이 레포의 README 변경을 감지할 것이다*
 
-### 9.3 Producer 구현
+### 9.5 Producer 구현
 
 Producer는 두 가지 일을 합니다. GitHub의 README 변경을 감지하는 것과 변경이 감지되면 RabbitMQ에 메시지를 발행하는 것입니다.
 
@@ -279,7 +283,7 @@ RabbitMQ 관리 콘솔에서 **Queues** 탭을 클릭합니다. `repo-updates` Q
 
 [CAPTURE NEEDED: RabbitMQ Queues 탭 -- repo-updates Queue의 Ready 메시지 수 확인]
 
-### 9.4 Consumer 구현
+### 9.6 Consumer 구현
 
 Consumer는 Queue에서 메시지를 꺼내 로컬 파일에 반영합니다. `RabbitConfig.java` 에 Queue와 JSON 컨버터를 등록합니다.
 
@@ -336,7 +340,7 @@ rabbit.queue=repo-updates
 
 Consumer는 Queue 이름만 알면 됩니다. Exchange나 Routing Key는 Producer 쪽에서 설정합니다. 받는 사람은 자기 사서함 번호만 알면 되는 것과 같습니다.
 
-### 9.5 통합 테스트 시나리오
+### 9.7 통합 테스트 시나리오
 
 세 서버를 모두 실행합니다. Docker(RabbitMQ), Producer, Consumer 순서입니다.
 
@@ -412,7 +416,7 @@ RabbitMQ 관리 콘솔의 **Queues** 탭에서 `repo-updates` Queue를 확인합
 
 전체 흐름을 다시 한번 확인합니다. GitHub에서 README를 한 번 더 수정하고 커밋합니다. 60초 이내에 Producer 로그에서 SHA 변경 감지가 출력되고, Consumer 로그에서 메시지 수신이 출력되고, 로컬 README 파일이 업데이트되면 end-to-end 동작이 검증된 것입니다.
 
-### 9.6 실무 확장 포인트
+### 9.8 실무 확장 포인트
 
 이 실습은 가장 단순한 형태입니다. 실무에서는 몇 가지를 더 고려합니다.
 

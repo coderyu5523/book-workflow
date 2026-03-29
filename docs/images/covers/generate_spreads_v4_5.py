@@ -135,20 +135,24 @@ BOOKS = [
     dict(
         id="tech-collection", c1=(180, 120, 30),
         sub="개념편",
-        tagline="개발자 필수 기술 총정리",
-        top_descs=["Git부터 CI/CD까지 한 권으로 정리하고 싶을 때",
-                   "현장에서 바로 쓸 수 있는 기술이 필요할 때",
-                   "개발자 필수 기술을 체계적으로 배우고 싶을 때"],
+        tagline="Docker부터 RabbitMQ까지 9가지 실습",
+        authors="최주호, 류재성, 김주혁",
+        top_descs=["Docker부터 RabbitMQ까지 한 권으로 정리하고 싶을 때",
+                   "Spring 주변 기술이 처음일 때",
+                   "이야기로 시작하는 실습서가 필요할 때"],
+        badges=["Docker", "OAuth2", "Redis", "S3", "SSE",
+                "WebSocket", "HLS", "Elasticsearch", "RabbitMQ"],
         lines=[
             ("특이점이", 20, True, "L", 0, "dark"),
             ("온 개발자", 25, True, "R", 0, "gray"),
             ("_GAP", 12, False, "L", 0, "dark"),
-            ("기술", 48, True, "L", -2, "dark"),
-            ("모음", 48, True, "R", 0, "dark"),
+            ("Spring", 55, True, "L", -2, "dark"),
+            ("Infra", 55, True, "R", 0, "gray"),
         ],
-        desc=["개발자라면 알아야 할 기술들을", "한 권에 모았습니다.", "",
-              "Git, CI/CD, 테스트, 모니터링까지.",
-              "현장에서 바로 쓸 수 있는 기술들을", "이야기와 실습으로 정리합니다."],
+        desc=["Spring Boot 주변 기술 아홉 가지를", "한 권에 모았습니다.", "",
+              "Docker, OAuth2, Redis, S3, SSE,",
+              "WebSocket, HLS, Elasticsearch, RabbitMQ.",
+              "이야기로 시작해서 실습으로 마무리합니다."],
     ),
 ]
 
@@ -261,23 +265,52 @@ def create_spread(b):
     f_tag = F(7)
     d.text((LM, cur_y), b["tagline"], fill=(130, 130, 130), font=f_tag)
 
-    # --- 우측 하단: 개념편 + 태그라인 + 저자 ---
+    # --- 배지 (키워드) 2열 중앙 정렬 ---
+    badges = b.get("badges", [])
+    if badges:
+        cur_y += th(d, b["tagline"], f_tag) + mm(5)
+        f_badge = F(3.5)
+        badge_h = mm(5)
+        badge_pad_x = mm(2.5)
+        badge_gap = mm(1.5)
+        row_gap = mm(2)
+        mid = len(badges) // 2 + len(badges) % 2  # 5 / 4 split for 9
+        rows = [badges[:mid], badges[mid:]]
+        for row in rows:
+            bx = LM  # 왼쪽 정렬
+            for badge_text in row:
+                bw = tw(d, badge_text, f_badge) + badge_pad_x * 2
+                d.rounded_rectangle(
+                    [(bx, cur_y), (bx + bw, cur_y + badge_h)],
+                    radius=mm(3),
+                    fill=(240, 243, 248),
+                    outline=(220, 225, 235),
+                )
+                # 텍스트 수직 중앙: textbbox 기반 정확한 계산
+                bb = d.textbbox((0, 0), badge_text, font=f_badge)
+                text_h = bb[3] - bb[1]
+                ty = cur_y + (badge_h - text_h) // 2 - bb[1]
+                d.text((bx + badge_pad_x, ty), badge_text,
+                       fill=(70, 85, 105), font=f_badge)
+                bx += bw + badge_gap
+            cur_y += badge_h + row_gap
+
+    # --- 우측 하단: 개념편 + 저자 (수직 정렬) ---
     f_sub_title = F(16, bold=True)
     sub_text = b["sub"]
     sub_w = tw(d, sub_text, f_sub_title)
-    sub_y = H - mm(55)
     # 구분선
     line_w = mm(40)
+    sub_y = H - mm(40)
     d.rectangle([(RM - line_w, sub_y - mm(3)),
                  (RM, sub_y - mm(3) + mm(0.8))], fill=c1)
     # 개념편
     d.text((RM - sub_w, sub_y), sub_text, fill=c1, font=f_sub_title)
-
-    # 저자
-    f_author = F(7)
-    author_text = "류재성 지음"
+    # 저자 (개념편 바로 아래, 우측 정렬)
+    f_author = F(4)
+    author_text = b.get("authors", "류재성") + " 지음"
     aw_val = tw(d, author_text, f_author)
-    d.text((RM - aw_val, H - mm(35)), author_text, fill=(100, 100, 100), font=f_author)
+    d.text((RM - aw_val, H - mm(18)), author_text, fill=(130, 130, 130), font=f_author)
 
     # --- 출판사 (좌측 하단) ---
     f_pub_name = F(7, bold=True)
@@ -391,17 +424,26 @@ def create_spread(b):
     stw_ = tw(td, st, f_spine)
     td.text(((H - stw_) // 2, (SPINE - th(td, st, f_spine)) // 2),
             st, fill=(100, 100, 100), font=f_spine)
-    aw = tw(td, "류재성", f_spine_sm)
-    td.text((H - aw - mm(2), (SPINE - th(td, "류재성", f_spine_sm)) // 2),
-            "류재성", fill=(150, 150, 150), font=f_spine_sm)
+    spine_author = b.get("authors", "류재성").split(",")[0].strip()
+    aw = tw(td, spine_author, f_spine_sm)
+    td.text((H - aw - mm(2), (SPINE - th(td, spine_author, f_spine_sm)) // 2),
+            spine_author, fill=(150, 150, 150), font=f_spine_sm)
     img.paste(tmp.rotate(90, expand=True), (X_SPINE, 0),
               tmp.rotate(90, expand=True))
 
-    # ════════════════════════════════════════════════════
-    #  재단 가이드
-    # ════════════════════════════════════════════════════
+    return img
+
+
+def extract_front_cover(spread_img):
+    """가이드 라인 그리기 전 스프레드에서 앞표지만 추출 — 전자책용"""
+    return spread_img.crop((X_FRONT, BLEED, X_FRONT + FRONT, H - BLEED))
+
+
+def draw_guides(img):
+    """재단 가이드 + 접힘선 그리기 — POD 전용"""
+    d = ImageDraw.Draw(img)
     gc = (215, 215, 215)
-    ml = mm(5)
+    ml = int(5 * MM)
     for cx, cy in [(BLEED, BLEED), (W - BLEED, BLEED),
                    (BLEED, H - BLEED), (W - BLEED, H - BLEED)]:
         dx_ = -1 if cx > W // 2 else 1
@@ -411,16 +453,21 @@ def create_spread(b):
     d.line([(X_SPINE, 0), (X_SPINE, H)], fill=gc, width=1)
     d.line([(X_SPINE + SPINE, 0), (X_SPINE + SPINE, H)], fill=gc, width=1)
     for fold_x in [X_BACK, X_FFLAP]:
-        for y in range(0, H, mm(5)):
-            d.line([(fold_x, y), (fold_x, min(y + mm(2.5), H))],
+        for y in range(0, H, int(5 * MM)):
+            d.line([(fold_x, y), (fold_x, min(y + int(2.5 * MM), H))],
                    fill=gc, width=1)
-
-    return img
 
 
 OUT = BASE
 for b in BOOKS:
     img = create_spread(b)
+    # 전자책용 앞표지 (가이드 없이 깨끗하게)
+    front = extract_front_cover(img)
+    fp = os.path.join(OUT, f"cover-v4.5-{b['id']}.png")
+    front.save(fp, dpi=(DPI, DPI))
+    print(f"OK {fp} ({front.size[0]}x{front.size[1]})")
+    # POD용 전체 스프레드 (가이드 추가)
+    draw_guides(img)
     p = os.path.join(OUT, f"spread-v4.5-{b['id']}.png")
     img.save(p, dpi=(DPI, DPI))
     print(f"OK {p} ({img.size[0]}x{img.size[1]})")

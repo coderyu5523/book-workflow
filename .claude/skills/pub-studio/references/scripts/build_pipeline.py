@@ -64,8 +64,45 @@ class BuildPipeline:
         """Stage 1: MD 파일 통합 → Pandoc 변환 → 후처리 → raw .typ 문자열.
 
         완료 후 image_registry.scan_raw_typ() 자동 호출.
+        pre_toc 파일이 있으면 별도로 변환하여 _pre_toc_typ에 저장.
         """
         tb = _get_typst_builder()
+
+        # 표지 자동 생성 (cover_data가 있으면)
+        if self._config.get("cover_data"):
+            try:
+                from cover_generator import generate_front_cover
+                build_dir = Path(self._config.get("base", ".")) / ".pdf-build"
+                cover_path = generate_front_cover(self._config, build_dir)
+                # book.typ의 book-cover-image 경로 업데이트
+                template_path = Path(self._config.get("template", ""))
+                if template_path.exists():
+                    typ_text = template_path.read_text(encoding="utf-8")
+                    if "book-cover-image" in typ_text:
+                        import re as _re
+                        typ_text = _re.sub(
+                            r'#let book-cover-image = ".*?"',
+                            f'#let book-cover-image = "{cover_path}"',
+                            typ_text,
+                        )
+                        template_path.write_text(typ_text, encoding="utf-8")
+            except Exception as e:
+                print(f"   [경고] 표지 자동 생성 실패: {e}")
+
+        # pre_toc 파일 별도 처리
+        pre_toc_files = self._config.get("pre_toc", [])
+        self._pre_toc_typ = ""
+        if pre_toc_files:
+            pre_toc_typ = tb.build_raw_typ(
+                front=pre_toc_files, chapters=[], back=[],
+                mermaid_out=self._config.get("mermaid_out"),
+                assets_dir=self._config.get("assets_dir"),
+                md_output=None,
+                image_border_preset=self._config.get("image_border_preset", "plain"),
+                use_image_variables=self._config.get("use_image_variables", True),
+            )
+            self._pre_toc_typ = pre_toc_typ
+
         raw_typ = tb.build_raw_typ(
             front=front,
             chapters=chapters,
@@ -111,6 +148,7 @@ class BuildPipeline:
             design_state=design_state.to_server_dict(),
             skip_cover=skip_cover,
             skip_toc=skip_toc,
+            pre_toc_content=getattr(self, "_pre_toc_typ", ""),
         )
 
         # 4. 표 열 너비 자동 맞춤 + 수동 오버라이드

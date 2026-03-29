@@ -404,9 +404,13 @@ export function renderPresetList() {
     const p = _presetsCache[id];
     const name = p.name || '이름 없음';
     const desc = p.description || '';
-    return '<div class="saved-design-item">'
+    return '<div class="saved-design-item" onclick="applyPresetFromJSON(\'' + id + '\')" style="cursor:pointer;">'
       + '<span class="dname" title="' + desc + '"><b>' + id + '</b> ' + name + '</span>'
+      + '<span class="preset-actions">'
+      + '<span class="preset-act" onclick="event.stopPropagation();renamePreset(\'' + id + '\')" title="이름 수정">&#9998;</span>'
+      + '<span class="preset-act" onclick="event.stopPropagation();updatePresetValues(\'' + id + '\')" title="현재 설정으로 덮어쓰기">&#8635;</span>'
       + '<span class="ddel" onclick="event.stopPropagation();deletePreset(\'' + id + '\')" title="삭제">x</span>'
+      + '</span>'
       + '</div>';
   }).join('');
 }
@@ -428,6 +432,59 @@ export async function saveAsPreset() {
   } else {
     showToast('저장 실패: ' + (data.error || ''));
   }
+}
+
+export function applyPresetFromJSON(id) {
+  const p = _presetsCache[id];
+  if (!p || !p.components) { showToast('프리셋 데이터를 찾을 수 없습니다'); return; }
+  state.preset = 'custom';
+  state.components = { ...p.components };
+  state.componentStyles = {};
+  syncToggleUI();
+  import('./variants.js').then(m => {
+    m.applyAllGlobals();
+    syncTypoSizesUI();
+    m.renderAllPropertyEditors();
+    render();
+    scheduleDesignRebuild();
+  });
+  showToast('프리셋 ' + id + '번 \'' + (p.name || '') + '\' 적용');
+}
+
+export async function renamePreset(id) {
+  const p = _presetsCache[id];
+  if (!p) return;
+  const newName = prompt('새 이름:', p.name || '');
+  if (!newName || newName === p.name) return;
+  const newDesc = prompt('설명 (Enter로 유지):', p.description || '');
+  try {
+    const body = { id, name: newName };
+    if (newDesc !== null) body.description = newDesc;
+    const resp = await fetch('/api/presets/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (data.ok) { showToast('프리셋 ' + id + '번 이름 변경 완료'); fetchPresets(); }
+    else { showToast('수정 실패: ' + (data.error || '')); }
+  } catch (e) { showToast('서버 연결 오류'); }
+}
+
+export async function updatePresetValues(id) {
+  const p = _presetsCache[id];
+  if (!p) return;
+  if (!confirm('프리셋 ' + id + '번 \'' + (p.name || '') + '\'을 현재 설정으로 덮어쓰시겠습니까?')) return;
+  try {
+    const resp = await fetch('/api/presets/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, components: { ...state.components } }),
+    });
+    const data = await resp.json();
+    if (data.ok) { showToast('프리셋 ' + id + '번 설정 업데이트 완료'); fetchPresets(); }
+    else { showToast('업데이트 실패: ' + (data.error || '')); }
+  } catch (e) { showToast('서버 연결 오류'); }
 }
 
 export async function deletePreset(id) {

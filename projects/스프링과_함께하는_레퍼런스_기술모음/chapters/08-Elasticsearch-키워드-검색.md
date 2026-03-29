@@ -1,6 +1,8 @@
 # Ch.8 Elasticsearch 키워드 검색
 
-## 5초짜리 검색
+## 8. Elasticsearch 검색
+
+### 8.1 5초짜리 검색
 
 게시판에 검색 기능이 있었습니다. 제목이나 내용에 키워드를 넣으면 결과가 나오는 단순한 구조였습니다. 데이터가 천 건일 때는 아무 문제가 없었습니다.
 
@@ -23,6 +25,8 @@ SQL을 열어 봤습니다. `WHERE title LIKE '%갤럭시%'` 가 전부였습니
 **선배**: "검색 전용 엔진을 따로 두는 거야."
 
 ---
+
+### 8.2 색인 카드함
 
 도서관에 갔다고 생각해 봅니다.
 
@@ -71,7 +75,7 @@ docker-elasticsearch/
 
 *이번 챕터의 실습 흐름*
 
-### 8.1 왜 Elasticsearch가 필요한가
+### 8.3 왜 Elasticsearch가 필요한가
 
 LIKE 검색의 문제를 정리합니다.
 
@@ -85,7 +89,7 @@ Elasticsearch는 **역인덱스(Inverted Index)** 구조를 씁니다. 문서가
 
 일반 인덱스가 "문서 → 단어" 방향이라면 역인덱스는 "단어 → 문서" 방향입니다. 검색할 때 단어 목록에서 해당 키워드를 찾으면 문서 번호가 바로 나옵니다. 데이터가 백만 건이어도 키워드 목록에서 한 번 찾는 것으로 끝납니다.
 
-### 8.2 실습 환경 준비
+### 8.4 실습 환경 준비
 
 Elasticsearch와 Kibana를 Docker로 띄웁니다. 아래 코드를 `docker-compose.yml` 에 작성합니다.
 
@@ -134,7 +138,7 @@ curl localhost:9200
 
 *localhost:9200 응답 -- cluster_name, version 정보가 보이면 Elasticsearch가 정상 동작하고 있다*
 
-브라우저에서 `http://localhost:5601` 에 접속하면 Kibana 메인 화면이 나옵니다. 왼쪽 사이드바 하단의 **Management** 메뉴를 열고 **Dev Tools** 를 클릭하면 Elasticsearch에 쿼리를 직접 실행할 수 있는 콘솔이 열립니다. 8.6절에서 이 콘솔을 사용합니다.
+브라우저에서 `http://localhost:5601` 에 접속하면 Kibana 메인 화면이 나옵니다. 왼쪽 사이드바 하단의 **Management** 메뉴를 열고 **Dev Tools** 를 클릭하면 Elasticsearch에 쿼리를 직접 실행할 수 있는 콘솔이 열립니다. 8.8절에서 이 콘솔을 사용합니다.
 
 #### nori 한국어 분석기 설치
 
@@ -165,7 +169,7 @@ spring.elasticsearch.uris=http://elasticsearch:9200
 
 H2 데이터베이스와 Elasticsearch를 동시에 사용하는 구성입니다. H2는 RDB 역할을, Elasticsearch는 검색 엔진 역할을 담당합니다.
 
-### 8.3 데이터 모델 설계: RDB + ES
+### 8.5 데이터 모델 설계: RDB + ES
 
 하나의 데이터를 두 곳에 저장하려면 모델도 두 개가 필요합니다. RDB용 엔티티와 ES용 도큐먼트입니다.
 
@@ -205,7 +209,7 @@ public class DeviceDocument {
 
 두 모델의 필드는 같지만 역할이 다릅니다. DeviceEntity는 데이터의 원본을 보관하고 DeviceDocument는 검색용 사본을 보관합니다. 도서관 비유에서 책장에 꽂힌 책이 DeviceEntity이고 색인 카드가 DeviceDocument입니다.
 
-### 8.4 저장 흐름: RDB + ES 이중 저장
+### 8.6 저장 흐름: RDB + ES 이중 저장
 
 데이터를 저장할 때 RDB와 ES에 동시에 넣습니다. 이 방식을 **이중 저장(Dual Write)** 이라고 합니다.
 
@@ -253,7 +257,7 @@ GET /devices/_search
 
 [CAPTURE NEEDED: Kibana Dev Tools에서 devices 인덱스 match_all 검색 결과 -- hits.total.value와 _source 확인]
 
-### 8.5 검색 흐름: ES 검색 -> RDB 재조회
+### 8.7 검색 흐름: ES 검색 -> RDB 재조회
 
 검색은 반대 방향입니다. Elasticsearch에서 키워드로 문서를 찾고 그 결과의 id로 RDB에서 원본 데이터를 가져옵니다.
 
@@ -303,7 +307,7 @@ GET /devices/_search
 
 [CAPTURE NEEDED: Kibana Dev Tools에서 multi_match 검색 실행 -- _score 기준 정렬 결과 확인]
 
-### 8.6 Fuzzy 검색 + Kibana 실습
+### 8.8 Fuzzy 검색 + Kibana 실습
 
 사용자가 "갈럭시"라고 오타를 입력해도 "갤럭시"를 찾아주는 기능이 **Fuzzy 검색** 입니다. Elasticsearch는 **편집 거리(Edit Distance)** 를 기준으로 판단합니다. 한 글자를 바꾸거나, 넣거나, 빼서 원래 단어가 되는지 계산합니다. "갈럭시"에서 "갈"을 "갤"로 바꾸면 "갤럭시"가 되므로 편집 거리는 1입니다. 한글은 완성형 문자이므로 자모 단위와 다를 수 있지만 완성형 글자 단위에서 한 글자 차이는 편집 거리 1로 처리됩니다.
 

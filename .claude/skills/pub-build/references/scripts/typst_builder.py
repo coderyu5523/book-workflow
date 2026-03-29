@@ -7,6 +7,7 @@
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -15,6 +16,9 @@ _mermaid_counter = 0
 
 # 콘텐츠 마커 — template+base와 content 경계 표시
 CONTENT_MARKER = "// ══ CONTENT ══"
+
+# PRE_TOC 마커 — cover와 toc 사이에 삽입되는 콘텐츠 (머릿말 등)
+PRE_TOC_MARKER = "// ── PRE_TOC_CONTENT ──"
 
 # Mermaid 커스텀 설정 파일 경로
 _MERMAID_CONFIG = Path(__file__).parent / "mermaid-config.json"
@@ -465,6 +469,9 @@ def fix_typst_content(text: str, image_border_preset: str = "plain", use_image_v
         text
     )
 
+    # 3.6 머릿말 목차 제외: = 머릿말 → #heading(outlined: false)[머릿말]
+    text = re.sub(r'^= 머릿말\s*$', '#heading(outlined: false)[머릿말]', text, flags=re.MULTILINE)
+
     # 4. 한국어 라벨 제거 (Pandoc이 생성하는 <한국어-라벨>)
     text = re.sub(r'<[가-힣a-zA-Z0-9.\-_]+>\n', '\n', text)
 
@@ -492,11 +499,13 @@ def merge_template_and_content(template_path: Path, content: str,
                                design: str | None = None,
                                design_state: dict | None = None,
                                skip_cover: bool = False,
-                               skip_toc: bool = False) -> str:
+                               skip_toc: bool = False,
+                               pre_toc_content: str = "") -> str:
     """템플릿 + Pandoc 변환 내용을 하나의 .typ 파일로 합침
 
     design이 지정되면 컴포넌트 어셈블러로 book_base를 조립.
     없으면 기존 book_base.typ 파일을 사용 (하위호환).
+    pre_toc_content가 있으면 cover와 toc 사이에 삽입 (머릿말 등).
     """
     template = template_path.read_text(encoding="utf-8")
 
@@ -511,6 +520,19 @@ def merge_template_and_content(template_path: Path, content: str,
             base = base_path.read_text(encoding="utf-8")
         else:
             base = ""
+
+    # PRE_TOC 마커에 머릿말 등 삽입
+    if base and pre_toc_content:
+        if PRE_TOC_MARKER in base:
+            base = base.replace(PRE_TOC_MARKER, pre_toc_content)
+        elif "// 목차" in base or "#outline(" in base:
+            # 마커 없을 때 fallback: 목차 섹션 직전에 삽입
+            for marker in ["// ══════════════════════════════════════\n// 목차", "// 목차 (자동 생성)", "// 목차"]:
+                if marker in base:
+                    base = base.replace(marker, pre_toc_content + "\n" + marker, 1)
+                    break
+    elif base and PRE_TOC_MARKER in base:
+        base = base.replace(PRE_TOC_MARKER, "")
 
     if base:
         return template + "\n" + base + "\n" + CONTENT_MARKER + "\n" + content
@@ -623,8 +645,17 @@ def build_raw_typ(front: list, chapters: list, back: list,
 
     # 통합 MD
     integrated = build_integrated_md(front, chapters, back, mermaid_out)
-    md_output.parent.mkdir(parents=True, exist_ok=True)
-    md_output.write_text(integrated, encoding="utf-8")
+    if md_output is None:
+        import tempfile
+        tmp = tempfile.NamedTemporaryFile(suffix=".md", delete=False, mode="w", encoding="utf-8")
+        tmp.write(integrated)
+        tmp.close()
+        md_output = Path(tmp.name)
+        _tmp_md = True
+    else:
+        md_output.parent.mkdir(parents=True, exist_ok=True)
+        md_output.write_text(integrated, encoding="utf-8")
+        _tmp_md = False
 
     # Pandoc 변환
     raw_typ_path = md_output.with_suffix('.raw.typ')
@@ -635,6 +666,8 @@ def build_raw_typ(front: list, chapters: list, back: list,
     raw = raw_typ_path.read_text(encoding="utf-8")
     fixed = fix_typst_content(raw, image_border_preset=image_border_preset, use_image_variables=use_image_variables)
     raw_typ_path.unlink(missing_ok=True)
+    if _tmp_md:
+        md_output.unlink(missing_ok=True)
 
     print(f"   Stage 1 완료: raw .typ ({len(fixed)} chars)")
     return fixed
@@ -764,8 +797,33 @@ def build(config: dict):
     if mermaid_out.exists():
         shutil.rmtree(mermaid_out)
 
+    # 1b. 표지 자동 생성 (cover_data가 있으면)
+    if config.get('cover_data'):
+        try:
+            _cover_scripts = Path(__file__).resolve().parents[3] / "pub-studio" / "references" / "scripts"
+            if str(_cover_scripts) not in sys.path:
+                sys.path.insert(0, str(_cover_scripts))
+            from cover_generator import generate_front_cover
+            cover_dir = config['base'] / "assets"
+            cover_path = generate_front_cover(config, cover_dir)
+            # book.typ의 book-cover-image 변수를 이 경로로 설정
+            template_path = config.get('template')
+            if template_path and template_path.exists():
+                typ_text = template_path.read_text(encoding="utf-8")
+                if 'book-cover-image' in typ_text:
+                    import re as _re
+                    typ_text = _re.sub(
+                        r'#let book-cover-image = ".*?"',
+                        f'#let book-cover-image = "{cover_path}"',
+                        typ_text,
+                    )
+                    template_path.write_text(typ_text, encoding="utf-8")
+        except Exception as e:
+            print(f"   [경고] 표지 자동 생성 실패: {e}")
+
     # 2. 마크다운 통합 + 전처리
     print("\n[1/6] 마크다운 통합 + 전처리...")
+    pre_toc_files = config.get('pre_toc', [])
     integrated_md = build_integrated_md(
         config['front'], config['chapters'], config['back'], mermaid_out
     )
@@ -773,6 +831,20 @@ def build(config: dict):
     output_md.parent.mkdir(parents=True, exist_ok=True)
     output_md.write_text(integrated_md, encoding="utf-8")
     print(f"\n   통합 마크다운: {output_md.name}")
+
+    # 2b. pre_toc 파일 별도 처리 (머릿말 등 — 목차 앞에 배치)
+    pre_toc_typ_content = ""
+    if pre_toc_files:
+        pre_toc_md = build_integrated_md(pre_toc_files, [], [], mermaid_out)
+        pre_toc_md_path = output_md.parent / "_pre_toc.md"
+        pre_toc_md_path.write_text(pre_toc_md, encoding="utf-8")
+        pre_toc_raw = pre_toc_md_path.parent / "_pre_toc.raw.typ"
+        if md_to_typst(pre_toc_md_path, pre_toc_raw):
+            raw = pre_toc_raw.read_text(encoding="utf-8")
+            image_border_preset = config.get('image_border_preset', 'plain')
+            pre_toc_typ_content = fix_typst_content(raw, image_border_preset=image_border_preset)
+            pre_toc_raw.unlink(missing_ok=True)
+        pre_toc_md_path.unlink(missing_ok=True)
 
     # 3. 이미지 공백 자동 제거
     print("\n[2/6] 이미지 공백 자동 제거...")
@@ -793,7 +865,8 @@ def build(config: dict):
     design = config.get('design')
     design_state = config.get('design_state')
     final_typ = merge_template_and_content(config['template'], fixed_content,
-                                           design=design, design_state=design_state)
+                                           design=design, design_state=design_state,
+                                           pre_toc_content=pre_toc_typ_content)
     output_typ.write_text(final_typ, encoding="utf-8")
     temp_typ.unlink(missing_ok=True)
     print(f"   최종 Typst: {output_typ.name}")
