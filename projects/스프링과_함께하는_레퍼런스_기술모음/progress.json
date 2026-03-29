@@ -2,7 +2,7 @@
   "project": "스프링과_함께하는_레퍼런스_기술모음",
   "title": "스프링과 함께하는 레퍼런스 기술 모음",
   "status": "in_progress",
-  "current_step": "step_6_prologue",
+  "current_step": "step_7_finish",
   "created_at": "2026-03-15",
   "updated_at": "2026-03-15",
 
@@ -189,14 +189,13 @@
     },
     "step_7_finish": {
       "name": "마무리",
-      "status": "pending",
+      "status": "done",
       "artifacts": {
-        "preface": null,
-        "epilogue": null,
-        "appendix": null
+        "preface": "book/front/preface.md",
+        "afterword": "book/back/afterword.md"
       },
-      "final_title": null,
-      "total_pages": null,
+      "final_title": "처음 만나는 스프링 주변 기술 — Docker부터 RabbitMQ까지 9가지 실습",
+      "total_pages": 113,
       "review": {
         "audit": null
       }
