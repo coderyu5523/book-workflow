@@ -39,7 +39,7 @@ CHAPTER_FILES = [
 ]
 
 CONFIG = {
-    "title": "사내 AI 비서",
+    "title": "환각에서 시작하는 RAG",
     "base": BASE,
     "assets_dir": ASSETS,
     "template": BOOK / "templates" / "book.typ",
@@ -48,13 +48,29 @@ CONFIG = {
     "chapters": CHAPTER_FILES,
     "back": [
         BACK / "epilogue.md",
-        BACK / "appendix.md",
     ],
     "output_md": BOOK / "ConnectHR_통합본.md",
     "output_typ": BOOK / "ConnectHR_통합본.typ",
     "output_pdf": BOOK / "ConnectHR_통합본.pdf",
     "output_dir": BOOK / "chapter_pdfs",
     "mermaid_out": BOOK / "_mermaid_images",
+    "cover_data": {
+        "series": "특이점이 온 개발자",
+        "series_sub": "개념편",
+        "authors": "최주호, 류재성, 김주혁",
+        "badges": ["RAG", "LangChain", "ChromaDB", "FastAPI",
+                   "LLM", "임베딩", "리랭킹", "HyDE", "Vision LLM"],
+        "publisher": "오픈스킬북스",
+        "accent_color": (45, 99, 235),
+        "top_descs": ["LLM 환각이 두려운 개발자를 위한",
+                      "RAG 파이프라인 처음부터 끝까지",
+                      "이야기로 시작하는 실습서가 필요할 때"],
+        "main_words": [
+            ("환각에서", 25, True, "L", -2, "dark"),
+            ("시작하는", 25, True, "R", 0, "gray"),
+            ("RAG", 40, True, "L", -2, "dark"),
+        ],
+    },
 }
 
 
