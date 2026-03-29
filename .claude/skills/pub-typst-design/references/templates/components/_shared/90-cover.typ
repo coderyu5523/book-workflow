@@ -5,8 +5,8 @@
 //   필수: book-title, book-subtitle, book-authors, book-header-title
 //   선택: book-cover-image, book-series, book-series-sub, book-badges, book-publisher
 #if book-cover-image != "" [
-  #page(numbering: none, header: none, footer: none, margin: 0pt)[
-    #image(book-cover-image, width: 100%, height: 100%, fit: "stretch")
+  #page(numbering: none, header: none, footer: none, margin: (top: 20pt, bottom: 20pt, left: 16pt, right: 16pt))[
+    #image(book-cover-image, width: 100%, height: 100%, fit: "contain")
   ]
 ] else [
   #page(numbering: none, header: none, footer: none)[

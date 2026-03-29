@@ -246,6 +246,25 @@ def clean_comments(text: str) -> str:
     return text
 
 
+def convert_img_tags(text: str) -> str:
+    """<img src="..." alt="..."> HTML 태그를 ![alt](src) 마크다운으로 변환.
+    코드 블록 내부의 <img>는 보존."""
+    parts = re.split(r'(```.*?```)', text, flags=re.DOTALL)
+    for i, part in enumerate(parts):
+        if not part.startswith('```'):
+            def _replace_img_tag(m):
+                tag = m.group(0)
+                src_m = re.search(r'src\s*=\s*["\']([^"\']+)["\']', tag)
+                alt_m = re.search(r'alt\s*=\s*["\']([^"\']*)["\']', tag)
+                if not src_m:
+                    return tag
+                src = src_m.group(1)
+                alt = alt_m.group(1) if alt_m else ''
+                return f'![{alt}]({src})'
+            parts[i] = re.sub(r'<img\s[^>]*>', _replace_img_tag, part)
+    return ''.join(parts)
+
+
 def fix_br_tags(text: str) -> str:
     """코드 블록 밖의 <br> → 마크다운 줄바꿈으로 변환.
     코드 블록(```)과 mermaid 내의 <br>는 보존."""
@@ -275,6 +294,7 @@ def build_integrated_md(front: list, chapters: list, back: list,
             print(f"   처리 중: {f.name}")
             content = f.read_text(encoding="utf-8")
             content = clean_comments(content)
+            content = convert_img_tags(content)
             content = fix_image_paths(content, f)
             content = render_mermaid_diagrams(content, mermaid_out)
             content = fix_br_tags(content)

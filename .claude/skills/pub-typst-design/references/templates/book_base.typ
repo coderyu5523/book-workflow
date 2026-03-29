@@ -281,8 +281,8 @@
 // 표지 — 이미지 또는 텍스트
 // ══════════════════════════════════════
 #if book-cover-image != "" [
-  #page(numbering: none, header: none, footer: none, margin: 0pt)[
-    #image(book-cover-image, width: 100%, height: 100%, fit: "stretch")
+  #page(numbering: none, header: none, footer: none, margin: (top: 20pt, bottom: 20pt, left: 16pt, right: 16pt))[
+    #image(book-cover-image, width: 100%, height: 100%, fit: "contain")
   ]
 ] else [
   #page(numbering: none, header: none, footer: none)[
