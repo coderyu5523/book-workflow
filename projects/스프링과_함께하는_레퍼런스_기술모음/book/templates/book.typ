@@ -1,5 +1,5 @@
-// ── 스프링과 함께하는 레퍼런스 기술모음 프로젝트 설정 ──
-#let book-title = "스프링과 함께하는 레퍼런스 기술모음"
-#let book-subtitle = "사수가 던진 티켓 아홉 장, 3개월의 기록"
-#let book-description = [Docker부터 RabbitMQ까지, 실무에서 마주치는 9가지 기술을 하나의 프로젝트로 경험합니다. 사수가 건넨 티켓을 하나씩 해결하며 Spring Boot 생태계의 레퍼런스 기술을 익힙니다.]
-#let book-header-title = "스프링과 함께하는 레퍼런스 기술모음"
+// ── 처음 만나는 스프링 주변 기술 프로젝트 설정 ──
+#let book-title = "처음 만나는 스프링 주변 기술"
+#let book-subtitle = "Docker부터 RabbitMQ까지 9가지 실습"
+#let book-description = [Spring Boot를 쓰는 주니어 개발자가 실무에서 마주치는 주변 기술들을 하나씩 핵심 흐름을 직접 만들어보며 두려움을 없애는 책입니다.]
+#let book-header-title = "처음 만나는 스프링 주변 기술"

@@ -52,9 +52,9 @@ CONFIG = {
     "back": [
         BACK / "afterword.md",
     ],
-    "output_md": BOOK / "스프링과_함께하는_레퍼런스_기술모음_통합본.md",
-    "output_typ": BOOK / "스프링과_함께하는_레퍼런스_기술모음_통합본.typ",
-    "output_pdf": BOOK / "스프링과_함께하는_레퍼런스_기술모음_통합본.pdf",
+    "output_md": BOOK / "처음_만나는_스프링_주변_기술_통합본.md",
+    "output_typ": BOOK / "처음_만나는_스프링_주변_기술_통합본.typ",
+    "output_pdf": BOOK / "처음_만나는_스프링_주변_기술_통합본.pdf",
     "output_dir": BOOK / "chapter_pdfs",
     "mermaid_out": BOOK / "_mermaid_images",
 }
@@ -86,6 +86,12 @@ def build_all_chapters():
 
 
 if __name__ == "__main__":
+    # --design 인자 처리
+    if "--design" in sys.argv:
+        idx = sys.argv.index("--design")
+        if idx + 1 < len(sys.argv):
+            CONFIG["design"] = sys.argv[idx + 1]
+
     if "--chapter" in sys.argv:
         idx = sys.argv.index("--chapter")
         if idx + 1 < len(sys.argv):
