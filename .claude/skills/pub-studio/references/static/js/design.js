@@ -375,3 +375,73 @@ export async function deleteDesign(name) {
     else { showToast('삭제 실패: ' + (data.error || '')); }
   } catch (e) { showToast('서버 연결 오류'); }
 }
+
+// ── Preset CRUD (presets.json) ──
+
+let _presetsCache = {};
+
+export async function fetchPresets() {
+  try {
+    const resp = await fetch('/api/presets');
+    const data = await resp.json();
+    _presetsCache = data.presets || {};
+    renderPresetList();
+  } catch (e) {
+    _presetsCache = {};
+    renderPresetList();
+  }
+}
+
+export function renderPresetList() {
+  const container = document.getElementById('preset-list');
+  if (!container) return;
+  const ids = Object.keys(_presetsCache).sort((a, b) => parseInt(a) - parseInt(b));
+  if (ids.length === 0) {
+    container.innerHTML = '<div style="font-size:11px;color:#9ca3af;padding:8px 0;text-align:center;">프리셋이 없습니다</div>';
+    return;
+  }
+  container.innerHTML = ids.map(id => {
+    const p = _presetsCache[id];
+    const name = p.name || '이름 없음';
+    const desc = p.description || '';
+    return '<div class="saved-design-item">'
+      + '<span class="dname" title="' + desc + '"><b>' + id + '</b> ' + name + '</span>'
+      + '<span class="ddel" onclick="event.stopPropagation();deletePreset(\'' + id + '\')" title="삭제">x</span>'
+      + '</div>';
+  }).join('');
+}
+
+export async function saveAsPreset() {
+  const name = prompt('프리셋 이름을 입력하세요:');
+  if (!name) return;
+  const description = prompt('설명 (선택):') || '';
+
+  const resp = await fetch('/api/presets/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, description, components: { ...state.components } }),
+  });
+  const data = await resp.json();
+  if (data.ok) {
+    showToast('프리셋 ' + data.id + '번 \'' + name + '\' 저장 완료');
+    fetchPresets();
+  } else {
+    showToast('저장 실패: ' + (data.error || ''));
+  }
+}
+
+export async function deletePreset(id) {
+  const p = _presetsCache[id];
+  const name = p ? p.name : id;
+  if (!confirm('프리셋 ' + id + '번 \'' + name + '\'을 삭제하시겠습니까?')) return;
+  try {
+    const resp = await fetch('/api/presets/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    });
+    const data = await resp.json();
+    if (data.ok) { showToast('프리셋 ' + id + '번 삭제 완료'); fetchPresets(); }
+    else { showToast('삭제 실패: ' + (data.error || '')); }
+  } catch (e) { showToast('서버 연결 오류'); }
+}

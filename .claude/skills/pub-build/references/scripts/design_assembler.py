@@ -192,7 +192,11 @@ def parse_design_arg(arg: str) -> dict[str, str]:
     'body=2,heading=1'  → 기본 프리셋 1 + 오버라이드
     """
     arg = arg.strip()
-    if arg in ("1", "2"):
+    # 프리셋 번호(숫자)면 해당 프리셋 로드
+    presets_path = COMPONENTS_DIR / "presets.json"
+    with open(presets_path, encoding="utf-8") as f:
+        all_presets = json.load(f)
+    if arg in all_presets:
         return load_preset(arg)
 
     # 믹스매치: 기본값은 프리셋 1, 지정된 키만 오버라이드

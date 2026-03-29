@@ -31,6 +31,16 @@
     </div>
   </div>
 
+  <div class="section" id="sec-presets">
+    <div class="section-title" onclick="toggleSection('sec-presets')">CLI 프리셋 (--design N)</div>
+    <div class="section-body">
+      <div style="margin-bottom:8px;">
+        <button class="action-btn" onclick="saveAsPreset()" style="width:100%;padding:6px;font-size:11px;">현재 설정을 프리셋으로 저장</button>
+      </div>
+      <div id="preset-list"></div>
+    </div>
+  </div>
+
   <!-- 컴포넌트별 디자인 설정 -->
   <div id="component-toggles">
     <div class="section comp-section" id="sec-comp-body">

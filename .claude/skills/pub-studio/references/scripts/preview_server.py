@@ -39,6 +39,7 @@ PROJECTS_DIR = ROOT / "projects"
 HTML_FILE = Path(__file__).resolve().parent.parent / "preview_editor.html"  # references/preview_editor.html
 DESIGNS_FILE = Path(__file__).resolve().parent.parent / "designs.json"  # references/designs.json (글로벌)
 VARIANTS_FILE = Path(__file__).resolve().parent.parent / "variants.json"  # references/variants.json (커스텀 변형)
+PRESETS_FILE = ROOT / ".claude" / "skills" / "pub-typst-design" / "references" / "templates" / "components" / "presets.json"
 DEFAULT_PORT = 3333
 BUILD_DIR_NAME = ".pdf-build"  # 스테이징 디렉토리명
 
@@ -869,6 +870,76 @@ class PreviewServer:
         )
         return {"ok": True}
 
+    # ── 프리셋 CRUD (presets.json) ──
+
+    def _load_presets(self) -> dict:
+        if not PRESETS_FILE.exists():
+            return {}
+        return json.loads(PRESETS_FILE.read_text(encoding="utf-8"))
+
+    def _save_presets(self, presets: dict):
+        PRESETS_FILE.write_text(
+            json.dumps(presets, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    def handle_get_presets(self) -> dict:
+        return {"presets": self._load_presets()}
+
+    def handle_post_preset_save(self, data: dict) -> dict:
+        preset_id = data.get("id", "").strip()
+        name = data.get("name", "").strip()
+        description = data.get("description", "").strip()
+        components = data.get("components")
+        if not name:
+            return {"error": "프리셋 이름을 입력하세요"}
+        if not components:
+            return {"error": "컴포넌트 설정이 비어있습니다"}
+
+        presets = self._load_presets()
+
+        # 새 프리셋이면 다음 번호 자동 부여
+        if not preset_id:
+            existing_ids = [int(k) for k in presets.keys() if k.isdigit()]
+            preset_id = str(max(existing_ids) + 1 if existing_ids else 1)
+
+        presets[preset_id] = {
+            "name": name,
+            "description": description,
+            "components": components,
+        }
+        self._save_presets(presets)
+        return {"ok": True, "id": preset_id}
+
+    def handle_post_preset_update(self, data: dict) -> dict:
+        preset_id = data.get("id", "").strip()
+        if not preset_id:
+            return {"error": "프리셋 ID가 필요합니다"}
+        presets = self._load_presets()
+        if preset_id not in presets:
+            return {"error": f"프리셋 '{preset_id}'을 찾을 수 없습니다"}
+
+        if "name" in data:
+            presets[preset_id]["name"] = data["name"].strip()
+        if "description" in data:
+            presets[preset_id]["description"] = data["description"].strip()
+        if "components" in data:
+            presets[preset_id]["components"] = data["components"]
+
+        self._save_presets(presets)
+        return {"ok": True, "id": preset_id}
+
+    def handle_post_preset_delete(self, data: dict) -> dict:
+        preset_id = data.get("id", "").strip()
+        if not preset_id:
+            return {"error": "프리셋 ID가 필요합니다"}
+        presets = self._load_presets()
+        if preset_id not in presets:
+            return {"error": f"프리셋 '{preset_id}'을 찾을 수 없습니다"}
+        del presets[preset_id]
+        self._save_presets(presets)
+        return {"ok": True}
+
     # ── 커스텀 변형 API ──
 
     def _load_variants_store(self) -> dict:
@@ -1003,6 +1074,8 @@ class PreviewServer:
                     self._serve_json(server.handle_get_designs(include_full))
                 elif path == "/api/variants":
                     self._serve_json(server.handle_get_variants())
+                elif path == "/api/presets":
+                    self._serve_json(server.handle_get_presets())
                 elif path.startswith("/static/"):
                     rel = path[len("/static/"):]
                     static_dir = Path(__file__).resolve().parent.parent / "static"
@@ -1047,6 +1120,9 @@ class PreviewServer:
                     "/api/designs/delete": server.handle_post_design_delete,
                     "/api/variants/save": server.handle_post_variant_save,
                     "/api/variants/delete": server.handle_post_variant_delete,
+                    "/api/presets/save": server.handle_post_preset_save,
+                    "/api/presets/update": server.handle_post_preset_update,
+                    "/api/presets/delete": server.handle_post_preset_delete,
                     "/api/combine-md": server.handle_post_combine_md,
                     "/api/restage": server.handle_post_restage,
                 }
