@@ -1,0 +1,31 @@
+direction: right
+
+hub: Docker Hub {
+  shape: cloud
+  style.fill: "#ffffff"
+  style.stroke: "#333333"
+}
+
+image: 이미지 {
+  shape: package
+  style.fill: "#ffffff"
+  style.stroke: "#333333"
+}
+
+container: 컨테이너 {
+  style.fill: "#ffffff"
+  style.stroke: "#333333"
+}
+
+hub -> image: docker pull {
+  style.stroke: "#333333"
+}
+image -> container: docker run {
+  style.stroke: "#333333"
+}
+container -> image: docker commit {
+  style.stroke: "#333333"
+}
+image -> hub: docker push {
+  style.stroke: "#333333"
+}

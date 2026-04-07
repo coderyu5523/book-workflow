@@ -1,0 +1,40 @@
+services:
+  user-service:
+    build:
+      context: ./user
+    ports:
+      - "8083:8083"
+    networks:
+      - msa-network
+
+  product-service:
+    build:
+      context: ./product
+    ports:
+      - "8082:8082"
+    networks:
+      - msa-network
+
+  order-service:
+    build:
+      context: ./order
+    ports:
+      - "8081:8081"
+    networks:
+      - msa-network
+
+  delivery-service:
+    build:
+      context: ./delivery
+    ports:
+      - "8084:8084"
+    networks:
+      - msa-network
+
+networks:
+  msa-network:
+
+
+
+
+

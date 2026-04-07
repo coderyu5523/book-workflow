@@ -1,0 +1,248 @@
+{
+  "title": "실행결과",
+  "screenshots": [
+    {
+      "file": "chap01-15.png",
+      "blocks": [
+        {"cmd": "docker pull nginx", "output": "Using default tag: latest\nlatest: Pulling from library/nginx\n9baba07a35b6: Pulling fs layer\nec781dee3f47: Pulling fs layer\n0289d65812c3: Pulling fs layer\n4174e33a2c9e: Pulling fs layer\n6b40784e4837: Pulling fs layer\n980067d12da2: Pulling fs layer\nf0b77348d9b0: Pulling fs layer\n00238b7dc6b2: Download complete"}
+      ]
+    },
+    {
+      "file": "chap01-17.png",
+      "blocks": [
+        {"cmd": "docker run nginx", "output": "/docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration\n/docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/\n/docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh\n10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf\n10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf\n/docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh\n/docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh\n/docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh\n/docker-entrypoint.sh: Configuration complete; ready for start up\n2026/03/17 10:38:22 [notice] 1#1: using the \"epoll\" event method"}
+      ]
+    },
+    {
+      "file": "chap01-18.png",
+      "blocks": [
+        {"cmd": "docker run -d nginx", "output": "4932c46c66589dc651efd5e50a8773d6d077f8a1e005f177385f8e0cc115ad7d"}
+      ]
+    },
+    {
+      "file": "chap01-20.png",
+      "blocks": [
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND                   CREATED        STATUS                  PORTS     NAMES\n4932c46c6658   nginx     \"/docker-entrypoint.…\"   1 second ago   Up Less than a second   80/tcp    dazzling_carson"}
+      ]
+    },
+    {
+      "file": "chap01-28.png",
+      "blocks": [
+        {"cmd": "docker run -it --name dead ubuntu", "output": "root@8fa23355b1e8:/#"}
+      ]
+    },
+    {
+      "file": "chap01-29.png",
+      "blocks": [
+        {"cmd": "", "output": "root@8fa23355b1e8:/# exit\nexit"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES"}
+      ]
+    },
+    {
+      "file": "chap01-30.png",
+      "blocks": [
+        {"cmd": "docker run -it --name alive ubuntu", "output": "root@17943f60b5cd:/#"}
+      ]
+    },
+    {
+      "file": "chap01-31.png",
+      "blocks": [
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND       CREATED                  STATUS                  PORTS     NAMES\n17943f60b5cd   ubuntu    \"/bin/bash\"   Less than a second ago   Up Less than a second             alive"}
+      ]
+    },
+    {
+      "file": "chap01-32.png",
+      "blocks": [
+        {"cmd": "docker run -d nginx", "output": "46ef77d616b43617d5306e528e9b79f88d8b245b1e4a9e6777b9685d780699bf"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND                   CREATED        STATUS                  PORTS     NAMES\n46ef77d616b4   nginx     \"/docker-entrypoint.…\"   1 second ago   Up Less than a second   80/tcp    vibrant_darwin"}
+      ]
+    },
+    {
+      "file": "chap01-33.png",
+      "blocks": [
+        {"cmd": "docker run -d ubuntu", "output": "0b74e66f5b0f3f4cb30b353503f2ef0c162e63f19be512e938f28e07d01dc1e7"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS         PORTS     NAMES\n46ef77d616b4   nginx     \"/docker-entrypoint.…\"   3 seconds ago   Up 2 seconds   80/tcp    vibrant_darwin"}
+      ]
+    },
+    {
+      "file": "chap01-34.png",
+      "blocks": [
+        {"cmd": "docker run -dit ubuntu", "output": "462ed99bd1fa1b63a6cedf23aa8a61f5a1e32b631a3d9ebf54b30263c8913c9c"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS                  PORTS     NAMES\n462ed99bd1fa   ubuntu    \"/bin/bash\"               1 second ago    Up Less than a second             reverent_lehmann\n46ef77d616b4   nginx     \"/docker-entrypoint.…\"   4 seconds ago   Up 3 seconds            80/tcp    vibrant_darwin"}
+      ]
+    },
+    {
+      "file": "chap01-35.png",
+      "blocks": [
+        {"cmd": "docker run -d ubuntu sleep 1000", "output": "7aca4e791643d3a39917aecc97868a62f5c1f6fa3df1ac63248e703650835cd3"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND                   CREATED                  STATUS                  PORTS     NAMES\n7aca4e791643   ubuntu    \"sleep 1000\"              Less than a second ago   Up Less than a second             goofy_bose\n462ed99bd1fa   ubuntu    \"/bin/bash\"               2 seconds ago            Up 1 second                       reverent_lehmann\n46ef77d616b4   nginx     \"/docker-entrypoint.…\"   5 seconds ago            Up 4 seconds            80/tcp    vibrant_darwin"}
+      ]
+    },
+    {
+      "file": "chap01-38.png",
+      "blocks": [
+        {"cmd": "docker run -dit ubuntu", "output": "d2b18acc2cf05a40644f0ca8536cb50a0ff560a1be0c9ce2fbf5ddbbba0e729c"},
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND       CREATED                  STATUS                  PORTS     NAMES\nd2b18acc2cf0   ubuntu    \"/bin/bash\"   Less than a second ago   Up Less than a second             angry_engelbart"},
+        {"cmd": "docker attach d2b1", "output": "root@d2b18acc2cf0:/#"}
+      ]
+    },
+    {
+      "file": "chap01-40.png",
+      "blocks": [
+        {"cmd": "docker exec -it d2b1 bash", "output": "root@d2b18acc2cf0:/#"}
+      ]
+    },
+    {
+      "file": "chap01-41.png",
+      "blocks": [
+        {"cmd": "", "output": "C:\\Users\\82105>"}
+      ]
+    },
+    {
+      "file": "chap01-42.png",
+      "blocks": [
+        {"cmd": "docker exec d2b1 ps aux", "output": "USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND\nroot           1  4.9  0.0   4588  3584 pts/0    Ss+  10:39   0:00 /bin/bash\nroot           9 42.8  0.0   7888  3968 ?        Rs   10:39   0:00 ps aux"}
+      ]
+    },
+    {
+      "file": "chap01-43.png",
+      "blocks": [
+        {"cmd": "docker run -dit -p 80:80 ubuntu", "output": "c0b6dd5261d8d0c88d9af57c98cf6da565a5504abd49a0fa568f7065a676a92a"}
+      ]
+    },
+    {
+      "file": "chap01-44.png",
+      "blocks": [
+        {"cmd": "docker ps", "output": "CONTAINER ID   IMAGE     COMMAND       CREATED        STATUS                  PORTS                                 NAMES\nc0b6dd5261d8   ubuntu    \"/bin/bash\"   1 second ago   Up Less than a second   0.0.0.0:80->80/tcp, [::]:80->80/tcp   distracted_mclaren"},
+        {"cmd": "docker exec -it c0b6 bash", "output": "root@c0b6dd5261d8:/#"}
+      ]
+    },
+    {
+      "file": "chap01-45.png",
+      "blocks": [
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# cd bin\nbash: cd: bin: No such file or directory"},
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# cd /bin\nroot@c0b6dd5261d8:/bin#"}
+      ]
+    },
+    {
+      "file": "chap01-46.png",
+      "blocks": [
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# apt update\nHit:1 http://security.ubuntu.com/ubuntu noble-security InRelease\nHit:2 http://archive.ubuntu.com/ubuntu noble InRelease\nHit:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease\nHit:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease\nReading package lists...\nBuilding dependency tree...\nReading state information...\n7 packages can be upgraded. Run 'apt list --upgradable' to see them."},
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# apt install -y nginx\nAfter this operation, 1352 kB of additional disk space will be used.\nFetched 521 kB in 2s (217 kB/s)\nSelecting previously unselected package nginx.\nPreparing to unpack .../nginx_1.24.0-2ubuntu7.6_amd64.deb ...\nUnpacking nginx (1.24.0-2ubuntu7.6) ...\nSetting up nginx (1.24.0-2ubuntu7.6) ..."},
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# nginx"}
+      ]
+    },
+    {
+      "file": "chap01-47.png",
+      "blocks": [
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# apt install -y net-tools\nNeed to get 204 kB of archives.\nAfter this operation, 811 kB of additional disk space will be used.\nFetched 204 kB in 2s (104 kB/s)\nSelecting previously unselected package net-tools.\nPreparing to unpack .../net-tools_2.10-0.1ubuntu4.4_amd64.deb ...\nUnpacking net-tools (2.10-0.1ubuntu4.4) ...\nSetting up net-tools (2.10-0.1ubuntu4.4) ..."},
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# netstat -nlpt\nActive Internet connections (only servers)\nProto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name\ntcp        0      0 0.0.0.0:80              0.0.0.0:*               LISTEN      348/nginx: master p\ntcp6       0      0 :::80                   :::*                    LISTEN      348/nginx: master p"}
+      ]
+    },
+    {
+      "file": "chap01-50.png",
+      "blocks": [
+        {"cmd": "", "output": "hello docker\n~\n~\n~\n~\n:wq"}
+      ]
+    },
+    {
+      "file": "chap01-51.png",
+      "blocks": [
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# cat test1.txt\nhello docker"}
+      ]
+    },
+    {
+      "file": "chap01-54.png",
+      "blocks": [
+        {"cmd": "", "output": "root@c0b6dd5261d8:/# find / -name index.html\n/usr/share/nginx/html/index.html"}
+      ]
+    },
+    {
+      "file": "chap01-56.png",
+      "blocks": [
+        {"cmd": "docker run -d -p 9000:8080 tomcat:10", "output": "5fcda3e49bbf8bf9ac6ca09e955dfbe7de66f8b870cb67803f429d0dc208196f"}
+      ]
+    },
+    {
+      "file": "chap01-61.png",
+      "blocks": [
+        {"cmd": "docker exec -it 5fcd bash", "output": "root@5fcda3e49bbf:/usr/local/tomcat#"},
+        {"cmd": "", "output": "root@5fcda3e49bbf:/usr/local/tomcat# cd webapps\nroot@5fcda3e49bbf:/usr/local/tomcat/webapps# ls\nroot@5fcda3e49bbf:/usr/local/tomcat/webapps#"}
+      ]
+    },
+    {
+      "file": "chap01-64.png",
+      "blocks": [
+        {"cmd": "", "output": "<h1>Hello Docker</h1>\n<h3>index.html</h3>\n~\n~\n~\n:wq"}
+      ]
+    },
+    {
+      "file": "chap01-67.png",
+      "blocks": [
+        {"cmd": "docker commit 5fcd coderyu5523/tomcat:10", "output": "sha256:0f8181585ca9e7f2b68c623f0ce6d64f5fddfeb19076c7c0e82e55ca4629cfbb"}
+      ]
+    },
+    {
+      "file": "chap01-69.png",
+      "blocks": [
+        {"cmd": "docker push coderyu5523/tomcat:10", "output": "The push refers to repository [docker.io/coderyu5523/tomcat]\n247bb26cb831: Preparing\n817807f3c64e: Preparing\n6e713be20fa2: Preparing\ncc1e0a391268: Preparing\nde9be28b9519: Preparing\nc318c44e952a: Preparing\n4f4fb700ef54: Preparing\n5dd5756e7123: Preparing\ncc1e0a391268: Waiting"}
+      ]
+    },
+    {
+      "file": "chap01-73.png",
+      "blocks": [
+        {"cmd": "docker run -it --mount type=bind,src=C:\\app\\bind,dst=/app/bind ubuntu", "output": "root@9ffc6025a404:/#"}
+      ]
+    },
+    {
+      "file": "chap01-74.png",
+      "blocks": [
+        {"cmd": "", "output": "root@9ffc6025a404:/# ls /app\nbind"}
+      ]
+    },
+    {
+      "file": "chap01-76.png",
+      "blocks": [
+        {"cmd": "", "output": "root@9ffc6025a404:/# touch /app/bind/a.txt\nroot@9ffc6025a404:/# ls /app/bind\na.txt"}
+      ]
+    },
+    {
+      "file": "chap01-80.png",
+      "blocks": [
+        {"cmd": "docker volume ls", "output": "DRIVER    VOLUME NAME"}
+      ]
+    },
+    {
+      "file": "chap01-81.png",
+      "blocks": [
+        {"cmd": "docker run -it --mount type=volume,src=metacoding-volume,dst=/app/volume ubuntu", "output": "root@d6f096d57b3e:/#"}
+      ]
+    },
+    {
+      "file": "chap01-82.png",
+      "blocks": [
+        {"cmd": "", "output": "root@d6f096d57b3e:/# ls /app/volume\nroot@d6f096d57b3e:/#"}
+      ]
+    },
+    {
+      "file": "chap01-83.png",
+      "blocks": [
+        {"cmd": "", "output": "root@d6f096d57b3e:/# touch /app/volume/b.txt\nroot@d6f096d57b3e:/# ls /app/volume\nb.txt"}
+      ]
+    },
+    {
+      "file": "chap01-84.png",
+      "blocks": [
+        {"cmd": "", "output": "root@d6f096d57b3e:/# exit\nexit"},
+        {"cmd": "docker volume ls", "output": "DRIVER    VOLUME NAME\nlocal     metacoding-volume"}
+      ]
+    },
+    {
+      "file": "chap01-85.png",
+      "blocks": [
+        {"cmd": "docker run -it --mount type=volume,src=metacoding-volume,dst=/app/volume ubuntu", "output": "root@d6f096d57b3e:/#"},
+        {"cmd": "", "output": "root@d6f096d57b3e:/# ls /app/volume\nb.txt"}
+      ]
+    }
+  ]
+}

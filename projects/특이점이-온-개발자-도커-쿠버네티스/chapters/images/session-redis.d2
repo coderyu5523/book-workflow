@@ -1,0 +1,76 @@
+direction: right
+
+classes: {
+  node: {
+    style: {
+      fill: white
+      stroke: black
+      stroke-width: 1
+      border-radius: 6
+      font-size: 13
+    }
+  }
+  server: {
+    style: {
+      fill: "#e8e8e8"
+      stroke: black
+      stroke-width: 1
+      border-radius: 6
+      font-size: 13
+    }
+  }
+  redis: {
+    style: {
+      fill: "#eeeeee"
+      stroke: black
+      stroke-width: 2
+      border-radius: 6
+      font-size: 13
+    }
+  }
+}
+
+user: 사용자 {
+  class: node
+}
+
+servers: " " {
+  direction: down
+  style: {
+    fill: transparent
+    stroke: transparent
+    font-size: 8
+  }
+
+  server1: 서버 1 {
+    class: server
+  }
+
+  server2: 서버 2 {
+    class: server
+  }
+}
+
+redis: "Redis\n(공유 저장소)" {
+  class: redis
+}
+
+user -> servers.server1: "1. 로그인" {
+  style.stroke: "#222222"
+  style.font-size: 11
+}
+
+user -> servers.server2: "2. 다음 요청" {
+  style.stroke: "#222222"
+  style.font-size: 11
+}
+
+servers.server1 -> redis: "세션 저장" {
+  style.stroke: "#222222"
+  style.font-size: 11
+}
+
+servers.server2 -> redis: "세션 조회 → 성공" {
+  style.stroke: "#222222"
+  style.font-size: 11
+}
