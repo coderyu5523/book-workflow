@@ -1,0 +1,71 @@
+direction: right
+
+classes: {
+  container: {
+    style: {
+      fill: transparent
+      stroke: black
+      stroke-width: 2
+      border-radius: 8
+      stroke-dash: 5
+      font-size: 16
+    }
+  }
+  node: {
+    style: {
+      fill: white
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+  db: {
+    shape: cylinder
+    style: {
+      fill: "#eeeeee"
+      stroke: black
+      stroke-width: 1
+      font-size: 14
+    }
+  }
+  external: {
+    style: {
+      fill: "#f0f0f0"
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+}
+
+브라우저.class: external
+
+docker-compose: "Docker Compose" {
+  class: container
+
+  nginx: "NGINX\n(프론트엔드)" {
+    class: node
+  }
+
+  backend: "백엔드" {
+    class: node
+  }
+
+  mysql: "MySQL" {
+    class: db
+  }
+}
+
+브라우저 -> docker-compose.nginx: "" {
+  style.stroke: "#222222"
+}
+
+docker-compose.nginx -> docker-compose.backend: "" {
+  style.stroke: "#222222"
+}
+
+docker-compose.backend -> docker-compose.mysql: "" {
+  style.stroke: "#222222"
+}

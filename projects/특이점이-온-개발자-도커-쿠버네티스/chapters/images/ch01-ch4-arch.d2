@@ -1,0 +1,104 @@
+direction: right
+
+classes: {
+  cluster: {
+    style: {
+      fill: transparent
+      stroke: black
+      stroke-width: 2
+      border-radius: 8
+      stroke-dash: 5
+      font-size: 16
+    }
+  }
+  node: {
+    style: {
+      fill: white
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+  db: {
+    shape: cylinder
+    style: {
+      fill: "#eeeeee"
+      stroke: black
+      stroke-width: 1
+      font-size: 14
+    }
+  }
+  external: {
+    style: {
+      fill: "#f0f0f0"
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+}
+
+브라우저.class: external
+
+k8s: "Kubernetes 클러스터" {
+  class: cluster
+
+  ingress: "Ingress" {
+    class: node
+  }
+
+  frontend: "프론트엔드\nPod" {
+    class: node
+  }
+
+  backend1: "백엔드\nPod 1" {
+    class: node
+  }
+
+  backend2: "백엔드\nPod 2" {
+    class: node
+  }
+
+  mysql: "MySQL\nPod + PV" {
+    class: db
+  }
+
+  redis: "Redis\nPod" {
+    class: node
+  }
+}
+
+브라우저 -> k8s.ingress: "" {
+  style.stroke: "#222222"
+}
+
+k8s.ingress -> k8s.frontend: "Service" {
+  style.stroke: "#222222"
+  style.font-size: 12
+}
+
+k8s.frontend -> k8s.backend1: "" {
+  style.stroke: "#222222"
+}
+
+k8s.frontend -> k8s.backend2: "" {
+  style.stroke: "#222222"
+}
+
+k8s.backend1 -> k8s.mysql: "" {
+  style.stroke: "#222222"
+}
+
+k8s.backend2 -> k8s.mysql: "" {
+  style.stroke: "#222222"
+}
+
+k8s.backend1 -> k8s.redis: "" {
+  style.stroke: "#222222"
+}
+
+k8s.backend2 -> k8s.redis: "" {
+  style.stroke: "#222222"
+}

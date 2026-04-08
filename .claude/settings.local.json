@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la *.md)",
+      "Bash(mv \"01-왜-컨테이너인가.md\" \"01-왜-컨테이너인가-v1.md\")",
+      "Bash(mv \"02-Docker-이해하기-v2.md\" \"02-Docker-이해하기-v2.1.md\")",
+      "Bash(mv \"03-Docker-다루기-v2.md\" \"03-Docker-다루기-v2.1.md\")",
+      "Bash(mv \"04-Kubernetes-시작하기-v2.md\" \"04-Kubernetes-시작하기-v4.1.md\")",
+      "Bash(d2 --layout elk --pad 40 ch01-ch3-arch.d2 ch01-ch3-arch.svg)",
+      "Bash(python3 -c \"from cairosvg import svg2png; print\\('cairosvg'\\)\")",
+      "Bash(pip list:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(python -c ':*)",
+      "Bash(d2 --layout elk --pad 40 ch01-ch3-arch.d2 chap01-ch3-arch.png)",
+      "Bash(d2 --pad 40 ch01-ch3-arch.d2 chap01-ch3-arch.png)",
+      "Bash(d2 --pad 40 ch01-ch4-arch.d2 chap01-ch4-arch.png)",
+      "Bash(mv \"01-Docker-이해하기.md\" \"_archive/\")",
+      "Bash(mv \"02-Docker-다루기.md\" \"_archive/\")",
+      "Bash(mv \"03-Kubernetes-시작하기.md\" \"_archive/\")",
+      "Bash(mv \"03-Kubernetes-시작하기-v3.1.md\" \"_archive/\")",
+      "Bash(mv \"01-왜-컨테이너인가-v1.md\" \"_archive/\")",
+      "Bash(ls \"C:/study/book/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/chapters/\"*.md)",
+      "Bash(mv \"01-왜-컨테이너인가-v2.md\" \"01-왜-컨테이너인가-v4.md\")",
+      "Bash(mv \"02-Docker-이해하기-v2.2.md\" \"02-Docker-이해하기-v4.md\")",
+      "Bash(mv \"03-Docker-다루기-v2.1.md\" \"03-Docker-다루기-v4.md\")",
+      "Bash(mv \"04-Kubernetes-시작하기-v4.1.md\" \"04-Kubernetes-시작하기-v4.md\")",
+      "Bash(d2 --pad 40 ch01-ch2-arch.d2 chap01-ch2-arch.png)"
+    ]
+  }
+}

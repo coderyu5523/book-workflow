@@ -1,0 +1,91 @@
+direction: right
+
+classes: {
+  node: {
+    style: {
+      fill: white
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+  hub: {
+    shape: cylinder
+    style: {
+      fill: "#eeeeee"
+      stroke: black
+      stroke-width: 1
+      font-size: 14
+    }
+  }
+  external: {
+    style: {
+      fill: "#f0f0f0"
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      font-size: 14
+    }
+  }
+  cmd: {
+    style: {
+      fill: "#f0f0f0"
+      stroke: black
+      stroke-width: 1
+      border-radius: 8
+      stroke-dash: 4
+      font-size: 13
+    }
+  }
+}
+
+dockerhub: "Docker Hub" {
+  class: hub
+}
+
+image: "이미지" {
+  class: node
+}
+
+container: "컨테이너" {
+  class: node
+}
+
+linux: "리눅스 명령어\npwd, ls, mkdir\napt, vim" {
+  class: cmd
+}
+
+mount: "마운트\n(데이터 보존)" {
+  class: cmd
+}
+
+dockerhub -> image: "docker pull" {
+  style.stroke: "#222222"
+  style.font-size: 12
+}
+
+image -> container: "docker run" {
+  style.stroke: "#222222"
+  style.font-size: 12
+}
+
+container -> image: "docker commit" {
+  style.stroke: "#222222"
+  style.font-size: 12
+}
+
+image -> dockerhub: "docker push" {
+  style.stroke: "#222222"
+  style.font-size: 12
+}
+
+linux -> container: "" {
+  style.stroke: "#222222"
+  style.stroke-dash: 4
+}
+
+mount -> container: "" {
+  style.stroke: "#222222"
+  style.stroke-dash: 4
+}
