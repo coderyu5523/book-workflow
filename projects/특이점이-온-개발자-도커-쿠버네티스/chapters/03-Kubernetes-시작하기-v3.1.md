@@ -11,8 +11,6 @@
 - Volume으로 영구 저장소를 구성하고, Ingress로 외부 요청을 라우팅한다.
 - 미니큐브 위에서 풀스택 웹사이트를 배포한다.
 
----
-
 ## 3.1 쿠버네티스(Kubernetes)
 
 ### 3.1.1 쿠버네티스가 필요한 이유
@@ -35,7 +33,7 @@ Docker Compose로 여러 컨테이너를 실행할 수 있게 되었지만, 운�
 
 > **쿠버네티스(Kubernetes)** 는 구글에서 만든 대규모 컨테이너 관리 시스템입니다. 컨테이너를 자동으로 배포, 확장, 복구, 관리하는 운영 플랫폼입니다.
 
-**"원하는 상태가 무엇인지"** 만 선언하면, "어떻게 복구할지"는 쿠버네티스가 알아서 맞춰 갑니다.
+**"원하는 상태가 무엇인지"** 만 선언하면, "어떻게 복구할지"는 쿠버네티스가 알아서 맞춰 갑니다. 이것이 쿠버네티스의 핵심 철학인 **선언적 관리(Desired State)** 입니다. "백엔드 서버 3대를 유지해라"라고 선언해 두면, 1대가 죽었을 때 개발자가 개입하지 않아도 쿠버네티스가 자동으로 새 컨테이너를 띄워 3대를 맞춥니다. 이 장의 실습에서 이 동작을 직접 확인해 봅니다.
 
 ### 3.1.2 쿠버네티스의 핵심 리소스
 
@@ -96,8 +94,6 @@ Docker Compose로 여러 컨테이너를 실행할 수 있게 되었지만, 운�
 > **kubelet** 은 컨트롤 플레인으로부터 명령을 받아 실제로 컨테이너를 관리하는 관리자입니다.
 
 쿠버네티스가 무엇이고 어떻게 동작하는지 알아보았습니다. 이제 직접 실행해 볼 차례입니다. 실제 운영용 쿠버네티스 환경을 로컬 PC에서 그대로 구현하기는 어렵습니다. 로컬 PC 한 대로도 쿠버네티스를 체험할 수 있는 **미니큐브(Minikube)** 를 먼저 설치해보겠습니다.
-
----
 
 ## 3.2 미니큐브(Minikube)
 
@@ -402,9 +398,12 @@ kubectl describe deployment nginx-replica  # Deployment 상세 정보 조회
 
 ### 3.3.4 Rollback
 
-**[실습]** `Deployment`를 이전 상태로 롤백합니다.
+롤백은 Deployment를 이전 상태로 되돌리는 기능입니다. 새 버전 배포 후 문제가 발생하면 이전 이미지 버전으로 즉시 복구할 수 있습니다.
+
+**[실습]** 먼저 배포 이력을 확인한 뒤 롤백합니다.
 ```bash
-kubectl rollout undo deployment/nginx-replica  # 이전 버전으로 롤백
+kubectl rollout history deployment/nginx-replica  # 배포 이력 조회
+kubectl rollout undo deployment/nginx-replica      # 이전 버전으로 롤백
 ```
 
 ![실행 결과](images/chap03-36.png)
@@ -611,10 +610,10 @@ kubectl apply -f configmap-conn.yml   # ConfigMap 생성
 kubectl apply -f deploy-ex03.yml     # Deployment 생성
 ```
 
-**[실습]** `Pod`의 환경 변수를 조회하여 `ConfigMap` 설정이 적용되었는지 확인합니다.
+**[실습]** `Pod`의 환경 변수를 조회하여 `ConfigMap` 설정이 적용되었는지 확인합니다. `kubectl get pod`로 먼저 Pod명을 확인한 뒤, 자신의 Pod명으로 바꿔서 실행합니다. Pod명의 해시값은 실행할 때마다 달라집니다.
 ```bash
 kubectl get pod                       # Pod 목록 조회
-kubectl exec -it nginx-config-secret-794499d5d4-c2xmw -- env  # Pod 환경 변수 조회
+kubectl exec -it <Pod명> -- env       # Pod 환경 변수 조회
 ```
 
 ![실행 결과](images/chap03-46.png)
@@ -682,7 +681,7 @@ kubectl apply -f deploy-ex03.yml     # 변경된 Deployment 적용
 **[실습]** `Pod`의 환경 변수를 조회하면 `Secret`에 저장된 비밀번호가 주입되어 출력됩니다.
 ```bash
 kubectl get pod                       # Pod 목록 조회
-kubectl exec -it nginx-config-secret-7fbccb65f5-zq8nz -- env  # Pod 환경 변수 조회
+kubectl exec -it <Pod명> -- env       # Pod 환경 변수 조회
 ```
 
 ![Pod 환경 변수에 Secret 값 확인](../assets/13_secret-env.png)
@@ -723,7 +722,7 @@ kubectl rollout restart deployment nginx-config-secret  # 재시작
 
 **[실습]** 재시작된 `Pod`의 환경 변수를 확인합니다.
 ```bash
-kubectl exec -it nginx-config-secret-6655f67f4c-hsrrf -- env  # Pod 환경 변수 조회
+kubectl exec -it <Pod명> -- env       # Pod 환경 변수 조회
 ```
 
 ![실행 결과](images/chap03-53.png)
@@ -795,13 +794,17 @@ spec:                      # 상세 설정
 
 **[실습]** 로컬 PC의 `C:/volume` 경로와 미니큐브의 `/mnt/data` 경로를 마운트합니다.
 ```bash
-minikube mount "C:/volume:/mnt/data"  # 로컬 폴더를 미니큐브에 마운트
+minikube mount "C:/volume:/mnt/data"  # Windows
+minikube mount "$HOME/volume:/mnt/data"  # Mac/Linux
 ```
 
 ![실행 결과](images/chap03-59.png)
 *그림 3-39: minikube mount 실행*
 
-`minikube mount` 명령어는 포그라운드로 실행됩니다. 터미널 창이 종료되면 마운트도 함께 끊기므로, 실습 중에는 **새 터미널 창을 열어야 합니다.**
+`minikube mount` 명령어는 포그라운드로 실행됩니다. 터미널 창이 종료되면 마운트도 함께 끊기므로, 실습 중에는 **새 터미널 창을 열어야 합니다.** 이후 실습에서 `minikube tunnel`도 포그라운드로 실행되므로 터미널을 추가로 열게 됩니다. 현재 열린 터미널 상태를 정리하면 다음과 같습니다.
+
+> **터미널 A**: `minikube mount` 실행 중 (종료하면 안 됨)
+> **터미널 B**: `kubectl` 명령 전용 (이후 실습은 여기서 진행)
 
 #### PVC(PersistentVolumeClaim)
 
@@ -1379,8 +1382,6 @@ kubectl logs backend-deploy-f7878cc5f-wt2cd -n metacoding --tail=10  # 백엔드
 *그림 3-58: 백엔드 서버 2 로그*
 
 로그에서 회원 정보를 조회하는 `SELECT문`이 출력됩니다. `backend-service`가 로드밸런싱을 수행해 요청이 두 서버로 분산되었습니다.
-
----
 
 ## 이것만은 기억하자
 

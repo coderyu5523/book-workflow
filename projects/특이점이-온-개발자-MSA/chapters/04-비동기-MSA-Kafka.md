@@ -4,6 +4,8 @@
 > 이 챕터의 전체 소스코드는 **https://github.com/metacoding-12-msa/chap03** 에서 확인할 수 있습니다.
 
 
+> 이번 챕터는 책에서 가장 복잡한 내용을 다룹니다. 여러 서비스가 동시에 Kafka 메시지를 주고받으며 상태가 바뀝니다. 전체 토픽맵(4.2.3)과 흐름 표(4.3.1~4.3.2)를 먼저 훑어보고 시작하면 길을 잃지 않습니다.
+
 ### 학습 목표
 
 - 동기 REST 호출의 한계를 이해하고 비동기 메시지 방식의 장점을 설명한다.
@@ -98,7 +100,7 @@ product-service를 2대로 늘려서 운영한다고 가정해 봅시다. **"재
 
 ## 4.3 Orchestration Saga : 지휘자가 흐름을 조율하다
 
-챕터 1에서 소개한 Orchestration Saga를 이제 Kafka로 구현합니다. **지휘자(orchestrator)** 가 전체 흐름을 중앙에서 관리합니다. 각 서비스는 명령을 받아 처리하고 결과를 보고할 뿐, 다음 단계가 무엇인지 알 필요가 없습니다. 지휘자만 전체 악보를 알고 있습니다.
+Saga를 구현하는 방식은 크게 두 가지입니다. 각 서비스가 이벤트를 보고 스스로 다음 서비스를 호출하는 Choreography, 중앙 지휘자가 순서를 정하는 Orchestration입니다. 이 책에서는 워크플로우 상태를 한 곳에서 추적하고 실패 시 정확한 롤백이 가능한 Orchestration을 선택합니다. **지휘자(orchestrator)** 가 전체 흐름을 중앙에서 관리합니다. 각 서비스는 명령을 받아 처리하고 결과를 보고할 뿐, 다음 단계가 무엇인지 알 필요가 없습니다. 지휘자만 전체 악보를 알고 있습니다.
 <!-- image-prompt: Clean black line drawing on white background, simplified orchestra illustration, 4:3 aspect ratio, 800x600px. No stage, no curtains, no background. Center: a conductor on a small podium holding a baton and a score labeled "SAGA", drawn in a clean cartoon style (not stick figures — simple but with body proportions, hair, clothing outlines). Three musicians sitting around the conductor with recognizable instruments and music stands labeled "ORDER", "PRODUCT", "DELIVERY". Blue curved arrows from conductor to each musician labeled "command". Green curved arrows from each musician back labeled "result". Simple cartoon style like a textbook illustration — more detailed than stick figures but less detailed than realistic. No shading, no colors except blue and green arrows. -->
 ![Orchestration Saga 구조](images/chap04-orchestra.png)
 *그림 4-4: Orchestration Saga 구조*
@@ -463,7 +465,7 @@ public void orderCreated(OrderCreatedEvent event) {
 }
 ```
 
-orchestrator가 주문 생성(`order-created`) 이벤트를 받으면, 주문 ID별로 `WorkflowState`를 생성합니다. 그리고 각 상품에 대해 재고 감소 명령(`decrease-product-command`)을 발행합니다.
+orchestrator가 주문 생성(`order-created`) 이벤트를 받으면, 주문 ID별로 `WorkflowState`를 생성합니다. `WorkflowState`는 메모리(`ConcurrentHashMap`)에 저장되므로 orchestrator Pod가 재시작되면 진행 중인 워크플로우는 소멸합니다. 실무에서는 DB나 Redis에 상태를 저장하는 방식을 사용합니다. 그리고 각 상품에 대해 재고 감소 명령(`decrease-product-command`)을 발행합니다.
 
 #### 2단계: 재고 차감 결과 수신 (productDecreased)
 
@@ -876,7 +878,7 @@ orchestrator 로그에서 롤백 과정을 확인할 수 있습니다.
 kubectl delete all --all -n metacoding
 ```
 
-## 정리
+## 이것만은 기억하자
 
 이번 챕터에서 만든 것을 정리합니다.
 

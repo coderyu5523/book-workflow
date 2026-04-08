@@ -9,8 +9,6 @@
 - Docker Compose로 여러 컨테이너를 한 번에 실행하고 관리한다.
 - 프론트엔드, 백엔드, DB가 연동되는 풀스택 웹사이트를 만든다.
 
----
-
 ## 2.1 프로비저닝 : 환경을 자동으로 구성하다
 
 챕터 1에서 Ubuntu 컨테이너를 실행할 때마다 vim 패키지를 직접 설치해야 했습니다. 컨테이너를 새로 만들 때마다 같은 작업을 반복하는 건 비효율적입니다. 필요한 환경을 미리 준비해두고 컨테이너 실행 시 자동으로 적용되면 이런 반복을 줄일 수 있습니다. 이를 프로비저닝이라 합니다.
@@ -92,7 +90,7 @@ Dockerfile의 설정은 **실행되는 시점**이 다릅니다. 이 구분을 �
 | `ENTRYPOINT` | 컨테이너가 시작될 때 항상 실행되는 고정 명령입니다. `CMD`와 함께 쓰면 `CMD`가 `ENTRYPOINT` 뒤에 붙어서 실행됩니다. | `ENTRYPOINT ["nginx"]` |
 
 
-### 2.1.2 Dockerfile : 스크립트 작성
+### 2.1.3 Dockerfile : 스크립트 작성
 
 이제 Dockerfile을 직접 작성해보겠습니다. Ubuntu 컨테이너가 실행될 때 자동으로 vim이 설치된 상태로 시작하도록 만들어 보겠습니다.
 
@@ -158,12 +156,12 @@ vim a.txt   # a.txt 파일 생성
 ![실행 결과](images/chap02-10.png)
 *그림 2-6: vim 에디터 실행 확인*
 
-### 2.1.3 WORKDIR, COPY : 작업 경로와 파일 복사
+### 2.1.4 WORKDIR, COPY : 작업 경로와 파일 복사
 
 > **WORKDIR**: 기본 작업 폴더를 설정하는 옵션입니다.
 > **COPY**: 파일을 컨테이너 내부로 복사하는 옵션입니다.
 
-2.1.2에서 생성한 폴더 내부에 **index.html** 파일을 생성합니다. index.html의 내부는 비어있는 빈 파일입니다.
+2.1.3에서 생성한 폴더 내부에 **index.html** 파일을 생성합니다. index.html의 내부는 비어있는 빈 파일입니다.
 
 <!-- image-prompt: IDE file explorer showing an images folder containing an index.html file -->
 
@@ -207,7 +205,7 @@ ls
 
 실습 후 **exit** 명령어를 입력해 컨테이너에서 빠져나옵니다.
 
-### 2.1.4 CMD, ENTRYPOINT : 기본 명령과 고정 명령
+### 2.1.5 CMD, ENTRYPOINT : 기본 명령과 고정 명령
 
 **CMD**는 `docker run`에서 다른 명령을 지정하면 그 명령이 대신 실행됩니다. 반면 **ENTRYPOINT**는 무슨 옵션을 주든 항상 실행됩니다. 식당에 비유하면 CMD는 "기본 메뉴"라서 손님이 바꿀 수 있지만, ENTRYPOINT는 "수저, 물 같은 기본 세팅"과 같습니다.
 
@@ -333,7 +331,7 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf      # 로컬의 nginx.conf를 �
 ENTRYPOINT ["nginx", "-g", "daemon off;"]            # NGINX를 포그라운드로 실행
 ```
 
-nginx.conf 파일은 다음과 같습니다. nginx.conf는 nginx 서버가 어떤 방식으로 요청을 처리할지 정의하는 파일입니다. `/app1` 요청은 app1(8000 포트)으로, `/app2` 요청은 app2(9000 포트)로 전달합니다.
+nginx.conf 파일은 다음과 같습니다. nginx.conf는 nginx 서버가 어떤 방식으로 요청을 처리할지 정의하는 파일입니다. 여러 설정이 있지만 핵심은 `proxy_pass` 한 줄입니다. 이 줄이 "이 경로로 들어온 요청을 어디로 보낼지"를 결정합니다. `/app1` 요청은 app1(8000 포트)으로, `/app2` 요청은 app2(9000 포트)로 전달합니다.
 
 > **upstream**: 요청을 전달할 백엔드 서버 그룹을 정의하는 블록입니다. `proxy_pass`에서 upstream 이름을 지정하면 NGINX가 그 그룹에 등록된 서버로 요청을 전달합니다.
 
@@ -581,7 +579,7 @@ RUN pip install flask                  # Flask 웹 프레임워크 설치
 CMD ["python", "app.py"]               # Flask 서버 실행
 ```
 
-API 서버는 파이썬으로 작성되어 있습니다.
+API 서버는 파이썬으로 작성되어 있습니다. Flask는 Python의 경량 웹 서버 라이브러리로, 실습 코드 작성을 위해 사용합니다. Flask 문법을 익히지 않아도 됩니다.
 
 슬래시(`/`) 주소는 HTML을 응답하고, `/image.png` 주소는 이미지 파일을 응답합니다.
 
@@ -1226,6 +1224,8 @@ CMD ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"] 
 
 ### 2.6.3 Spring Boot : 백엔드 서버 만들기
 
+> 이 절의 Spring Boot와 Gradle 코드는 실습 동작을 위해 미리 작성된 코드입니다. 코드 내용을 이해할 필요는 없으며, Docker가 어떻게 백엔드 서버를 컨테이너로 실행하는지에 집중하면 됩니다.
+
 GitHub에 있는 Spring Boot 프로젝트를 컨테이너에서 실행하려면 소스를 내려받고 빌드해야 합니다. 이 초기 작업이 `entrypoint.sh`에 정의되어 있습니다. 컴퓨터에 비유하면 `Dockerfile`은 운영체제와 프로그램을 설치하는 과정이고 `entrypoint.sh`는 컴퓨터를 켤 때마다 자동으로 실행되는 시작 프로그램입니다.
 
 > `entrypoint.sh`는 컨테이너가 시작될 때 자동으로 실행되는 셸 스크립트입니다. 소스 코드 다운로드, 빌드, 서버 실행처럼 컨테이너가 켜지자마자 해야 할 작업을 순서대로 적어둡니다.
@@ -1377,6 +1377,8 @@ networks:
 docker compose up   # 풀스택 애플리케이션 실행
 ```
 
+> 백엔드 컨테이너는 Gradle 빌드를 실행하므로 처음 실행 시 수 분이 소요될 수 있습니다. 터미널에 로그가 멈춘 것처럼 보여도 정상입니다. 빌드 진행 상황은 `docker compose logs -f backend` 명령으로 확인할 수 있습니다.
+
 ![실행 결과](images/chap02-ex07-compose.png)
 *그림 2-41: docker compose up 실행 결과*
 
@@ -1386,7 +1388,7 @@ docker compose up   # 풀스택 애플리케이션 실행
 
 1. 브라우저에서 `localhost` 또는 `localhost:80`에 접속하여 "사용자 리스트" 페이지가 표시되는지 확인합니다.
 2. 테이블에 ID와 이름 컬럼이 표시되고 init.sql에서 입력한 ssar, cos 데이터가 조회되는지 확인합니다.
-3. 데이터가 표시되지 않으면 백엔드 서버 빌드가 아직 진행 중일 수 있으므로 잠시 기다린 후 새로고침합니다.
+3. 데이터가 표시되지 않으면 백엔드 서버 빌드가 아직 진행 중일 수 있으므로 잠시 기다린 후 새로고침합니다. DB 컨테이너보다 백엔드 컨테이너가 먼저 실행되면 DB 연결에 실패할 수 있습니다. 이 경우에도 잠시 기다리면 백엔드가 재연결을 시도하여 정상 동작합니다.
 
 서버와 통신이 성공하면 사용자 목록이 조회됩니다.
 
@@ -1402,8 +1404,6 @@ docker compose up   # 풀스택 애플리케이션 실행
 ```bash
 docker compose down   # 모든 컨테이너 중지 및 삭제
 ```
-
----
 
 ## 이것만은 기억하자
 

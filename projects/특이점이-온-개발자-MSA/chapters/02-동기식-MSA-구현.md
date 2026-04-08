@@ -499,7 +499,7 @@ INSERT INTO order_item_tb (order_id, product_id, quantity, price, created_at, up
 
 ### 2.6.8 RestClient : JWT 헤더를 실어 다른 서비스를 호출하다
 
-주문 서비스가 다른 서비스를 호출할 때 필요한 RestClient를 먼저 설정합니다. RestClient에 인터셉터(`ClientHttpRequestInterceptor`)를 등록합니다. 이렇게 하면 외부 API를 호출할 때 Authorization 헤더가 자동으로 전달되어 하위 서비스의 JWT 인증을 통과합니다.
+주문 서비스가 다른 서비스를 호출할 때 필요한 RestClient를 먼저 설정합니다. 인터셉터는 HTTP 요청이 나갈 때 자동으로 JWT 토큰을 챙겨 붙여주는 장치입니다. 택배를 보낼 때 보내는 사람 정보를 매번 적는 대신, 스티커를 자동으로 붙여주는 것과 같습니다. RestClient에 인터셉터(`ClientHttpRequestInterceptor`)를 등록하면 외부 API를 호출할 때 Authorization 헤더가 자동으로 전달되어 하위 서비스의 JWT 인증을 통과합니다.
 
 **[작성]** `core/config/RestClientConfig.java` — 아래 코드를 해당 파일에 추가하세요.
 
@@ -755,7 +755,7 @@ docker compose up
 
 **Docker Desktop**
 
-Docker가 설치되어 있어야 합니다. https://www.docker.com/products/docker-desktop/ 에서 설치하세요. Docker Desktop을 실행하고 화면 하단에 "Engine running"이 표시되면 준비 완료입니다. 터미널에서 `docker compose up`을 실행합니다.
+Docker가 설치되어 있어야 합니다. https://www.docker.com/products/docker-desktop/ 에서 설치하세요. Docker Desktop을 실행하고 화면 하단에 "Engine running"이 표시되면 준비 완료입니다. 터미널에서 `docker compose up`을 실행합니다. 처음 실행 시 이미지 빌드에 5~10분이 소요될 수 있습니다. 터미널이 멈춘 것처럼 보여도 정상이니 기다려 주세요. 빌드 진행 상황은 `docker compose logs -f [서비스명]`으로 확인할 수 있습니다.
 
 <!-- terminal-prompt: Terminal output showing "docker compose up" command execution in the chap01 directory. Four Spring Boot services (user-service:8083, product-service:8082, order-service:8081, delivery-service:8084) starting up with Spring Boot banner and "Started Application" messages. All services show successful startup. -->
 ![docker compose up](images/chap02-1.png)
@@ -895,7 +895,7 @@ docker compose down
 
 이 명령어를 실행하면 docker compose up으로 띄운 모든 컨테이너가 종료되고 제거됩니다.
 
-## 정리
+## 이것만은 기억하자
 
 이번 챕터에서 만든 것을 정리합니다.
 

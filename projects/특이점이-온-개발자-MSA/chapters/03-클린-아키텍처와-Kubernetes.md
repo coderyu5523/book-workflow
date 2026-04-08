@@ -5,6 +5,8 @@
 > 이번 챕터는 직접 코드를 작성하지 않습니다. 챕터 2 프로젝트를 클린 아키텍처로 재구성한 결과를 살펴보고, Kubernetes 배포를 실습합니다.
 
 
+> 이 챕터를 시작하기 전에 Docker Desktop이 실행 중이어야 하고, Minikube가 설치되어 있어야 합니다. Minikube 설치: https://minikube.sigs.k8s.io/
+
 ### 학습 목표
 
 - 컨트롤러가 서비스 구현체 대신 UseCase 인터페이스에 의존하도록 구조를 개선한다.
@@ -444,7 +446,7 @@ stringData:                  # 평문으로 작성하면 K8s가 자동으로 Bas
   DB_PASSWORD: metacoding1234
 ```
 
-Secret은 **비밀번호, 인증 정보 같은 민감한 값을 안전하게 관리**하는 역할을 합니다. ConfigMap과 구조는 비슷하지만, 노출되면 안 되는 값은 반드시 Secret으로 분리합니다.
+Secret은 **비밀번호, 인증 정보 같은 민감한 값을 안전하게 관리**하는 역할을 합니다. ConfigMap과 구조는 비슷하지만, 노출되면 안 되는 값은 반드시 Secret으로 분리합니다. `stringData`는 Base64 인코딩이지 암호화가 아닙니다. Secret을 Git에 커밋하면 안 됩니다. 운영 환경에서는 Sealed Secrets, Vault 같은 도구를 검토하세요.
 
 #### Deployment : Pod 실행 정의
 
@@ -469,7 +471,7 @@ spec:
       containers:
         - name: order-server
           image: metacoding/order:1
-          imagePullPolicy: Never
+          imagePullPolicy: Never       # Minikube 로컬 이미지 사용. 실제 클러스터에서는 Always 또는 IfNotPresent 사용
           ports:
             - containerPort: 8081
           env:                           # 개별 환경변수 직접 설정
@@ -615,7 +617,7 @@ Ingress를 통해 외부에서 접속하려면 `minikube tunnel`을 실행합니
 minikube tunnel
 ```
 
-터널이 실행되면 `http://127.0.0.1:80`로 gateway-service에 접속할 수 있습니다. `POST http://127.0.0.1:80/login`으로 로그인하여 토큰을 받습니다. 이후 과정은 챕터 2와 동일하게 주문을 생성합니다.
+`minikube tunnel`은 터미널을 점유합니다. 새 터미널을 열어서 이후 테스트를 진행하세요. 터널이 실행되면 `http://127.0.0.1:80`로 gateway-service에 접속할 수 있습니다. `POST http://127.0.0.1:80/login`으로 로그인하여 토큰을 받습니다. 이후 과정은 챕터 2와 동일하게 주문을 생성합니다.
 
 <!-- terminal-prompt: Hoppscotch showing POST request to the minikube gateway URL with /api/orders path. Bearer token set. JSON body with orderItems (productId:1, quantity:1, price:2500000) and address. Response 200 OK with order status "COMPLETED". -->
 ![minikube](images/chap03-8.png)
@@ -629,7 +631,7 @@ minikube tunnel
 kubectl delete all --all -n metacoding
 ```
 
-## 정리
+## 이것만은 기억하자
 
 이번 챕터에서 두 가지 숙제를 해결했습니다.
 

@@ -1,7 +1,7 @@
 # 챕터 5. 실시간 알림 — 주문 완료를 즉시 전달하다
 
-> `chap04` · 실행 환경: 컨테이너 · WebSocket(STOMP/SockJS) · 배달 완료 라이프사이클
-> 이 챕터의 전체 소스코드는 **https://github.com/metacoding-12-msa/chap04** 에서 확인할 수 있습니다.
+> `chap05` · 실행 환경: 컨테이너 · WebSocket(STOMP/SockJS) · 배달 완료 라이프사이클
+> 이 챕터의 전체 소스코드는 **https://github.com/metacoding-12-msa/chap05** 에서 확인할 수 있습니다.
 
 
 ### 학습 목표
@@ -493,7 +493,7 @@ minikube tunnel
 *그림 5-5: 브라우저에서 index.html 접속 화면*
 
 
-WebSocket 연결을 위해 토큰을 입력합니다. 여기서 `Bearer` 접두사를 제외한 토큰 값만 입력합니다.
+WebSocket 연결을 위해 토큰을 입력합니다. 로그인 API(`POST /login`)로 발급받은 JWT 토큰에서 `Bearer ` 접두사를 제외한 값만 입력합니다.
 
 
 
@@ -612,11 +612,11 @@ WebSocket 응답을 수신하면 클라이언트 화면이 주문 완료 상태�
 9. order-service: 주문 COMPLETED
    └─ WebSocket Push: /topic/orders/{userId}
 
-10. 클라이언트: 실시간 알림 수신 ✓
+10. 클라이언트: 실시간 알림 수신 (완료)
 ```
 
 
-## 정리
+## 이것만은 기억하자
 
 이번 챕터에서 완성한 것을 정리합니다.
 
@@ -624,3 +624,5 @@ WebSocket 응답을 수신하면 클라이언트 화면이 주문 완료 상태�
 - **delivery-completed 토픽 추가**: delivery-service가 완료 이벤트를 발행하고 orchestrator가 처리합니다. 이로써 챕터 5에서 실제 사용하는 Kafka 토픽은 10개가 됩니다.
 - **orchestrator 변경**: 배달 생성(`delivery-created`) 성공 후 대기, 배달 완료(`delivery-completed`) 수신 후 주문 완료 처리. 실패 시에는 재고를 복구합니다.
 - **WebSocket Push**: order-service가 `SimpMessagingTemplate`으로 사용자별 채널에 실시간 알림을 보냅니다.
+
+챕터 1에서 하나의 모놀리식 서비스로 시작했습니다. 챕터 2에서 서비스를 나눴고, 챕터 3에서 클린 아키텍처와 Kubernetes로 운영 환경을 갖췄습니다. 챕터 4에서 Kafka로 비동기 통신과 실패 대응을 완성했고, 이 챕터에서 사용자에게 결과를 즉시 전달하는 마지막 퍼즐을 완성했습니다. 동기에서 비동기로, 하나에서 여럿으로. 코드를 한 줄씩 바꾸다 보면 MSA의 구조가 보입니다.
