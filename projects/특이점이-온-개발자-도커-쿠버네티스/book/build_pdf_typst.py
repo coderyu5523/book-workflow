@@ -33,14 +33,15 @@ CONFIG = {
     "font_path": None,
 
     "front": [
-        BOOK / "front" / "preface.md",
         BOOK / "front" / "prologue.md",
     ],
 
     "chapters": [
-        find_chapter("01-Docker-이해하기.md"),
-        find_chapter("02-Docker-다루기.md"),
-        find_chapter("03-Kubernetes-시작하기-v3.1.md", "03-Kubernetes-시작하기.md"),
+        find_chapter("ch1-why-container.md"),
+        find_chapter("ch2-docker-understanding.md"),
+        find_chapter("ch3-docker-working.md"),
+        find_chapter("ch4-k8s-v2.md"),
+        find_chapter("ch5-k8s-v2.md"),
     ],
 
     "back": [
@@ -80,8 +81,8 @@ def typst_compile_python(typ_path: Path, pdf_path: Path) -> bool:
 
 
 def main():
-    # --design 인자 파싱 (기본: 4)
-    design_arg = "4"
+    # --design 인자 파싱 (기본: 6)
+    design_arg = "6"
     for i, arg in enumerate(sys.argv[1:], 1):
         if arg == "--design" and i < len(sys.argv):
             design_arg = sys.argv[i + 1]
