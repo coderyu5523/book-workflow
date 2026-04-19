@@ -1,0 +1,20 @@
+direction: right
+
+classes: {
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  highlight: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  group: { shape: rectangle; style: { fill: transparent; stroke: black; stroke-width: 2; border-radius: 8; stroke-dash: 5; font-size: 16 } }
+}
+
+image: "이미지 (읽기 전용)\nnginx:latest" { class: process }
+
+container: 컨테이너 생성 {
+  class: group
+  fs: "쓰기 레이어 추가\n(파일시스템)" { class: highlight }
+  net: "네트워크 설정\nveth 생성 → bridge 연결\niptables 규칙 등록" { class: highlight }
+  proc: "프로세스 시작\n격리된 환경에서 앱 실행" { class: highlight }
+}
+
+image -> container.fs: "레이어 위에 올림" { style.stroke: "#222222" }
+container.fs -> container.net { style.stroke: "#222222" }
+container.net -> container.proc { style.stroke: "#222222" }

@@ -1,0 +1,174 @@
+{
+  "project": "특이점이 온 개발자",
+  "title": "",
+  "status": "not_started",
+  "current_step": "step_5_chapters",
+  "created_at": "2026-04-11",
+  "updated_at": "2026-04-11",
+
+  "steps": {
+    "step_1_seed": {
+      "name": "씨앗",
+      "status": "done",
+      "artifact": "planning/seed-v1.md",
+      "artifact_version": 1,
+      "review": {
+        "insight": null,
+        "audit": null
+      },
+      "questions_pending": 0
+    },
+    "step_2_code": {
+      "name": "코드 해부",
+      "status": "done",
+      "artifact": "planning/code-analysis-v1.md",
+      "artifact_version": 1,
+      "review": {
+        "insight": null,
+        "audit": null
+      },
+      "questions_pending": 0
+    },
+    "step_3_scenario": {
+      "name": "시나리오+버전",
+      "status": "done",
+      "artifact": "planning/scenario-v1.md",
+      "artifact_version": 1,
+      "versions_created": ["v0.1", "v0.2", "v0.3", "v0.4", "v0.5", "v0.6", "v0.7", "v0.8", "v0.9", "v1.0"],
+      "review": {
+        "insight": null,
+        "audit": null
+      },
+      "questions_pending": 0
+    },
+    "step_4_outline": {
+      "name": "뼈대",
+      "status": "done",
+      "artifact": "planning/outline-v1.md",
+      "artifact_version": 1,
+      "gap_analysis": null,
+      "review": {
+        "insight": null,
+        "audit": null
+      },
+      "questions_pending": 0
+    },
+    "step_5_chapters": {
+      "name": "챕터 집필",
+      "status": "in_progress",
+      "chapters": [
+        {
+          "id": "CH01",
+          "title": "컨테이너가 뭐길래",
+          "version": null,
+          "status": "done",
+          "artifact": "chapters/01-컨테이너가-뭐길래.md",
+          "images": {
+            "gemini_prompt": 4,
+            "d2_diagram": 7,
+            "total": 12
+          },
+          "review": {
+            "insight": null,
+            "intent_watch": null,
+            "audit": null
+          },
+          "questions_pending": 0
+        }
+      ,
+        {
+          "id": "CH02",
+          "title": "상자 하나 띄워보기",
+          "version": "v0.1",
+          "status": "done",
+          "artifact": "chapters/02-상자-하나-띄워보기.md",
+          "review": {
+            "insight": null,
+            "intent_watch": null,
+            "audit": null
+          },
+          "questions_pending": 0
+        },
+        {
+          "id": "CH03",
+          "title": "매번 처음부터 깔 순 없잖아",
+          "version": "v0.2",
+          "status": "done",
+          "artifact": "chapters/03-매번-처음부터-깔-순-없잖아.md",
+          "images": {
+            "gemini_prompt": 2,
+            "capture_needed": 2,
+            "total": 4
+          },
+          "review": {
+            "insight": null,
+            "intent_watch": null,
+            "audit": null
+          },
+          "questions_pending": 0
+        },
+        {
+          "id": "CH04",
+          "title": "혼자선 감당이 안 된다",
+          "version": "v0.3",
+          "status": "done",
+          "artifact": "chapters/04-혼자선-감당이-안-된다.md",
+          "images": {
+            "gemini_prompt": 1,
+            "capture_needed": 1,
+            "total": 2
+          },
+          "review": {
+            "insight": null,
+            "intent_watch": null,
+            "audit": null
+          },
+          "questions_pending": 0
+        }
+      ]
+    },
+    "step_6_prologue": {
+      "name": "프롤로그",
+      "status": "pending",
+      "artifact": null,
+      "review": {
+        "audit": null
+      }
+    },
+    "step_7_finish": {
+      "name": "마무리",
+      "status": "pending",
+      "artifacts": {
+        "preface": null,
+        "afterword": null
+      },
+      "final_title": null,
+      "total_pages": null,
+      "review": {
+        "audit": null
+      }
+    }
+  },
+
+  "_chapter_template": {
+    "id": "CH01",
+    "title": "",
+    "version": "v0.1",
+    "status": "pending",
+    "artifact": null,
+    "images": {
+      "total_placeholders": 0,
+      "completed": 0,
+      "status": "pending"
+    },
+    "review": {
+      "insight": null,
+      "intent_watch": null,
+      "audit": null
+    },
+    "questions_pending": 0
+  },
+
+  "_status_values": ["pending", "in_progress", "done", "review"],
+  "_review_values": [null, "pass", "conditional_pass", "fail"]
+}

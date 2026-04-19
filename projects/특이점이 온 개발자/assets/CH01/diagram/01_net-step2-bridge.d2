@@ -1,0 +1,30 @@
+direction: right
+
+classes: {
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  highlight: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  group: { shape: rectangle; style: { fill: transparent; stroke: black; stroke-width: 2; border-radius: 8; stroke-dash: 5; font-size: 16 } }
+}
+
+iptables: "iptables\n목적지 변환 완료" { class: process }
+
+bridge-area: docker0 bridge (가상 네트워크) {
+  class: group
+  bridge: "docker0\n가상 브릿지" { class: highlight }
+  veth-host: "veth (호스트 쪽)" { class: process }
+  veth-container: "veth (컨테이너 쪽)" { class: process }
+
+  bridge -> veth-host { style.stroke: "#222222" }
+  veth-host -> veth-container: "가상 케이블" { style.stroke: "#222222" }
+}
+
+container: 컨테이너 {
+  class: group
+  eth0: "eth0\n포트 80" { class: process }
+  app: "앱\n요청 처리 → 응답" { class: highlight }
+
+  eth0 -> app { style.stroke: "#222222" }
+}
+
+iptables -> bridge-area.bridge { style.stroke: "#222222" }
+bridge-area.veth-container -> container.eth0 { style.stroke: "#222222" }

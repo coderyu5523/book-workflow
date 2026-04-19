@@ -1,0 +1,25 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  registry: { shape: cylinder; style: { fill: "#eeeeee"; stroke: black; stroke-width: 1; font-size: 14 } }
+  group: { shape: rectangle; style: { fill: transparent; stroke: black; stroke-width: 2; border-radius: 8; stroke-dash: 5; font-size: 16 } }
+}
+
+cli: "Docker CLI\n(터미널)" { class: start }
+
+daemon-area: Docker Engine {
+  class: group
+  daemon: "Docker Daemon\n(백그라운드 프로세스)" { class: process }
+  images: "이미지 저장소\n(로컬)" { class: process }
+  containers: "컨테이너 관리" { class: process }
+
+  daemon -> images { style.stroke: "#222222" }
+  daemon -> containers { style.stroke: "#222222" }
+}
+
+hub: "Docker Hub\n(원격 저장소)" { class: registry }
+
+cli -> daemon-area.daemon: "REST API" { style.stroke: "#222222" }
+daemon-area.images -> hub: "pull / push" { style.stroke: "#222222" }

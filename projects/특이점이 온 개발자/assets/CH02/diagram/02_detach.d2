@@ -1,0 +1,16 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  result: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+}
+
+container: "컨테이너\n실행 중" { class: start }
+detach: "Ctrl+P → Ctrl+Q" { class: process }
+disconnect: "터미널 연결만 끊김" { class: process }
+running: "컨테이너 유지\ndocker ps에 보임" { class: result }
+
+container -> detach { style.stroke: "#222222" }
+detach -> disconnect { style.stroke: "#222222" }
+disconnect -> running { style.stroke: "#222222" }

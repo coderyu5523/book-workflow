@@ -1,0 +1,16 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  result: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+}
+
+container: "컨테이너\n실행 중" { class: start }
+exec: "docker exec -it bash" { class: process }
+new: "새 프로세스 생성\n(메인과 별개)" { class: process }
+safe: "exit 해도 새 프로세스만 종료\n→ 컨테이너 유지" { class: result }
+
+container -> exec { style.stroke: "#222222" }
+exec -> new { style.stroke: "#222222" }
+new -> safe { style.stroke: "#222222" }

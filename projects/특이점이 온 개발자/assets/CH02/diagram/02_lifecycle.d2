@@ -1,0 +1,21 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  end: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+}
+
+pull: "docker pull\n이미지 다운로드" { class: start }
+run: "docker run\n컨테이너 실행" { class: process }
+running: "실행 중\n(Running)" { class: process }
+stop: "docker stop\n컨테이너 종료" { class: process }
+stopped: "종료됨\n(Stopped)" { class: process }
+rm: "docker rm\n컨테이너 삭제" { class: end }
+
+pull -> run { style.stroke: "#222222" }
+run -> running { style.stroke: "#222222" }
+running -> stop { style.stroke: "#222222" }
+stop -> stopped { style.stroke: "#222222" }
+stopped -> rm { style.stroke: "#222222" }
+stopped -> run: "재시작 가능" { style.stroke: "#222222"; style.stroke-dash: 4 }
