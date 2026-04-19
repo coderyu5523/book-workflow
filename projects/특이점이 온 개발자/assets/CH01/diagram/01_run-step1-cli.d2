@@ -1,0 +1,13 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+}
+
+user: "사용자\n터미널" { class: start }
+cli: "Docker CLI\n명령어 파싱" { class: process }
+daemon: "Docker Daemon\n(백그라운드)" { class: process }
+
+user -> cli: "docker run -p 8080:80 nginx" { style.stroke: "#222222" }
+cli -> daemon: "REST API 요청" { style.stroke: "#222222" }

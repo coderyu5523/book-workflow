@@ -1,0 +1,13 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+}
+
+browser: "브라우저\nlocalhost:8080" { class: start }
+host: "호스트 PC\n포트 8080 수신" { class: process }
+iptables: "iptables\nDNAT 규칙 확인\n\"8080 → 컨테이너:80\"" { class: process }
+
+browser -> host: "HTTP 요청" { style.stroke: "#222222" }
+host -> iptables: "포트 매핑 확인" { style.stroke: "#222222" }

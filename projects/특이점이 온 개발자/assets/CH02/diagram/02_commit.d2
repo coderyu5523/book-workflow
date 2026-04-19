@@ -1,0 +1,18 @@
+direction: right
+
+classes: {
+  start: { shape: rectangle; style: { fill: "#f0f0f0"; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  result: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 2; border-radius: 8; font-size: 14 } }
+}
+
+base: "기본 이미지\n(tomcat)" { class: start }
+run: "docker run\n컨테이너 실행" { class: process }
+modify: "exec로 들어가서\n파일 추가/수정" { class: process }
+commit: "docker commit\n현재 상태 저장" { class: process }
+new-image: "새 이미지 생성" { class: result }
+
+base -> run { style.stroke: "#222222" }
+run -> modify { style.stroke: "#222222" }
+modify -> commit { style.stroke: "#222222" }
+commit -> new-image { style.stroke: "#222222" }

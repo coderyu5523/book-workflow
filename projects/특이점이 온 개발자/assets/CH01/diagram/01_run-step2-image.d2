@@ -1,0 +1,17 @@
+direction: right
+
+classes: {
+  process: { shape: rectangle; style: { fill: white; stroke: black; stroke-width: 1; border-radius: 8; font-size: 14 } }
+  decision: { shape: diamond; style: { fill: white; stroke: black; stroke-width: 1; font-size: 13 } }
+  registry: { shape: cylinder; style: { fill: "#eeeeee"; stroke: black; stroke-width: 1; font-size: 14 } }
+}
+
+daemon: "Docker Daemon" { class: process }
+check: "이미지가\n로컬에 있나?" { class: decision }
+hub: "Docker Hub\n(원격 저장소)" { class: registry }
+local: "로컬 이미지\n캐시" { class: process }
+
+daemon -> check { style.stroke: "#222222" }
+check -> hub: "없으면 다운로드" { style.stroke: "#222222" }
+check -> local: "있으면 사용" { style.stroke: "#222222" }
+hub -> local: "이미지 저장" { style.stroke: "#222222" }
