@@ -44,7 +44,13 @@
       "Bash(grep *)",
       "Bash(echo \"Code delimiters: $\\(grep -c '^```' 04-Kubernetes-시작하기-v6.md\\)\")",
       "Bash(awk *)",
-      "Bash(sort -t- -k2 -n)"
+      "Bash(sort -t- -k2 -n)",
+      "Bash(where chrome.exe)",
+      "Bash(where msedge.exe)",
+      "Bash(npm --version)",
+      "Bash(cd /tmp)",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=1360,761 --screenshot=\"C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/ch2-step2-dnat1.png\" \"file:///C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/port-forwarding.html\")",
+      "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=700,420 --force-device-scale-factor=2 --screenshot=\"C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/ch2-step2-dnat1.png\" \"file:///C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/port-forwarding.html\")"
     ]
   }
 }
