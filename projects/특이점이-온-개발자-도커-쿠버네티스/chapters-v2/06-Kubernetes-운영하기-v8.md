@@ -354,16 +354,39 @@ EX08 폴더는 이미지를 찍는 부분(backend, db, frontend, redis)과 K8s �
 
 ```
 ex08/
-├── backend/
-├── db/
-├── frontend/
-├── redis/
-└── k8s/
-    ├── namespace.yml
-    ├── backend/
-    ├── db/
-    ├── frontend/
-    └── redis/
+├── backend/                          # Spring Boot 백엔드 이미지
+│   ├── Dockerfile                    # JDK 이미지 + entrypoint.sh 복사
+│   └── entrypoint.sh                 # Git clone + Gradle 빌드 + JAR 실행
+├── db/                               # MySQL 이미지
+│   ├── Dockerfile                    # MySQL 이미지 + init.sql 복사
+│   └── init.sql                      # 테이블·초기 데이터 생성 스크립트
+├── frontend/                         # NGINX + HTML 이미지
+│   ├── Dockerfile                    # nginx 이미지 + index.html·nginx.conf 복사
+│   ├── index.html                    # 로그인/게시판 UI (방문 카운터 표시)
+│   └── nginx.conf                    # /api 경로를 backend-service로 프록시
+├── redis/                            # Redis 이미지
+│   └── Dockerfile                    # redis 공식 이미지 기반
+├── k8s/                              # K8s 리소스 매니페스트
+│   ├── namespace.yml                 # ex08 네임스페이스 정의
+│   ├── backend/
+│   │   ├── backend-configmap.yml     # 비밀이 아닌 설정값
+│   │   ├── backend-deploy.yml        # 백엔드 Deployment
+│   │   ├── backend-secret.yml        # DB 비밀번호 등 민감 정보
+│   │   └── backend-service.yml       # 내부용 ClusterIP Service
+│   ├── db/
+│   │   ├── db-deploy.yml             # MySQL Deployment
+│   │   ├── db-pv.yml                 # PersistentVolume (노드 로컬 저장소)
+│   │   ├── db-pvc.yml                # PersistentVolumeClaim (볼륨 요청)
+│   │   ├── db-secret.yml             # MySQL 계정 정보
+│   │   └── db-service.yml            # 내부용 ClusterIP Service
+│   ├── frontend/
+│   │   ├── frontend-deploy.yml       # 프론트 Deployment
+│   │   ├── frontend-ingress.yml      # 외부 진입점 (Ingress)
+│   │   └── frontend-service.yml      # 내부용 ClusterIP Service
+│   └── redis/
+│       ├── redis-deploy.yml          # Redis Deployment
+│       └── redis-service.yml         # 내부용 ClusterIP Service
+└── README.md                         # 실습 안내
 ```
 
 이미지 레이어는 챕터 3 EX07과 거의 같고, Redis가 새로 추가되고 백엔드에 방문 횟수 카운터 로직이 추가됐습니다. 이번 절은 이미지 제작보다 **K8s 리소스 작성**에 초점을 맞춥니다.
