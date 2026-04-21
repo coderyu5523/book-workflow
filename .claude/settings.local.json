@@ -52,7 +52,10 @@
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=1360,761 --screenshot=\"C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/ch2-step2-dnat1.png\" \"file:///C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/port-forwarding.html\")",
       "Bash(\"/c/Program Files/Google/Chrome/Application/chrome.exe\" --headless --disable-gpu --no-sandbox --hide-scrollbars --window-size=700,420 --force-device-scale-factor=2 --screenshot=\"C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/ch2-step2-dnat1.png\" \"file:///C:/study/새 폴더/book-workflow/projects/특이점이-온-개발자-도커-쿠버네티스/assets/CH02/port-forwarding.html\")",
       "Bash(python3 *)",
-      "Bash(py -c \"from playwright.sync_api import sync_playwright; print\\('ok'\\)\")"
+      "Bash(py -c \"from playwright.sync_api import sync_playwright; print\\('ok'\\)\")",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl *)"
     ]
   }
 }
