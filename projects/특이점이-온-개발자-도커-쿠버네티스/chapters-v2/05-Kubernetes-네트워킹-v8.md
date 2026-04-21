@@ -274,19 +274,57 @@ Minikube에서는 `minikube addons enable ingress` 한 줄로 Ingress Controller
 
 ### 5.3.1 요청의 여정
 
-오픈이는 지금까지 쌓아둔 부품을 하나의 흐름으로 이어 봤습니다. 사용자가 브라우저에 URL을 치는 순간부터 Pod에 도달하기까지, 요청은 여러 손을 차례로 거칩니다.
+오픈이는 지금까지 쌓아둔 부품을 하나의 흐름으로 이어 봤습니다. 사용자가 브라우저에 URL을 치는 순간부터 Pod에 도달하기까지, 요청은 여러 손을 차례로 거칩니다. 한꺼번에 보면 복잡해서 한 단계씩 따라가 보기로 했습니다.
 
-![](../assets/CH05/net-10a-full-path.png)
+**1단계 — 클러스터 입구(NodePort)에 도착**
 
-*그림 5-15 외부 요청이 Pod에 도달하기까지의 전체 흐름*
+브라우저에 `localhost:9000`을 친 순간, 요청은 가장 먼저 클러스터의 NodePort로 향했습니다. 클러스터 내부망은 바깥에서 직접 들어올 수 없고, 노드에 뚫린 이 포트 하나가 유일한 출입문이었습니다.
+
+![](../assets/CH05/k8s-flow-step1.png)
+
+*그림 5-15 외부 요청이 NodePort로 진입*
+
+**2단계 — kube-proxy가 Ingress Controller Pod으로 전달**
+
+NodePort에 도착한 요청을 처음 받아내는 건 kube-proxy였습니다. 미리 심어둔 iptables 규칙에 따라 요청은 Ingress Controller Pod 쪽으로 넘어갑니다. 여기까지 kube-proxy는 URL이 무엇인지 들여다보지 않고, 그저 "Ingress 담당자에게 건네준다"는 역할만 했습니다.
+
+![](../assets/CH05/k8s-flow-step2.png)
+
+*그림 5-16 kube-proxy가 iptables 규칙으로 Ingress Controller Pod에 전달*
+
+**3단계 — Ingress Controller가 URL을 읽고 Service 선택**
+
+Ingress Controller Pod은 요청의 URL과 Host 헤더를 처음으로 읽습니다. 5.2절에서 적어둔 Ingress 리소스의 규칙을 보고 "이 경로는 Service A로, 저 경로는 Service B로" 방향을 갈라줬습니다. 5.2.2의 "안내 데스크" 비유가 여기서 L7 라우팅이라는 이름으로 다시 등장합니다.
+
+![](../assets/CH05/k8s-flow-step3.png)
+
+*그림 5-17 Ingress Controller가 URL을 읽고 적절한 Service를 선택*
+
+**4단계 — kube-proxy가 ClusterIP를 Pod IP로 변환**
+
+Ingress가 고른 Service는 ClusterIP라는 가상 주소만 들고 있었습니다. 이 가상 주소를 실제 Pod IP로 바꿔주는 일은 각 노드의 kube-proxy가 맡습니다. 5.1.6에서 본 iptables DNAT가 두 번째로 동작하고, 뒤에 붙은 여러 Pod 중 하나로 요청이 실제로 떨어집니다.
+
+![](../assets/CH05/k8s-flow-step4.png)
+
+*그림 5-18 각 노드의 kube-proxy가 ClusterIP를 Pod IP로 변환 (L4 로드밸런싱)*
+
+**5단계 — Pod 도달 + 뒤에서 돌던 Endpoint Controller**
+
+요청이 드디어 Pod에 닿고, 애플리케이션이 비로소 비즈니스 로직을 태웁니다. 그런데 이 경로는 어떻게 **항상** 유효할 수 있었을까. 배경에서는 Endpoint Controller가 Pod IP 변화를 꾸준히 감시하며 Endpoints 목록을 갱신해두고, kube-proxy가 그 목록을 읽어 iptables 규칙을 최신으로 유지해둔 덕분이었습니다. 요청 흐름 바깥에서 조용히 돌던 이 컨트롤러가, 4단계의 iptables 규칙을 미리 준비해두고 있었던 셈입니다.
+
+![](../assets/CH05/k8s-flow-step5.png)
+
+*그림 5-19 Pod 도달 + Endpoint Controller가 뒤에서 Endpoints를 최신으로 유지*
+
+다섯 단계를 한 표로 정리하면 이렇습니다.
 
 | 단계 | 컴포넌트 | 하는 일 | 확인하는 것 |
 |------|---------|--------|-----------|
-| 1 | **브라우저** | 요청 전송 | - |
-| 2 | **Ingress Controller** | URL 경로 확인 → 적절한 Service로 라우팅 | URL, Host |
-| 3 | **Service** | Label-Selector로 매칭된 Pod 그룹에 요청 전달 | Label |
-| 4 | **kube-proxy** | 네트워크 규칙으로 실제 Pod IP로 변환 | IP, Port |
-| 5 | **Pod** | 애플리케이션이 요청을 처리 | 비즈니스 로직 |
+| 1 | **NodePort** | 외부 요청을 클러스터 내부로 받음 | Port |
+| 2 | **kube-proxy (1차)** | iptables 규칙으로 Ingress Controller에 전달 | IP, Port |
+| 3 | **Ingress Controller** | URL 경로/Host 확인 → 적절한 Service 선택 | URL, Host |
+| 4 | **kube-proxy (2차)** | ClusterIP를 실제 Pod IP로 변환 | IP, Port |
+| 5 | **Pod** | 애플리케이션이 요청 처리 | 비즈니스 로직 |
 
 각 단계가 보는 게 딱 하나씩입니다. Ingress는 URL, Service는 Label, kube-proxy는 IP/Port. 비즈니스 로직은 Pod까지 가야 태워집니다.
 
