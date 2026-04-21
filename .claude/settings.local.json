@@ -62,7 +62,8 @@
       "PowerShell(py *)",
       "Bash(npx playwright *)",
       "Bash(node -e ' *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git log *)"
     ]
   }
 }
