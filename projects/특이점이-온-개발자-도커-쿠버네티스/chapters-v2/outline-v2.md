@@ -223,7 +223,7 @@
 #### 5.1.5 Networking
 - minikube service 실습 (기존 CH04 4.4.3 내용)
 
-### 5.2 Ingress : 건물 안내 데스크
+### 5.2 Ingress : 프랜차이즈 공식 앱
 
 #### 5.2.1 왜 Ingress가 필요한가
 - "3장의 NGINX 경로 라우팅, 기억나시죠? Ingress Controller가 K8s 안에서 같은 역할을 합니다"
