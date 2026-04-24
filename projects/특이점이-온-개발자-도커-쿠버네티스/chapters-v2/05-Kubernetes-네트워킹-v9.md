@@ -16,7 +16,7 @@
 
 ### 5.1.1 흔들리지 않는 주소, Service
 
-'고정된 대표 창구'에 정식 이름이 있을 것 같아 오픈이는 쿠버네티스 문서를 뒤적였습니다. 얼마 지나지 않아 눈에 익은 단어 하나에서 손이 멈췄습니다. **Service**. Pod 앞에 서서 요청을 대신 받고, 뒤에서 Pod가 몇 번을 새로 태어나 IP가 바뀌든 바깥에 내걸린 주소는 그대로 두는 리소스였습니다.
+'고정된 대표 창구'에 정식 이름이 있을 것 같아 오픈이는 쿠버네티스 문서를 뒤적였습니다. 얼마 지나지 않아 눈에 익은 단어 하나에서 손이 멈췄습니다. **Service**. Pod 앞에 서서 요청을 대신 받고, 뒤에서 Pod가 몇 번을 새로 태어나 IP가 바뀌든 바깥에 내걸린 주소는 그대로 두는 리소스입니다.
 
 가맹점 안에서 직원이 교대 근무를 해도, 손님은 전화번호 하나로 주문을 할 수 있습니다. Service는 쿠버네티스 안에서 바로 그 전화번호 역할을 맡습니다.
 
@@ -221,21 +221,249 @@ Ingress가 바로 이 공식 앱 역할을 합니다. 고객이 `http://도메�
 
 *'아, 이게 팀장님이 말한 "경로별로 갈라 주는 친구"구나. 가맹점 번호를 일일이 알려주는 대신, 공식 앱 하나로 다 연결하는 거네.'*
 
-### 5.2.3 L4와 L7 — 고속도로 분기점과 안내 데스크
+비유만으로는 실감이 오지 않았습니다. 오픈이는 바로 Minikube에 인그레스를 올려 보기로 했습니다. 
 
-그런데 왜 Service에 이 기능을 넣지 않고 Ingress를 따로 만들었을까요. 그 이유는 둘이 요청을 보는 깊이가 달랐기 때문입니다.
+### 5.2.3 공식 앱 올려 보기
 
-브라우저에서 `http://shop.example.com/order`를 입력하면 하나의 요청이 만들어집니다. 이 요청을 편지에 비유하면 이렇습니다. 겉봉투에는 **받는 사람 주소(IP)와 방 번호(Port)**가 적혀 있고, 봉투 안 편지지에는 **"shop.example.com의 /order 페이지를 보여 주세요"**라는 내용이 들어 있습니다.
+예제를 따라 YAML을 적어 내려가려던 찰나, 오픈이의 눈이 문서 첫 줄에 걸렸습니다.
+
+> "Ingress를 사용하려면 먼저 Ingress Controller를 설치하거나 활성화하세요."
+
+*'규칙을 적는 YAML이 Ingress 아니었어? 왜 또 뭘 설치하라는 거지?'*
+
+같은 **Ingress** 라는 이름이 두 자리에서 다른 얼굴로 서 있었습니다. 한쪽은 앞으로 오픈이가 적어 내려갈 YAML이고, 다른 한쪽은 클러스터 안에서 실제로 돌아가야 하는 별도의 프로그램입니다. 다행히 Minikube에는 내장된 컨트롤러가 있어 한 줄로 깨울 수 있었습니다.
+
+```bash
+minikube addons enable ingress          # Ingress Controller 애드온 활성화
+```
+
+![](../assets/CH05/chap03-ingress-addon.png)
+
+*minikube에서 ingress 애드온 활성화*
+
+활성화가 끝나자 `ingress-nginx` 네임스페이스에 컨트롤러 Pod가 올라왔습니다.
+
+```bash
+kubectl get pods -n ingress-nginx       # 컨트롤러 Pod 확인
+```
+
+![](../assets/CH05/chap03-ingress-controller-running.png)
+
+*Ingress Controller Pod가 Running 상태*
+
+눈에 보이는 Pod가 하나 떴습니다. 요청을 받아 내부 Service로 넘겨 줄 몸체가 생긴 것입니다.
+
+#### 두 서비스 준비
+
+공식 앱이 경로별로 어떻게 갈라 주는지를 눈으로 보려면 백엔드가 최소 둘은 필요했습니다. 5.2.2에서 비유로 들었던 `/order` 와 `/stores` 를 그대로 가져와, 주문과 매장을 담당할 두 Service를 만들었습니다. 두 서비스 모두 간단한 HTTP 응답기 한 장이면 충분해서 같은 이미지를 다른 응답 텍스트로 띄웠습니다.
+
+**ex09/yaml/order-deploy.yml**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-deploy
+spec:
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order
+    spec:
+      containers:
+        - name: order
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=주문 접수 완료 — 치킨버거 1개"
+```
+
+**ex09/yaml/order-service.yml**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+spec:
+  type: ClusterIP
+  selector:
+    app: order
+  ports:
+    - port: 5678
+```
+
+매장 쪽은 응답 문구만 바꾼 쌍둥이 YAML입니다.
+
+**ex09/yaml/stores-deploy.yml**
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stores-deploy
+spec:
+  selector:
+    matchLabels:
+      app: stores
+  template:
+    metadata:
+      labels:
+        app: stores
+    spec:
+      containers:
+        - name: stores
+          image: hashicorp/http-echo:latest
+          args:
+            - "-text=매장 안내 — 강남점 · 홍대점 · 판교점"
+```
+
+**ex09/yaml/stores-service.yml**
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: stores-service
+spec:
+  type: ClusterIP
+  selector:
+    app: stores
+  ports:
+    - port: 5678
+```
+
+네 파일을 한 번에 올려 두 서비스를 클러스터 안에 띄웠습니다.
+
+```bash
+kubectl apply -f ex09/yaml/
+```
+
+두 서비스는 **ClusterIP** 타입이라 클러스터 바깥에서는 직접 부를 수 없는 내부 전용 창구입니다. 바깥 요청을 이 둘로 갈라 보낼 공식 앱, 즉 Ingress 규칙이 필요했습니다.
+
+#### 규칙 문서 작성
+
+이제 남은 건 앞서 깨워 둔 컨트롤러에게 "어떤 도메인 어떤 경로를 어디로 보내라" 고 적어 둘 규칙지였습니다.
+
+**ex09/yaml/ingress-ex01.yml**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shop-ingress
+spec:
+  ingressClassName: nginx           # 어느 Controller가 이 규칙을 집행할지 지정
+  rules:
+    - http:
+        paths:
+          - path: /order            # 주문 경로 → order-service
+            pathType: Prefix
+            backend:
+              service:
+                name: order-service
+                port:
+                  number: 5678
+          - path: /stores           # 매장 경로 → stores-service
+            pathType: Prefix
+            backend:
+              service:
+                name: stores-service
+                port:
+                  number: 5678
+```
+
+> **참고: 도메인 기반 라우팅**
+>
+> 실제 운영 환경에서는 `rules` 아래에 `host: shop.example.com` 처럼 도메인을 적어 같은 클러스터 안에서도 도메인별로 다른 서비스를 받게 합니다. 이미 DNS가 그 도메인을 클러스터로 연결해 두기 때문에 hosts 파일을 수동으로 매핑할 필요가 없습니다. 이 실습에서는 경로 분기만 눈으로 확인하려고 `host` 를 생략해 모든 요청을 받게 했습니다.
+
+`kind: Ingress`. 오픈이가 적어 내려간 이 YAML이 아까 문서가 말하던 또 하나의 Ingress, 바로 **규칙 문서** 쪽이었습니다. `rules` 아래 두 개의 `path` 가 있고, 각 경로가 서로 다른 Service를 가리킵니다. 규칙을 문서로 선언해 두면, 앞서 깨워 둔 컨트롤러 Pod가 그 규칙을 읽고 실제 요청을 갈라 줍니다.
+
+```bash
+kubectl apply -f ex09/yaml/ingress-ex01.yml       # 규칙 등록
+kubectl get ingress                               # 등록된 Ingress 확인
+```
+
+[CAPTURE NEEDED: kubectl get ingress 결과 — shop-ingress]
+
+*Ingress 리소스 등록 확인 — shop-ingress*
+
+#### 브라우저로 접속
+
+Docker 드라이버로 Minikube를 띄운 환경에서는 클러스터가 컨테이너 안에 있어 호스트에서 직접 닿지 않습니다. 이 통로를 뚫어 주는 `minikube tunnel` 을 별도 터미널에서 띄워 두면, 호스트의 `localhost` 로 들어온 요청이 Ingress Controller까지 이어집니다.
+
+```bash
+minikube tunnel                         # 별도 터미널에서 실행
+```
+
+![](../assets/CH05/chap03-ingress-tunnel.png)
+
+*minikube tunnel 실행으로 외부 접근 경로 확보*
+
+준비가 끝났으니 브라우저를 열어 두 경로를 차례로 들어가 봤습니다. 먼저 `http://localhost/order`.
+
+[CAPTURE NEEDED: localhost/order 브라우저 화면]
+
+*`/order` 접속 결과 — "주문 접수 완료 — 치킨버거 1개"*
+
+이어서 `http://localhost/stores`.
+
+[CAPTURE NEEDED: localhost/stores 브라우저 화면]
+
+*`/stores` 접속 결과 — "매장 안내 — 강남점 · 홍대점 · 판교점"*
+
+같은 호스트에 붙였는데 뒤의 경로 한 글자에 따라 응답이 완전히 달라졌습니다. 공식 앱이 손님의 용건을 보고 알맞은 가맹점으로 연결해 준 셈입니다.
+
+호기심에 규칙에 없는 루트 경로 `http://localhost/` 도 들어가 봤습니다. 화면에 "404 Not Found" 가 선명히 떴습니다.
+
+[CAPTURE NEEDED: localhost/ 404 화면]
+
+*규칙에 없는 경로는 404. 공식 앱 메뉴에 없는 버튼은 눌러도 반응이 없음*
+
+규칙(YAML)에 적어 둔 경로만 연결되고, 그 외의 요청은 컨트롤러가 그대로 돌려보냅니다. 공식 앱 메뉴판에 없는 버튼을 눌렀을 때 화면이 먹통이 되는 것과 같은 이치입니다.
+
+#### 규칙만 바꿔 보기
+
+마지막으로 오픈이는 한 가지가 궁금해졌습니다. 규칙과 집행이 정말로 분리돼 있다면, Controller Pod를 건드리지 않고 YAML만 바꿔도 경로가 새로 이어져야 합니다. `ingress-ex01.yml` 에서 `/stores` 의 `backend.service.name` 을 `order-service` 로 고치고 다시 적용했습니다.
+
+```bash
+kubectl apply -f ex09/yaml/ingress-ex01.yml
+```
+
+브라우저로 돌아와 `http://localhost/stores` 를 새로고침하자, 방금까지 "매장 안내…" 가 뜨던 화면에 갑자기 "주문 접수 완료…" 가 나타났습니다. Controller Pod는 그대로인데 같은 URL이 전혀 다른 응답을 반환했습니다.
+
+[CAPTURE NEEDED: 규칙 변경 후 localhost/stores 새 응답 화면]
+
+*같은 `/stores` URL에 규칙만 바꿨더니 주문 응답이 돌아옴*
+
+*'몸체는 그대로 두고 규칙만 슥 바꿨는데 경로가 바로 재배선되네. 쿠버네티스는 선언과 집행을 끝까지 나누는구나.'*
+
+실습을 끝내고 보니 아까 문서가 오픈이를 멈칫하게 했던 이유가 분명해졌습니다. 인그레스라는 이름 아래에는 **규칙을 적는 쪽** 과 **그 규칙을 집행하는 쪽** 이 따로 서 있었고, 둘이 한 팀으로 움직여야 비로소 요청이 목적지를 찾아갑니다.
+
+> **참고: Ingress 리소스 vs Ingress Controller**
+> - **Ingress 리소스**: 클러스터 외부의 HTTP/HTTPS 요청을 내부 어느 Service로 보낼지 **라우팅 규칙을 YAML로 선언**하는 K8s 오브젝트입니다. 규칙만 담고 있을 뿐, 스스로 요청을 받지는 않습니다.
+> - **Ingress Controller**: 위의 Ingress 리소스(규칙)를 읽어 **실제로 외부 요청을 받아 처리하는 프로그램** 입니다.
+
+| 구성 요소 | 역할 | 비유 |
+|-----------|------|------|
+| **Ingress 리소스** | 어떤 도메인과 URL 경로의 요청을 어떤 Service로 보낼지 정의한 규칙 (YAML) | 공식 앱의 메뉴 구성표 |
+| **Ingress Controller** | 실제로 외부 요청을 받아 처리하는 소프트웨어 | 공식 앱을 구동하는 서버 |
+
+
+### 5.2.4 같은 요청, 다른 깊이 — L4와 L7
+
+경로 한 글자 차이로 응답이 갈리는 걸 보고 오픈이는 한 가지가 새삼 이상해졌습니다. 비슷한 기능을 하는 Service는 이미 있는데, 왜 인그레스를 따로 만들어 두었을까요. 컨트롤러까지 별도로 깨워야 한다면, Service 안에 경로 라우팅을 얹어 둘 수도 있었을 텐데요.
+
+답은 둘이 요청을 **보는 깊이** 가 다르다는 데 있었습니다.
+
+브라우저에서 `http://localhost/order` 를 입력하면 하나의 요청이 만들어집니다. 이 요청을 편지에 비유하면 이렇습니다. 겉봉투에는 **받는 사람 주소(IP)와 방 번호(Port)** 가 적혀 있고, 봉투 안 편지지에는 **"/order 페이지를 보여 주세요"** 라는 내용이 들어 있습니다.
 
 Service는 이 편지의 겉봉투만 봅니다. 목적지 IP와 Port가 일치하면 곧바로 Pod에 전달합니다. 봉투를 뜯지 않습니다. Service의 실체인 kube-proxy는 리눅스 커널의 iptables 규칙으로 동작하기 때문입니다. 커널이 패킷 헤더(겉봉투)만 보고 즉시 전달하는 구조라 속도는 빠르지만, HTTP 내용(편지지)을 해석하는 건 애초에 할 수 없는 일입니다.
 
-Ingress Controller는 다릅니다. 봉투를 뜯고 편지 내용을 읽습니다. "shop.example.com의 /order구나" — 이 내용을 보고 주문 Service로 보낼지, 매장 Service로 보낼지 판단합니다. Ingress Controller 안에서는 NGINX 같은 웹 서버가 돌아가며 HTTP 요청을 직접 해석하고 있습니다.
+Ingress Controller는 다릅니다. 봉투를 뜯고 편지 내용을 읽습니다. "/order 페이지구나" — 이 내용을 보고 주문 Service로 보낼지, 매장 Service로 보낼지 판단합니다. Ingress Controller 안에서는 NGINX 같은 웹 서버가 돌아가며 HTTP 요청을 직접 해석하고 있습니다. 아까 `ingress-nginx` Pod를 깨웠던 이유가 바로 이것이었습니다. 봉투를 뜯고 편지를 읽을 프로그램이 필요했던 겁니다.
 
 같은 요청을 두 시각으로 나란히 놓으면 차이가 선명해집니다.
 
 | | L4 — 봉투 겉면 (Service가 보는 것) | L7 — 편지 내용 (Ingress가 보는 것) |
 |---|---|---|
-| 데이터 | 출발지 `192.168.49.1:54321` → 목적지 `10.96.0.1:80` | `GET /order HTTP/1.1` / `Host: shop.example.com` |
+| 데이터 | 출발지 `127.0.0.1:54321` → 목적지 `10.96.0.1:80` | `GET /order HTTP/1.1` / `Host: localhost` |
 | 판단 | "80번 포트니까 이 Pod로" | "/order니까 주문 Service로" |
 | 비유 | 고속도로 분기점 — 표지판 번호만 보고 차를 밀어냄 | 건물 안내 데스크 — 방문 목적을 듣고 부서로 안내 |
 
@@ -247,99 +475,7 @@ Ingress Controller는 다릅니다. 봉투를 뜯고 편지 내용을 읽습니�
 >
 > L4(전송 계층)는 IP와 포트 번호까지만 봅니다. L7(애플리케이션 계층)은 HTTP의 URL 경로, Host 헤더처럼 사람이 읽는 수준의 내용까지 봅니다.
 
-*'서비스는 겉봉투만 보고 던지는 우체부고, 인그레스는 편지를 뜯어 읽고 부서를 정하는 비서구나. 봉투를 뜯으려면 별도의 프로그램이 필요하니까 따로 만든 거였어.'*
-
-### 5.2.4 Ingress 리소스와 Ingress Controller
-
-Minikube에서 인그레스를 사용하려고 보니 한 가지 독특한 점이 있었습니다. 인그레스는 이름이 같은 두 가지 요소가 한 팀으로 움직입니다. 바로 **Ingress 리소스** 와 **Ingress Controller** 입니다.
-
-> **참고: Ingress 리소스 vs Ingress Controller**
-> - **Ingress 리소스**: 클러스터 외부의 HTTP/HTTPS 요청을 내부 어느 Service로 보낼지 **라우팅 규칙을 YAML로 선언**하는 K8s 오브젝트입니다. 규칙만 담고 있을 뿐, 스스로 요청을 받지는 않습니다.
-> - **Ingress Controller**: 위의 Ingress 리소스(규칙)를 읽어 **실제로 외부 요청을 받아 처리하는 프로그램** 입니다.
-
-| 구성 요소 | 역할 | 비유 |
-|-----------|------|------|
-| **Ingress 리소스** | 어떤 **도메인과 URL 경로의** 요청을 어떤 Service로 보낼지 정의한 규칙 (YAML) | 공식 앱의 메뉴 구성표 |
-| **Ingress Controller** | 실제로 외부 요청을 받아 처리하는 소프트웨어 | 공식 앱을 구동하는 서버 |
-
-
-메뉴 구성표(리소스)만 올려 놓고 서버가 없으면 고객이 앱을 열어도 아무것도 뜨지 않습니다. 반대로 서버(컨트롤러)만 돌아가는데 메뉴가 없으면 고객이 접속해도 어떤 가맹점으로 연결할지 알 수 없습니다.
-
-쿠버네티스에서는 이 둘을 분리해 둡니다. 덕분에 YAML 파일(리소스)만 수정해서 앱 메뉴 구성만 슥 바꿔 주면 됩니다. 서버(컨트롤러)가 바뀐 메뉴를 읽고 알아서 고객 요청을 새로운 경로로 연결하기 시작합니다.
-
-*'문서(YAML)는 규칙일 뿐이고, 그걸 실행하는 몸체(Controller)가 따로 있는 구조구나. 역시 쿠버네티스는 선언과 집행을 철저히 나누네.'*
-
-#### Ingress Controller 깨우기
-
-한 가지 중요한 점이 있습니다. Ingress 리소스는 쿠버네티스 기본 오브젝트라 바로 쓸 수 있지만, **Ingress Controller는 별도로 설치하거나 활성화해 줘야** 공식 앱 서버가 가동됩니다. Minikube에는 기본 내장된 Ingress Controller가 있어 한 줄로 깨울 수 있습니다.
-
-```bash
-minikube addons enable ingress          # Ingress Controller 애드온 활성화
-```
-
-![](../assets/CH05/chap03-ingress-addon.png)
-
-*그림 5-14 minikube에서 ingress 애드온 활성화*
-
-활성화가 끝나면 `ingress-nginx` 네임스페이스에 컨트롤러 Pod가 올라옵니다.
-
-```bash
-kubectl get pods -n ingress-nginx       # 컨트롤러 Pod 확인
-```
-
-![](../assets/CH05/chap03-ingress-controller-running.png)
-
-*그림 5-15 Ingress Controller Pod가 Running 상태*
-
-앱 서버가 가동됐으니 이제 메뉴 구성표(Ingress 리소스)를 등록할 차례입니다. 다음 YAML은 `demo.local` 도메인의 `/`로 들어온 요청을 앞서 만든 `nginx-service`로 보내는 가장 단순한 규칙입니다.
-
-**yaml/ingress-ex01.yml**
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-spec:
-  ingressClassName: nginx         # 어느 Controller가 이 규칙을 집행할지 지정
-  rules:
-  - host: demo.local              # 도메인 기반 라우팅
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service   # 5.1.2에서 만든 Service
-            port:
-              number: 80
-```
-
-```bash
-kubectl apply -f ingress-ex01.yml       # 규칙 등록
-kubectl get ingress                     # 등록된 Ingress 확인
-```
-
-![](../assets/CH05/chap03-ingress-get.png)
-
-*그림 5-16 Ingress 리소스 등록 확인*
-
-Minikube는 노드가 하나라 외부 DNS가 없으므로, 실제 운영 환경의 DNS를 흉내 내기 위해 `/etc/hosts`(Windows는 `C:\Windows\System32\drivers\etc\hosts`)에 `demo.local`을 `minikube ip`로 매핑해 두고 `minikube tunnel`을 띄우면 브라우저에서 도메인으로 접속해 볼 수 있습니다.
-
-```bash
-minikube tunnel                         # 별도 터미널에서 실행
-```
-
-![](../assets/CH05/chap03-ingress-tunnel.png)
-
-*그림 5-17 minikube tunnel 실행으로 외부 접근 경로 확보*
-
-브라우저에서 `http://demo.local/`로 접속하면, 공식 앱이 메뉴를 보고 요청을 `nginx-service`까지 연결해 익숙한 NGINX 화면이 뜹니다.
-
-![](../assets/CH05/chap03-ingress-result.png)
-
-*그림 5-18 도메인으로 접속한 Ingress 경유 요청 결과*
-
-이제 더 이상 다섯 자리 포트를 외워 입력할 필요가 없어졌습니다. 도메인과 경로만으로 요청이 알아서 제자리를 찾아갑니다.
+*'서비스는 겉봉투만 보고 던지는 우체부, 인그레스는 편지를 뜯어 읽고 부서를 정하는 비서. 편지 내용을 읽으려면 NGINX 같은 프로그램이 필요하니까 애초에 Controller를 따로 깨웠던 거였어.'*
 
 
 ## 5.3 브라우저에서 Pod까지 — 전체 경로 조립
@@ -348,7 +484,7 @@ minikube tunnel                         # 별도 터미널에서 실행
 
 오픈이는 문득 궁금해졌습니다. "도대체 ClusterIP라는 주소는 실제 어느 장비에 붙어 있는 걸까?" 노드 IP도 아니고 Pod IP도 아닌 이 낯선 주소의 실체를 찾아 나섰습니다.
 
-놀랍게도 ClusterIP는 물리적인 어디에도 존재하지 않는 가상 주소였습니다. 랜카드에 할당된 주소가 아니니, 보통이라면 이 주소로 오는 요청은 받아줄 장비가 없어 허공에서 사라져야 합니다. 하지만 쿠버네티스에서는 **각 워커 노드의 커널**에 심어둔 **'가로채기 규칙'**이 이 가상 주소를 실제 Pod IP로 바꿔치기합니다. 클러스터의 모든 노드가 똑같은 규칙을 들고 있기 때문에, 요청이 어느 노드로 들어오든 목적지를 찾아갈 수 있습니다. Minikube는 노드가 하나뿐이라 그 노드가 규칙을 전부 들고 있는 셈입니다.
+놀랍게도 ClusterIP는 물리적인 어디에도 존재하지 않는 가상 주소입니다. 랜카드에 할당된 주소가 아니니, 보통이라면 이 주소로 오는 요청은 받아줄 장비가 없어 허공에서 사라져야 합니다. 하지만 쿠버네티스에서는 **각 워커 노드의 커널**에 심어둔 **'가로채기 규칙'**이 이 가상 주소를 실제 Pod IP로 바꿔치기합니다. 클러스터의 모든 노드가 똑같은 규칙을 들고 있기 때문에, 요청이 어느 노드로 들어오든 목적지를 찾아갈 수 있습니다. Minikube는 노드가 하나뿐이라 그 노드가 규칙을 전부 들고 있는 셈입니다.
 
 여기서 오픈이는 챕터 2에서 본 장면을 떠올렸습니다. Docker가 호스트 포트로 들어온 패킷을 컨테이너 포트로 목적지를 바꿔 전달하던 iptables DNAT 기술입니다. 쿠버네티스에서도 이 규칙을 모든 노드에 심고 관리하는 주체가 있는데, 그가 바로 kube-proxy입니다.
 
@@ -375,7 +511,7 @@ minikube tunnel                         # 별도 터미널에서 실행
 
 **1단계 — 클러스터 입구(NodePort)에 도착**
 
-브라우저에 `demo.local` 같은 도메인으로 요청을 보내면, 요청은 노드에 뚫린 **NodePort(외부 통로)**를 통해 클러스터 정문으로 진입합니다. 이때는 아직 '포트 번호'라는 숫자만 보고 들어오는 L4 단계입니다.
+브라우저에 `localhost` 같은 주소로 요청을 보내면, 요청은 노드에 뚫린 **NodePort(외부 통로)**를 통해 클러스터 정문으로 진입합니다. 이때는 아직 '포트 번호'라는 숫자만 보고 들어오는 L4 단계입니다.
 
 ![](../assets/CH05/k8s-flow-step1.png)
 
@@ -391,7 +527,7 @@ NodePort로 들어온 요청은 kube-proxy가 미리 심어둔 규칙에 따라 
 
 **3단계 — URL을 읽고 목적지 결정 (L7 라우팅)**
 
-인그레스 컨트롤러 Pod에 도착한 요청은 이제야 편지 봉투를 뜯습니다. Ingress Controller 소프트웨어가 HTTP 헤더의 **Host**와 **URL 경로**를 읽고, 등록된 Ingress 규칙과 하나씩 대조합니다. 매칭되는 규칙을 찾으면 "이 요청은 저 뒤쪽 `nginx-service`로 가야겠군"이라고 판단합니다. 숫자가 아니라 글자의 의미를 해석하는 L7 단계입니다.
+인그레스 컨트롤러 Pod에 도착한 요청은 이제야 편지 봉투를 뜯습니다. Ingress Controller 소프트웨어가 HTTP 헤더의 **Host**와 **URL 경로**를 읽고, 등록된 Ingress 규칙과 하나씩 대조합니다. 매칭되는 규칙을 찾으면 "이 요청은 저 뒤쪽 `order-service`로 가야겠군"이라고 판단합니다. 숫자가 아니라 글자의 의미를 해석하는 L7 단계입니다.
 
 ![](../assets/CH05/k8s-flow-step3.png)
 
@@ -399,7 +535,7 @@ NodePort로 들어온 요청은 kube-proxy가 미리 심어둔 규칙에 따라 
 
 **4단계 — 다시 내부 통로(ClusterIP)로 전달**
 
-목적지를 정했으니 다시 보내야 합니다. Ingress Controller는 매칭된 백엔드 Service 이름(예: `nginx-service:80`)으로 요청을 넘기고, 이 요청이 네트워크 계층에 닿는 순간 각 노드의 kube-proxy가 개입합니다. 가상 주소인 ClusterIP를 실제로 살아 있는 백엔드 Pod의 IP로 바꿔치기합니다. (다시 숫자를 보고 나르는 L4 단계)
+목적지를 정했으니 다시 보내야 합니다. Ingress Controller는 매칭된 백엔드 Service 이름(예: `order-service:5678`)으로 요청을 넘기고, 이 요청이 네트워크 계층에 닿는 순간 각 노드의 kube-proxy가 개입합니다. 가상 주소인 ClusterIP를 실제로 살아 있는 백엔드 Pod의 IP로 바꿔치기합니다. (다시 숫자를 보고 나르는 L4 단계)
 
 ![](../assets/CH05/k8s-flow-step4.png)
 
