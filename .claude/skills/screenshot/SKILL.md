@@ -19,7 +19,8 @@ description: 터미널 실행 결과와 브라우저 웹 UI를 PNG 스크린샷�
 - 파일명: `{NN}_{설명}.png` (예: `06_main-pipeline.png`)
 - 캡처 후 반드시 PNG 파일 존재와 크기(>5KB)를 검증한다
 - **터미널 출력** → `scripts/terminal_screenshot.py` 또는 `scripts/capture.py` 사용
-- **브라우저 웹 UI** → Playwright MCP 도구 사용
+- **브라우저 웹 UI** → Playwright MCP 도구 사용 (없으면 `scripts/html_to_png.py` 폴백)
+- **로컬 HTML 파일을 PNG로 렌더링(다이어그램 등)** → `scripts/html_to_png.py` 사용
 
 ## 참조 파일
 

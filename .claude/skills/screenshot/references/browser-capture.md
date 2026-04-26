@@ -5,6 +5,31 @@
 챕터에 웹 UI, Swagger, 채팅 화면 등 **브라우저에서 동작하는 화면**을 캡처해야 할 때 사용한다.
 터미널 출력 캡처는 `terminal-capture.md`를 참조한다.
 
+## 로컬 HTML → PNG (다이어그램)
+
+`assets/CH{N}/*.html` 같은 로컬 다이어그램(서버 없이 정적 HTML)을 PNG로 변환할 때는
+**Playwright MCP 대신 `scripts/html_to_png.py` 스크립트를 사용한다.** Playwright Python 패키지를 직접 호출하므로 MCP 미설치 환경에서도 동작한다.
+
+```bash
+python .claude/skills/screenshot/scripts/html_to_png.py \
+  <html_path> <png_path> \
+  --selector ".diagram" \   # CSS 셀렉터(생략 시 전체 페이지)
+  --width 1200              # 뷰포트 너비(기본 1200, device_scale_factor=2로 고해상도 출력)
+```
+
+예: `endpoint-controller-update.html` → `pod-tracker-update.png` 재렌더링.
+
+```bash
+python .claude/skills/screenshot/scripts/html_to_png.py \
+  "projects/{책}/assets/CH05/pod-tracker-update.html" \
+  "projects/{책}/assets/CH05/pod-tracker-update.png" \
+  --selector ".diagram"
+```
+
+검증: 5KB 이상이면 정상. Read 도구로 PNG를 열어 텍스트가 의도대로 나왔는지 눈으로 확인한다.
+
+서버를 띄우는 라이브 웹 UI(채팅, Swagger 등)에는 아래 Playwright MCP 워크플로우를 그대로 사용한다.
+
 ## 필수 MCP 도구
 
 | 도구 | 용도 |

@@ -69,18 +69,6 @@ curl -i http://localhost/
 # 404 Not Found  (규칙에 없는 경로는 보내지 않음)
 ```
 
-### 6. 규칙 교체 실험 (선택)
-
-`ingress-ex01.yml`의 `/stores` 아래 `backend.service.name`을 `order-service`로 바꾸고 다시 적용해 봅니다.
-
-```bash
-kubectl apply -f yaml/ingress-ex01.yml
-curl http://localhost/stores
-# 주문 접수 완료 — 치킨버거 1개
-```
-
-Controller Pod는 그대로인데 규칙(YAML)만 바꿨더니 같은 URL이 다른 응답을 반환합니다. **선언(Ingress 리소스)**과 **집행(Ingress Controller)**이 분리된 구조를 손으로 확인할 수 있습니다.
-
 ## 도메인 기반 라우팅
 
 실제 운영 환경에서는 `rules` 아래에 `host: shop.example.com` 처럼 도메인을 적어 같은 클러스터 안에서도 도메인별로 다른 서비스를 받게 합니다. 실제 DNS가 이미 그 도메인을 클러스터로 연결해 두기 때문에 hosts 파일을 수동으로 매핑할 필요가 없습니다.

@@ -164,10 +164,10 @@
 
       <!-- EC 관찰 루프: kube-proxy → EC (Endpoints 참조), EC → Pods (Pod 감시) -->
       <svg style="position:absolute; left:0; top:0; width:100%; height:100%; pointer-events:none; z-index:1;">
-        <!-- Node1 kube-proxy → EC 화살표 (Endpoints 참조) -->
+        <!-- Node1 kube-proxy → EC 화살표 (Pod IP 목록 참조) -->
         <path d="M 274 290 Q 200 282 116 276" stroke="#5a6bd8" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>
         <polygon points="120,271 110,276 120,281" fill="#5a6bd8"/>
-        <text x="150" y="272" font-size="10" fill="#5a6bd8" font-weight="700">Endpoints 참조</text>
+        <text x="140" y="272" font-size="10" fill="#5a6bd8" font-weight="700">Pod IP 목록 참조</text>
 
         <!-- EC → Pods 화살표 (Pod 감시) -->
         <path d="M 67 298 Q 70 360 260 385" stroke="#5a6bd8" stroke-width="1.5" fill="none" stroke-dasharray="5,3"/>

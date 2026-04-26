@@ -55,6 +55,10 @@
   .endpoint-controller { position: absolute; left: 22px; top: 260px; border: 2px solid #888; border-radius: 6px; padding: 10px 12px; background: #fff; text-align: center; opacity: 0.45; width: 90px; z-index: 3; }
   .endpoint-controller .ec-title { font-size: 11px; font-weight: 700; color: #777; line-height: 1.25; }
 
+  .dns-box { position: absolute; right: 18px; top: 48px; border: 2px solid #c62828; border-radius: 6px; padding: 8px 10px; background: #fff3e0; text-align: center; width: 96px; z-index: 3; }
+  .dns-box .dns-title { font-size: 11px; font-weight: 800; color: #c62828; line-height: 1.25; }
+  .dns-box .dns-sub { font-size: 9px; font-weight: 700; color: #c62828; margin-top: 4px; line-height: 1.25; }
+
   .connector-muted { display: block; margin: -1px auto; max-width: 420px; width: 100%; opacity: 0.4; }
   .connector-past { display: block; margin: -1px auto; max-width: 420px; width: 100%; }
   .connector-active { display: block; margin: -1px auto; max-width: 420px; width: 100%; }
@@ -160,7 +164,23 @@
 
       <div class="deployment-zone"><div class="deployment">Deployment</div></div>
 
-      <div class="endpoint-controller"><div class="ec-title">Endpoint<br>Controller</div></div>
+      <div class="dns-box">
+        <div class="dns-title">클러스터<br>DNS</div>
+        <div class="dns-sub">이름 → ClusterIP</div>
+      </div>
+
+      <!-- IC Pod ↔ DNS 점선 화살표 (질의 / 응답) -->
+      <svg width="780" height="200" style="position:absolute; left:0; top:0; pointer-events:none; z-index:4;">
+        <!-- 질의: IC → DNS (빨강) -->
+        <line x1="490" y1="72" x2="660" y2="72" stroke="#c62828" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="655,68 666,72 655,76" fill="#c62828"/>
+        <text x="510" y="64" font-size="10.5" fill="#c62828" font-weight="700" font-style="italic">"order-service?"</text>
+
+        <!-- 응답: DNS → IC (초록) -->
+        <line x1="660" y1="94" x2="495" y2="94" stroke="#2e7d32" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <polygon points="500,90 489,94 500,98" fill="#2e7d32"/>
+        <text x="510" y="108" font-size="10.5" fill="#2e7d32" font-weight="700" font-style="italic">"10.96.0.20"</text>
+      </svg>
     </div>
   </div>
 </div>
