@@ -521,7 +521,8 @@ ex04/
 ```java [실습 1] 배달 서비스 - usecase/DeliveryService.java. 생성 시 완료 호출 제거
 @Transactional
 public DeliveryResponse createDelivery(int orderId, String address) {
-    Delivery createdDelivery = deliveryRepository.save(Delivery.create(orderId, address));
+    Delivery createdDelivery = deliveryRepository.save(
+            Delivery.create(orderId, address));
     Delivery.validateAddress(address);
     // 삭제: createdDelivery.complete();  ← 생성 시 완료 호출 제거
     return DeliveryResponse.from(createdDelivery);
@@ -590,7 +591,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // 클라이언트가 웹소켓 연결을 시작할 주소입니다. 어떤 출처에서든 연결을 허용합니다
-        registry.addEndpoint("/api/ws/orders").setAllowedOriginPatterns("*").withSockJS();
+        registry.addEndpoint("/api/ws/orders")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 }
 ```

@@ -800,13 +800,15 @@ public class OrderEventProducer {
 public OrderResponse createOrder(int userId, int productId,
         int quantity, Long price, String address) {
     // 1. 주문 생성
-    Order createdOrder = orderRepository.save(Order.create(userId, productId, quantity, price));
+    Order createdOrder = orderRepository.save(
+            Order.create(userId, productId, quantity, price));
     createdOrder.validateMinAmount();
 
     // 2. Kafka로 주문 생성 이벤트 발행
     orderEventProducer.publishOrderCreated(
             new OrderCreatedEvent(
-                    createdOrder.getId(), userId, productId, quantity, price, address)
+                    createdOrder.getId(), userId, productId,
+                    quantity, price, address)
     );
 
     return OrderResponse.from(createdOrder);
@@ -851,7 +853,8 @@ public void decreaseProductCommand(DecreaseProductCommand command) {
     boolean isSuccess = false;
     // 1. 재고 차감 (성공하면 isSuccess = true)
     try {
-        productService.decreaseQuantity(command.productId(), command.quantity(), command.price());
+        productService.decreaseQuantity(
+                command.productId(), command.quantity(), command.price());
         isSuccess = true;
     } catch (Exception e) {
         // 재고 부족 등 실패는 isSuccess = false로 그대로 보고
@@ -860,7 +863,8 @@ public void decreaseProductCommand(DecreaseProductCommand command) {
     // 2. 처리 결과를 '재고 차감 이벤트'로 발행
     productEventProducer.publishProductDecreased(
             new ProductDecreasedEvent(
-                    command.orderId(), command.productId(), command.quantity(), isSuccess));
+                    command.orderId(), command.productId(),
+                    command.quantity(), isSuccess));
 }
 ```
 

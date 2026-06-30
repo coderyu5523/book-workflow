@@ -467,7 +467,8 @@
 <p><code>usecase/DeliveryService.java</code>의 <code>createDelivery</code>를 아래처럼 고칩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> 배달 서비스 - usecase/DeliveryService.java. 생성 시 완료 호출 제거</div><span class="nd">@Transactional</span>
 <span class="kd">public</span><span class="w"> </span><span class="n">DeliveryResponse</span><span class="w"> </span><span class="nf">createDelivery</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">orderId</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">address</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">Delivery</span><span class="w"> </span><span class="n">createdDelivery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deliveryRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">Delivery</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">orderId</span><span class="p">,</span><span class="w"> </span><span class="n">address</span><span class="p">));</span>
+<span class="w">    </span><span class="n">Delivery</span><span class="w"> </span><span class="n">createdDelivery</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">deliveryRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span>
+<span class="w">            </span><span class="n">Delivery</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">orderId</span><span class="p">,</span><span class="w"> </span><span class="n">address</span><span class="p">));</span>
 <span class="w">    </span><span class="n">Delivery</span><span class="p">.</span><span class="na">validateAddress</span><span class="p">(</span><span class="n">address</span><span class="p">);</span>
 <span class="w">    </span><span class="c1">// 삭제: createdDelivery.complete();  ← 생성 시 완료 호출 제거</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">DeliveryResponse</span><span class="p">.</span><span class="na">from</span><span class="p">(</span><span class="n">createdDelivery</span><span class="p">);</span>
@@ -516,7 +517,9 @@
 <span class="w">    </span><span class="nd">@Override</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">registerStompEndpoints</span><span class="p">(</span><span class="n">StompEndpointRegistry</span><span class="w"> </span><span class="n">registry</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 클라이언트가 웹소켓 연결을 시작할 주소입니다. 어떤 출처에서든 연결을 허용합니다</span>
-<span class="w">        </span><span class="n">registry</span><span class="p">.</span><span class="na">addEndpoint</span><span class="p">(</span><span class="s">&quot;/api/ws/orders&quot;</span><span class="p">).</span><span class="na">setAllowedOriginPatterns</span><span class="p">(</span><span class="s">&quot;*&quot;</span><span class="p">).</span><span class="na">withSockJS</span><span class="p">();</span>
+<span class="w">        </span><span class="n">registry</span><span class="p">.</span><span class="na">addEndpoint</span><span class="p">(</span><span class="s">&quot;/api/ws/orders&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">setAllowedOriginPatterns</span><span class="p">(</span><span class="s">&quot;*&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">withSockJS</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <div class="prep-note">

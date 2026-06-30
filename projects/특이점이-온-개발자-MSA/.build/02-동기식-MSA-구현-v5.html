@@ -531,7 +531,8 @@ Dockerfile                                # [참고] Docker 이미지 빌드</di
 
 <span class="w">    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 주문 생성</span>
-<span class="w">        </span><span class="n">createdOrder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">orderRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">Order</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">userId</span><span class="p">,</span><span class="w"> </span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
+<span class="w">        </span><span class="n">createdOrder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">orderRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span>
+<span class="w">                </span><span class="n">Order</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">userId</span><span class="p">,</span><span class="w"> </span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
 
 <span class="w">        </span><span class="c1">// 최소 주문 금액 검증</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">quantity</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">price</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1000</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -539,11 +540,13 @@ Dockerfile                                # [참고] Docker 이미지 빌드</di
 <span class="w">        </span><span class="p">}</span>
 
 <span class="w">        </span><span class="c1">// 2. 상품 재고 차감</span>
-<span class="w">        </span><span class="n">productClient</span><span class="p">.</span><span class="na">decreaseQuantity</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ProductRequest</span><span class="p">(</span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
+<span class="w">        </span><span class="n">productClient</span><span class="p">.</span><span class="na">decreaseQuantity</span><span class="p">(</span>
+<span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="n">ProductRequest</span><span class="p">(</span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
 <span class="w">        </span><span class="n">productDecreased</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
 
 <span class="w">        </span><span class="c1">// 3. 배달 생성</span>
-<span class="w">        </span><span class="n">deliveryClient</span><span class="p">.</span><span class="na">createDelivery</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">DeliveryRequest</span><span class="p">(</span><span class="n">createdOrder</span><span class="p">.</span><span class="na">getId</span><span class="p">(),</span><span class="w"> </span><span class="n">address</span><span class="p">));</span>
+<span class="w">        </span><span class="n">deliveryClient</span><span class="p">.</span><span class="na">createDelivery</span><span class="p">(</span>
+<span class="w">                </span><span class="k">new</span><span class="w"> </span><span class="n">DeliveryRequest</span><span class="p">(</span><span class="n">createdOrder</span><span class="p">.</span><span class="na">getId</span><span class="p">(),</span><span class="w"> </span><span class="n">address</span><span class="p">));</span>
 <span class="w">        </span><span class="n">deliveryCreated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
 
 <span class="w">        </span><span class="c1">// 4. 주문 완료</span>
@@ -558,7 +561,8 @@ Dockerfile                                # [참고] Docker 이미지 빌드</di
 
 <span class="w">        </span><span class="c1">// 재고 복구</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">productDecreased</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="n">productClient</span><span class="p">.</span><span class="na">increaseQuantity</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">ProductRequest</span><span class="p">(</span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
+<span class="w">            </span><span class="n">productClient</span><span class="p">.</span><span class="na">increaseQuantity</span><span class="p">(</span>
+<span class="w">                    </span><span class="k">new</span><span class="w"> </span><span class="n">ProductRequest</span><span class="p">(</span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">price</span><span class="p">));</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">        </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception500</span><span class="p">(</span><span class="s">&quot;주문 생성 중 오류가 발생했습니다: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="na">getMessage</span><span class="p">());</span>
 <span class="w">    </span><span class="p">}</span>

@@ -331,7 +331,8 @@ src/main/resources/
 ```java [실습 1] 주문 서비스 - usecase/CreateOrderUseCase.java. 주문 생성 인터페이스
 // 주문을 생성한다 - 행위 하나를 인터페이스로 약속
 public interface CreateOrderUseCase {
-    OrderResponse createOrder(int userId, int productId, int quantity, Long price, String address);
+    OrderResponse createOrder(int userId, int productId,
+            int quantity, Long price, String address);
 }
 ```
 
@@ -366,8 +367,9 @@ OrderService는 주문 생성, 주문 조회, 주문 취소 인터페이스를 �
 @RequiredArgsConstructor
 @Service
 @Transactional(readOnly = true)
-public class OrderService implements CreateOrderUseCase, GetOrderUseCase, CancelOrderUseCase {
-                                     // 1. UseCase 인터페이스를 구현
+public class OrderService
+        implements CreateOrderUseCase, GetOrderUseCase, CancelOrderUseCase {
+    // 1. UseCase 인터페이스를 구현
 
     @Override
     @Transactional

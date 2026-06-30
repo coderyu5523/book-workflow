@@ -320,7 +320,8 @@ public OrderResponse createOrder(int userId, int productId,
 
     try {
         // 1. 주문 생성
-        createdOrder = orderRepository.save(Order.create(userId, productId, quantity, price));
+        createdOrder = orderRepository.save(
+                Order.create(userId, productId, quantity, price));
 
         // 최소 주문 금액 검증
         if (quantity * price < 1000) {
@@ -328,11 +329,13 @@ public OrderResponse createOrder(int userId, int productId,
         }
 
         // 2. 상품 재고 차감
-        productClient.decreaseQuantity(new ProductRequest(productId, quantity, price));
+        productClient.decreaseQuantity(
+                new ProductRequest(productId, quantity, price));
         productDecreased = true;
 
         // 3. 배달 생성
-        deliveryClient.createDelivery(new DeliveryRequest(createdOrder.getId(), address));
+        deliveryClient.createDelivery(
+                new DeliveryRequest(createdOrder.getId(), address));
         deliveryCreated = true;
 
         // 4. 주문 완료
@@ -347,7 +350,8 @@ public OrderResponse createOrder(int userId, int productId,
 
         // 재고 복구
         if (productDecreased) {
-            productClient.increaseQuantity(new ProductRequest(productId, quantity, price));
+            productClient.increaseQuantity(
+                    new ProductRequest(productId, quantity, price));
         }
         throw new Exception500("주문 생성 중 오류가 발생했습니다: " + e.getMessage());
     }

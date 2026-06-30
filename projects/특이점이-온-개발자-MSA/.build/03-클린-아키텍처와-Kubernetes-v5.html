@@ -313,7 +313,8 @@ src/main/resources/
 <p>주문 서비스의 <code>usecase/CreateOrderUseCase.java</code>를 열고 주문 생성 인터페이스를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> 주문 서비스 - usecase/CreateOrderUseCase.java. 주문 생성 인터페이스</div><span class="c1">// 주문을 생성한다 - 행위 하나를 인터페이스로 약속</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">CreateOrderUseCase</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">OrderResponse</span><span class="w"> </span><span class="nf">createOrder</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">userId</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">productId</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">Long</span><span class="w"> </span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">address</span><span class="p">);</span>
+<span class="w">    </span><span class="n">OrderResponse</span><span class="w"> </span><span class="nf">createOrder</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">userId</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">productId</span><span class="p">,</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">quantity</span><span class="p">,</span><span class="w"> </span><span class="n">Long</span><span class="w"> </span><span class="n">price</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">address</span><span class="p">);</span>
 <span class="p">}</span></div>
 <p>조회는 <code>GetOrderUseCase</code>, 취소는 <code>CancelOrderUseCase</code>로 같은 방식으로 정의합니다.</p>
 <h3>3.4.2 엔티티의 비즈니스 로직 — DDD의 핵심</h3>
@@ -335,8 +336,9 @@ src/main/resources/
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> 주문 서비스 - usecase/OrderService.java. UseCase 인터페이스 구현</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
 <span class="nd">@Transactional</span><span class="p">(</span><span class="n">readOnly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span><span class="p">)</span>
-<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">OrderService</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">CreateOrderUseCase</span><span class="p">,</span><span class="w"> </span><span class="n">GetOrderUseCase</span><span class="p">,</span><span class="w"> </span><span class="n">CancelOrderUseCase</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                                     </span><span class="c1">// 1. UseCase 인터페이스를 구현</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">OrderService</span>
+<span class="w">        </span><span class="kd">implements</span><span class="w"> </span><span class="n">CreateOrderUseCase</span><span class="p">,</span><span class="w"> </span><span class="n">GetOrderUseCase</span><span class="p">,</span><span class="w"> </span><span class="n">CancelOrderUseCase</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// 1. UseCase 인터페이스를 구현</span>
 
 <span class="w">    </span><span class="nd">@Override</span>
 <span class="w">    </span><span class="nd">@Transactional</span>
