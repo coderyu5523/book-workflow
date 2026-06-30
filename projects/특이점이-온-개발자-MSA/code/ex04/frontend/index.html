@@ -53,8 +53,8 @@
         stomp = Stomp.over(new SockJS('/api/ws/orders?token=' + TOKEN));
         stomp.connect({}, function () {
           stomp.subscribe('/topic/orders/' + userId, function (msg) {
-            const data = JSON.parse(msg.body);
-            status.textContent = '주문 완료! (주문번호: ' + data.orderId + ')';
+            const orderId = JSON.parse(msg.body);
+            status.textContent = '주문 완료! (주문번호: ' + orderId + ')';
           });
         });
         await new Promise(function (r) { setTimeout(r, 500); });

@@ -473,7 +473,7 @@ ex04/
 채널 주소에는 **알림을 받을 사용자**에 대한 정보가 들어 있습니다. 그래서 주문이 완료되면, 주문 서비스는 완료된 주문이 누구의 것인지부터 확인합니다. 그리고 주문한 사용자의 채널 주소를 구독 명부에서 찾아 알림을 보냅니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 900 184" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3단계 발송과 전달. 주문 서비스 안의 completeOrder가 발송 주소 topic/orders/3으로 같은 서비스 안의 구독 명부를 찾는다. 명부의 세션 A가 topic/orders/3을 구독하고 있으므로 주문 완료 알림으로 orderId 4를 보내고, 이 메시지는 1단계 연결을 타고 gateway와 frontend를 그대로 통과해 브라우저에 닿는다.">
+<svg viewBox="0 0 900 184" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="3단계 발송과 전달. 주문 서비스 안의 completeOrder가 발송 주소 topic/orders/3으로 같은 서비스 안의 구독 명부를 찾는다. 명부의 세션 A가 topic/orders/3을 구독하고 있으므로 주문 완료 알림으로 주문번호를 보내고, 이 메시지는 1단계 연결을 타고 gateway와 frontend를 그대로 통과해 브라우저에 닿는다.">
   <defs>
     <marker id="rq3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="rs3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#0d9488"/></marker>
@@ -495,7 +495,7 @@ ex04/
   <text x="572" y="122" text-anchor="middle" font-size="10" fill="#94a3b8">gateway</text>
   <text x="572" y="138" text-anchor="middle" font-size="10" fill="#94a3b8">frontend</text>
   <line x1="604" y1="127" x2="712" y2="127" stroke="#0d9488" stroke-width="3" marker-end="url(#rs3)"/>
-  <text x="658" y="146" text-anchor="middle" font-size="10.5" class="mono" fill="#475569">{ orderId: 4 }</text>
+  <text x="658" y="146" text-anchor="middle" font-size="10.5" fill="#475569">주문번호</text>
   <rect x="716" y="99" width="158" height="56" rx="8" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.8"/>
   <text x="795" y="123" text-anchor="middle" font-size="14.5" font-weight="700" fill="#6d28d9">브라우저</text>
   <text x="795" y="142" text-anchor="middle" font-size="10" fill="#64748b">화면에 '주문 완료!' 표시</text>
@@ -617,9 +617,7 @@ public void completeOrder(int orderId) {
             .orElseThrow(() -> new Exception404("주문을 찾을 수 없습니다."));
     findOrder.complete();
     // 추가: 이 채널을 구독한 클라이언트에게 메시지를 보냄
-    messagingTemplate.convertAndSend(
-            "/topic/orders/" + findOrder.getUserId(),
-            Map.of("orderId", orderId));
+    messagingTemplate.convertAndSend("/topic/orders/" + findOrder.getUserId(), orderId);
 }
 ```
 
@@ -657,8 +655,8 @@ stomp.connect({}, function () {
     // 2. 내 주문 알림 채널 구독
     stomp.subscribe('/topic/orders/' + userId, function (msg) {
         // 3. 서버가 보낸 메시지를 화면에 표시
-        const data = JSON.parse(msg.body);
-        status.textContent = '주문 완료! (주문번호: ' + data.orderId + ')';
+        const orderId = JSON.parse(msg.body);
+        status.textContent = '주문 완료! (주문번호: ' + orderId + ')';
     });
 });
 ```

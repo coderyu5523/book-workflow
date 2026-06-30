@@ -43,7 +43,7 @@ public class OrderService implements CreateOrderUseCase, GetOrderUseCase {
                 .orElseThrow(() -> new Exception404("주문을 찾을 수 없습니다."));
         findOrder.complete();
         // 웹소켓 응답
-        messagingTemplate.convertAndSend("/topic/orders/" + findOrder.getUserId(), Map.of("orderId", orderId));
+        messagingTemplate.convertAndSend("/topic/orders/" + findOrder.getUserId(), orderId);
     }
 
     @Override
