@@ -1164,7 +1164,7 @@ kubectl describe deployment nginx-replica  # Deployment 상세 정보 조회
 
 ### 4.4.5 Rollback - 되돌리기
 
-배포한 새 버전에서 뒤늦게 문제가 발견될 때가 있습니다. 그럴 때는 `kubectl rollout` 명령어로 이전 버전으로 되돌립니다.
+배포한 새 버전에서 뒤늦게 문제가 발견될 때가 있습니다. 그럴 때는 `kubectl rollout undo` 명령어로 이전 버전으로 되돌립니다.
 
 ```bash [터미널] 롤백
 kubectl rollout undo deployment/nginx-replica      # 이전 버전으로 롤백

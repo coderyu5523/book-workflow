@@ -856,7 +856,7 @@ kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </sp
 </tbody>
 </table>
 <h3>6.3.4 공통 준비</h3>
-<p>코드를 살펴봤으니 배포할 차례입니다. 본격적으로 배포하기 전에 Minikube와 Ingress 컨트롤러를 켜고, 네 가지 이미지를 빌드합니다.</p>
+<p>코드를 살펴봤으니 배포할 차례입니다. 실습을 시작하기 전에 Minikube와 Ingress 컨트롤러가 켜져 있지 않다면 아래 명령어를 실행합니다. 그런 다음 서비스별 이미지를 빌드합니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> Minikube와 Ingress 컨트롤러 시작</div>minikube<span class="w"> </span>start
 minikube<span class="w"> </span>addons<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>ingress</div>
 <div class="terminal-log">
@@ -896,9 +896,6 @@ kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> <
 <div class="chapter-image terminal"><img src="..\assets\CH06\terminal\01_ingress-website.png" alt="" /><div class="caption">그림 6-17. Ingress를 거쳐 웹사이트가 화면에 응답</div></div>
 <p>화면에는 데이터베이스에서 불러온 정보와 함께 방문 횟수가 표시됩니다. 새로고침을 할 때마다 숫자가 하나씩 올라가는데, 방문 횟수가 <strong>Redis에 저장되어 공유</strong>되기 때문에 <strong>백엔드 Pod가 두 개여도 카운터가 함께 증가</strong>합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH06\terminal\02_visit-count-increment.png" alt="" /><div class="caption">그림 6-18. 새로고침 시 방문 횟수가 증가</div></div>
-<p>백엔드 두 Pod에 요청이 실제로 분산되는지는 로그로도 확인할 수 있습니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> backend Pod 로그로 분산 확인</div><span class="c1"># backend Pod 최근 100줄 (Pod명 앞에 붙임)</span>
-kubectl<span class="w"> </span>logs<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>backend<span class="w"> </span>-n<span class="w"> </span>metacoding<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span><span class="w"> </span>--prefix</div>
 <p>오픈이는 화면을 새로고침했습니다. 방문 횟수가 오르고, 사이트는 문제없이 응답합니다. 여러 서비스가 하나의 클러스터 안에서 각자 제 역할을 하며 돌아갑니다.</p>
 <p>개발과 운영 환경의 차이를 극복하기 위해 시작된 여정은 자동화된 시스템 운영으로 완성됩니다. 코드를 환경째 컨테이너에 담아 어디서든 동일하게 실행할 수 있게 되면서, 인프라를 다루는 방식 자체가 바뀝니다. 장애가 난 컨테이너를 재시작하고, 부하에 맞춰 그 수를 늘리고, 중단 없이 배포하는 일까지 이제 온전히 클러스터의 몫이 됩니다.</p>
 <div class="remember">

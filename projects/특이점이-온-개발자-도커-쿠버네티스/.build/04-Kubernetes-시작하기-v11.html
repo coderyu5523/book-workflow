@@ -1008,7 +1008,7 @@ kubectl<span class="w"> </span><span class="nb">set</span><span class="w"> </spa
 <p>업데이트가 끝난 뒤 Deployment의 상세 정보를 확인하면 이미지가 <code>nginx:1.21</code> 버전으로 변경된 것을 볼 수 있습니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> Deployment 상세 정보 조회</div>kubectl<span class="w"> </span>describe<span class="w"> </span>deployment<span class="w"> </span>nginx-replica<span class="w">  </span><span class="c1"># Deployment 상세 정보 조회</span></div>
 <h3>4.4.5 Rollback - 되돌리기</h3>
-<p>배포한 새 버전에서 뒤늦게 문제가 발견될 때가 있습니다. 그럴 때는 <code>kubectl rollout</code> 명령어로 이전 버전으로 되돌립니다.</p>
+<p>배포한 새 버전에서 뒤늦게 문제가 발견될 때가 있습니다. 그럴 때는 <code>kubectl rollout undo</code> 명령어로 이전 버전으로 되돌립니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 롤백</div>kubectl<span class="w"> </span>rollout<span class="w"> </span>undo<span class="w"> </span>deployment/nginx-replica<span class="w">      </span><span class="c1"># 이전 버전으로 롤백</span></div>
 <div class="terminal-log">
   <div class="tl-chrome">

@@ -986,7 +986,7 @@ redis 폴더는 백엔드가 방문 횟수를 기록하기 위해 호출하는 �
 
 ### 6.3.4 공통 준비
 
-코드를 살펴봤으니 배포할 차례입니다. 본격적으로 배포하기 전에 Minikube와 Ingress 컨트롤러를 켜고, 네 가지 이미지를 빌드합니다.
+코드를 살펴봤으니 배포할 차례입니다. 실습을 시작하기 전에 Minikube와 Ingress 컨트롤러가 켜져 있지 않다면 아래 명령어를 실행합니다. 그런 다음 서비스별 이미지를 빌드합니다.
 
 ```bash [터미널] Minikube와 Ingress 컨트롤러 시작
 minikube start
@@ -1058,13 +1058,6 @@ minikube tunnel                       # 새 터미널에서 실행 (관리자 �
 ![](../assets/CH06/terminal/02_visit-count-increment.png)
 
 *그림 6-18. 새로고침 시 방문 횟수가 증가*
-
-백엔드 두 Pod에 요청이 실제로 분산되는지는 로그로도 확인할 수 있습니다.
-
-```bash [터미널] backend Pod 로그로 분산 확인
-# backend Pod 최근 100줄 (Pod명 앞에 붙임)
-kubectl logs -l app=backend -n metacoding --tail=100 --prefix
-```
 
 오픈이는 화면을 새로고침했습니다. 방문 횟수가 오르고, 사이트는 문제없이 응답합니다. 여러 서비스가 하나의 클러스터 안에서 각자 제 역할을 하며 돌아갑니다.
 
