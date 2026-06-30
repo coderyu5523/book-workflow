@@ -73,42 +73,41 @@ cd start/ex01
 
 ```text ex01 디렉토리
 ex01/
-├── user/               # 포트 8083
-├── product/            # 포트 8082
-├── order/              # 포트 8081
 ├── delivery/           # 포트 8084
-└── docker-compose.yml  # 전체 서비스 실행
+├── docker-compose.yml  # 전체 서비스 실행
+├── order/              # 포트 8081
+├── product/            # 포트 8082
+└── user/               # 포트 8083
 ```
 
 각 서비스 내부는 동일한 구조입니다. 주문 서비스 기준으로 보여드리며, 회원/상품/배달 서비스도 같은 구조입니다.
 
 ```text 주문 서비스 패키지 구조
 src/main/java/com/metacoding/order/
-├── OrderApplication.java                 # [참고]
+├── adapter/                              # 주문 서비스에만 존재
+│   ├── DeliveryClient.java               # [참고] 배달 서비스 호출
+│   ├── dto/                              # 어댑터용 DTO
+│   └── ProductClient.java                # [참고] 상품 서비스 호출
 ├── core/
 │   ├── config/
-│   │   ├── WebConfig.java                # [참고] JWT 필터 등록
-│   │   └── RestClientConfig.java         # [참고] JWT 헤더 전달 인터셉터
+│   │   ├── RestClientConfig.java         # [참고] JWT 헤더 전달 인터셉터
+│   │   └── WebConfig.java                # [참고] JWT 필터 등록
 │   ├── filter/
 │   │   └── JwtAuthenticationFilter.java  # [참고] JWT 인가 필터
 │   ├── handler/
-│   │   ├── GlobalExceptionHandler.java   # [참고] 전역 예외 처리
-│   │   └── ex/                           # 커스텀 예외 (Exception400~500)
+│   │   ├── ex/                           # 커스텀 예외 (Exception400~500)
+│   │   └── GlobalExceptionHandler.java   # [참고] 전역 예외 처리
 │   └── util/
 │       ├── JwtProvider.java              # [참고] JWT 파싱/검증
 │       ├── JwtUtil.java                  # [참고] JWT 생성
 │       └── Resp.java                     # [참고] 표준 응답 래퍼
-├── orders/
-│   ├── Order.java                        # [참고] JPA 엔티티
-│   ├── OrderStatus.java                  # [참고] 주문 상태 enum
-│   ├── OrderController.java              # [참고] REST 컨트롤러
-│   ├── OrderService.java                 # [작성] 비즈니스 로직
-│   ├── OrderRepository.java              # [참고] Spring Data JPA
-│   └── OrderRequest.java / OrderResponse.java  # [참고]
-└── adapter/                              # 주문 서비스에만 존재
-    ├── ProductClient.java                # [참고] 상품 서비스 호출
-    ├── DeliveryClient.java               # [참고] 배달 서비스 호출
-    └── dto/                              # 어댑터용 DTO
+└── orders/
+    ├── Order.java                        # [참고] JPA 엔티티
+    ├── OrderController.java              # [참고] REST 컨트롤러
+    ├── OrderRepository.java              # [참고] Spring Data JPA
+    ├── OrderRequest.java / OrderResponse.java  # [참고]
+    ├── OrderService.java                 # [작성] 비즈니스 로직
+    └── OrderStatus.java                  # [참고] 주문 상태 enum
 Dockerfile                                # [참고] Docker 이미지 빌드
 ```
 

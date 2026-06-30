@@ -110,20 +110,20 @@
 <p>완성 코드는 final 레포(<code>github.com/metacoding-12-msa/final</code>)의 <code>ex02</code> 폴더에서 확인할 수 있습니다.</p>
 <h3>2. 파일 구조</h3>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ex02 디렉토리</div>ex02/
-├── order/              # 포트 8081
-├── product/            # 포트 8082
-├── user/               # 포트 8083
+├── db/                 # MySQL Dockerfile
 ├── delivery/           # 포트 8084
 ├── gateway/            # Nginx API Gateway
-├── db/                 # MySQL Dockerfile
-└── k8s/                # Kubernetes YAML 파일</div>
+├── k8s/                # Kubernetes YAML 파일
+├── order/              # 포트 8081
+├── product/            # 포트 8082
+└── user/               # 포트 8083</div>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">주문 서비스 패키지 구조 (챕터 3에서 재구성)</div>src/main/java/com/metacoding/order/
+├── adapter/        # 외부 서비스 클라이언트 (order 전용)
+├── core/           # JWT, 예외처리 (챕터 2와 동일)
 ├── domain/         # 엔티티 + 비즈니스 규칙
 ├── repository/     # Spring Data JPA
 ├── usecase/        # UseCase 인터페이스 + 서비스 코드
-├── web/            # 컨트롤러 + DTO
-├── adapter/        # 외부 서비스 클라이언트 (order 전용)
-└── core/           # JWT, 예외처리 (챕터 2와 동일)
+└── web/            # 컨트롤러 + DTO
 src/main/resources/
 └── application.properties        # DB·JWT 설정 (값은 환경변수로 주입)</div>
 <div class="prep-note">

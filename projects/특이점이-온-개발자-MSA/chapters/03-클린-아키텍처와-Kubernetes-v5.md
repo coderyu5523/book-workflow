@@ -107,23 +107,23 @@ cd start/ex02
 
 ```text ex02 디렉토리
 ex02/
-├── order/              # 포트 8081
-├── product/            # 포트 8082
-├── user/               # 포트 8083
+├── db/                 # MySQL Dockerfile
 ├── delivery/           # 포트 8084
 ├── gateway/            # Nginx API Gateway
-├── db/                 # MySQL Dockerfile
-└── k8s/                # Kubernetes YAML 파일
+├── k8s/                # Kubernetes YAML 파일
+├── order/              # 포트 8081
+├── product/            # 포트 8082
+└── user/               # 포트 8083
 ```
 
 ```text 주문 서비스 패키지 구조 (챕터 3에서 재구성)
 src/main/java/com/metacoding/order/
+├── adapter/        # 외부 서비스 클라이언트 (order 전용)
+├── core/           # JWT, 예외처리 (챕터 2와 동일)
 ├── domain/         # 엔티티 + 비즈니스 규칙
 ├── repository/     # Spring Data JPA
 ├── usecase/        # UseCase 인터페이스 + 서비스 코드
-├── web/            # 컨트롤러 + DTO
-├── adapter/        # 외부 서비스 클라이언트 (order 전용)
-└── core/           # JWT, 예외처리 (챕터 2와 동일)
+└── web/            # 컨트롤러 + DTO
 src/main/resources/
 └── application.properties        # DB·JWT 설정 (값은 환경변수로 주입)
 ```

@@ -137,15 +137,15 @@ cd start/ex04
 
 ```text ex04 디렉토리
 ex04/
-├── order/              # 포트 8081 (웹소켓 Push 추가)
-├── product/            # 포트 8082
-├── user/               # 포트 8083
+├── db/                 # MySQL
 ├── delivery/           # 포트 8084 (배달 완료 API 추가)
-├── orchestrator/       # Kafka 워크플로우 조율
 ├── frontend/           # Nginx + SockJS 클라이언트 (이번 챕터 신규)
 ├── gateway/            # Nginx API Gateway
-├── db/                 # MySQL
-└── k8s/                # Kubernetes YAML 파일 (kafka·frontend 포함)
+├── k8s/                # Kubernetes YAML 파일 (kafka·frontend 포함)
+├── orchestrator/       # Kafka 워크플로우 조율
+├── order/              # 포트 8081 (웹소켓 Push 추가)
+├── product/            # 포트 8082
+└── user/               # 포트 8083
 ```
 
 서비스마다 패키지 구조가 조금씩 다르므로, 코드를 작성할 파일 경로는 각 실습 코드블록 바로 위에서 안내합니다.
