@@ -1,6 +1,6 @@
 # ex14 — Volume (PV / PVC / Pod)
 
-CH06 §6.2에서 사용. PersistentVolume 만들고 PersistentVolumeClaim으로 요청, Pod에 마운트.
+PersistentVolume을 만들고 PersistentVolumeClaim으로 요청해 Pod에 마운트합니다.
 
 ## 적용
 
@@ -8,7 +8,7 @@ CH06 §6.2에서 사용. PersistentVolume 만들고 PersistentVolumeClaim으로 
 kubectl apply -f ex14/volume-pv.yml
 kubectl apply -f ex14/volume-pvc.yml
 kubectl apply -f ex14/volume-pod.yml
-kubectl get pv,pvc,pod
+kubectl get pv,pvc -o wide
 ```
 
 또는 한 번에:

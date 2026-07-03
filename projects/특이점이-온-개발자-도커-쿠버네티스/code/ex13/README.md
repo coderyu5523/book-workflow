@@ -1,6 +1,6 @@
 # ex13 — ConfigMap + Secret
 
-CH06 §6.1에서 사용. 일반 설정값(ConfigMap)과 민감 정보(Secret)를 이미지 바깥으로 빼서 Deployment에 주입.
+일반 설정값(ConfigMap)과 민감 정보(Secret)를 이미지 바깥으로 빼서 Deployment에 주입합니다.
 
 `deploy-ex03.yml`은 ConfigMap만 연결한 상태로 시작합니다 (`secretRef` 두 줄은 주석 처리). Secret 단계에서 그 주석을 풀고 다시 apply합니다.
 

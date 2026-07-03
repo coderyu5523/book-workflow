@@ -1,6 +1,6 @@
 # ex11 — Service (NodePort)
 
-CH05 §5.1에서 사용. 4개의 nginx Pod를 NodePort Service로 묶어 외부 접근 허용.
+4개의 nginx Pod를 NodePort Service로 묶어 외부 접근을 허용합니다.
 
 `deploy-ex02.yml`은 ex10와 동일한 파일을 자체 보관 (자기 폴더 안에서 완결되도록).
 

@@ -3,11 +3,7 @@ services:
     build:
       context: ./backend
     environment:
-      # 책 표기를 위한 줄바꿈 (실제는 한 줄)
-      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/metadb\
-        ?useSSL=false\
-        &serverTimezone=UTC\
-        &allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/metadb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
       SPRING_DATASOURCE_USERNAME: metacoding
       SPRING_DATASOURCE_PASSWORD: metacoding1234
     networks:
