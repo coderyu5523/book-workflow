@@ -1,0 +1,39 @@
+package com.metacoding.springv3.user;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.metacoding.springv3.core.handler.ex.*;
+import com.metacoding.springv3.core.util.*;
+import lombok.RequiredArgsConstructor;
+
+@Transactional(readOnly = true)
+@RequiredArgsConstructor
+@Service
+public class UserService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder; // BCrypt 암호화
+
+    @Transactional
+    public void 회원가입(UserRequest.SaveDTO requestDTO) {
+        // 유저네임 중복 체크
+        if (userRepository.findByUsername(requestDTO.username()).isPresent()) {
+            throw new Exception401("이미 존재하는 유저네임입니다");
+        }
+        // 비밀번호 암호화 후 저장
+        String encPassword = passwordEncoder.encode(requestDTO.password());
+        userRepository.save(requestDTO.toEntity(encPassword));
+    }
+
+    public String 로그인(UserRequest.LoginDTO requestDTO) {
+        // 유저 조회
+        User user = userRepository.findByUsername(requestDTO.username())
+                .orElseThrow(() -> new Exception404("유저네임을 찾을 수 없습니다"));
+        // 비밀번호 검증 (BCrypt)
+        if (!passwordEncoder.matches(requestDTO.password(), user.getPassword())) {
+            throw new Exception401("비밀번호가 일치하지 않습니다");
+        }
+        // JWT 발급
+        return JwtUtil.create(user);
+    }
+}
