@@ -202,7 +202,7 @@ public class Reply {
     private List<Reply> replies = new ArrayList<>();
 ```
 
-게시글 하나에 댓글 여러 개가 달리므로 `@OneToMany`입니다. `mappedBy = "board"`가 "이 관계의 주인은 내가 아니라 `Reply`의 `board` 필드"라고 밝히는 부분입니다. 게시글은 외래 키를 갖지 않고, 댓글이 들고 있는 `board_id`를 거꾸로 따라가 자기에게 달린 댓글을 `replies`에 채웁니다. `cascade = CascadeType.REMOVE`가 앞의 영속성 전이입니다. 게시글을 지우면 이 목록에 담긴 댓글까지 함께 지워집니다. `replies`는 `new ArrayList<>()`로 초기화만 해 두어, 아직 댓글이 없는 글도 빈 목록을 가집니다.
+게시글 하나에 댓글 여러 개가 달리므로 `@OneToMany`입니다. `mappedBy = "board"`가 "이 관계의 주인은 내가 아니라 `Reply`의 `board` 필드"라고 밝히는 부분입니다. 게시글은 외래 키를 갖지 않고, 댓글이 들고 있는 `board_id`를 거꾸로 따라가 자기에게 달린 댓글을 `replies`에 채웁니다. 이 `replies`는 데이터베이스 테이블에 컬럼으로 생기지 않습니다. 객체에서 관계를 다루기 위한 참조일 뿐이라, `board_tb`에도 `reply_tb`에도 `replies` 칸은 없습니다. 실제 연결은 여전히 `reply_tb`의 `board_id` 하나로만 저장됩니다. `cascade = CascadeType.REMOVE`가 앞의 영속성 전이입니다. 게시글을 지우면 이 목록에 담긴 댓글까지 함께 지워집니다. `replies`는 `new ArrayList<>()`로 초기화만 해 두어, 아직 댓글이 없는 글도 빈 목록을 가집니다.
 
 ## 5.2 댓글을 쓰고 지운다
 
