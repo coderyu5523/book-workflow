@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @Repository
 public class UserRepository {
 
-    public final EntityManager em;
+    private final EntityManager em;
 
     public void save(User user){
         em.persist(user);
