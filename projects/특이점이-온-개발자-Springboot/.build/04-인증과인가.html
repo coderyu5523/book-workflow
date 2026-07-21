@@ -598,7 +598,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>resolveToken</code>은 요청의 <code>Authorization</code> 헤더를 읽어, <code>Bearer </code> 표식이 붙어 있으면 그 표식을 떼고 순수한 토큰 문자열만 돌려줍니다. 헤더가 없거나 표식이 없으면 <code>null</code>을 돌려줍니다. <code>getUser</code>는 그 토큰을 <code>JwtUtil.verify</code>에 넘겨, 유효하면 복원된 유저를, 서명이 어긋나 예외가 나면 <code>null</code>을 돌려줍니다. 토큰의 진위 판단을 참·거짓 대신 &quot;유저 아니면 <code>null</code>&quot;로 돌려주도록 감싼 것입니다. 이 판단을 다음 절의 필터가 그대로 씁니다.</p>
-<h2>4.7 필터 = 인증</h2>
+<h2>4.7 인증을 맡는 필터</h2>
 <p>이제 요청이 들어오는 길목에 인증을 놓습니다. 4.2에서 정문에 비유한 그 확인입니다. 요청마다 헤더의 토큰을 확인해, 유효하면 그 신원을 요청에 붙여 두는 일입니다.</p>
 <p>이 일을 맡는 것이 <strong>필터(Filter)</strong> 입니다. 필터는 요청이 컨트롤러에 도달하기 전에 먼저 거쳐 가는 길목의 검문소입니다. 스프링에서는 <code>OncePerRequestFilter</code>를 상속해, 요청 한 건마다 한 번씩 실행되는 필터를 만듭니다.</p>
 <p><code>core/filter/JwtAuthenticationFilter.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
@@ -626,7 +626,7 @@
 <span class="p">}</span></div>
 <p>필터가 하는 일은 신원을 밝혀 붙여 두는 것까지입니다. <code>resolveToken</code>으로 토큰을 꺼내고, 토큰이 있으면 <code>getUser</code>로 유저를 복원합니다. 복원에 성공하면 <code>request.setAttribute</code>로 그 유저를 요청에 <code>sessionUser</code>라는 이름표로 심어 둡니다. 뒤에 오는 컨트롤러나 인터셉터가 이 이름표를 꺼내 &quot;이 요청을 보낸 사람&quot;을 알 수 있습니다.</p>
 <p>여기서 중요한 것은 마지막 줄입니다. 토큰이 없거나 틀려도 필터는 요청을 막지 않고 <code>filterChain.doFilter</code>로 그대로 통과시킵니다. 정문에서 사원증을 확인해 &quot;이 사람이 누구다&quot;까지만 밝히고, 어느 방에 들어갈 수 있는지는 따지지 않는 것과 같습니다. 신원이 확인되면 이름표가 붙고, 안 되면 이름표 없이 지나갑니다. 막는 일은 인증이 아니라 인가의 몫이라, 다음 문에서 처리합니다.</p>
-<h2>4.8 인터셉터 = 인가</h2>
+<h2>4.8 인가를 맡는 인터셉터</h2>
 <p>필터가 이름표를 붙여 통과시켰으니, 이제 그 이름표를 보고 요청을 막을지 말지 결정하는 문을 세울 차례입니다. 4.2에서 서버실 문에 비유한 인가입니다.</p>
 <p>이 문을 맡는 것이 <strong>인터셉터(Interceptor)</strong> 입니다. 인터셉터는 필터를 지난 요청이 컨트롤러에 도달하기 직전에 한 번 더 가로채는 장치입니다. <code>preHandle</code> 메서드가 <code>true</code>를 돌려주면 요청이 컨트롤러로 넘어가고, 예외를 던지면 그 자리에서 막힙니다.</p>
 <p><code>core/interceptor/AuthInterceptor.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
