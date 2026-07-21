@@ -339,9 +339,9 @@
 </svg>
 </div>
 <div class="caption">그림 2-4. 자바는 세트 하나에 내용물을 품고, DB는 표를 따로 두어 외래 키로 잇습니다. 하이버네이트가 그 사이를 맞춰 줍니다</div>
-<p>ORM이 없던 시절에는 개발자가 이 간극을 손으로 메웠습니다. 자바 개발자인 동시에 수동 번역가였던 셈입니다. 테이블이 하나 늘 때마다 비슷한 SQL과 매핑 코드를 수십 줄씩 반복해 썼고, 조회 결과를 객체에 한 칸씩 옮겨 담느라 정작 중요한 로직 짤 시간이 줄었습니다. 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "그 번역을 대신 해 주는 게 JPA예요. 자바 객체로 말하면 SQL로 바꿔서 DB에 전하고, DB가 준 결과는 다시 객체로 돌려주죠. 개발자는 객체만 다루면 돼요."</div>
-<p>이렇게 객체와 관계형 테이블 사이를 자동으로 이어 주는 기술을 ORM(Object-Relational Mapping)이라고 합니다. JPA(Java Persistence API)는 자바가 정한 ORM 표준이고, 하이버네이트(Hibernate)는 그 표준을 실제로 구현한 대표적인 도구입니다. 개발자는 복잡한 조인과 외래 키를 일일이 신경 쓰지 않고 객체를 다루듯 코드를 짜고, 두 세계를 오가는 번역은 하이버네이트에 맡깁니다. 덕분에 객체는 객체답게 참조와 상속을 쓰고, DB는 DB답게 정규화된 표를 유지합니다.</p>
+<p>ORM이 없던 시절에는 개발자가 이 간극을 손으로 메웠습니다. 테이블이 하나 늘 때마다 비슷한 SQL과 매핑 코드를 수십 줄씩 반복해 썼고, 조회 결과를 객체에 한 칸씩 옮겨 담느라 정작 중요한 로직 짤 시간이 줄었습니다. 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.</p>
+<div class="dialogue"><span class="speaker">선배</span>: "그 일을 대신 해 주는 게 JPA예요. 자바 객체로 말하면 SQL로 바꿔서 DB에 전하고, DB가 준 결과는 다시 객체로 돌려주죠. 개발자는 객체만 다루면 돼요."</div>
+<p>이렇게 객체와 관계형 테이블 사이를 자동으로 이어 주는 기술을 ORM(Object-Relational Mapping)이라고 합니다. JPA(Java Persistence API)는 자바가 정한 ORM 표준이고, 하이버네이트(Hibernate)는 그 표준을 실제로 구현한 대표적인 도구입니다. 개발자는 복잡한 조인과 외래 키를 일일이 신경 쓰지 않고 객체를 다루듯 코드를 짜고, 두 세계를 오가는 변환은 하이버네이트에 맡깁니다. 덕분에 객체는 객체답게 참조와 상속을 쓰고, DB는 DB답게 정규화된 표를 유지합니다.</p>
 <h2>2.4 엔티티와 매핑</h2>
 <p>가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 <code>board_tb</code> 테이블의 한 행이 됩니다.</p>
 <p><code>board/Board.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
@@ -397,7 +397,7 @@
 </tr>
 </tbody>
 </table>
-<p>인메모리라 껐다 켜면 데이터가 사라집니다. 그래서 시작할 때 <code>data.sql</code>의 내용을 넣어 초기 상태를 맞춥니다. <code>data.sql</code>에는 실습에서 바로 확인할 수 있도록 <code>title1</code>, <code>title2</code> 두 건이 미리 들어 있습니다. <code>show-sql</code>을 켜 두면 JPA가 실제로 어떤 SQL을 내보내는지 콘솔에서 볼 수 있어, 앞서 이야기한 번역이 눈에 드러납니다.</p>
+<p>인메모리라 껐다 켜면 데이터가 사라집니다. 그래서 시작할 때 <code>data.sql</code>의 내용을 넣어 초기 상태를 맞춥니다. <code>data.sql</code>에는 실습에서 바로 확인할 수 있도록 <code>title1</code>, <code>title2</code> 두 건이 미리 들어 있습니다. <code>show-sql</code>을 켜 두면 JPA가 실제로 어떤 SQL을 내보내는지 콘솔에서 볼 수 있어, 앞서 이야기한 변환이 눈에 드러납니다.</p>
 <h2>2.5 리포지토리와 EntityManager</h2>
 <p>엔티티와 데이터베이스가 준비됐으니, 이제 둘 사이에서 실제로 저장하고 꺼내는 부분을 만듭니다. 이 역할을 맡는 것이 리포지토리(Repository)로, 데이터의 조회·저장·수정·삭제를 담당하는 계층입니다. 리포지토리가 데이터베이스 작업에 쓰는 도구가 <code>EntityManager</code>입니다. <code>EntityManager</code>는 JPA에서 데이터베이스 작업을 총괄하는 핵심 객체로, 엔티티의 저장·조회·삭제를 담당합니다.</p>
 <p><code>board/BoardRepository.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
@@ -429,7 +429,7 @@
 <span class="p">}</span></div>
 <p><code>@Repository</code>는 이 클래스를 데이터 접근을 담당하는 빈으로 등록합니다. <code>@RequiredArgsConstructor</code>는 롬복이 <code>final</code> 필드를 받는 생성자를 대신 만들어 주는 어노테이션입니다. 스프링은 그 생성자를 통해 <code>EntityManager</code>를 넣어 줍니다. 앞 챕터에서 개념만 짚었던 의존성 주입이 여기서 실제로 일어납니다. 스프링 환경에서는 <code>EntityManager</code>가 이미 빈으로 등록되어 있어, 직접 만들지 않고 주입받아 씁니다.</p>
 <p>네 메서드가 각각 <code>EntityManager</code>의 명령을 부릅니다. <code>em.find</code>는 기본 키로 한 건을 찾아오고, <code>em.persist</code>는 새 엔티티를 저장 대상으로 등록하며, <code>em.remove</code>는 삭제 대상으로 표시합니다.</p>
-<p><code>findAll</code>만 조금 다릅니다. 여러 건을 조회할 때는 조건에 맞는 대상을 질의해야 하는데, 이때 쓰는 것이 JPQL(Java Persistence Query Language)입니다. JPQL은 테이블이 아니라 엔티티와 필드를 기준으로 작성하는 JPA의 SQL입니다. <code>select b from Board b</code>는 SQL과 닮았지만, <code>board_tb</code> 테이블이 아니라 <code>Board</code> 엔티티를 대상으로 삼는다는 점이 다릅니다. 이렇게 객체를 향해 질의하면, JPA가 이것을 실제 SQL로 번역해 데이터베이스에 보내고 결과를 <code>List&lt;Board&gt;</code>로 돌려줍니다.</p>
+<p><code>findAll</code>만 조금 다릅니다. 여러 건을 조회할 때는 조건에 맞는 대상을 질의해야 하는데, 이때 쓰는 것이 JPQL(Java Persistence Query Language)입니다. JPQL은 테이블이 아니라 엔티티와 필드를 기준으로 작성하는 JPA의 SQL입니다. <code>select b from Board b</code>는 SQL과 닮았지만, <code>board_tb</code> 테이블이 아니라 <code>Board</code> 엔티티를 대상으로 삼는다는 점이 다릅니다. 이렇게 객체를 향해 질의하면, JPA가 이것을 실제 SQL로 바꿔 데이터베이스에 보내고 결과를 <code>List&lt;Board&gt;</code>로 돌려줍니다.</p>
 <h2>2.6 영속성 컨텍스트</h2>
 <p>리포지토리 코드를 보면 <code>em.persist</code>나 <code>em.find</code>를 부를 뿐, 데이터베이스에 직접 SQL을 던지는 부분이 없습니다. JPA가 그 사이에 엔티티를 보관하고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. <code>EntityManager</code>가 관리하는 엔티티 저장소로, <code>em.persist</code>나 <code>em.find</code>로 엔티티가 등록되거나 조회되는 순간 그 엔티티는 영속 상태가 됩니다.</p>
 <p>영속성 컨텍스트가 하는 일은 크게 세 가지입니다. 하나씩 그림으로 따라가 보겠습니다.</p>

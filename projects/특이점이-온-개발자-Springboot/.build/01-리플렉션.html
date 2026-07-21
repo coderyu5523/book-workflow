@@ -148,7 +148,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
 <div class="caption">그림 1-2. 라이브러리는 필요한 기능을 내가 골라 부르고, 프레임워크는 갖춰진 틀에 내 코드만 채웁니다</div>
 <h3>1.1.2 제어의 역전</h3>
 <p>뼈대를 프레임워크가 쥐고 있다는 것은, 프로그램의 전체 흐름도 프레임워크가 주도한다는 뜻입니다. 개발자가 작성한 코드가 언제 실행될지 역시 프레임워크가 결정합니다.</p>
-<p>라이브러리를 쓸 때는 개발자가 필요한 순간에 직접 기능을 호출했습니다. 프레임워크에서는 이 방향이 반대가 됩니다. 개발자는 코드를 정해진 위치에 올려두기만 하고, 이를 호출해 실행하는 주체는 프레임워크가 됩니다. 이처럼 실행의 주도권이 개발자에서 프레임워크로 넘어가는 현상을 제어의 역전(IoC, Inversion of Control)이라고 합니다.</p>
+<p>라이브러리를 쓸 때는 개발자가 필요한 순간에 직접 기능을 호출합니다. 프레임워크에서는 이 방향이 반대가 됩니다. 개발자는 코드를 정해진 위치에 올려두기만 하고, 이를 호출해 실행하는 주체는 프레임워크가 됩니다. 이처럼 실행의 주도권이 개발자에서 프레임워크로 넘어가는 현상을 제어의 역전(IoC, Inversion of Control)이라고 합니다.</p>
 <p>스프링은 자바로 웹 서버를 만들 때 필요한 뼈대를 미리 갖춘 프레임워크입니다. 오픈이가 막혔던 그 뼈대, 요청을 받아들이고 주소를 라우팅하며 결과를 응답으로 내보내는 공통 작업을 스프링이 대신 담당합니다. 개발자는 어떤 주소에 어떤 응답을 반환할지, 핵심 기능만 작성하면 됩니다.</p>
 <h2>1.2 스프링은 어떻게 내 메서드를 찾아 실행하나</h2>
 <p>여기서 오픈이의 머릿속에 의문이 하나 생깁니다. 스프링을 쓰면 클래스를 하나 만들고 그 위에 표식을 붙이는 게 전부입니다. 그런데 브라우저에서 특정 주소로 요청을 보내면, 등록한 적도 없는 그 클래스의 메서드가 실행됩니다.</p>
@@ -300,7 +300,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>여기서 리플렉션의 세 동작이 등장합니다. <code>getClass().getDeclaredMethods()</code> 는 컨트롤러가 가진 모든 메서드를 꺼내 옵니다. 개발자가 메서드 이름을 하나하나 적지 않아도, 실행 중에 클래스가 가진 메서드 목록을 통째로 얻어냅니다. <code>getDeclaredAnnotation(RequestMapping.class)</code> 는 각 메서드에 붙은 <code>@RequestMapping</code> 표식을 읽어 옵니다. <code>method.invoke(boardController)</code> 는 찾아낸 메서드를 실제로 호출합니다. 이름을 직접 적어 부르는 대신, 리플렉션이 쥐고 있는 메서드를 실행하라고 시키는 것입니다.</p>
-<p><code>uri</code> 값이 <code>/update</code>이므로, 반복문이 표식을 훑다가 <code>/update</code> 명찰을 단 <code>update()</code>를 만나 호출합니다. 실행하면 콘솔에 <code>update 호출됨</code>이 출력됩니다.</p>
+<p><code>uri</code> 값이 <code>/update</code>이므로, 반복문이 표식을 차례로 확인해 <code>/update</code> 명찰을 단 <code>update()</code>를 호출합니다. 실행하면 콘솔에 <code>update 호출됨</code>이 출력됩니다.</p>
 <p>이제 앞서 골칫거리였던 상황을 다시 떠올려 보겠습니다. 컨트롤러에 새 메서드를 추가하려면 어떻게 해야 할까요?</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> ex02/BoardController.java. 표식을 단 메서드만 추가</div><span class="nd">@RequestMapping</span><span class="p">(</span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/create&quot;</span><span class="p">)</span>
 <span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">create</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
