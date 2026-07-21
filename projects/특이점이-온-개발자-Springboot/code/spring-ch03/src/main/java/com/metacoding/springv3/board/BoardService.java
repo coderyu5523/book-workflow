@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.metacoding.springv3.core.handler.ex.*;
 import lombok.RequiredArgsConstructor;
 
-@Transactional(readOnly = true) // 조회는 읽기 전용
 @RequiredArgsConstructor
 @Service
 public class BoardService {

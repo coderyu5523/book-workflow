@@ -5,7 +5,7 @@
   "status": "in_progress",
   "current_step": "step_5_chapters",
   "created_at": "2026-07-20",
-  "updated_at": "2026-07-20",
+  "updated_at": "2026-07-21",
 
   "steps": {
     "step_1_seed": {
@@ -58,7 +58,11 @@
       "name": "챕터 집필",
       "status": "in_progress",
       "chapters_draft": [
-        { "id": "CH01", "title": "리플렉션", "artifact": "chapters/01-리플렉션.md", "status": "review", "note": "1.1 프레임워크(골조 비유)/1.2 스프링 프레임워크/1.3 리플렉션 세분화. 파일은 단일본 유지, 반려 시 in-place 수정" }
+        { "id": "CH01", "title": "리플렉션", "artifact": "chapters/01-리플렉션.md", "status": "review", "note": "1.1 프레임워크(골조 비유)/1.2 스프링 프레임워크/1.3 리플렉션 세분화. 파일은 단일본 유지, 반려 시 in-place 수정" },
+        { "id": "CH02", "title": "게시판 CRUD", "artifact": "chapters/02-게시판CRUD.md", "status": "draft", "note": "v0.1. 2.1~2.11 outline 그대로. com.metacoding.spring, @Transactional 스프링 통일, 단위테스트만. MSA 구조로 재작성(도입 한눈에보기+클래스구성표, 코드밀도↓, C/R/S/엔티티/DTO 코드 유지·설정/Resp/한줄예외는 표, 재등장 클래스는 메서드-diff만)" },
+        { "id": "CH03", "title": "예외처리와 DTO", "artifact": "chapters/03-예외처리DTO.md", "status": "draft", "note": "v0.2. 3.1~3.6. readOnly 제거(쓰기 메서드만 @Transactional), findById→Optional, Board에 @Builder 회수, 실습 3종(BoardResponse/Exception404/GlobalExceptionHandler). MSA 구조로 재작성(도입 한눈에보기+클래스구성표, 코드밀도↓, C/R/S/엔티티/DTO 코드 유지·설정/Resp/한줄예외는 표, 재등장 클래스는 메서드-diff만)" },
+        { "id": "CH04", "title": "인증과 인가", "artifact": "chapters/04-인증과인가.md", "status": "draft", "note": "v0.3. 4.1~4.10. Security 미사용(필터=인증/인터셉터=인가 직접구현), JWT, BCrypt, readOnly 제거, Board @ManyToOne(EAGER), findByIdJoinUser 이름만(N+1은 CH5), 소유자검증 403, @Valid 400. 실습 6종. 닿다 교정 완료. MSA 구조로 재작성(도입 한눈에보기+클래스구성표, 코드밀도↓, C/R/S/엔티티/DTO 코드 유지·설정/Resp/한줄예외는 표, 재등장 클래스는 메서드-diff만)" },
+        { "id": "CH05", "title": "댓글과 JPA 심화", "artifact": "chapters/05-댓글과JPA심화.md", "status": "draft", "note": "v0.4. 5.1~5.5. 양방향 @OneToMany(cascade REMOVE), 댓글 CRUD(상세 DetailDTO 내장), user EAGER→LAZY, 지연로딩 프록시 N+1, fetch join 회수 서사(findByIdJoinUser 정체), EAGER 토글 실습(show-sql로 관찰). 5.5에서 CH1 마법=리플렉션 회수로 책 마감. 실습 8종. MSA 구조로 재작성(도입 한눈에보기+클래스구성표, 코드밀도↓, C/R/S/엔티티/DTO 코드 유지·설정/Resp/한줄예외는 표, 재등장 클래스는 메서드-diff만)" }
       ],
       "chapters": []
     },
