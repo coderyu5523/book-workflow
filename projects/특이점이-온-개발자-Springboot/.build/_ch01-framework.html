@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>1.1 프레임워크 개념도</title>
+<style>
+  body { font-family: "Pretendard","Malgun Gothic",system-ui,sans-serif; color:#0f172a; background:#f1f5f9; margin:0; padding:40px; }
+  h1 { font-size:20px; margin:0 0 6px; }
+  p.lead { color:#475569; margin:0 0 24px; font-size:14px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px 28px; }
+  .card .note { text-align:center; color:#334155; font-size:13px; margin-top:10px; font-style:italic; }
+  svg { display:block; width:100%; height:auto; max-width:760px; margin:0 auto; }
+</style>
+</head>
+<body>
+<h1>그림 1-1 (교체 후보) — 라이브러리 vs 프레임워크</h1>
+<p class="lead">박스+글자 대신 실물 비유: 라이브러리 = 선반에서 골라 씀 / 프레임워크 = 이미 선 골조에 내 방만.</p>
+
+<div class="card">
+<svg viewBox="0 32 760 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="라이브러리와 프레임워크 비교">
+  <defs>
+    <marker id="fw-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="20" y="46" width="346" height="228" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="193" y="74" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">라이브러리</text>
+  <text x="193" y="93" text-anchor="middle" font-size="10.5" fill="#64748b">필요한 기능을 골라 쓴다</text>
+  <!-- 선반 -->
+  <line x1="60" y1="200" x2="326" y2="200" stroke="#94a3b8" stroke-width="2.4"/>
+  <!-- 도구: 시계 -->
+  <circle cx="108" cy="178" r="15" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <line x1="108" y1="178" x2="108" y2="168" stroke="#475569" stroke-width="1.5"/>
+  <line x1="108" y1="178" x2="115" y2="182" stroke="#475569" stroke-width="1.5"/>
+  <!-- 도구: 스패너(막대+머리) -->
+  <circle cx="190" cy="164" r="7" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <rect x="186" y="168" width="8" height="30" rx="3" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <!-- 도구: 문서 -->
+  <rect x="256" y="160" width="28" height="38" rx="3" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <line x1="262" y1="170" x2="278" y2="170" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="262" y1="178" x2="278" y2="178" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="262" y1="186" x2="272" y2="186" stroke="#94a3b8" stroke-width="1.3"/>
+  <!-- 골라 쓰는 화살표 -->
+  <line x1="150" y1="242" x2="115" y2="196" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#fw-ar)"/>
+  <text x="196" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">개발자가 골라 호출</text>
+
+  <rect x="394" y="46" width="346" height="228" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="567" y="74" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">프레임워크</text>
+  <text x="567" y="93" text-anchor="middle" font-size="10.5" fill="#64748b">갖춰진 골조에 내 방만 채운다</text>
+  <!-- 집 골조 -->
+  <polygon points="470,150 567,112 664,150" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="484" y1="150" x2="484" y2="222" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="650" y1="150" x2="650" y2="222" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="484" y1="222" x2="650" y2="222" stroke="#94a3b8" stroke-width="1.8"/>
+  <line x1="567" y1="150" x2="567" y2="222" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="484" y1="186" x2="650" y2="186" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="567" y="144" text-anchor="middle" font-size="9.5" fill="#94a3b8">이미 선 골조</text>
+  <!-- 빈 골조 방(공통 부분) -->
+  <text x="525" y="172" text-anchor="middle" font-size="9" fill="#cbd5e1">공통</text>
+  <text x="609" y="172" text-anchor="middle" font-size="9" fill="#cbd5e1">공통</text>
+  <text x="525" y="208" text-anchor="middle" font-size="9" fill="#cbd5e1">공통</text>
+  <!-- 내 코드 방 -->
+  <rect x="569" y="188" width="79" height="32" rx="3" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="608" y="208" text-anchor="middle" font-size="10.5" font-weight="700" fill="#3730a3">내 코드</text>
+  <text x="567" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">골조는 프레임워크가 채워 둠</text>
+</svg>
+<p class="note">라이브러리는 개발자가 기능을 골라 호출하고, 프레임워크는 갖춰진 골조에 개발자가 자기 코드만 채웁니다</p>
+</div>
+
+</body>
+</html>

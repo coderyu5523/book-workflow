@@ -20,15 +20,10 @@
 <body>
 <div class="container">
 <h1>챕터 4. 인증과 인가 - 로그인한 본인만</h1>
-<p>앞 챕터에서 오픈이는 게시판의 두 구멍을 막았습니다. 없는 글을 불러도 서버가 넘어지지 않고, 응답에는 접시에 담은 값만 나갑니다. 그런데 3장을 닫으며 스스로 적어 둔 한 줄이 계속 마음에 걸렸습니다. 아직 이 게시판은 완전히 열려 있고, 아무나 남의 글을 고치고 지울 수 있다는 것이었습니다.</p>
-<p class="thought">정말 그런지 직접 넣어 보면 되잖아.</p>
-<p>오픈이는 서버를 다시 실행하고, 로그인 한 번 없이 1번 글에 수정 요청을 그대로 보냈습니다. 응답은 막힘없이 성공이었습니다. 제목도 내용도 그가 보낸 값으로 덮여 있었습니다. 삭제 요청도 마찬가지로 통과했습니다.</p>
-<p>화면을 붙이던 동료도 같은 걸 봤다며 자리로 왔습니다.</p>
+<p>앞 챕터까지 만든 게시판은 글을 저장하고 꺼내는 일은 하지만, 그 요청을 누가 보냈는지는 확인하지 않습니다. 로그인 화면도, 요청을 보낸 사람을 가리는 장치도 어디에도 없습니다. 그래서 로그인 한 번 없이 1번 글에 수정 요청을 보내도 서버는 막힘없이 글을 덮어쓰고, 남의 글을 지우는 요청도 그대로 통과시킵니다.</p>
+<p>화면을 붙이던 동료도 같은 것을 봤습니다.</p>
 <div class="dialogue"><span class="speaker">동료</span>: "저도 남의 글이 그냥 지워지던데요. 애초에 로그인 화면이 없잖아요."</div>
-<p>지금까지 만든 것은 글을 저장하고 꺼내는 기능뿐입니다. 누가 그 요청을 보냈는지 확인하는 장치는 어디에도 없습니다. 오픈이는 로그인 화면부터 붙여야 하나 싶어 선배에게 물었습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "지금은 왜 이렇게 다 뚫려 있죠? 로그인 화면부터 만들면 되나요?"<br></div>
-<div class="dialogue"><span class="speaker">선배</span>: "지금 이 서버가 문만 덩그러니 있고 지키는 사람은 없는 성이라서 그래요. 누구든 걸어 들어가서 창고를 열 수 있죠. 막으려면 문 하나로는 안 되고 관문을 차례로 세워야 해요."</div>
-<p>성. 오픈이는 그 말을 붙들었습니다. 요청을 받는 서버가 활짝 열린 성이라면, 이번 챕터에서 할 일은 그 성에 방어를 세우는 것입니다. 방어가 요청 하나를 어떻게 걸러 내는지, 큰 흐름을 먼저 펼쳐 보겠습니다. 지금은 이름과 순서만 눈에 담아 두면 됩니다.</p>
+<p>지금 이 서버는 문만 덩그러니 있고 지키는 사람은 없는 성과 같습니다. 누구든 걸어 들어가서 창고를 열 수 있습니다. 이번 챕터에서 할 일은 그 성에 방어를 세워, 요청 하나하나가 걸러지도록 만드는 것입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 4 한눈에 보기. 1단계에서 클라이언트가 로그인하면 서버가 JWT를 발급한다. 2단계에서 클라이언트는 요청마다 JWT를 헤더에 실어 보내고, 필터가 토큰을 확인해 신원을 심으며 막지 않고 통과시키고, 인터셉터가 쓰기 요청이면 로그인을 확인해 없으면 401로 막으며, 통과한 요청은 컨트롤러와 서비스로 전달되어 소유자 검증에서 남의 글이면 403으로 막힌다.">
   <defs>
@@ -84,10 +79,10 @@
 </ul>
 </div>
 <h2>4.1 완전히 공개된 게시판</h2>
-<p>앞에서 오픈이가 보낸 요청을 그대로 옮기면 이렇습니다. 로그인도, 아무 표식도 없이 1번 글에 수정을 요청했습니다.</p>
+<p>문제를 눈으로 보고 시작하겠습니다. 로그인도, 아무 표식도 없이 1번 글에 수정을 요청합니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 로그인 없이 남의 글 수정</div>PUT<span class="w"> </span>http://localhost:8080/api/boards/1
 <span class="o">{</span><span class="w"> </span><span class="s2">&quot;title&quot;</span>:<span class="w"> </span><span class="s2">&quot;누구나 고칠 수 있다&quot;</span>,<span class="w"> </span><span class="s2">&quot;content&quot;</span>:<span class="w"> </span><span class="s2">&quot;로그인도 안 했는데 고쳐졌다&quot;</span><span class="w"> </span><span class="o">}</span></div>
-<p>응답은 200, 성공이었습니다.</p>
+<p>응답은 200, 성공입니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
@@ -97,7 +92,7 @@
 <span class="w">    </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;로그인도 안 했는데 고쳐졌다&quot;</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>아무 표식도 없이 보낸 요청이 남의 글을 그대로 덮어썼습니다. 선배가 성에 빗댄 게 이 상태입니다. 성에 문은 있는데, 그 문에서 오는 사람이 누구인지 확인하는 이가 없습니다. 걸어 들어온 사람은 누구든 식량 창고든 무기 창고든 마음대로 열 수 있습니다.</p>
+<p>아무 표식도 없이 보낸 요청이 남의 글을 그대로 덮어썼습니다. 이 상태가 문만 있고 지키는 사람은 없는 성입니다. 성에 문은 있지만 그 문으로 오는 사람이 누구인지 확인하는 이가 없어, 걸어 들어온 사람은 누구든 식량 창고든 무기 창고든 마음대로 엽니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="취약한 성. 입구만 있고 지키는 사람이 없어, 바깥에서 들어온 요청 화살표가 입구를 확인 없이 지나 성 안의 식량 창고와 무기 창고까지 도달한다.">
   <defs>
@@ -125,9 +120,8 @@
 </svg>
 </div>
 <div class="caption">그림 4-2. 입구만 있고 지키는 사람이 없는 성에서는 누구나 안쪽 창고를 엽니다</div>
-<p>오픈이가 방금 보낸 수정 요청이 이 성의 입구를 그냥 통과한 셈입니다. 요청을 받는 컨트롤러 앞에 요청을 보낸 사람을 확인하는 장치가 하나도 없어서, 누가 보냈든 컨트롤러는 곧장 서비스를 부르고 서비스는 시키는 대로 글을 고칩니다.</p>
-<p>선배는 화이트보드에 성 하나를 다시 그렸습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "제대로 된 성은 이렇게 생겼어요. 바깥에 성벽을 두르고 그 앞에 호수를 파죠. 성벽 위에는 경비를 세워요. 경비가 오는 사람마다 누구인지 확인하고, 호수는 허가 안 된 길로 넘어오는 걸 막아요."</div>
+<p>방금 보낸 수정 요청이 이 성의 입구를 그냥 통과한 셈입니다. 요청을 받는 컨트롤러 앞에 요청을 보낸 사람을 확인하는 장치가 하나도 없어서, 누가 보냈든 컨트롤러는 곧장 서비스를 호출하고, 서비스는 그대로 글을 고칩니다.</p>
+<p>제대로 된 성은 다르게 생겼습니다. 바깥에 성벽을 두르고 그 앞에 호수를 파며, 성벽 위에는 경비를 세웁니다. 경비가 오는 사람마다 누구인지 확인하고, 호수는 허가되지 않은 길로 넘어오는 것을 막습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 940 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="방어된 성. 바깥부터 성벽, 호수, 입구가 차례로 놓여 있고 성벽 위에 경비가 서 있다. 외부 요청은 성벽에서 신원이 확인되고 호수가 우회를 막은 뒤에야 입구를 지나 성 안으로 들어간다.">
   <defs>
@@ -279,21 +273,11 @@
 <p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>4.2 인증과 인가는 다르다</h2>
-<p>방어된 성을 오픈이는 다시 떠올렸습니다. 성벽 위 경비는 오는 사람마다 누구인지 확인합니다. 하지만 성 안에 들어왔다고 아무 창고나 열 수 있는 건 아닙니다. 무기 창고 문 앞에서는 그 사람에게 열 자격이 있는지를 따로 따집니다.</p>
+<p>방어된 성을 다시 봅니다. 성벽 위 경비는 오는 사람마다 누구인지 확인합니다. 하지만 성 안에 들어왔다고 아무 창고나 열 수 있는 것은 아닙니다. 무기 창고 문 앞에서는 그 사람에게 열 자격이 있는지를 따로 따집니다.</p>
 <p>앞의 확인, 요청을 보낸 사람이 누구인지 밝히는 일을 <strong>인증(Authentication)</strong> 이라고 합니다. 뒤의 확인, 그 사람이 특정 동작을 할 자격이 있는지 따지는 일을 <strong>인가(Authorization)</strong> 라고 합니다. 인증은 &quot;너 누구야&quot;에 답하고, 인가는 &quot;그걸 할 권한이 있어&quot;에 답합니다.</p>
-<p>오픈이는 수첩을 펼쳐 둘을 갈라 적었습니다.</p>
-<div class="memo-box">
-<p><strong>— 문제 정리 —</strong></p>
-<ol>
-<li><strong>인증</strong>. 요청을 보낸 사람이 누구인지 밝힌다 (&quot;너 누구야&quot;)</li>
-<li><strong>인가</strong>. 그 사람이 이 동작을 할 자격이 있는지 따진다 (&quot;그걸 할 권한이 있어&quot;)</li>
-</ol>
-</div>
 <p>이 장에서 두 확인은 서로 다른 장치가 맡습니다. 신원을 밝히는 인증은 요청이 들어오는 길목에서 토큰을 확인하는 필터가 담당하고, 자격을 따지는 인가는 그 뒤에서 요청을 막아서는 인터셉터가 담당합니다. 그림 4-1에서 나란히 있던 두 상자가 각각 이 둘입니다. 두 장치가 무엇인지는 뒤에서 하나씩 만들며 확인합니다. 먼저 신원을 무엇으로 밝힐지부터 정해야 합니다.</p>
 <h2>4.3 세션 대신 왜 JWT인가</h2>
-<p>로그인을 붙인다고 할 때, 오픈이의 머릿속에 먼저 떠오른 방법은 세션이었습니다.</p>
-<p class="thought">로그인하면 서버가 그 사람을 기억하고 있으면 되지 않나.</p>
-<p>서버가 로그인한 사람의 정보를 자기 안에 보관해 두고, 다음 요청이 오면 &quot;아까 그 사람&quot;이라고 알아보는 방식입니다. 이렇게 서버가 접속한 사람의 상태를 기억하고 있는 방식을 <strong>상태 유지(Stateful)</strong> 라고 합니다.</p>
+<p>로그인을 붙이는 방법으로 먼저 떠오르는 것은 세션입니다. 서버가 로그인한 사람의 정보를 자기 안에 보관해 두고, 다음 요청이 오면 &quot;아까 그 사람&quot;이라고 알아보는 방식입니다. 이렇게 서버가 접속한 사람의 상태를 기억하고 있는 방식을 <strong>상태 유지(Stateful)</strong> 라고 합니다.</p>
 <p>그런데 여기엔 걸리는 데가 있습니다. HTTP는 원래 요청 하나하나를 따로 취급합니다. 방금 로그인한 사람이 다음 요청을 보내도, 서버는 그것이 같은 사람이 보낸 것인지 알지 못합니다. 그래서 세션 방식은 서버가 로그인 정보를 자기 메모리에 쌓아 두고 사람마다 번호표를 붙여 관리해야 합니다. 접속자가 늘면 서버가 기억해야 할 것도 함께 늘고, 서버를 여러 대로 나누면 누가 어느 서버에 로그인했는지까지 맞춰야 합니다.</p>
 <p>반대쪽 방법은 서버가 아무것도 기억하지 않는 것입니다. 로그인에 성공한 사람에게 신분을 증명하는 표를 하나 만들어 건네주고, 이후로는 그 표를 요청마다 지니고 오게 합니다. 서버는 표가 진짜인지만 확인하면 됩니다. 이렇게 서버가 상태를 기억하지 않는 방식을 <strong>무상태(Stateless)</strong> 라고 합니다.</p>
 <div class="svg-figure">
@@ -333,7 +317,7 @@
 *그림 4-4. 세션은 서버가 사람마다 상태를 기억하는 방식이고, 토큰은 본인이 신분 표를 들고 다니는 방식입니다*
 <p>이 표에 해당하는 것이 <strong>JWT(JSON Web Token)</strong> 입니다. 로그인에 성공하면 서버가 유저 정보를 담은 토큰을 만들어 건네고, 클라이언트는 이후 요청마다 그 토큰을 지니고 옵니다. 서버는 토큰이 위조되지 않았는지만 확인하면 되므로, 누가 로그인했는지 따로 기억해 둘 필요가 없습니다. 이 책의 게시판은 이 방식으로 로그인을 붙입니다.</p>
 <h2>4.4 회원 도메인과 연관관계</h2>
-<p>토큰을 발급하려면 먼저 로그인할 회원이 있어야 합니다. 오픈이는 게시글을 만들 때처럼 회원을 표현하는 엔티티부터 만듭니다.</p>
+<p>토큰을 발급하려면 먼저 로그인할 회원이 있어야 합니다. 게시글을 만들 때처럼 회원을 표현하는 엔티티부터 만듭니다.</p>
 <p><code>user/User.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> user/User.java. 회원 엔티티</div><span class="nd">@NoArgsConstructor</span>
 <span class="nd">@Data</span>
@@ -393,7 +377,7 @@
 <span class="w">                </span><span class="p">.</span><span class="na">getResultStream</span><span class="p">().</span><span class="na">findFirst</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>findByIdJoinUser</code>는 게시글 한 건을 작성자와 묶어 가져옵니다. 여기서는 &quot;작성자를 함께 가져오는 조회&quot;라는 이름으로만 쓰고, <code>join fetch</code>가 왜 필요한지는 다음 챕터로 미룹니다.</p>
-<p>작성자가 딸려 오니, 게시글 상세를 응답할 때 작성자 정보도 함께 내보낼 수 있습니다. 3장에서 만든 상세 그릇 <code>BoardResponse.DetailDTO</code>에 작성자의 아이디(<code>userId</code>)와 유저네임(<code>username</code>) 두 항목을 더합니다. 비밀번호처럼 보여선 안 되는 값은 접시에 담지 않으므로, 응답에는 유저네임과 아이디만 나갑니다.</p>
+<p>작성자가 딸려 오니, 게시글 상세를 응답할 때 작성자 정보도 함께 내보낼 수 있습니다. 3장에서 만든 상세 그릇 <code>BoardResponse.DetailDTO</code>에 작성자의 아이디(<code>userId</code>)와 유저네임(<code>username</code>) 두 항목을 더합니다. 비밀번호처럼 보여선 안 되는 값은 응답에 담지 않으므로, 유저네임과 아이디만 나갑니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
@@ -462,7 +446,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JwtUtil</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>회원가입</code>은 먼저 같은 유저네임이 이미 있는지 확인합니다. <code>findByUsername</code>이 회원을 담아 오면 이미 쓰이는 이름이므로 예외를 던져 가입을 막습니다. 이름이 비어 있으면 비밀번호를 <code>encode</code>로 해싱해, 원본 대신 해시를 저장합니다. <code>toEntity</code>에 넘기는 값이 원래 비밀번호가 아니라 해싱한 값이라는 점이 핵심입니다. 값을 저장하는 메서드이므로 <code>@Transactional</code>을 붙였고, 읽기만 하는 로그인에는 붙이지 않았습니다.</p>
+<p><code>회원가입</code>은 먼저 같은 유저네임이 이미 있는지 확인합니다. <code>findByUsername</code>이 회원을 담아 오면 이미 쓰이는 이름이므로 예외를 던져 가입을 막습니다. 같은 이름을 쓰는 회원이 없으면 비밀번호를 <code>encode</code>로 해싱해, 원본 대신 해시를 저장합니다. <code>toEntity</code>에 넘기는 값이 원래 비밀번호가 아니라 해싱한 값이라는 점이 핵심입니다. 값을 저장하는 메서드이므로 <code>@Transactional</code>을 붙였고, 읽기만 하는 로그인에는 붙이지 않았습니다.</p>
 <p><code>로그인</code>은 반대 순서입니다. 유저네임으로 회원을 찾고, 없으면 예외를 던집니다. 회원을 찾으면 입력한 비밀번호를 <code>matches</code>로 저장된 해시와 대조합니다. 저장된 것은 해시라서 원래 비밀번호로 되돌릴 수 없지만, 입력값을 같은 방식으로 뭉개 비교하면 맞는지 가려낼 수 있습니다. 비밀번호가 맞으면 마지막 줄에서 <code>JwtUtil.create</code>로 토큰을 만들어 돌려줍니다. 토큰을 만드는 <code>JwtUtil.create</code>의 내부는 다음 절 4.6에서 만듭니다. 지금은 &quot;로그인에 성공하면 유저 정보를 담은 토큰 문자열이 나온다&quot;는 것만 알면 흐름을 따라올 수 있습니다.</p>
 <p>두 서비스를 바깥과 잇는 컨트롤러를 만듭니다. <code>user/UserController.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> user/UserController.java. 회원가입·로그인 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
@@ -485,7 +469,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">accessToken</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>/join</code>은 가입 요청을 받아 서비스로 넘기고, 저장만 하면 되므로 <code>Resp.ok(null)</code>로 성공만 알립니다. <code>/login</code>은 서비스가 돌려준 토큰 문자열을 그대로 응답 몸통에 담아 내보냅니다. 클라이언트는 이 토큰을 받아 두었다가 이후 요청마다 지니고 옵니다. <code>@RequestBody</code> 앞에 붙은 <code>@Valid</code>는 앞에서 DTO에 달아 둔 검증 표식을 실제로 검사하라는 신호인데, 이 부분도 4.9에서 이어서 다룹니다.</p>
+<p><code>/join</code>은 가입 요청을 받아 서비스로 넘기고, 저장만 하면 되므로 <code>Resp.ok(null)</code>로 성공만 알립니다. <code>/login</code>은 서비스가 돌려준 토큰 문자열을 그대로 응답 몸통에 담아 내보냅니다. 클라이언트는 이 토큰을 받아 두었다가 이후 요청마다 지니고 옵니다. <code>@RequestBody</code> 앞에 붙은 <code>@Valid</code>는 앞에서 DTO에 달아 둔 검증 표식을 실제로 검사하라는 신호인데, 이 부분도 4.9에서 이어서 다룹니다. 로그인이 GET이 아니라 POST인 이유도 여기 있습니다. GET은 주소창에 값이 남아 비밀번호가 노출될 수 있지만, POST는 값을 요청 몸통에 실어 보내 그 위험을 줄입니다.</p>
 <h2>4.6 JWT 구조와 검증</h2>
 <p>로그인이 만들어 건네는 토큰이 어떻게 생겼는지 볼 차례입니다. JWT는 점(<code>.</code>) 두 개로 나뉜 세 조각으로 이루어집니다. 각 조각이 맡은 역할이 다릅니다.</p>
 <div class="svg-figure">
@@ -522,7 +506,7 @@
 </svg>
 </div>
 <div class="caption">그림 4-5. JWT는 헤더, 페이로드, 서명 세 조각으로 이루어지며 점으로 이어져 한 줄이 됩니다</div>
-<p>세 조각 중 페이로드에 담긴 정보는 누구든 열어 볼 수 있습니다. 그래서 비밀번호처럼 감춰야 할 값은 넣지 않고, 누구인지 알려 줄 정도의 값만 담습니다. 이 토큰의 힘은 마지막 서명 조각에서 나옵니다. 서명은 서버만 아는 비밀 문자열로 만들어지므로, 페이로드를 몰래 고치면 서명이 맞지 않게 되어 검증에서 걸립니다. 그래서 서버는 토큰을 기억해 두지 않고도, 들어온 토큰의 서명만 확인해 위조 여부를 가려낼 수 있습니다.</p>
+<p>세 조각 중 페이로드에 담긴 정보는 누구든 열어 볼 수 있습니다. 그래서 비밀번호처럼 감춰야 할 값은 넣지 않고, 누구인지 알려 줄 정도의 값만 담습니다. 위조를 막는 것은 마지막 서명 조각입니다. 서명은 서버만 아는 비밀 문자열로 만들어지므로, 페이로드를 몰래 고치면 서명이 맞지 않게 되어 검증에서 걸립니다. 그래서 서버는 토큰을 기억해 두지 않고도, 들어온 토큰의 서명만 확인해 위조 여부를 가려낼 수 있습니다.</p>
 <p>토큰을 만들고 확인하는 코드에는 상수가 여럿 등장합니다. 먼저 그 뜻을 정리합니다.</p>
 <table>
 <thead>
@@ -575,7 +559,7 @@
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>create</code>가 그림의 세 조각을 채우는 부분입니다. <code>withSubject</code>와 <code>withClaim</code>으로 페이로드에 유저네임과 아이디를 담고, <code>withExpiresAt</code>으로 만료 시각을 넣습니다. 마지막 <code>sign(Algorithm.HMAC512(SECRET))</code>이 <code>SECRET</code>으로 서명 조각을 만듭니다. 완성된 토큰 앞에 <code>TOKEN_PREFIX</code>를 붙여 돌려주는데, 이 <code>Bearer </code> 표식은 &quot;이 뒤에 오는 값이 토큰이다&quot;라고 알리는 관례입니다. 토큰에 담긴 값 하나하나를 <strong>클레임(Claim)</strong> 이라고 하며, <code>id</code>는 그중 하나입니다.</p>
 <p><code>verify</code>는 반대 방향입니다. <code>JWT.require(...).verify(jwt)</code>가 서명을 확인해, 같은 <code>SECRET</code>으로 만들어진 진짜 토큰인지 가려냅니다. 서명이 맞지 않으면 이 지점에서 예외가 납니다. 통과하면 페이로드에서 아이디와 유저네임을 꺼내 <code>User</code> 객체로 되살립니다. 토큰 하나가 로그인한 사람의 신원으로 복원되는 것입니다.</p>
-<p><code>JwtUtil</code>이 토큰을 만들고 여는 도구라면, 그 도구를 요청과 이어 주는 손잡이가 하나 더 필요합니다. 요청 헤더에서 토큰을 꺼내고, 꺼낸 토큰을 <code>verify</code>에 넘겨 유저를 복원하는 일입니다. <code>core/util/JwtProvider.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
+<p><code>JwtUtil</code>이 토큰을 만들고 여는 도구라면, 그 도구를 요청에 연결하는 코드가 하나 더 필요합니다. 요청 헤더에서 토큰을 꺼내고, 꺼낸 토큰을 <code>verify</code>에 넘겨 유저를 복원하는 일입니다. <code>core/util/JwtProvider.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtProvider</span><span class="w"> </span><span class="p">{</span>
 
@@ -599,7 +583,7 @@
 <span class="p">}</span></div>
 <p><code>resolveToken</code>은 요청의 <code>Authorization</code> 헤더를 읽어, <code>Bearer </code> 표식이 붙어 있으면 그 표식을 떼고 순수한 토큰 문자열만 돌려줍니다. 헤더가 없거나 표식이 없으면 <code>null</code>을 돌려줍니다. <code>getUser</code>는 그 토큰을 <code>JwtUtil.verify</code>에 넘겨, 유효하면 복원된 유저를, 서명이 어긋나 예외가 나면 <code>null</code>을 돌려줍니다. 토큰의 진위 판단을 참·거짓 대신 &quot;유저 아니면 <code>null</code>&quot;로 돌려주도록 감싼 것입니다. 이 판단을 다음 절의 필터가 그대로 씁니다.</p>
 <h2>4.7 인증을 맡는 필터</h2>
-<p>이제 요청이 들어오는 길목에 인증을 놓습니다. 4.2에서 정문에 비유한 그 확인입니다. 요청마다 헤더의 토큰을 확인해, 유효하면 그 신원을 요청에 붙여 두는 일입니다.</p>
+<p>이제 요청이 들어오는 길목에 인증을 놓습니다. 앞서 정문에 비유한 그 확인입니다. 요청마다 헤더의 토큰을 확인해, 유효하면 그 신원을 요청에 붙여 두는 일입니다.</p>
 <p>이 일을 맡는 것이 <strong>필터(Filter)</strong> 입니다. 필터는 요청이 컨트롤러에 도달하기 전에 먼저 거쳐 가는 길목의 검문소입니다. 스프링에서는 <code>OncePerRequestFilter</code>를 상속해, 요청 한 건마다 한 번씩 실행되는 필터를 만듭니다.</p>
 <p><code>core/filter/JwtAuthenticationFilter.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
@@ -627,7 +611,7 @@
 <p>필터가 하는 일은 신원을 밝혀 붙여 두는 것까지입니다. <code>resolveToken</code>으로 토큰을 꺼내고, 토큰이 있으면 <code>getUser</code>로 유저를 복원합니다. 복원에 성공하면 <code>request.setAttribute</code>로 그 유저를 요청에 <code>sessionUser</code>라는 이름표로 심어 둡니다. 뒤에 오는 컨트롤러나 인터셉터가 이 이름표를 꺼내 &quot;이 요청을 보낸 사람&quot;을 알 수 있습니다.</p>
 <p>여기서 중요한 것은 마지막 줄입니다. 토큰이 없거나 틀려도 필터는 요청을 막지 않고 <code>filterChain.doFilter</code>로 그대로 통과시킵니다. 정문에서 사원증을 확인해 &quot;이 사람이 누구다&quot;까지만 밝히고, 어느 방에 들어갈 수 있는지는 따지지 않는 것과 같습니다. 신원이 확인되면 이름표가 붙고, 안 되면 이름표 없이 지나갑니다. 막는 일은 인증이 아니라 인가의 몫이라, 다음 문에서 처리합니다.</p>
 <h2>4.8 인가를 맡는 인터셉터</h2>
-<p>필터가 이름표를 붙여 통과시켰으니, 이제 그 이름표를 보고 요청을 막을지 말지 결정하는 문을 세울 차례입니다. 4.2에서 서버실 문에 비유한 인가입니다.</p>
+<p>필터가 이름표를 붙여 통과시켰으니, 이제 그 이름표를 보고 요청을 막을지 말지 결정하는 문을 세울 차례입니다. 앞서 서버실 문에 비유한 인가입니다.</p>
 <p>이 문을 맡는 것이 <strong>인터셉터(Interceptor)</strong> 입니다. 인터셉터는 필터를 지난 요청이 컨트롤러에 도달하기 직전에 한 번 더 가로채는 장치입니다. <code>preHandle</code> 메서드가 <code>true</code>를 돌려주면 요청이 컨트롤러로 넘어가고, 예외를 던지면 그 자리에서 막힙니다.</p>
 <p><code>core/interceptor/AuthInterceptor.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/interceptor/AuthInterceptor.java. 인가 인터셉터</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">AuthInterceptor</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">HandlerInterceptor</span><span class="w"> </span><span class="p">{</span>
@@ -647,7 +631,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="kc">true</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>인터셉터는 요청의 방식을 먼저 봅니다. 목록과 상세를 부르는 <code>GET</code>은 로그인 없이도 열려 있어야 하므로 그대로 통과시킵니다. <code>OPTIONS</code>도 통과시키는데, 이는 브라우저가 본 요청을 보내기 전에 미리 확인차 던지는 요청이라 막으면 안 됩니다.</p>
+<p>인터셉터는 요청의 방식을 먼저 봅니다. 목록과 상세를 조회하는 <code>GET</code>은 로그인 없이도 열려 있어야 하므로 그대로 통과시킵니다. <code>OPTIONS</code>도 통과시키는데, 이는 브라우저가 본 요청을 보내기 전에 미리 확인차 던지는 요청이라 막으면 안 됩니다.</p>
 <p>읽기가 아닌 요청, 즉 글을 쓰거나 고치거나 지우는 요청에서만 문이 닫힙니다. 필터가 심어 둔 <code>sessionUser</code>를 꺼내, 이름표가 없으면 로그인하지 않은 요청이므로 <code>Exception401</code>을 던져 막습니다. 던져진 예외가 어떤 응답이 되는지는 4.9에서 잇습니다. 이름표가 있으면 로그인한 요청이니 통과시킵니다. 이렇게 쓰기 요청에만 로그인을 강제합니다.</p>
 <p>만든 인터셉터는 스프링에 등록해야 동작합니다. 이 등록은 참고 코드 <code>core/config/WebMvcConfig.java</code>가 맡습니다. <code>AuthInterceptor</code>를 게시글 주소(<code>/api/boards</code>와 그 하위 경로)에만 세워, 로그인과 회원가입 주소에는 문을 두지 않습니다. 그래서 로그인하지 않은 사람도 가입하고 로그인할 수 있습니다. 같은 설정에서 CORS도 한 줄로 열어 두는데, 이는 화면과 서버가 서로 다른 주소에서 돌아갈 때 브라우저가 요청을 막지 않게 하는 설정으로, 자세한 내용은 이 책의 범위를 벗어나므로 짚고만 넘어갑니다.</p>
 <p>필터가 <code>@Component</code>로 자동 등록되고 인터셉터가 이 설정으로 등록되면, 두 문이 요청 하나를 차례로 거릅니다. 요청은 필터에서 신원이 심기고, 인터셉터에서 쓰기 여부에 따라 걸러진 뒤, 컨트롤러로 전달됩니다.</p>
@@ -680,9 +664,7 @@
 </div>
 <div class="caption">그림 4-6. 필터는 신원을 심고 통과시키며, 인터셉터는 쓰기 요청에서 신원을 확인해 없으면 막습니다</div>
 <h2>4.9 소유자 검증과 검증 실패</h2>
-<p>두 문을 세우고 나니 이제 됐다 싶었습니다. 오픈이는 로그인한 뒤 다른 사람의 글에 다시 수정을 보내 봤습니다.</p>
-<p class="thought">이번엔 막히겠지.</p>
-<p>그런데 응답은 또 200이었습니다. 로그인만 했을 뿐 남의 글인데, 수정이 그대로 반영됐습니다. 인터셉터는 로그인한 사람인지까지만 봅니다. 로그인만 했다면, 남의 글을 고치려는 요청도 일단 통과시킵니다. 4.1에서 본 문제의 절반이 아직 열려 있습니다. 로그인한 본인인지를 글 단위로 따지는 확인이 하나 더 필요합니다.</p>
+<p>두 문을 세웠지만, 문제의 절반은 아직 열려 있습니다. 로그인한 사람이 다른 사람의 글에 수정을 보내면 응답은 다시 200입니다. 로그인만 했을 뿐 남의 글인데 수정이 그대로 반영됩니다. 인터셉터는 로그인한 사람인지까지만 보기 때문에, 로그인만 했다면 남의 글을 고치려는 요청도 일단 통과시킵니다. 로그인한 본인인지를 글 단위로 따지는 확인이 하나 더 필요합니다.</p>
 <p>이 확인은 인터셉터가 아니라 서비스에서 합니다. 어느 글의 작성자인지는 글을 조회해 봐야 알 수 있기 때문입니다. 그 전에 던질 예외 두 가지를 만듭니다. <code>Exception401</code>은 로그인이 필요한데 안 된 상황에, <code>Exception403</code>은 로그인은 했지만 자격이 없는 상황에 던집니다. 3장에서 만든 <code>Exception404</code>와 구조가 같아, 각각 <code>RuntimeException</code>을 상속한 한 줄짜리 커스텀 예외입니다. 3.4의 상태 코드 표에서 미뤄 두었던 401과 403을 여기서 씁니다.</p>
 <p>이제 서비스가 소유자를 따집니다. <code>board/BoardService.java</code>의 수정 메서드를 아래처럼 고칩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> board/BoardService.java. 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
@@ -731,9 +713,12 @@
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\01_login-and-403.png" alt="" /><div class="caption">그림 4-7. 로그인하면 토큰이 발급되고, 남의 글을 수정하려 하면 403으로 막힙니다</div></div>
 <p>로그인하지 않고 보낸 쓰기 요청은 인터셉터에서 401로 막히고, 로그인은 했지만 남의 글을 건드리는 요청은 서비스에서 403으로 막힙니다. 제목 없이 보낸 요청은 검증에서 400으로 걸러집니다. 4.1에서 활짝 열려 있던 게시판에, 이제 신원을 밝히는 문과 자격을 따지는 문이 차례로 섰습니다.</p>
-<p>오픈이는 목록 화면을 붙이던 동료를 다시 불렀습니다.</p>
+<p>오픈이는 자기 계정으로 로그인한 뒤, 남의 글에 다시 수정을 보냈습니다.</p>
+<p class="thought">이번엔 막히겠지.</p>
+<p>응답 창에 403이 떴습니다. 게시글을 수정할 권한이 없다는 메시지도 함께였습니다. 로그인하지 않은 쓰기는 401에서, 남의 글은 403에서, 각각 다른 문에 걸려 멈췄습니다. 오픈이는 목록 화면을 붙이던 동료를 불렀습니다.</p>
 <div class="dialogue"><span class="speaker">오픈이</span>: "이제 로그인 안 하면 글이 안 써지고, 로그인해도 남의 글은 못 고쳐요."<br></div>
-<div class="dialogue"><span class="speaker">동료</span>: "아, 제 계정으로는 제 글만 지워지네요. 아까는 아무 글이나 다 지워졌는데."</div>
+<div class="dialogue"><span class="speaker">동료</span>: "아, 제 계정으로는 제 글만 지워지네요. 아까는 아무 글이나 다 지워졌는데요."</div>
+<p>문만 있고 지키는 사람은 없던 성에, 신원을 밝히는 경비와 자격을 따지는 문지기가 나란히 섰습니다.</p>
 <h2>용어 정리</h2>
 <p>이번 챕터에서 비유로 먼저 풀어낸 개념들을 정식 용어로 정리합니다.</p>
 <table>

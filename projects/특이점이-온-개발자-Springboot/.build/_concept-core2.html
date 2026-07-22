@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리플렉션 개념도 — 방향 2 보강</title>
+<style>
+  body { font-family: "Pretendard","Malgun Gothic",system-ui,sans-serif; color:#0f172a; background:#f1f5f9; margin:0; padding:40px; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  p.lead { color:#475569; margin:0 0 30px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px 28px; margin:0 0 28px; }
+  .card h2 { font-size:16px; margin:0 0 4px; color:#3730a3; }
+  .card .desc { color:#64748b; font-size:13px; margin:0 0 16px; }
+  .card .note { text-align:center; color:#334155; font-size:13px; margin-top:8px; font-style:italic; }
+  .divider { border:0; border-top:1px dashed #e2e8f0; margin:22px 0 16px; }
+  .sub { text-align:center; font-size:13px; font-weight:700; color:#3730a3; margin:0 0 12px; }
+  svg { display:block; width:100%; height:auto; margin:0 auto; }
+  svg.scene { max-width:780px; }
+  svg.map { max-width:560px; }
+</style>
+</head>
+<body>
+<h1>리플렉션 개념도 (그림 1-3 교체용) — 방향 2 보강</h1>
+<p class="lead">안내원 장면(위) + "비유 → 실제" 매핑(아래). 장면이 코드로 착지하게.</p>
+
+<div class="card">
+<h2>장면 + 매핑</h2>
+<p class="desc">명단 박힌 안내원(적힌 사람만) vs 명단 없는 안내원(누가 오든 이름표 읽어 처리). 아래 band에서 각 요소가 코드로 무엇인지 회수.</p>
+
+<svg class="scene" viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="d2-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker></defs>
+  <rect x="20" y="46" width="346" height="286" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="193" y="72" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">명단이 박힌 안내원</text>
+  <circle cx="72" cy="118" r="15" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <rect x="54" y="136" width="36" height="30" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <rect x="98" y="110" width="52" height="64" rx="6" fill="#f8fafc" stroke="#475569" stroke-width="1.4"/>
+  <text x="124" y="126" text-anchor="middle" font-size="9" font-weight="700" fill="#475569">명단</text>
+  <text x="106" y="142" font-size="9.5" fill="#334155">insert</text>
+  <text x="106" y="156" font-size="9.5" fill="#334155">delete</text>
+  <text x="106" y="170" font-size="9.5" fill="#334155">update</text>
+  <rect x="236" y="92" width="8" height="216" rx="3" fill="#cbd5e1"/>
+  <circle cx="312" cy="126" r="13" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="296" y="142" width="32" height="26" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="282" y="174" width="60" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="312" y="187" text-anchor="middle" font-size="10" fill="#3730a3">/insert</text>
+  <line x1="282" y1="150" x2="250" y2="150" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="196" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">통과</text>
+  <text x="196" y="146" text-anchor="middle" font-size="9" fill="#64748b">명단에 있음</text>
+  <circle cx="312" cy="232" r="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="296" y="248" width="32" height="26" rx="9" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="278" y="280" width="68" height="17" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="312" y="293" text-anchor="middle" font-size="10" fill="#64748b">/select</text>
+  <line x1="282" y1="256" x2="252" y2="256" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="196" y="238" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">막힘</text>
+  <text x="196" y="252" text-anchor="middle" font-size="9" fill="#64748b">명단에 없음</text>
+  <rect x="394" y="46" width="346" height="286" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="567" y="72" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">명단 없는 안내원</text>
+  <circle cx="448" cy="118" r="15" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <rect x="430" y="136" width="36" height="30" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <circle cx="492" cy="150" r="13" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <line x1="501" y1="159" x2="512" y2="170" stroke="#4f46e5" stroke-width="2"/>
+  <text x="470" y="192" text-anchor="middle" font-size="9.5" fill="#64748b">이름표를 읽는다</text>
+  <rect x="612" y="92" width="8" height="216" rx="3" fill="#cbd5e1"/>
+  <circle cx="688" cy="126" r="13" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="672" y="142" width="32" height="26" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="658" y="174" width="60" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="688" y="187" text-anchor="middle" font-size="10" fill="#3730a3">/insert</text>
+  <line x1="658" y1="150" x2="626" y2="150" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="573" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">통과</text>
+  <text x="573" y="146" text-anchor="middle" font-size="9" fill="#64748b">이름표 읽음</text>
+  <circle cx="688" cy="232" r="13" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="672" y="248" width="32" height="26" rx="9" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="670" y="280" width="60" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="700" y="293" text-anchor="middle" font-size="10" fill="#3730a3">/select</text>
+  <line x1="658" y1="256" x2="626" y2="256" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="573" y="238" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">통과</text>
+  <text x="573" y="252" text-anchor="middle" font-size="9" fill="#64748b">처음 봐도 읽어서</text>
+</svg>
+
+<hr class="divider">
+<p class="sub">이 장면을 코드로 옮기면</p>
+<svg class="map" viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="m-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker></defs>
+  <rect x="16" y="16" width="150" height="34" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="91" y="38" text-anchor="middle" font-size="12" fill="#334155">명단 없는 안내원</text>
+  <line x1="172" y1="33" x2="204" y2="33" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#m-ar)"/>
+  <rect x="210" y="16" width="334" height="34" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="377" y="38" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">리플렉션 (스프링)</text>
+  <rect x="16" y="60" width="150" height="34" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="91" y="82" text-anchor="middle" font-size="12" fill="#334155">손에 박힌 명단</text>
+  <line x1="172" y1="77" x2="204" y2="77" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#m-ar)"/>
+  <rect x="210" y="60" width="334" height="34" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="377" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">코드에 미리 박은 이름 (if문의 주소)</text>
+  <rect x="16" y="104" width="150" height="34" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="91" y="126" text-anchor="middle" font-size="12" fill="#334155">손님 목에 건 이름표</text>
+  <line x1="172" y1="121" x2="204" y2="121" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#m-ar)"/>
+  <rect x="210" y="104" width="334" height="34" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="377" y="126" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">메서드에 단 표식 (어노테이션)</text>
+  <rect x="16" y="148" width="150" height="34" rx="8" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="91" y="170" text-anchor="middle" font-size="12" fill="#334155">찾아오는 손님</text>
+  <line x1="172" y1="165" x2="204" y2="165" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#m-ar)"/>
+  <rect x="210" y="148" width="334" height="34" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="377" y="170" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">내가 만든 컨트롤러 · 메서드</text>
+</svg>
+<p class="note">명단 없는 안내원이 하는 일 = 스프링이 표식을 읽어, 미리 알지 못한 내 코드를 처리하는 일</p>
+</div>
+
+</body>
+</html>

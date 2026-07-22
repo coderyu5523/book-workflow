@@ -20,12 +20,9 @@
 <body>
 <div class="container">
 <h1>챕터 3. 예외 처리와 DTO - 터지지 않고, 새어 나가지 않게</h1>
-<p>앞 챕터 끝에서 동료가 물었습니다. 없는 번호로 상세를 부르면 어떻게 되느냐는 것이었습니다. 오픈이는 답을 짐작만 했을 뿐, 눈으로 확인한 적은 없었습니다.</p>
-<p class="thought">직접 넣어 보면 되잖아.</p>
-<p>오픈이는 서버를 다시 실행하고, 아직 없는 999번 글을 불러 봤습니다. 목록에는 글이 두 건뿐이니 999번은 존재하지 않습니다. 잠시 뒤 화면에 돌아온 것은 성공이 아니었습니다. 지금까지 맞춰 온 <code>status</code>, <code>msg</code>, <code>body</code> 형식도 없이, 스프링이 기본으로 뱉는 낯선 오류가 상태 코드 500과 함께 떠 있었습니다.</p>
-<p class="thought">역시 터졌구나.</p>
-<p>이번엔 잘 되는 1번 글을 불러 응답을 다시 들여다봤습니다. 목록도 상세도 잘 나옵니다. 그런데 응답 안에는 <code>createdAt</code> 같은 내부 기록 필드가 그대로 실려 나가고 있었습니다. 지금은 사소해 보입니다. 하지만 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 그 값까지 바깥으로 새어 나가게 됩니다.</p>
-<p>두 개의 구멍이 한꺼번에 드러났습니다. 없는 글에 서버가 터지는 것과, 내부 엔티티가 응답으로 새어 나가는 것입니다. 이번 챕터는 이 둘을 어떻게 막는지 먼저 한 장으로 펼쳐 보겠습니다.</p>
+<p>게시판은 목록과 상세, 작성과 수정, 삭제까지 동작합니다. 그런데 앞 챕터를 닫으며 물음이 하나 남았습니다. 없는 번호로 상세를 부르면 어떻게 되느냐는 것이었습니다. 목록에 글이 두 건뿐인 서버에 아직 없는 999번 상세를 요청하면, 돌아오는 것은 성공이 아닙니다. 지금까지 맞춰 온 <code>status</code>, <code>msg</code>, <code>body</code> 형식도 없이, 스프링이 기본으로 뱉는 낯선 오류가 상태 코드 500과 함께 떠 있습니다.</p>
+<p>터지는 요청만 문제가 아닙니다. 정상으로 존재하는 1번 글을 부르면 응답은 잘 돌아옵니다. 그런데 그 응답 안에는 <code>createdAt</code> 같은 내부 기록 필드가 그대로 실려 나갑니다. 지금은 사소해 보이지만, 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 그 값까지 바깥으로 새어 나갑니다.</p>
+<p>두 개의 구멍이 한꺼번에 드러났습니다. 없는 글에 서버가 터지는 것과, 내부 엔티티가 응답으로 새어 나가는 것입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 3 한눈에 보기. 구멍 1은 없는 글을 조회하면 500으로 서버가 터지던 것을, Optional과 예외와 전역 처리로 404 응답으로 바꾼다. 구멍 2는 엔티티를 통째로 내보내 createdAt까지 새어 나가던 것을, 응답 DTO로 감싸 boardId·title·content 세 값만 내보낸다.">
   <defs>
@@ -64,7 +61,7 @@
 </ul>
 </div>
 <h2>3.1 두 개의 구멍</h2>
-<p>먼저 없는 글에 터지는 첫 번째 구멍입니다. 오픈이가 부른 999번 요청과 그 응답은 이랬습니다.</p>
+<p>먼저 없는 글에 터지는 첫 번째 구멍입니다. 999번 상세를 요청하면 이런 응답이 돌아옵니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 없는 글 조회</div>GET<span class="w"> </span>http://localhost:8080/api/boards/999</div>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-07-21T09:12:44.019+00:00&quot;</span><span class="p">,</span>
@@ -73,7 +70,7 @@
 <span class="w">  </span><span class="nt">&quot;path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/api/boards/999&quot;</span>
 <span class="p">}</span></div>
 <p>500은 서버 안에서 미처 처리하지 못한 오류가 났다는 뜻입니다. 원인은 조회 코드에 있습니다. 앞 챕터의 <code>findById</code>는 없는 글을 찾으면 글 대신 <code>null</code>을 돌려줍니다. 그 <code>null</code>이 응답을 만드는 과정으로 그대로 흘러 들어가 문제를 일으키고, 스프링은 이를 500 오류로 감싸 내보냅니다. 게다가 이 응답에는 앞 챕터에서 맞춰 온 <code>status</code>, <code>msg</code>, <code>body</code> 형식조차 없습니다. 스프링이 기본으로 뱉는 낯선 모양이 그대로 나갔습니다.</p>
-<p>두 번째 구멍은 오히려 잘 되는 요청에 숨어 있습니다. 정상으로 존재하는 1번 글을 부르면 응답은 이렇게 돌아옵니다.</p>
+<p>두 번째 구멍은 오히려 정상으로 동작하는 요청에 있습니다. 정상으로 존재하는 1번 글을 부르면 응답은 이렇게 돌아옵니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
@@ -141,10 +138,7 @@
 <p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>3.2 응답 그릇을 따로 만든다</h2>
-<p>새어 나가는 구멍부터 막습니다. 오픈이는 응답에 엔티티를 통째로 실어 보내는 게 마음에 걸려 선배에게 물었습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "글을 응답할 때 엔티티를 그대로 내보내고 있는데, 이래도 되나요?"<br></div>
-<div class="dialogue"><span class="speaker">선배</span>: "주방 냄비를 그대로 손님상에 올리지는 않잖아요. 접시에 덜어서 내가요."</div>
-<p>오픈이는 냄비와 접시를 떠올렸습니다. 엔티티는 주방 안에서 쓰는 냄비입니다. 데이터베이스와 맞닿아 온갖 정보를 담고, 값을 넣고 빼며 요리하는 그릇입니다. 손님상에 나가는 것은 접시라야 합니다. 접시에는 손님이 볼 것만 덜어 담습니다.</p>
+<p>새어 나가는 구멍부터 막습니다. 응답에 엔티티를 그대로 실어 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 맞닿아 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.</p>
 <p>응답으로 내보낼 그릇을 따로 만들어 거기에 보여줄 값만 담으면, 엔티티는 주방 안에 남고 접시만 바깥으로 나갑니다. 이렇게 계층 사이에서 필요한 값만 담아 나르는 객체를 DTO(Data Transfer Object)라고 합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 title, content, createdAt에 작성자, 비밀번호까지 담은 Board 엔티티가 있고, 가운데 벽의 창구에는 'DTO만 통과' 표지가 붙어 있다. 창구를 지나 오른쪽 응답으로 나온 것은 boardId, title, content 세 줄만 담은 작은 DTO다.">
@@ -174,7 +168,7 @@
   <line x1="458" y1="176" x2="554" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
 </svg>
 </div>
-*그림 3-2. 엔티티는 내부에 두고, 응답으로 나갈 값만 DTO에 담아 내보냅니다*
+<div class="caption">그림 3-2. 엔티티는 내부에 두고, 응답으로 나갈 값만 DTO에 담아 내보냅니다</div>
 <p><code>board/BoardResponse.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/BoardResponse.java. 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardResponse</span><span class="w"> </span><span class="p">{</span>
 
@@ -193,7 +187,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>record</code>는 값을 담기만 하는 간단한 클래스를 짧게 정의하는 자바 문법으로, 앞 챕터의 <code>BoardRequest</code>에서 이미 썼습니다. 두 그릇 모두 <code>Board</code>를 받는 생성자를 하나씩 두었습니다. 엔티티를 넘기면 <code>board.getId()</code>, <code>getTitle()</code>, <code>getContent()</code>에서 값을 꺼내 그릇에 옮겨 담습니다. 이 생성자 덕분에 서비스에서 <code>new BoardResponse.DTO(board)</code> 한 줄로 엔티티를 접시로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 <code>id</code>가 아니라 <code>boardId</code>로 둔 것도, 바깥에 나가는 이름을 응답 그릇에서 따로 정할 수 있기 때문입니다.</p>
-<p>그릇을 목록용 <code>DTO</code>와 상세용 <code>DetailDTO</code>로 나눠 둔 데는 이유가 있습니다. 지금은 두 그릇의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 그릇만 손보면 되고, 목록은 건드릴 필요가 없습니다.</p>
+<p>지금은 목록용 <code>DTO</code>와 상세용 <code>DetailDTO</code>의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 그릇만 손보면 되고, 목록은 건드릴 필요가 없습니다.</p>
 <p>들어오는 요청도 마찬가지로 그릇에 담습니다. 앞 챕터에서 만든 <code>SaveDTO</code>에 <code>toEntity()</code>를 더해, 요청 그릇을 엔티티로 바꾸는 통로를 냅니다. <code>board/BoardRequest.java</code>의 <code>SaveDTO</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/BoardRequest.java. 요청 DTO에 toEntity 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 빌더로 요청 값을 엔티티에 옮겨 담는다</span>
@@ -204,7 +198,7 @@
 <p><code>toEntity()</code>가 <code>Board.builder()</code>를 쓰므로, 앞 챕터에서 <code>@Data</code>만 붙였던 <code>Board</code> 엔티티에 <code>@Builder</code>를 더합니다. 빌더를 쓰면 필요한 필드만 골라 채워 엔티티를 만들 수 있습니다.</p>
 <h2>3.3 없음을 예외로 바꾼다</h2>
 <p>그릇을 만들었으니 이제 서비스가 엔티티를 접시에 담아 넘기게 고칩니다. 그런데 그 전에 첫 번째 구멍, 없는 글에 서버가 터지는 문제를 같이 다뤄야 합니다. 두 문제가 모두 조회 메서드에서 만나기 때문입니다.</p>
-<p>터지는 뿌리는 <code>findById</code>가 없는 글에 <code>null</code>을 돌려주는 데 있습니다. <code>null</code>은 아무 표시가 없습니다. 받는 쪽은 그것이 진짜 글인지 빈손인지 열어 보기 전엔 모릅니다. 자바에는 이 애매함을 걷어내는 문법이 있습니다. 값이 있을 수도, 없을 수도 있는 것을 상자에 담아 표현하는 <code>Optional</code>입니다.</p>
+<p>서버가 터지는 원인은 <code>findById</code>가 없는 글에 <code>null</code>을 돌려주기 때문입니다. <code>null</code>은 아무 표시가 없는 빈손입니다. 받는 쪽은 그것이 진짜 글인지 빈손인지 열어 보기 전엔 모릅니다. 자바에는 이 애매함을 걷어내는 문법이 있습니다. 값이 있을 수도, 없을 수도 있음을 상자에 담아 드러내는 <code>Optional</code>입니다.</p>
 <p><code>findById</code>가 <code>null</code> 대신 <code>Optional</code>을 돌려주면, 받는 쪽은 타입만 보고도 &quot;빈 상자일 수 있다&quot;는 걸 압니다. <code>board/BoardRepository.java</code>의 <code>findById</code>를 아래처럼 고칩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> board/BoardRepository.java. findById가 Optional을 반환</div><span class="w">    </span><span class="c1">// 없으면 null 대신 빈 Optional을 돌려준다</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -218,9 +212,9 @@
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>한 메서드 안에서 두 가지가 바뀌었습니다. 하나는 조회입니다. <code>findById</code>가 돌려준 상자에 <code>orElseThrow</code>를 걸어, 없는 글이면 <code>null</code>을 넘기는 대신 <code>Exception404</code>를 던집니다. 이제 999번을 부르면 <code>null</code>이 흘러가다 엉뚱한 곳에서 터지는 게 아니라, 조회하는 순간 &quot;없다&quot;는 신호가 분명하게 올라옵니다. 다른 하나는 반환입니다. 조회한 엔티티를 <code>DetailDTO</code>에 담아 돌려줍니다. 냄비 대신 접시가 나가는 것입니다.</p>
+<p>한 메서드 안에서 두 가지가 바뀌었습니다. 하나는 조회입니다. <code>findById</code>가 돌려준 상자에 <code>orElseThrow</code>를 걸어, 없는 글이면 <code>null</code>을 넘기는 대신 <code>Exception404</code>를 던집니다. 이제 999번을 부르면 <code>null</code>이 흘러가다 엉뚱한 곳에서 터지는 게 아니라, 조회하는 순간 바로 예외가 납니다. 다른 하나는 반환입니다. 조회한 엔티티를 <code>DetailDTO</code>에 담아 돌려줍니다. 냄비 대신 접시가 나가는 것입니다.</p>
 <p>나머지 메서드도 같은 식으로 바뀝니다. <code>게시글목록</code>은 <code>findAll</code>로 가져온 엔티티 목록을 <code>stream</code>으로 훑어 하나씩 <code>BoardResponse.DTO</code>로 바꿔 <code>.map(BoardResponse.DTO::new).toList()</code>로 반환합니다. <code>게시글수정</code>과 <code>게시글삭제</code>도 조회할 때 상세와 똑같이 <code>orElseThrow</code>로 없는 글이면 <code>Exception404</code>를 던집니다.</p>
-<p>여기서 던지는 <code>Exception404</code>는 우리가 만들 커스텀 예외입니다. 아직 없는 클래스라 잠시 뒤 3.4에서 정의합니다. 트랜잭션도 짚고 넘어가면, 값을 바꾸는 <code>게시글추가</code>, <code>게시글수정</code>, <code>게시글삭제</code>에만 <code>@Transactional</code>을 붙입니다. 조회만 하는 목록과 상세에는 붙이지 않습니다. 2.5에서 정한 대로, 작업대를 여는 트랜잭션 경계는 쓰기가 일어나는 메서드에만 그어 둡니다.</p>
+<p>여기서 던지는 <code>Exception404</code>는 우리가 만들 커스텀 예외입니다. 아직 없는 클래스라 잠시 뒤에 정의합니다. 값을 바꾸는 <code>게시글추가</code>, <code>게시글수정</code>, <code>게시글삭제</code>에만 <code>@Transactional</code>을 붙이고, 조회만 하는 목록과 상세에는 붙이지 않습니다. 앞서 정한 대로, 작업대를 여는 트랜잭션 경계는 쓰기가 일어나는 메서드에만 그어 둡니다.</p>
 <p>서비스가 DTO를 돌려주니, 컨트롤러가 받는 타입도 엔티티에서 DTO로 바뀝니다. 바뀌는 것은 받는 타입뿐이라, 컨트롤러는 표로 정리합니다.</p>
 <table>
 <thead>
@@ -305,7 +299,7 @@
 <p>없는 글을 부른 상황은 404에 해당합니다. 앞에서 본 500은 서버가 예상하지 못하고 넘어졌다는 뜻이라, 없는 글에는 어울리지 않습니다. 없는 글은 서버의 잘못이 아니라 찾는 자원이 없는 것이니, 404로 응답해야 정확합니다. 이 표의 상태 코드마다 <code>Exception400</code>, <code>Exception401</code>처럼 짝이 되는 커스텀 예외를 하나씩 두는 것이 흔한 방식입니다. 이번 챕터는 없는 글을 다루니 <code>Exception404</code>만 만들고, 401과 403은 다음 챕터에서 인증과 권한을 붙이며 다시 만듭니다.</p>
 <h2>3.5 예외를 한 곳에서 받는다</h2>
 <p>이제 던져진 <code>Exception404</code>를 받아 404 JSON으로 바꿀 차례입니다. 서비스는 예외를 던지기만 할 뿐, 그것을 응답으로 만드는 코드는 어디에도 없습니다. 컨트롤러마다 <code>try-catch</code>를 넣어 잡을 수도 있지만, 그러면 예외 처리 코드가 모든 컨트롤러에 흩어집니다. 던지는 일과 받는 일을 갈라놓기로 한 보람이 없습니다.</p>
-<p>스프링에는 이 일을 한 곳에 몰아주는 장치가 있습니다. 건물 어느 층에서 문제가 터지든 경비실 한 곳으로 신고가 모이는 것과 같습니다. 컨트롤러 어디에서 예외가 던져지든, 그 예외를 가로채 응답으로 바꾸는 창구를 하나 두는 것입니다. 이 창구가 <code>@RestControllerAdvice</code>입니다.</p>
+<p>스프링에는 이 일을 한 곳에 몰아주는 장치가 있습니다. 건물 어느 층에서 문제가 터지든 신고가 경비실 한 곳으로 모이는 것과 같습니다. 컨트롤러 어디에서 예외가 던져지든, 그 예외를 가로채 응답으로 바꾸는 창구를 하나 두는 것입니다. 이 창구가 <code>@RestControllerAdvice</code>입니다.</p>
 <p><code>core/handler/GlobalExceptionHandler.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span><span class="w"> </span><span class="p">{</span>
@@ -323,7 +317,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>@RestControllerAdvice</code>는 이 클래스를 모든 컨트롤러의 예외를 지켜보는 전역 창구로 등록합니다. 그 안의 <code>@ExceptionHandler</code>는 어떤 예외를 맡을지 지정합니다. <code>ex404</code>는 <code>Exception404</code>가 던져질 때만 불려, 그 예외의 메시지를 담아 404 응답을 만듭니다. <code>exUnknown</code>은 미처 대비하지 못한 나머지 예외를 모두 받아 500으로 처리합니다. 예상한 오류는 정확한 코드로, 예상 못 한 오류는 500으로 감싸 어떤 경우에도 낯선 기본 화면이 나가지 않게 막습니다.</p>
-<p>응답을 만드는 <code>Resp.fail</code>은 새로 만든 것이 아닙니다. 앞 챕터에서 <code>Resp.ok</code>와 함께 만들어 둔 실패용 정적 메서드입니다. 상태 코드와 메시지를 받아, 성공 응답과 똑같이 <code>status</code>, <code>msg</code>, <code>body</code> 세 칸을 가진 모양으로 돌려줍니다. 덕분에 오류 응답도 성공 응답과 같은 형식을 지킵니다.</p>
+<p>응답을 만드는 <code>Resp.fail</code>은 새로 만든 것이 아닙니다. 앞 챕터에서 <code>Resp.ok</code>와 함께 미리 준비해 둔 실패용 정적 메서드입니다. 상태 코드와 메시지를 받아, 성공 응답과 똑같이 <code>status</code>, <code>msg</code>, <code>body</code> 세 칸을 가진 모양으로 돌려줍니다. 덕분에 오류 응답도 성공 응답과 같은 형식을 지킵니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 던진 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
   <defs>
@@ -351,7 +345,7 @@
 </svg>
 </div>
 <div class="caption">그림 3-3. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다</div>
-<p>이제 999번 글을 다시 불러 봅니다.</p>
+<p>이제 999번 글을 다시 불러 보겠습니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 없는 글 다시 조회</div>GET<span class="w"> </span>http://localhost:8080/api/boards/999</div>
 <p>500 대신 앞뒤가 맞는 404가 돌아옵니다.</p>
 <!-- [CAPTURE NEEDED: 01_404-response
@@ -359,10 +353,13 @@
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Postman 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH3\terminal\01_404-response.png" alt="" /><div class="caption">그림 3-4. 없는 글을 조회하면 500이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다</div></div>
-<p>오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 안 터져요."<br></div>
-<div class="dialogue"><span class="speaker">동료</span>: "아, 3번 불러 볼게요. 없다고 딱 나오네요. 아까는 이상한 화면이 떴는데."</div>
 <p>없는 글을 부르면 서버가 넘어지던 곳에, 이제 &quot;찾을 수 없다&quot;는 응답이 형식을 갖춰 돌아옵니다. 응답으로 나가는 것도 엔티티가 아니라 접시에 담긴 값뿐입니다. 두 구멍이 모두 막혔습니다.</p>
+<p>오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.</p>
+<div class="dialogue"><span class="speaker">오픈이</span>: "지난번에 없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 안 터져요."<br></div>
+<div class="dialogue"><span class="speaker">동료</span>: "아, 3번 불러 볼게요. 없다고 딱 나오네요. 저번엔 이상한 화면이 떴는데."</div>
+<p class="thought">여기까진 됐다.</p>
+<p>두 구멍은 막았지만, 오픈이는 화면을 내려다보다 한 가지가 걸렸습니다. 지금은 로그인 화면도, 글 주인을 확인하는 절차도 없습니다. 999번 하나 못 찾는 것은 막아 놨는데, 정작 아무나 남의 글을 고치고 지울 수 있는 서버였습니다.</p>
+<p class="thought">터지는 건 막았는데, 문은 여전히 다 열려 있잖아.</p>
 <h2>3.6 이것만은 기억하자</h2>
 <p>이번 챕터에서 비유로 먼저 풀어낸 개념들을 정식 용어로 정리합니다.</p>
 <table>

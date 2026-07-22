@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>리플렉션 개념도 — 장면 유지, 텍스트만 교체</title>
+<style>
+  body { font-family: "Pretendard","Malgun Gothic",system-ui,sans-serif; color:#0f172a; background:#f1f5f9; margin:0; padding:40px; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  p.lead { color:#475569; margin:0 0 30px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px 28px; margin:0 0 28px; }
+  .card .note { text-align:center; color:#334155; font-size:13px; margin-top:10px; font-style:italic; }
+  svg { display:block; width:100%; height:auto; max-width:780px; margin:0 auto; }
+</style>
+</head>
+<body>
+<h1>리플렉션 개념도 (그림 1-3 교체용) — 장면 유지, 텍스트만 교체</h1>
+<p class="lead">안내원 장면 그대로. 비유 단어(안내원·명단·손님·이름표)를 실제 용어(if문·리플렉션·표식)로 바꾸고, 매핑표 제거.</p>
+
+<div class="card">
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="d2-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker></defs>
+  <rect x="20" y="46" width="346" height="286" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="193" y="72" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">if 문</text>
+  <text x="193" y="90" text-anchor="middle" font-size="10.5" fill="#64748b">미리 적어둔 이름만 부른다</text>
+  <circle cx="72" cy="122" r="15" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <rect x="54" y="140" width="36" height="30" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <rect x="98" y="114" width="52" height="64" rx="6" fill="#f8fafc" stroke="#475569" stroke-width="1.4"/>
+  <text x="124" y="130" text-anchor="middle" font-size="9" font-weight="700" fill="#475569">아는 이름</text>
+  <text x="106" y="146" font-size="9.5" fill="#334155">insert</text>
+  <text x="106" y="160" font-size="9.5" fill="#334155">delete</text>
+  <text x="106" y="174" font-size="9.5" fill="#334155">update</text>
+  <rect x="236" y="96" width="8" height="216" rx="3" fill="#cbd5e1"/>
+  <circle cx="312" cy="130" r="13" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="296" y="146" width="32" height="26" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="282" y="178" width="60" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="312" y="191" text-anchor="middle" font-size="10" fill="#3730a3">/insert</text>
+  <line x1="282" y1="154" x2="250" y2="154" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="196" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">부름</text>
+  <text x="196" y="150" text-anchor="middle" font-size="9" fill="#64748b">목록에 있음</text>
+  <circle cx="312" cy="236" r="13" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="296" y="252" width="32" height="26" rx="9" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="278" y="284" width="68" height="17" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="312" y="297" text-anchor="middle" font-size="10" fill="#64748b">/select</text>
+  <line x1="282" y1="260" x2="252" y2="260" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="196" y="242" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">못 부름</text>
+  <text x="196" y="256" text-anchor="middle" font-size="9" fill="#64748b">목록에 없음</text>
+  <rect x="394" y="46" width="346" height="286" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="567" y="72" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">리플렉션</text>
+  <text x="567" y="90" text-anchor="middle" font-size="10.5" fill="#64748b">붙은 표식을 읽어 부른다</text>
+  <circle cx="448" cy="122" r="15" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <rect x="430" y="140" width="36" height="30" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <circle cx="492" cy="154" r="13" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <line x1="501" y1="163" x2="512" y2="174" stroke="#4f46e5" stroke-width="2"/>
+  <text x="470" y="196" text-anchor="middle" font-size="9.5" fill="#64748b">표식을 읽는다</text>
+  <rect x="612" y="96" width="8" height="216" rx="3" fill="#cbd5e1"/>
+  <circle cx="688" cy="130" r="13" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="672" y="146" width="32" height="26" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="658" y="178" width="60" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="688" y="191" text-anchor="middle" font-size="10" fill="#3730a3">/insert</text>
+  <line x1="658" y1="154" x2="626" y2="154" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="573" y="136" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">부름</text>
+  <text x="573" y="150" text-anchor="middle" font-size="9" fill="#64748b">표식 읽음</text>
+  <circle cx="688" cy="236" r="13" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="672" y="252" width="32" height="26" rx="9" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="654" y="284" width="68" height="17" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="688" y="297" text-anchor="middle" font-size="10" fill="#3730a3">/select</text>
+  <line x1="658" y1="260" x2="626" y2="260" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#d2-ar)"/>
+  <text x="573" y="242" text-anchor="middle" font-size="11" font-weight="700" fill="#16a34a">부름</text>
+  <text x="573" y="256" text-anchor="middle" font-size="9" fill="#64748b">처음 봐도 표식 읽음</text>
+</svg>
+<p class="note">if문은 적어둔 이름만 부르지만, 리플렉션은 표식을 읽어 처음 보는 메서드도 부릅니다</p>
+</div>
+
+</body>
+</html>
