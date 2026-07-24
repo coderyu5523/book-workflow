@@ -315,6 +315,12 @@ public class Board {
 | `@Id` · `@GeneratedValue(IDENTITY)` | 기본 키입니다. 데이터베이스가 1씩 자동으로 채웁니다 |
 | `@CreationTimestamp` | 글이 저장될 때 현재 시각을 자동으로 기록합니다 |
 
+:::tip
+**필드는 카멜, 테이블 칸은 스네이크로 만들어집니다**
+
+엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 칸이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 쪽 표기만 신경 쓰면 됩니다.
+:::
+
 클래스 위의 `@Data` 하나가 눈에 띕니다. `Board` 어디에도 `getTitle()`이나 `setTitle()` 메서드가 보이지 않지만, 뒤에서 이 메서드들을 호출하게 됩니다. `@Data`는 롬복(Lombok)이 제공하는 어노테이션으로, 컴파일 시점에 게터, 세터, `toString` 같은 반복 코드를 대신 만들어 줍니다. 눈에 보이는 소스에는 없지만 컴파일된 결과물에는 이 메서드들이 들어 있습니다.
 
 엔티티가 준비됐으니 이 엔티티를 담을 데이터베이스를 설정합니다. 이번 챕터는 별도 설치 없이 애플리케이션 안에서 메모리에 떠서 동작하는 H2 인메모리 데이터베이스를 씁니다. 설치가 필요 없어 실습에 적합합니다. 설정은 `resources/application.properties`에 들어 있고, 핵심 항목은 다음과 같습니다.
@@ -325,6 +331,7 @@ public class Board {
 | spring.jpa.hibernate.ddl-auto | `create`. 시작할 때마다 엔티티를 보고 테이블을 새로 만듭니다. 개발 단계에서만 씁니다. |
 | spring.jpa.show-sql | `true`. JPA가 실제로 내보내는 SQL을 콘솔에 찍어 줍니다. |
 | spring.sql.init.data-locations | `classpath:db/data.sql`. 시작할 때 초기 데이터를 넣습니다. |
+| spring.jpa.defer-datasource-initialization | `true`. 하이버네이트가 테이블을 만든 뒤에 `data.sql`을 실행하도록 미룹니다. 이 값이 없으면 테이블이 생기기 전에 `data.sql`이 돌아 부팅에 실패합니다. |
 
 인메모리라 껐다 켜면 데이터가 사라집니다. 그래서 시작할 때 `data.sql`의 내용을 넣어 초기 상태를 맞춥니다. `data.sql`에는 실습에서 바로 확인할 수 있도록 `title1`, `title2` 두 건이 미리 들어 있습니다.
 
@@ -497,7 +504,7 @@ public class BoardRepository {
 
 *그림 2-7. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 그 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다*
 
-세 가지 모두 `flush` 시점에 반영됩니다. 실제로는 개발자가 `flush`를 직접 부르지 않아도, 뒤에서 서비스에 붙일 `@Transactional`이 끝날 때 자동으로 호출됩니다. 셋 중 더티체킹은 곧 게시글 수정에서 다시 만납니다.
+쓰기 지연과 더티체킹이 만든 SQL은 `flush` 시점에 데이터베이스로 나갑니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 `@Transactional`이 끝날 때 자동으로 호출됩니다. 셋 중 더티체킹은 곧 게시글 수정에서 다시 만납니다.
 
 ## 2.7 서비스와 컨트롤러
 
@@ -555,6 +562,8 @@ public class BoardService {
 
 `게시글추가`에서 `new Board()`로 만든 엔티티는 아직 영속성 컨텍스트가 모르는 상태입니다. `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다.
 
+여기 쓰인 `BoardRequest.SaveDTO`는 뒤에서 만듭니다. 지금 컴파일하면 아직 없다고 나오니, 관련 파일을 다 채운 뒤 실행합니다.
+
 이제 이 서비스를 바깥과 이어 줄 컨트롤러를 만듭니다. 컨트롤러는 위의 API 표대로, 주소와 HTTP 메서드에 맞춰 요청을 서비스로 넘깁니다.
 
 `board/BoardController.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
@@ -599,7 +608,7 @@ public class BoardController {
 
 `@RestController`가 붙은 이 클래스는 반환값을 JSON으로 내보내고, `@RequestMapping("/api/boards")`로 공통 주소를 정한 뒤, 각 메서드에 `@GetMapping`·`@PostMapping`·`@DeleteMapping`을 달아 앞에서 본 HTTP 메서드에 대응시킵니다.
 
-주소에서 값을 꺼내는 두 어노테이션이 있습니다. `@PathVariable`은 `/api/boards/1`처럼 주소에 박힌 값을 꺼내 파라미터로 받고, `@RequestBody`는 요청 본문으로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 `SaveDTO`는 요청 데이터를 담는 그릇으로, 손님이 적어 내는 주문서 양식과 같습니다. `board/BoardRequest.java`에 정의합니다.
+주소에서 값을 꺼내는 두 어노테이션이 있습니다. `@PathVariable`은 `/api/boards/1`처럼 주소에 박힌 값을 꺼내 파라미터로 받고, `@RequestBody`는 요청 바디로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 `SaveDTO`는 요청 데이터를 담는 그릇으로, 손님이 적어 내는 주문서 양식과 같습니다. `board/BoardRequest.java`에 정의합니다.
 
 `board/BoardRequest.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
 
@@ -625,9 +634,17 @@ public class BoardRequest {
 
 서버가 뜨면 `GET /api/boards`로 목록을 요청합니다. `data.sql`에 넣어 둔 두 건이 `Resp` 형식에 감싸여 돌아옵니다.
 
+목록 조회 같은 GET 요청은 브라우저 주소창에 주소를 넣으면 됩니다. 값을 함께 보내는 POST·PUT은 입력할 화면이 없어, API 테스트 도구인 Hoppscotch(hoppscotch.io)로 요청을 보내고 결과를 확인합니다.
+
+:::tip
+**브라우저 버전은 localhost 요청이 막혀 있습니다**
+
+Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
+:::
+
 <!-- [CAPTURE NEEDED: 01_api-response
   path: assets/CH2/terminal/01_api-response.png
-  desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql의 두 건이 Resp 래퍼에 감싸여 나온 화면. Postman 또는 브라우저 응답.
+  desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql의 두 건이 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
 *그림 2-8. 목록 조회 요청에 두 게시글이 Resp 형식으로 감싸여 돌아온 응답입니다*
@@ -652,7 +669,7 @@ public class BoardRequest {
 
 이 수정 메서드에는 저장하는 호출이 없습니다. `findById`로 가져온 `board`의 값을 바꾸고 그대로 반환할 뿐인데도 수정은 데이터베이스에 반영됩니다. 2.6에서 살펴본 더티체킹이 여기서 동작하기 때문입니다.
 
-`findById`로 가져온 `board`는 영속 상태가 되고, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 바뀐 부분만 UPDATE로 내보냅니다.
+`findById`로 가져온 `board`는 영속 상태가 되고, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
 
 이 수정 메서드를 컨트롤러의 PUT 엔드포인트에 이어 줍니다. `board/BoardController.java`에 아래 메서드를 추가합니다.
 
@@ -807,16 +824,6 @@ public class BoardRepositoryTest {
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 
 ## 2.10 이것만은 기억하자
-
-이번 챕터에서 비유로 먼저 풀어낸 개념들을 정식 용어로 정리합니다.
-
-| 비유 | 용어 | 정식 정의 |
-|------|------|-----------|
-| 세트에 품기 vs 표로 나눠 잇기 | 객체-테이블 불일치 | 객체는 참조로 품고 테이블은 외래 키 값으로 조인하는, 두 세계의 근본적 차이 |
-| 데이터베이스 창구 직원 | EntityManager | JPA에서 데이터베이스 작업을 총괄하는 객체. 엔티티의 저장·조회·삭제를 담당 |
-| 창구 옆 작업대 | 영속성 컨텍스트 | EntityManager가 엔티티를 보관·관리하는 공간. 캐싱, 쓰기 지연, 더티체킹이 여기서 일어남 |
-| 교정지에 빨간 펜 | 더티체킹 | 영속 엔티티의 변경을 감지해 flush 시점에 UPDATE로 반영하는 것 |
-| 커피 머신을 따로 돌려 보기 | 단위 테스트 | 가장 작은 단위를 외부 의존 없이 격리해 검증하는 테스트 |
 
 :::remember
 **이것만은 기억하자**

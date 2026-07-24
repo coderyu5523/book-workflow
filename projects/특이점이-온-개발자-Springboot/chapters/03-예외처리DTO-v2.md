@@ -242,7 +242,17 @@ public class Board {
 
 이제 999번을 부르면 빈 성공 대신 조회하는 순간 `Exception404`가 나고, 반환도 엔티티가 아니라 `DetailDTO`로 바뀝니다.
 
-나머지 메서드도 같은 식으로, 목록은 DTO 리스트로 반환하고 수정·삭제도 없는 글이면 `Exception404`를 던집니다.
+목록은 조금 다릅니다. 한 건이 아니라 여러 건을 각각 `DTO`로 바꿔 리스트로 돌려줘야 합니다.
+
+```java [설명] board/BoardService.java. 목록은 DTO 리스트로 반환
+    public List<BoardResponse.DTO> 게시글목록() {
+        return boardRepository.findAll().stream()
+                .map(BoardResponse.DTO::new)
+                .toList();
+    }
+```
+
+`BoardResponse.DTO::new`는 엔티티를 받아 `DTO`를 만드는 생성자입니다. 수정과 삭제는 상세와 같은 식으로, 없는 글이면 `Exception404`를 던집니다.
 
 여기서 던지는 `Exception404`는 우리가 만들 커스텀 예외로, 아직 없는 클래스라 잠시 뒤에 정의합니다.
 
@@ -253,7 +263,7 @@ public class Board {
 | `GET /api/boards` | `List<Board>` | `List<BoardResponse.DTO>` |
 | `GET /api/boards/{boardId}` | `Board` | `BoardResponse.DetailDTO` |
 
-서비스가 넘겨준 DTO를 받아 `Resp.ok`로 감싸는 것은 앞 챕터와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성, 수정, 삭제도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.
+서비스가 넘겨준 DTO를 받아 `Resp.ok`로 감싸는 것은 앞 챕터와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성과 수정도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.
 
 ```json
 {
@@ -284,7 +294,7 @@ public class Exception404 extends RuntimeException {
 
 우리가 상황에 맞게 직접 정의한 이런 예외를 커스텀 예외라고 합니다. 코드는 짧지만, `RuntimeException`을 상속한다는 한 줄이 이 챕터의 핵심입니다.
 
-자바의 예외는 크게 두 가지입니다. 하나는 `IOException`처럼 컴파일러가 `try-catch`나 `throws`를 강제하는 Checked 예외로, 처리 코드가 서비스 곳곳에 끼어듭니다. 다른 하나는 `RuntimeException`을 상속한 Unchecked 예외로, 그냥 던지면 잡을 곳에서 잡습니다. 그래서 커스텀 예외는 `RuntimeException`을 상속해, 서비스는 던지기만 하고 받는 일은 뒤에서 한 곳에 몰아 처리합니다.
+그 `RuntimeException`은 컴파일러가 처리를 강제하지 않는 Unchecked 예외입니다. 강제하는 Checked와 달리 그냥 던지면 되므로, 커스텀 예외는 이를 상속해 서비스는 던지기만 하고 받는 일은 뒤에서 한 곳에 몰아 처리합니다.
 
 던질 때 붙이는 404라는 숫자는 HTTP 상태 코드입니다. 응답이 어떤 상황인지를 세 자리 숫자로 알리는 약속으로, 자주 쓰는 것은 다음과 같습니다.
 
@@ -367,7 +377,7 @@ GET http://localhost:8080/api/boards/999
 
 <!-- [CAPTURE NEEDED: 01_404-response
   path: assets/CH3/terminal/01_404-response.png
-  desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Postman 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
+  desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 ![](../assets/CH3/terminal/01_404-response.png)
 *그림 3-4. 없는 글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
@@ -386,15 +396,6 @@ GET http://localhost:8080/api/boards/999
 *없는 글은 걸렀는데, 문은 여전히 다 열려 있잖아.*
 
 ## 3.6 이것만은 기억하자
-
-이번 챕터에서 비유로 먼저 풀어낸 개념들을 정식 용어로 정리합니다.
-
-| 비유 | 용어 | 정식 정의 |
-|------|------|-----------|
-| 손님상에 내가는 접시 | DTO | 계층 사이에서 필요한 값만 담아 나르는 객체. 엔티티를 응답에 직접 노출하지 않기 위해 사용 |
-| 값이 있을 수도 없을 수도 있는 상자 | Optional | 값의 있음·없음을 타입으로 드러내는 자바 문법. `orElseThrow`로 비었을 때 예외를 던짐 |
-| 상황에 맞게 직접 만든 예외 | 커스텀 예외 | 도메인 상황을 표현하려 정의한 예외. `RuntimeException`을 상속해 Unchecked로 던짐 |
-| 문제 신고가 모이는 경비실 | @RestControllerAdvice | 모든 컨트롤러의 예외를 한 곳에서 가로채 응답으로 바꾸는 전역 예외 처리 장치 |
 
 :::remember
 **이것만은 기억하자**

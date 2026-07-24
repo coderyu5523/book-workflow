@@ -15,11 +15,11 @@ public class UserRequest {
             @Email(message = "이메일 형식이 올바르지 않습니다")
             String email) {
 
-        // 암호화된 비밀번호로 엔티티 생성
-        public User toEntity(String encPassword) {
+        // 요청 값으로 엔티티 생성
+        public User toEntity() {
             return User.builder()
                     .username(username)
-                    .password(encPassword)
+                    .password(password)
                     .email(email)
                     .build();
         }
