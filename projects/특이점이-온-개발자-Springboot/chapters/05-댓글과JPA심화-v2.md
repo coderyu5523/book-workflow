@@ -1,4 +1,4 @@
-# 챕터 5. 댓글과 JPA 심화 - 잇고, 빨라진다
+# 챕터 5. 댓글과 JPA 심화 - 연결하고, 빨라진다
 
 게시판은 이제 글을 쓰고 읽고 고치고 지우는 데까지 왔고, 로그인한 본인만 자기 글을 건드립니다. 그런데 정작 게시판다운 것 하나가 비어 있습니다. 글 아래 댓글 입력칸에는 아무것도 달리지 않습니다.
 
@@ -51,7 +51,7 @@
 **이번 챕터가 끝나면**
 
 - 양방향 연관관계와 연관관계 주인이 무엇인지 설명할 수 있습니다
-- `@OneToMany`와 cascade로 게시글에 댓글을 잇고, 게시글을 지우면 댓글도 함께 지웁니다
+- `@OneToMany`와 cascade로 게시글에 댓글을 연결하고, 게시글을 지우면 댓글도 함께 지웁니다
 - 지연 로딩이 왜 쿼리를 늘리는지 이해하고, fetch join으로 조회를 한 번에 끝냅니다
 :::
 
@@ -221,7 +221,7 @@ public class ReplyRepository {
 }
 ```
 
-2장에서 만든 `BoardRepository`와 같은 모양입니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글에 딸려 함께 나가기 때문입니다.
+2장에서 만든 `BoardRepository`와 같은 모양입니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.
 
 요청과 응답을 담을 그릇도 앞 챕터의 방식을 그대로 씁니다. `reply/ReplyRequest.java`와 `reply/ReplyResponse.java`는 각각 이렇게 되어 있습니다.
 
@@ -258,7 +258,7 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final BoardRepository boardRepository;
 
-    // 1. 댓글 작성. 대상 글을 찾아 댓글을 매달아 저장한다
+    // 1. 댓글 작성. 대상 글을 찾아 댓글을 연결해 저장한다
     @Transactional
     public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User sessionUser) {
         // TODO: 대상 글 조회 → 엔티티 생성 → 저장
@@ -285,7 +285,7 @@ public class ReplyService {
 
 `댓글쓰기`는 `boardId`로 댓글을 달 글을 찾아, 없으면 `Exception404`를 던지고 있으면 `toEntity`로 로그인 유저와 그 글을 붙인 댓글을 만들어 저장합니다. `댓글삭제`는 대상이 글에서 댓글로 바뀌었을 뿐, 작성자 아이디를 견주는 소유자 검증은 4장과 똑같습니다.
 
-두 서비스를 바깥과 잇는 컨트롤러를 만듭니다. `reply/ReplyController.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+두 서비스를 바깥과 연결하는 컨트롤러를 만듭니다. `reply/ReplyController.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
 
 ```java [실습 3] reply/ReplyController.java. 댓글 작성·삭제 엔드포인트
 @RequiredArgsConstructor
@@ -314,7 +314,7 @@ public class ReplyController {
 }
 ```
 
-두 엔드포인트 모두 `request.getAttribute("sessionUser")`로 로그인 유저를 꺼냅니다. 4장에서 필터가 심어 둔 그 이름표입니다. 작성은 그 유저를 작성자로 붙여 저장하고, 삭제는 그 유저의 아이디를 소유자 검증에 넘깁니다.
+두 엔드포인트 모두 `request.getAttribute("sessionUser")`로 로그인 유저를 꺼냅니다. 4장에서 필터가 달아 둔 그 이름표입니다. 작성은 그 유저를 작성자로 붙여 저장하고, 삭제는 그 유저의 아이디를 소유자 검증에 넘깁니다.
 
 댓글 쓰기와 삭제도 로그인한 사람만 하도록 막아야 합니다. 4장에서 만든 인터셉터가 게시글 주소만 지키고 있으므로, `core/config/WebMvcConfig.java`의 `addPathPatterns`에 `/api/replies`와 그 하위 경로를 더합니다.
 
@@ -326,7 +326,7 @@ public class ReplyController {
 
 그러면 게시글과 똑같이 댓글 쓰기와 삭제도 로그인하지 않으면 인터셉터에서 401로 막힙니다.
 
-댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세에 딸려 나가야 하는데, 5.1에서 게시글에 `replies` 목록을 달아 두었으니 상세 응답 그릇에 그 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
+댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세에 함께 나가야 하는데, 5.1에서 게시글에 `replies` 목록을 달아 두었으니 상세 응답 그릇에 그 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
 
 ```java [설명] board/BoardResponse.java. 상세에 댓글 목록과 작성자 여부 추가
     public record DetailDTO(Integer boardId, String title, String content, Integer userId,
@@ -367,7 +367,7 @@ public class ReplyController {
 
 마지막으로 컨트롤러가 로그인 유저를 꺼내 서비스로 넘깁니다. 상세는 공개라 로그인하지 않아도 볼 수 있으므로, `board/BoardController.java`의 상세 메서드는 `request.getAttribute("sessionUser")`로 유저를 꺼내되 비로그인이면 `null`을 넘깁니다. `null`이 넘어가도 `checkOwner`가 `false`를 돌려주므로, 로그인하지 않은 사람에게는 모든 `isOwner`가 `false`로 나갑니다.
 
-이제 `ssar`로 로그인해 1번 글을 조회하면, 글과 함께 거기 달린 댓글이 딸려 나옵니다.
+이제 `ssar`로 로그인해 1번 글을 조회하면, 글과 함께 거기 달린 댓글이 함께 나옵니다.
 
 ```json
 {
@@ -507,7 +507,7 @@ public class ReplyController {
     }
 ```
 
-글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 글·작성자·댓글이 담겨 왔기 때문입니다. 5.3의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 그 두 번째 select가 사라졌습니다. 그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 그제서야 그 댓글의 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다. 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 `left join fetch`를 한 겹 더 얹으면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.
+글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 글·작성자·댓글이 담겨 왔기 때문입니다. 5.3의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 그 두 번째 select가 사라졌습니다. 그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 그제서야 그 댓글의 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다. 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 `left join fetch`를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.
 
 두 로그를 나란히 두면 차이가 분명합니다.
 
@@ -529,13 +529,13 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 ![](../assets/CH5/terminal/01_show-sql-nplus1-vs-fetchjoin.png)
 *그림 5-4. 지연 로딩은 작성자를 꺼낼 때 select가 한 번 더 나가지만, fetch join은 조회 한 번으로 작성자와 댓글까지 담아 옵니다*
 
-게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 5.2에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 글과 작성자와 댓글이 딸려 나가야 하는데, 지연 로딩에 맡기면 그 자리에서 쿼리가 여러 번 나가기 때문입니다.
+게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 5.2에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 그 자리에서 쿼리가 여러 번 나가기 때문입니다.
 
 :::tip
 **fetch 전략에서 생각해 볼 것들**
 
 - **기본값**: `@ManyToOne`은 즉시 로딩, `@OneToMany`는 지연 로딩이 기본입니다. 어느 쪽이든 연관관계가 많아지면 조회 한 번이 쿼리 여러 개로 번질 수 있어, 필요한 조회에는 fetch join으로 가져올 것을 함께 정합니다.
-- **지연 로딩을 기본으로**: 연관관계를 모두 즉시 로딩으로 두면, 그 글이 필요 없는 조회에서도 작성자와 댓글이 매번 딸려 옵니다. 평소에는 지연 로딩으로 두고, 함께 필요한 조회에서만 fetch join으로 묶는 편이 낫습니다.
+- **지연 로딩을 기본으로**: 연관관계를 모두 즉시 로딩으로 두면, 그 글이 필요 없는 조회에서도 작성자와 댓글이 매번 함께 조회됩니다. 평소에는 지연 로딩으로 두고, 함께 필요한 조회에서만 fetch join으로 묶는 편이 낫습니다.
 - **left join의 이유**: 댓글이 없는 글도 조회에서 빠지지 않게 하려고 `left`를 붙입니다. `left` 없이 묶으면 댓글이 하나도 없는 글은 결과에서 사라집니다.
 :::
 
