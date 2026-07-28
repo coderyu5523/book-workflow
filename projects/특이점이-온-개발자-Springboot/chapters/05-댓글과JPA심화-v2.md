@@ -187,7 +187,7 @@ public class Reply {
 }
 ```
 
-댓글 하나는 누가 썼는지(`user`)와 어느 글에 달렸는지(`board`)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 `@ManyToOne`입니다. 여기서 `@JoinColumn(name = "board_id")`이 앞서 말한 그 표시입니다. `reply_tb`에 `board_id` 칸을 두고 소속 글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 `fetch = FetchType.LAZY`는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 5.3에서 제대로 다룹니다.
+댓글 하나는 누가 썼는지(`user`)와 어느 글에 달렸는지(`board`)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 `@ManyToOne`입니다. 여기서 `@JoinColumn(name = "board_id")`이 앞서 말한 그 표시입니다. `reply_tb`에 `board_id` 칸을 두고 소속 글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 `fetch = FetchType.LAZY`는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 뒤에서 제대로 다룹니다.
 
 이제 게시글 쪽에 반대 방향을 답니다. `board/Board.java`를 열고 TODO의 `pass`를 지우고 아래 필드를 추가합니다.
 
@@ -229,7 +229,7 @@ public class ReplyRepository {
 
 2장에서 만든 `BoardRepository`와 같은 모양입니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.
 
-요청과 응답을 담을 그릇도 앞 챕터의 방식을 그대로 씁니다. `reply/ReplyRequest.java`와 `reply/ReplyResponse.java`는 각각 이렇게 되어 있습니다.
+요청과 응답을 담을 DTO도 앞 챕터의 방식을 그대로 씁니다. `reply/ReplyRequest.java`와 `reply/ReplyResponse.java`는 각각 이렇게 되어 있습니다.
 
 ```java [참고] reply/ReplyRequest.java, ReplyResponse.java. 댓글 DTO
 public class ReplyRequest {
@@ -252,7 +252,7 @@ public class ReplyResponse {
 }
 ```
 
-`SaveDTO`는 댓글 내용과 어느 글에 달지(`boardId`)를 받고, `toEntity`는 4장에서 게시글을 만들 때처럼 로그인 유저와 대상 글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. `DTO`는 응답으로 나갈 댓글 하나를 담는 그릇입니다.
+`SaveDTO`는 댓글 내용과 어느 글에 달지(`boardId`)를 받고, `toEntity`는 4장에서 게시글을 만들 때처럼 로그인 유저와 대상 글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. `DTO`는 응답으로 나갈 댓글 하나를 담습니다.
 
 ### 5.2.2 서비스와 컨트롤러
 
@@ -322,7 +322,7 @@ public class ReplyController {
 }
 ```
 
-두 엔드포인트 모두 `request.getAttribute("sessionUser")`로 로그인 유저를 꺼냅니다. 4장에서 필터가 달아 둔 그 이름표입니다. 작성은 그 유저를 작성자로 붙여 저장하고, 삭제는 그 유저의 아이디를 소유자 검증에 넘깁니다.
+두 엔드포인트 모두 `request.getAttribute("sessionUser")`로 로그인 유저를 꺼냅니다. 4장에서 필터가 담아 둔 로그인 유저입니다. 작성은 그 유저를 작성자로 붙여 저장하고, 삭제는 그 유저의 아이디를 소유자 검증에 넘깁니다.
 
 댓글 쓰기와 삭제도 로그인한 사람만 하도록 막아야 합니다. 4장에서 만든 인터셉터가 게시글 주소만 지키고 있으므로, `core/config/WebMvcConfig.java`의 `addPathPatterns`에 `/api/replies`와 그 하위 경로를 더합니다.
 
@@ -336,7 +336,7 @@ public class ReplyController {
 
 ### 5.2.3 상세 응답에 댓글 담기
 
-댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세에 함께 나가야 하는데, 5.1에서 게시글에 `replies` 목록을 달아 두었으니 상세 응답 그릇에 그 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
+댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세에 함께 나가야 하는데, 앞에서 게시글에 `replies` 목록을 달아 두었으니 상세 응답 DTO에 그 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
 
 ```java [설명] board/BoardResponse.java. 상세에 댓글 목록과 작성자 여부 추가
     public record DetailDTO(Integer boardId, String title, String content, Integer userId,
@@ -407,7 +407,7 @@ public class ReplyController {
 
 **선배**: "글 목록 불러올 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 나가는지 세어 봤어요?"
 
-세어 본 적이 없는 질문입니다. 그 전에 짚어야 할 것이 지연 로딩입니다. 5.1에서 댓글에 붙인 `FetchType.LAZY`가 그것입니다. 4장에서는 `Board.user`를 `EAGER`로 두었는데, 이번 챕터에서 이 값을 `LAZY`로 바꿉니다. `board/Board.java`의 작성자 필드를 아래처럼 고칩니다.
+세어 본 적이 없는 질문입니다. 그 전에 짚어야 할 것이 지연 로딩입니다. 앞에서 댓글에 붙인 `FetchType.LAZY`가 그것입니다. 4장에서는 `Board.user`를 `EAGER`로 두었는데, 이번 챕터에서 이 값을 `LAZY`로 바꿉니다. `board/Board.java`의 작성자 필드를 아래처럼 고칩니다.
 
 ```java [실습 5] board/Board.java. 작성자 조회를 지연 로딩으로
     // 4장의 EAGER에서 LAZY로 바꾼다
@@ -490,7 +490,7 @@ public class ReplyController {
 
 핵심은 `join fetch b.user`입니다. 지연 로딩에서는 글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, `join fetch`는 글을 조회하는 그 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 글은 작성자가 이미 채워져 있어, `getUser().getUsername()`을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 앞 장에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.
 
-댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 5.2에서 게시글 상세가 이름만 쓰고 넘어갔던 `findByIdJoinUserAndReply`입니다. `board/BoardRepository.java`를 열고 TODO의 `pass`를 지우고 아래 메서드를 작성합니다.
+댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 쓰고 넘어갔던 `findByIdJoinUserAndReply`입니다. `board/BoardRepository.java`를 열고 TODO의 `pass`를 지우고 아래 메서드를 작성합니다.
 
 ```java [실습 8] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     public Optional<Board> findByIdJoinUserAndReply(int boardId) {
@@ -517,7 +517,7 @@ public class ReplyController {
     }
 ```
 
-글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 글·작성자·댓글이 담겨 왔기 때문입니다. 5.3의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 그 두 번째 select가 사라졌습니다. 그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 그제서야 그 댓글의 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다. 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 `left join fetch`를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.
+글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 글·작성자·댓글이 담겨 왔기 때문입니다. 앞의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 그 두 번째 select가 사라졌습니다. 그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 그제서야 그 댓글의 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다. 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 `left join fetch`를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.
 
 두 로그를 나란히 두면 차이가 분명합니다.
 
@@ -539,7 +539,7 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 ![](../assets/CH5/terminal/01_show-sql-nplus1-vs-fetchjoin.png)
 *그림 5-4. 지연 로딩은 작성자를 꺼낼 때 select가 한 번 더 나가지만, fetch join은 조회 한 번으로 작성자와 댓글까지 담아 옵니다*
 
-게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 5.2에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 그 자리에서 쿼리가 여러 번 나가기 때문입니다.
+게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 앞에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 그 자리에서 쿼리가 여러 번 나가기 때문입니다.
 
 :::tip
 **fetch 전략에서 생각해 볼 것들**

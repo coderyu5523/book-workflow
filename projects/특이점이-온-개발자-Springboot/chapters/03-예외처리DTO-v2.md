@@ -80,11 +80,11 @@ GET http://localhost:8080/api/boards/999
 
 `body`를 보면 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보입니다. 그런데 응답에 엔티티를 통째로 담아 보내는 한, 엔티티에 필드가 붙을 때마다 그 값이 자동으로 바깥에 노출됩니다.
 
-이 둘을 이번 챕터에서 차례로 막습니다. 먼저 엔티티가 새어 나가는 쪽을 응답 그릇으로 막고, 그다음 없는 글이 성공으로 빠져나가는 쪽을 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
+이 둘을 이번 챕터에서 차례로 막습니다. 먼저 엔티티가 새어 나가는 쪽을 응답 DTO로 막고, 그다음 없는 글이 성공으로 빠져나가는 쪽을 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
 
 | 클래스 | 역할 |
 |--------|------|
-| BoardResponse | (신규) 응답으로 내보낼 값만 담는 DTO. `DTO`와 `DetailDTO` 두 그릇을 둡니다. |
+| BoardResponse | (신규) 응답으로 내보낼 값만 담는 DTO. `DTO`와 `DetailDTO` 두 가지를 둡니다. |
 | Exception404 | (신규) 자원을 찾을 수 없을 때 던지는 커스텀 예외입니다. |
 | GlobalExceptionHandler | (신규) 던져진 예외를 한 곳에서 JSON 응답으로 바꾸는 전역 처리기입니다. |
 | BoardRepository | (변경) `findById`가 `null` 대신 `Optional`을 반환합니다. |
@@ -119,11 +119,11 @@ spring-start/ch03  (변경·신규만)
 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
 ::::
 
-## 3.2 응답 그릇을 따로 만든다
+## 3.2 응답은 따로 담아 내보낸다
 
 새어 나가는 구멍부터 막습니다. 응답에 엔티티를 그대로 담아 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 맞닿아 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.
 
-응답으로 내보낼 그릇을 따로 만들어 거기에 보여줄 값만 담으면, 엔티티는 주방 안에 남고 접시만 바깥으로 나갑니다. 이렇게 계층 사이에서 필요한 값만 담아 나르는 객체를 DTO(Data Transfer Object)라고 합니다.
+응답으로 내보낼 접시를 따로 만들어 거기에 보여줄 값만 담으면, 엔티티는 주방 안에 남고 접시만 바깥으로 나갑니다. 이렇게 계층 사이에서 필요한 값만 담아 나르는 객체를 DTO(Data Transfer Object)라고 합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 title, content, createdAt에 작성자, 비밀번호까지 담은 Board 엔티티가 있고, 가운데 벽의 창구에는 'DTO만 통과' 표지가 붙어 있다. 창구를 지나 오른쪽 응답으로 나온 것은 boardId, title, content 세 줄만 담은 작은 DTO다.">
@@ -161,14 +161,14 @@ spring-start/ch03  (변경·신규만)
 ```java [실습 1] board/BoardResponse.java. 응답 DTO
 public class BoardResponse {
 
-    // 1. 목록용 그릇. 엔티티를 받아 보여줄 값만 담는다
+    // 1. 목록용 DTO. 엔티티를 받아 보여줄 값만 담는다
     public record DTO(Integer boardId, String title, String content) {
         public DTO(Board board) {
             this(board.getId(), board.getTitle(), board.getContent());
         }
     }
 
-    // 2. 상세용 그릇. 지금은 DTO와 같지만 앞으로 달라진다
+    // 2. 상세용 DTO. 지금은 목록용과 같지만 앞으로 달라진다
     public record DetailDTO(Integer boardId, String title, String content) {
         public DetailDTO(Board board) {
             this(board.getId(), board.getTitle(), board.getContent());
@@ -177,11 +177,11 @@ public class BoardResponse {
 }
 ```
 
-`record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 그릇 모두 `Board`를 받는 생성자를 하나씩 두었습니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 그릇에 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 둔 것도, 바깥에 나가는 이름을 응답 그릇에서 따로 정할 수 있기 때문입니다.
+`record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 두었습니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 둔 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
 
-지금은 목록용 `DTO`와 상세용 `DetailDTO`의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 그릇만 손보면 되고, 목록은 건드릴 필요가 없습니다.
+지금은 목록용 `DTO`와 상세용 `DetailDTO`의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 DTO만 손보면 되고, 목록은 건드릴 필요가 없습니다.
 
-들어오는 요청도 마찬가지로 그릇에 담습니다. 앞 챕터에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 그릇을 엔티티로 바꾸는 통로를 냅니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
+들어오는 요청도 마찬가지로 DTO에 담습니다. 앞 챕터에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 DTO를 엔티티로 바꾸는 통로를 냅니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
 
 ```java [참고] board/BoardRequest.java. 요청 DTO에 toEntity 추가
     public record SaveDTO(String title, String content) {
@@ -216,7 +216,7 @@ public class Board {
 
 ## 3.3 없음을 예외로 바꾼다
 
-그릇을 만들었으니 이제 서비스가 엔티티 대신 DTO를 담아 넘기게 고칩니다. 그런데 그 전에 첫 번째 구멍, 없는 글이 성공으로 빠져나가는 문제를 같이 다뤄야 합니다. 두 문제가 모두 조회 메서드에서 만나기 때문입니다.
+DTO를 만들었으니 이제 서비스가 엔티티 대신 DTO를 담아 넘기게 고칩니다. 그런데 그 전에 첫 번째 구멍, 없는 글이 성공으로 빠져나가는 문제를 같이 다뤄야 합니다. 두 문제가 모두 조회 메서드에서 만나기 때문입니다.
 
 빈 값이 성공으로 나가는 원인은 `findById`가 없는 글에 `null`을 돌려주기 때문입니다. `null`은 아무 표시가 없는 빈손입니다. 받는 쪽은 그것이 진짜 글인지 빈손인지 열어 보기 전엔 모릅니다. 자바에는 이 애매함을 걷어내는 문법이 있습니다. 값이 있을 수도, 없을 수도 있음을 상자에 담아 드러내는 `Optional`입니다.
 
@@ -277,7 +277,57 @@ public class Board {
 }
 ```
 
-`createdAt`은 DTO에서 빠졌습니다. 두 번째 구멍이 막혔습니다. 남은 것은 `Exception404`를 만들고, 그 예외를 깔끔한 404 응답으로 바꾸는 일입니다.
+`createdAt`은 DTO에서 빠졌습니다. 두 번째 구멍이 막혔습니다.
+
+이 과정에서 데이터를 담는 것이 셋으로 늘었습니다. 요청 DTO와 엔티티, 응답 DTO입니다. 셋은 각각 다른 구간에서만 쓰입니다.
+
+글을 저장할 때는 바깥에서 들어온 JSON이 요청 DTO에 담기고, `toEntity`가 그 값을 엔티티로 옮기고, 리포지토리가 엔티티를 데이터베이스에 저장합니다. 요청 DTO는 값을 넘기고 나면 더 쓰이지 않습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 860 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="저장 흐름. JSON에서 요청 DTO로, 요청 DTO에서 엔티티로, 엔티티에서 데이터베이스로 차례로 이어진다.">
+  <defs>
+    <marker id="c3in-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="20" y="34" width="150" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="95" y="71" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">JSON</text>
+  <line x1="176" y1="65" x2="216" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3in-ar)"/>
+  <rect x="222" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="307" y="71" text-anchor="middle" font-size="14" fill="#0f172a">요청 DTO</text>
+  <line x1="398" y1="65" x2="438" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3in-ar)"/>
+  <rect x="444" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="529" y="71" text-anchor="middle" font-size="14" fill="#0f172a">엔티티</text>
+  <line x1="620" y1="65" x2="660" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3in-ar)"/>
+  <rect x="666" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="751" y="71" text-anchor="middle" font-size="14" fill="#0f172a">데이터베이스</text>
+</svg>
+</div>
+
+*그림 3-3. 저장 요청은 JSON에서 요청 DTO와 엔티티를 거쳐 데이터베이스에 담깁니다*
+
+조회는 반대 방향입니다. 리포지토리가 데이터베이스에서 엔티티를 가져오고, 서비스가 보여줄 값만 응답 DTO에 옮겨 담고, 그 DTO가 JSON으로 바뀌어 나갑니다. 엔티티는 이 구간을 벗어나지 않으므로 `createdAt` 같은 내부 필드가 바깥으로 새지 않습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 860 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="조회 흐름. 데이터베이스에서 엔티티로, 엔티티에서 응답 DTO로, 응답 DTO에서 JSON으로 차례로 이어진다.">
+  <defs>
+    <marker id="c3out-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="20" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="105" y="71" text-anchor="middle" font-size="14" fill="#0f172a">데이터베이스</text>
+  <line x1="196" y1="65" x2="236" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3out-ar)"/>
+  <rect x="242" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="327" y="71" text-anchor="middle" font-size="14" fill="#0f172a">엔티티</text>
+  <line x1="418" y1="65" x2="458" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3out-ar)"/>
+  <rect x="464" y="34" width="170" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="549" y="71" text-anchor="middle" font-size="14" fill="#0f172a">응답 DTO</text>
+  <line x1="640" y1="65" x2="680" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#c3out-ar)"/>
+  <rect x="686" y="34" width="150" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="761" y="71" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">JSON</text>
+</svg>
+</div>
+
+*그림 3-4. 조회 결과는 데이터베이스에서 엔티티와 응답 DTO를 거쳐 JSON으로 나갑니다*
+
+남은 것은 `Exception404`를 만들고, 그 예외를 깔끔한 404 응답으로 바꾸는 일입니다.
 
 ## 3.4 예외의 종류와 상태 코드
 
@@ -312,7 +362,7 @@ public class Exception404 extends RuntimeException {
 
 이제 던져진 `Exception404`를 받아 404 JSON으로 바꿀 차례입니다. 컨트롤러마다 `try-catch`로 잡으면 예외 처리 코드가 모든 컨트롤러에 흩어집니다.
 
-스프링에는 이 일을 한 곳에 몰아주는 장치가 있습니다. 건물 어느 층에서 문제가 터지든 신고가 경비실 한 곳으로 모이는 것과 같습니다. 컨트롤러 어디에서 예외가 던져지든, 그 예외를 가로채 응답으로 바꾸는 창구를 하나 두는 것입니다. 이 창구가 `@RestControllerAdvice`입니다.
+스프링에는 이 일을 한 곳에 몰아주는 장치가 있습니다. 건물 어느 층에서 문제가 터지든 신고가 경비실 한 곳으로 모이는 것과 같습니다. 컨트롤러 어디에서 예외가 던져지든, 그 예외를 가로채 응답으로 바꾸는 곳을 하나 두면 됩니다. 그 역할을 하는 것이 `@RestControllerAdvice`입니다.
 
 `core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
 
@@ -334,7 +384,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-`@RestControllerAdvice`는 이 클래스를 전역 창구로 등록하고, `@ExceptionHandler`가 어떤 예외를 맡을지 지정합니다. `Exception404`는 404로, 미처 대비하지 못한 나머지 예외는 500으로 바꿔, 어떤 경우에도 낯선 기본 화면이 나가지 않게 막습니다.
+`@RestControllerAdvice`는 이 클래스를 전역 예외 처리기로 등록하고, `@ExceptionHandler`가 어떤 예외를 맡을지 지정합니다. `Exception404`는 404로, 미처 대비하지 못한 나머지 예외는 500으로 바꿔, 어떤 경우에도 낯선 기본 화면이 나가지 않게 막습니다.
 
 응답을 만드는 `Resp.fail`은 앞 챕터에서 `Resp.ok`와 함께 준비해 둔 실패용 메서드로, 오류 응답도 `status`·`msg`·`body` 형식을 그대로 지킵니다.
 
@@ -365,7 +415,58 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-3. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
+*그림 3-5. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
+
+예외가 위로 전파될 때 한 가지가 더 일어납니다. 그 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 앞 챕터에서 쓰기 메서드에 붙인 `@Transactional`이 정한 범위가 여기서 작동합니다.
+
+메서드가 끝까지 가면 그동안의 변경이 한꺼번에 반영됩니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="트랜잭션이 시작되고 값이 바뀐 뒤, 기록된 줄이 그대로 남아 데이터베이스에 반영된다.">
+  <defs>
+    <marker id="c3tx1-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="110" y="16" width="200" height="52" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="210" y="48" text-anchor="middle" font-size="14" fill="#0f172a">트랜잭션 시작</text>
+  <line x1="210" y1="70" x2="210" y2="90" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c3tx1-ar)"/>
+  <rect x="110" y="94" width="200" height="52" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="210" y="126" text-anchor="middle" font-size="14" fill="#0f172a">값 변경</text>
+  <line x1="210" y1="148" x2="210" y2="168" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c3tx1-ar)"/>
+  <rect x="110" y="172" width="200" height="106" rx="3" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
+  <line x1="132" y1="204" x2="288" y2="204" stroke="#475569" stroke-width="2.6"/>
+  <line x1="132" y1="228" x2="288" y2="228" stroke="#475569" stroke-width="2.6"/>
+  <line x1="132" y1="252" x2="238" y2="252" stroke="#475569" stroke-width="2.6"/>
+  <text x="210" y="304" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">반영</text>
+</svg>
+</div>
+
+*그림 3-6. 메서드가 끝까지 가면 그동안의 변경이 데이터베이스에 반영됩니다*
+
+도중에 예외가 나면 반영하지 않고 전부 없던 일로 되돌립니다. 이것을 롤백(rollback)이라고 합니다. 그래서 절반만 바뀐 데이터가 남지 않습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="트랜잭션이 시작되고 값이 바뀐 뒤 예외가 나면, 기록된 줄에 굵은 줄이 그어져 그때까지의 변경이 전부 되돌아간다.">
+  <defs>
+    <marker id="c3tx2-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="110" y="16" width="200" height="52" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="210" y="48" text-anchor="middle" font-size="14" fill="#0f172a">트랜잭션 시작</text>
+  <line x1="210" y1="70" x2="210" y2="90" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c3tx2-ar)"/>
+  <rect x="110" y="94" width="200" height="52" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="210" y="126" text-anchor="middle" font-size="14" fill="#0f172a">값 변경</text>
+  <line x1="210" y1="148" x2="210" y2="168" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c3tx2-ar)"/>
+  <rect x="110" y="172" width="200" height="106" rx="3" fill="#fff" stroke="#ff7849" stroke-width="1.9"/>
+  <line x1="132" y1="204" x2="288" y2="204" stroke="#cbd5e1" stroke-width="2.6"/>
+  <line x1="132" y1="228" x2="288" y2="228" stroke="#cbd5e1" stroke-width="2.6"/>
+  <line x1="132" y1="252" x2="238" y2="252" stroke="#cbd5e1" stroke-width="2.6"/>
+  <line x1="122" y1="228" x2="298" y2="228" stroke="#ff7849" stroke-width="4.5"/>
+  <text x="210" y="304" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">되돌림</text>
+</svg>
+</div>
+
+*그림 3-7. 도중에 예외가 나면 그때까지의 변경이 전부 되돌아갑니다*
+
+지금 다루는 상세 조회는 데이터를 바꾸지 않으므로 되돌릴 것이 없습니다. 예외는 그대로 전파되어 404 응답이 됩니다.
 
 이제 999번 글을 다시 불러 보겠습니다.
 
@@ -380,7 +481,7 @@ GET http://localhost:8080/api/boards/999
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 ![](../assets/CH3/terminal/01_404-response.png)
-*그림 3-4. 없는 글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
+*그림 3-8. 없는 글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
 
 없는 글을 부르면 빈 값이 성공인 척 나가던 곳에, 이제 "찾을 수 없다"는 응답이 형식을 갖춰 돌아옵니다. 응답으로 나가는 것도 엔티티가 아니라 DTO에 담긴 값뿐입니다. 두 구멍이 모두 막혔습니다.
 
@@ -400,7 +501,7 @@ GET http://localhost:8080/api/boards/999
 :::remember
 **이것만은 기억하자**
 
-- 엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 새어 나가지 않고, 바깥에 보여줄 값과 이름을 응답 그릇에서 따로 정할 수 있습니다.
+- 엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 새어 나가지 않고, 바깥에 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.
 - 없는 값은 `Optional`로 드러내고 `orElseThrow`로 예외를 던집니다. 커스텀 예외는 `RuntimeException`을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
 - 그런데 이 게시판은 아직 완전히 열려 있습니다. 로그인도, 주인 확인도 없어 아무나 남의 글을 수정하고 삭제할 수 있습니다. 다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.
 :::

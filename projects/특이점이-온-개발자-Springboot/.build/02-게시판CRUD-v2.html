@@ -134,6 +134,51 @@
 <span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;안녕하세요&quot;</span>
 <span class="p">}</span></div>
 <p>이렇게 자원을 정해진 방식으로 주고받도록 약속한 설계 방식을 REST(Representational State Transfer)라고 합니다. REST에서는 게시글, 회원, 댓글처럼 다루려는 대상을 자원(Resource)이라고 부르고, 각 자원을 주소(URI)로 가리킵니다. 게시글이라는 자원은 <code>/api/boards</code>라는 주소가 됩니다.</p>
+<p>주소가 정해졌으니 그 주소로 무엇이 오가는지 볼 차례입니다. 브라우저와 서버가 주고받는 요청과 응답에는 정해진 형식이 있습니다. 요청은 무엇을 어디에 요구하는지 적은 첫 줄과, 부가 정보를 담는 헤더, 보낼 데이터를 담는 바디로 이루어집니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 첫 줄에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
+  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="84" y="68" font-size="16" font-weight="800" fill="#3730a3">POST /api/boards</text>
+  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="216" font-size="13" fill="#334155">{ "title": "첫 번째 글",</text>
+  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">첫 줄</text>
+  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+</svg>
+</div>
+<div class="caption">그림 2-3. 요청은 메서드와 주소를 적은 첫 줄, 헤더, 바디로 이루어집니다</div>
+<p>응답도 구성이 비슷합니다. 첫 줄에는 요청이 어떻게 처리됐는지 알리는 상태 코드가 오고, 그 아래로 헤더와 바디가 따릅니다. 게시글 목록을 요청하면 앞에서 본 JSON이 이 바디에 담겨 돌아옵니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 첫 줄에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
+  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="84" y="68" font-size="16" font-weight="800" fill="#c2410c">200 OK</text>
+  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="216" font-size="13" fill="#334155">{ "id": 1, "title": "첫 번째 글",</text>
+  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">첫 줄</text>
+  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+</svg>
+</div>
+<div class="caption">그림 2-4. 응답은 상태 코드를 적은 첫 줄, 헤더, 바디로 이루어집니다</div>
+<p>지금 필요한 것은 요청 첫 줄과 응답 바디입니다. 헤더와 상태 코드는 뒤에서 다시 꺼냅니다.</p>
 <p>같은 주소를 두고도 무엇을 하고 싶은지는 HTTP 메서드로 구분합니다. 택배를 보낼 때 같은 상자라도 송장에 배송인지 반품인지 적어 구분하듯, 게시글이라는 같은 자원이라도 조회할 때와 저장할 때 붙이는 메서드가 다릅니다.</p>
 <table>
 <thead>
@@ -204,7 +249,44 @@
 </tr>
 </tbody>
 </table>
-<h2>2.2 소스코드 준비</h2>
+<h2>2.2 스프링 부트로 여는 프로젝트</h2>
+<h3>2.2.1 톰캣은 어디에 있나</h3>
+<p>주소 규칙까지 정했으니 이제 코드를 받아 실행할 차례입니다. 그 전에 짚을 것이 하나 있습니다. 1장에서 요청을 가장 먼저 받는 것이 톰캣이라고 했는데, 이번 챕터에서는 톰캣을 따로 내려받거나 설치하지 않습니다. 스프링 부트가 톰캣을 라이브러리로 함께 담고 있기 때문입니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="뚜껑이 열린 상자 안에 톰캣이라고 적힌 서버 본체가 들어 있다. 상자는 내 프로젝트를 뜻한다.">
+  <path d="M110,112 L160,58 L460,58 L410,112 Z" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
+  <rect x="110" y="112" width="300" height="170" rx="6" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <rect x="180" y="140" width="160" height="118" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
+  <line x1="196" y1="164" x2="324" y2="164" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <line x1="196" y1="184" x2="324" y2="184" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <line x1="196" y1="204" x2="324" y2="204" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <circle cx="318" cy="238" r="6" fill="#fff" stroke="#ff7849" stroke-width="1.5"/>
+  <text x="248" y="244" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">톰캣</text>
+  <text x="260" y="310" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">내 프로젝트</text>
+</svg>
+</div>
+<div class="caption">그림 2-5. 톰캣은 따로 설치하는 서버가 아니라 프로젝트 안에 함께 들어 있습니다</div>
+<p>그래서 프로젝트를 실행하면 톰캣도 같이 실행되어 8080 포트를 엽니다. 이렇게 애플리케이션 안에 들어 있는 서버를 내장 톰캣(Embedded Tomcat)이라고 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 620 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 상자 안의 서버 표시등에 불이 들어와 있고, 상자 옆에 8080이라고 적힌 팻말이 세워져 있다.">
+  <path d="M110,112 L160,58 L460,58 L410,112 Z" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
+  <rect x="110" y="112" width="300" height="170" rx="6" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <rect x="180" y="140" width="160" height="118" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
+  <line x1="196" y1="164" x2="324" y2="164" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <line x1="196" y1="184" x2="324" y2="184" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <line x1="196" y1="204" x2="324" y2="204" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
+  <circle cx="318" cy="238" r="6" fill="#ff7849" stroke="#ff7849" stroke-width="1.5"/>
+  <circle cx="318" cy="238" r="12" fill="none" stroke="#ff7849" stroke-width="1.2" opacity="0.45"/>
+  <text x="248" y="244" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">톰캣</text>
+  <line x1="500" y1="140" x2="500" y2="282" stroke="#475569" stroke-width="3"/>
+  <rect x="440" y="96" width="120" height="50" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="500" y="129" text-anchor="middle" font-size="18" font-weight="800" fill="#3730a3">8080</text>
+  <text x="260" y="310" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">내 프로젝트</text>
+</svg>
+</div>
+<div class="caption">그림 2-6. 프로젝트를 실행하면 8080 포트가 열리고, 그때부터 요청을 받습니다</div>
+<p>스프링 부트는 이처럼 스프링을 쓰는 데 필요한 것들을 미리 묶어 둔 도구입니다. 서버를 붙이고 설정을 맞추는 일을 대신 해 주므로, 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.</p>
+<h3>2.2.2 소스코드 준비</h3>
 <div class="prep-section-md">
 <p><strong>소스코드 준비</strong></p>
 <p>앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 여기서부터는 순수 자바가 아니라 스프링 부트 프로젝트입니다.</p>
@@ -289,7 +371,7 @@
   <text x="763" y="196" text-anchor="middle" font-size="11" fill="#c2410c">user_id 값으로 조인</text>
 </svg>
 </div>
-<div class="caption">그림 2-3. 같은 관계라도 객체 세계는 다른 객체를 필드로 참조하고, DB 세계는 외래 키 값으로 조인해 연결합니다</div>
+<div class="caption">그림 2-7. 같은 관계라도 객체 세계는 다른 객체를 필드로 참조하고, DB 세계는 외래 키 값으로 조인해 연결합니다</div>
 <p>이 차이는 햄버거 세트로 보면 분명해집니다. 자바에서는 <code>햄버거세트</code> 객체 하나가 <code>햄버거</code>, <code>콜라</code>, <code>감자</code> 객체를 품습니다(has-a). 세트 하나만 들면 그 안의 내용물을 바로 꺼낼 수 있습니다. 데이터베이스는 그렇게 못 합니다. 세트라는 상자 안에 음식을 넣지 못하므로, 햄버거 표, 콜라 표, 감자 표를 따로 만들어 두고 외래 키로 &quot;우린 같은 세트야&quot;라고 값으로 연결만 해 둡니다. 하나로 품는 세계와 값으로 나눠 연결하는 세계, 이 어긋남이 두 세계의 근본적인 불일치입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="햄버거 세트로 본 두 세계의 불일치. 왼쪽 자바 세계에서는 햄버거 세트 객체 하나가 햄버거, 콜라, 감자를 has-a 관계로 품는다. 오른쪽 DB 세계에서는 햄버거 테이블, 콜라 테이블, 감자 테이블이 따로 있고 각각 외래 키로 세트 테이블에 연결된다. 가운데 하이버네이트가 두 세계를 맞춘다.">
@@ -334,10 +416,30 @@
   <text x="815" y="326" text-anchor="middle" font-size="11" fill="#6b7280">따로 두고 값으로 연결한다</text>
 </svg>
 </div>
-<div class="caption">그림 2-4. 자바는 세트 하나에 내용물을 품고, DB는 표를 따로 두어 외래 키로 연결합니다. 하이버네이트가 그 사이를 맞춰 줍니다</div>
+<div class="caption">그림 2-8. 자바는 세트 하나에 내용물을 품고, DB는 표를 따로 두어 외래 키로 연결합니다. 하이버네이트가 그 사이를 맞춰 줍니다</div>
 <h3>2.3.2 ORM과 하이버네이트</h3>
 <p>ORM이 없던 시절에는 개발자가 이 간극을 손으로 메웠습니다. 테이블이 하나 늘 때마다 비슷한 SQL과 매핑 코드를 수십 줄씩 반복해 썼고, 조회 결과를 객체에 한 칸씩 옮겨 담느라 정작 중요한 로직을 짤 시간이 줄었습니다. 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.</p>
 <p>이 반복을 대신 해 주는 기술이 ORM(Object-Relational Mapping)입니다. 개발자가 객체로 코드를 짜면, ORM이 SQL로 바꿔 데이터베이스에 전하고 결과를 다시 객체로 돌려줍니다. JPA(Java Persistence API)는 자바가 정한 ORM 표준이고, 하이버네이트(Hibernate)는 그 표준을 구현한 대표 도구입니다. 덕분에 개발자는 조인과 외래 키를 직접 신경 쓰지 않고 객체만 다루면 됩니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자바 객체에서 ORM으로, ORM에서 SQL로 바뀌어 데이터베이스에 전달되고, 조회 결과는 다시 객체가 되어 돌아온다.">
+  <defs>
+    <marker id="c2orm-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c2orm-back" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="30" y="46" width="180" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">자바 객체</text>
+  <line x1="218" y1="82" x2="288" y2="82" stroke="#4f46e5" stroke-width="2" marker-end="url(#c2orm-ar)"/>
+  <rect x="300" y="46" width="180" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="390" y="90" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">ORM</text>
+  <line x1="488" y1="82" x2="578" y2="82" stroke="#4f46e5" stroke-width="2" marker-end="url(#c2orm-ar)"/>
+  <text x="533" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">SQL</text>
+  <rect x="590" y="46" width="200" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="690" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">데이터베이스</text>
+  <path d="M690,126 L690,182 L120,182 L120,128" fill="none" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c2orm-back)"/>
+  <text x="405" y="204" text-anchor="middle" font-size="13" fill="#475569">조회 결과는 다시 객체가 되어 돌아옵니다</text>
+</svg>
+</div>
+<div class="caption">그림 2-9. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다</div>
 <h2>2.4 엔티티와 데이터베이스 설정</h2>
 <h3>2.4.1 엔티티 매핑</h3>
 <p>가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 <code>board_tb</code> 테이블의 한 행이 됩니다.</p>
@@ -358,11 +460,11 @@
 <span class="w">    </span><span class="nd">@CreationTimestamp</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">Timestamp</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="p">}</span></div>
-<p><code>@Entity</code>·<code>@Table</code>이 붙은 <code>Board</code>가 <code>board_tb</code> 테이블 한 장에 대응하고, 각 필드가 그 테이블의 칸이 됩니다. 표식이 하는 일은 다음과 같습니다.</p>
+<p><code>@Entity</code>·<code>@Table</code>이 붙은 <code>Board</code>가 <code>board_tb</code> 테이블 한 장에 대응하고, 각 필드가 그 테이블의 칸이 됩니다. 각 어노테이션이 하는 일은 다음과 같습니다.</p>
 <table>
 <thead>
 <tr>
-<th>표식</th>
+<th>어노테이션</th>
 <th>역할</th>
 </tr>
 </thead>
@@ -496,7 +598,7 @@
   <text x="289" y="380" text-anchor="middle" font-size="10" fill="#6b7280">캐시에서 바로 반환</text>
 </svg>
 </div>
-<div class="caption">그림 2-5. 처음 조회는 캐시에 없어 DB까지 가지만, 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 SQL이 다시 실행되지 않습니다</div>
+<div class="caption">그림 2-10. 처음 조회는 캐시에 없어 DB까지 가지만, 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 SQL이 다시 실행되지 않습니다</div>
 <h3>2.6.2 쓰기 지연</h3>
 <p>쓰기 지연은 편지를 쓸 때마다 우체국에 달려가지 않고 우편함에 모아 뒀다가 한 번에 부치는 것과 같습니다. <code>em.persist</code>로 저장하라고 해도 곧바로 데이터베이스로 보내지 않고, INSERT 문을 영속성 컨텍스트 안의 버퍼에 모아 두었다가 <code>flush</code> 시점에 한꺼번에 내보냅니다.</p>
 <div class="svg-figure">
@@ -527,7 +629,7 @@
   <text x="669" y="216" text-anchor="middle" font-size="10" fill="#6b7280">insert 문 전송</text>
 </svg>
 </div>
-<div class="caption">그림 2-6. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다</div>
+<div class="caption">그림 2-11. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다</div>
 <div class="tip">
 <p><strong>IDENTITY 전략에서는 insert가 즉시 나갑니다</strong></p>
 <p>일반적으로는 insert도 버퍼에 모였다가 flush 시점에 나갑니다. 다만 이 책의 엔티티는 기본 키를 <code>@GeneratedValue(IDENTITY)</code>로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 <code>em.persist</code>를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연이 뚜렷하게 드러나는 것은 수정과 삭제입니다.</p>
@@ -568,11 +670,58 @@
   <text x="724" y="240" text-anchor="middle" font-size="9" fill="#4f46e5">4. flush</text>
 </svg>
 </div>
-<div class="caption">그림 2-7. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 그 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다</div>
+<div class="caption">그림 2-12. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 그 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다</div>
 <p>쓰기 지연과 더티체킹이 만든 SQL은 <code>flush</code> 시점에 데이터베이스로 나갑니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 <code>flush</code>를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 <code>@Transactional</code>이 끝날 때 자동으로 호출됩니다. 셋 중 더티체킹은 곧 게시글 수정에서 다시 만납니다.</p>
 <h2>2.7 서비스와 컨트롤러</h2>
 <p>리포지토리가 데이터를 다루는 통로라면, 그 통로를 언제 어떻게 쓸지 결정하는 것은 서비스의 몫이고, 바깥의 요청을 받아 서비스로 넘기는 입구가 컨트롤러입니다. 도입부의 그림 2-1에서 본 세 층이 이 구조이며, 이렇게 나눈 것을 3계층 아키텍처라고 합니다.</p>
-<p>컨트롤러가 제공할 게시판 API는 2.1에서 정리한 CRUD를 주소와 메서드로 옮긴 것입니다.</p>
+<p>한 클래스에 요청을 받는 일과 데이터를 저장하는 일을 모두 넣어도 게시판은 동작합니다. 문제는 고칠 때 드러납니다. 주소를 바꿀 일과 저장 방식을 바꿀 일이 한자리에 섞여 있으면, 한쪽을 손볼 때마다 다른 쪽까지 함께 들여다봐야 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="칸막이가 없는 창고 한 칸에 요청을 다루는 물건과 저장을 다루는 물건이 기울어진 채 뒤섞여 쌓여 있다.">
+  <path d="M46,64 L260,18 L474,64" fill="none" stroke="#475569" stroke-width="1.9"/>
+  <rect x="60" y="64" width="400" height="200" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <g transform="rotate(-9 130 122)">
+    <rect x="95" y="97" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+    <text x="130" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청</text>
+  </g>
+  <g transform="rotate(7 232 110)">
+    <rect x="197" y="85" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+    <text x="232" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">저장</text>
+  </g>
+  <g transform="rotate(-5 336 128)">
+    <rect x="301" y="103" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(11 168 205)">
+    <rect x="133" y="180" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(-6 272 212)">
+    <rect x="237" y="187" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(8 380 198)">
+    <rect x="345" y="173" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  </g>
+</svg>
+</div>
+<div class="caption">그림 2-13. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다</div>
+<p>층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="삼층 건물. 맨 위 층에 컨트롤러, 가운데 층에 서비스, 맨 아래 층에 리포지토리가 있고 각 층에는 같은 종류의 물건만 놓여 있다.">
+  <path d="M66,62 L260,16 L454,62" fill="none" stroke="#475569" stroke-width="1.9"/>
+  <rect x="80" y="62" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="110" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <rect x="270" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="348" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="80" y="142" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="190" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
+  <rect x="270" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="348" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="80" y="222" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="270" font-size="14" font-weight="700" fill="#0f172a">리포지토리</text>
+  <rect x="270" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+  <rect x="348" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+</svg>
+</div>
+<div class="caption">그림 2-14. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다</div>
+<p>컨트롤러가 제공할 게시판 API는 앞에서 정리한 CRUD를 주소와 메서드로 옮긴 것입니다.</p>
 <table>
 <thead>
 <tr>
@@ -685,9 +834,9 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>@RestController</code>가 붙은 이 클래스는 반환값을 JSON으로 내보내고, <code>@RequestMapping(&quot;/api/boards&quot;)</code>로 공통 주소를 정한 뒤, 각 메서드에 <code>@GetMapping</code>·<code>@PostMapping</code>·<code>@DeleteMapping</code>을 달아 앞에서 본 HTTP 메서드에 대응시킵니다.</p>
-<p>주소에서 값을 꺼내는 두 어노테이션이 있습니다. <code>@PathVariable</code>은 <code>/api/boards/1</code>처럼 주소에 박힌 값을 꺼내 파라미터로 받고, <code>@RequestBody</code>는 요청 바디로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 <code>SaveDTO</code>는 요청 데이터를 담는 그릇으로, 손님이 적어 내는 주문서 양식과 같습니다. <code>board/BoardRequest.java</code>에 정의합니다.</p>
+<p>주소에서 값을 꺼내는 두 어노테이션이 있습니다. <code>@PathVariable</code>은 <code>/api/boards/1</code>처럼 주소에 박힌 값을 꺼내 파라미터로 받고, <code>@RequestBody</code>는 요청 바디로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 <code>SaveDTO</code>는 요청 데이터를 담는 DTO입니다. <code>board/BoardRequest.java</code>에 정의합니다.</p>
 <p><code>board/BoardRequest.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardRequest.java. 요청 데이터 그릇</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardRequest.java. 요청 데이터 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="p">}</span>
 
@@ -695,7 +844,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>record</code>는 값을 담기만 하는 간단한 클래스를 짧게 정의하는 자바 문법입니다. <code>SaveDTO</code>는 글을 작성할 때, <code>UpdateDTO</code>는 수정할 때 받을 데이터를 담습니다. 지금은 두 DTO의 필드가 같지만, 저장과 수정은 서로 다른 요청이라 나중에 검증 규칙이나 필드가 달라질 수 있어 처음부터 나눠 둡니다.</p>
-<p>컨트롤러의 반환값은 모두 <code>Resp.ok(...)</code>로 감싸져 있습니다. <code>Resp</code>는 2.2의 클래스 표에서 정리한 공통 응답 래퍼로, <code>core/util/Resp.java</code>에 미리 준비되어 있습니다. <code>Resp.ok(body)</code>로 감싸면 응답이 항상 <code>status</code>(상태 코드), <code>msg</code>(메시지), <code>body</code>(실제 데이터) 세 칸을 가진 같은 모양으로 나갑니다. 어떤 요청이든 응답 구조가 일정하면, 화면을 만드는 쪽이 결과를 다루기가 편해집니다.</p>
+<p>컨트롤러의 반환값은 모두 <code>Resp.ok(...)</code>로 감싸져 있습니다. <code>Resp</code>는 앞의 클래스 표에서 정리한 공통 응답 래퍼로, <code>core/util/Resp.java</code>에 미리 준비되어 있습니다. <code>Resp.ok(body)</code>로 감싸면 응답이 항상 <code>status</code>(상태 코드), <code>msg</code>(메시지), <code>body</code>(실제 데이터) 세 칸을 가진 같은 모양으로 나갑니다. 어떤 요청이든 응답 구조가 일정하면, 화면을 만드는 쪽이 결과를 다루기가 편해집니다.</p>
 <p>이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 애플리케이션 실행</div>./gradlew<span class="w"> </span>bootRun</div>
 <p>서버가 뜨면 <code>GET /api/boards</code>로 목록을 요청합니다. <code>data.sql</code>에 넣어 둔 두 건이 <code>Resp</code> 형식에 감싸여 돌아옵니다.</p>
@@ -708,7 +857,7 @@
   path: assets/CH2/terminal/01_api-response.png
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql의 두 건이 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\01_api-response.png" alt="" /><div class="caption">그림 2-8. 목록 조회 요청에 두 게시글이 Resp 형식으로 감싸여 돌아온 응답입니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\01_api-response.png" alt="" /><div class="caption">그림 2-15. 목록 조회 요청에 두 게시글이 Resp 형식으로 감싸여 돌아온 응답입니다</div></div>
 <h2>2.8 더티체킹으로 수정하기</h2>
 <p>이제 마지막으로 남은 수정을 만듭니다.</p>
 <p><code>board/BoardService.java</code>에 아래 수정 메서드를 추가합니다.</p>
@@ -721,7 +870,7 @@
 <span class="w">        </span><span class="n">board</span><span class="p">.</span><span class="na">setContent</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">content</span><span class="p">());</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">board</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="c1">// 트랜잭션이 끝나는 이 지점에서 변경이 반영된다</span></div>
-<p>이 수정 메서드에는 저장하는 호출이 없습니다. <code>findById</code>로 가져온 <code>board</code>의 값을 바꾸고 그대로 반환할 뿐인데도 수정은 데이터베이스에 반영됩니다. 2.6에서 살펴본 더티체킹이 여기서 동작하기 때문입니다.</p>
+<p>이 수정 메서드에는 저장하는 호출이 없습니다. <code>findById</code>로 가져온 <code>board</code>의 값을 바꾸고 그대로 반환할 뿐인데도 수정은 데이터베이스에 반영됩니다. 앞에서 본 더티체킹이 여기서 동작하기 때문입니다.</p>
 <p><code>findById</code>로 가져온 <code>board</code>는 영속 상태가 되고, <code>@Transactional</code>이 끝날 때 <code>flush</code>가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.</p>
 <p>이 수정 메서드를 컨트롤러의 PUT 엔드포인트에 연결합니다. <code>board/BoardController.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardController.java. 수정 엔드포인트</div><span class="w">    </span><span class="c1">// 수정 (PUT /api/boards/1)</span>
@@ -774,7 +923,7 @@
   <text x="706" y="308" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
 </svg>
 </div>
-<div class="caption">그림 2-9. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다</div>
+<div class="caption">그림 2-16. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다</div>
 <p>리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리 계층만 가볍게 띄우는 <code>@DataJpaTest</code>를 제공합니다. 여기에 우리가 만든 <code>BoardRepository</code>를 <code>@Import</code>로 함께 올려 검증합니다.</p>
 <p>테스트는 세 단계로 씁니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.</p>
 <div class="svg-figure">
@@ -803,7 +952,7 @@
   <text x="740" y="200" text-anchor="middle" font-size="10" fill="#6b7280">원래 then(assert) 자리를 학습 단계에선 eye로 대체합니다</text>
 </svg>
 </div>
-<div class="caption">그림 2-10. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다</div>
+<div class="caption">그림 2-17. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다</div>
 <p><code>test/.../BoardRepositoryTest.java</code>를 열고 TODO의 <code>pass</code>를 지우고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> BoardRepositoryTest.java. 더티체킹 검증</div><span class="nd">@Import</span><span class="p">(</span><span class="n">BoardRepository</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
 <span class="nd">@DataJpaTest</span>
@@ -838,7 +987,7 @@
   path: assets/CH2/terminal/02_test-pass.png
   desc: BoardRepositoryTest 실행 결과. findById_test, findAll_test, save_test, update_test, delete_test 다섯 개가 모두 초록색으로 통과한 화면. IDE의 테스트 러너 창 또는 gradle 콘솔 BUILD SUCCESSFUL. update_test의 콘솔 출력에 "Board title : title-update"가 보이면 더욱 좋음.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_test-pass.png" alt="" /><div class="caption">그림 2-11. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_test-pass.png" alt="" /><div class="caption">그림 2-18. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다</div></div>
 <p>테스트가 초록색으로 통과했습니다. 오픈이는 화면을 열어 목록을 부르는 대신, 테스트 하나로 리포지토리가 제대로 도는지 확인하는 방법을 손에 넣었습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.</p>
 <p>동료가 화면 쪽 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.</p>
 <div class="dialogue"><span class="speaker">동료</span>: "목록이랑 상세 잘 나와요. 그런데 없는 번호로 상세를 부르면 어떻게 돼요? 3번 글은 아직 없는데."</div>

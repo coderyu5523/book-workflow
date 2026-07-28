@@ -165,7 +165,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
 </div>
 <div class="caption">그림 1-2. 라이브러리는 개발자가 기능을 골라 호출하고, 프레임워크는 이미 지어진 집에 개발자가 자기 코드만 채웁니다</div>
 <h3>1.1.2 제어의 역전</h3>
-<p>개발자가 규칙에 맞게 코드를 작성해 두면, 실행 중에 그 코드를 호출하는 것은 프레임워크입니다.</p>
+<p>개발자가 규칙에 맞게 코드를 작성해 두면, 실행 중에 그 코드를 호출하는 것은 프레임워크입니다. 라이브러리를 쓸 때는 리모컨을 개발자가 쥐고 필요한 기능을 눌러 씁니다. 프레임워크에서는 그 리모컨을 프레임워크가 쥐고, 개발자가 만들어 둔 코드를 눌러 실행합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="라이브러리는 개발자가 리모컨을 쥐고 기능을 조종하고, 프레임워크는 프레임워크가 리모컨을 쥐고 내 코드를 조종한다.">
   <defs>
@@ -205,7 +205,43 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
 <p>실행의 주도권이 개발자에서 프레임워크로 넘어갑니다. 이를 <strong>제어의 역전(IoC, Inversion of Control)</strong> 이라고 합니다. 공통 작업은 스프링이 맡고, 개발자는 어떤 주소에 무엇을 응답할지 핵심 로직만 작성하면 됩니다.</p>
 <h2>1.2 리플렉션 - 이름을 몰라도 찾아 호출한다</h2>
 <p>주도권이 프레임워크로 넘어갔다는 것은, 개발자가 작성한 코드를 스프링이 대신 실행해 준다는 뜻입니다. 그런데 그 실행은 간단하지 않습니다.</p>
-<p>보통의 자바 프로그램은 개발자가 <code>new</code>로 객체를 만들고, 이름을 정확히 적어야 메서드를 호출할 수 있습니다. 반면 스프링은 개발자가 앞으로 어떤 클래스에 어떤 메서드를 둘지 미리 알 수 없습니다. 이름도 모르는 코드를 실행 중에 찾아내 호출해야 합니다.</p>
+<p>보통의 자바 프로그램은 개발자가 <code>new</code>로 객체를 만들고, 이름을 정확히 적어야 메서드를 호출할 수 있습니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서랍마다 insert, delete, update 이름표가 붙은 서랍장. 맨 위 insert 서랍이 앞으로 당겨져 열려 있다.">
+  <rect x="100" y="40" width="280" height="220" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <rect x="120" y="60" width="300" height="56" rx="3" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="146" y="95" font-size="14" font-weight="800" fill="#3730a3">insert</text>
+  <rect x="392" y="82" width="18" height="12" rx="2" fill="#4f46e5"/>
+  <rect x="120" y="130" width="240" height="56" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="146" y="165" font-size="14" fill="#475569">delete</text>
+  <rect x="332" y="152" width="18" height="12" rx="2" fill="#94a3b8"/>
+  <rect x="120" y="200" width="240" height="56" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="146" y="235" font-size="14" fill="#475569">update</text>
+  <rect x="332" y="222" width="18" height="12" rx="2" fill="#94a3b8"/>
+</svg>
+</div>
+<div class="caption">그림 1-4. 보통의 자바에서는 개발자가 메서드 이름을 적어 직접 호출합니다</div>
+<p>반면 스프링은 개발자가 앞으로 어떤 클래스에 어떤 메서드를 둘지 미리 알 수 없습니다. 이름도 모르는 코드를 실행 중에 찾아내 호출해야 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="이름표가 비어 있는 서랍장 위에 돋보기를 대고 들여다보자, 돋보기 안쪽에만 서랍에 든 메서드 이름이 드러난다.">
+  <rect x="60" y="40" width="280" height="220" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <rect x="80" y="60" width="240" height="56" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <rect x="102" y="78" width="76" height="18" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="292" y="82" width="18" height="12" rx="2" fill="#94a3b8"/>
+  <rect x="80" y="130" width="240" height="56" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <rect x="102" y="148" width="76" height="18" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="292" y="152" width="18" height="12" rx="2" fill="#94a3b8"/>
+  <rect x="80" y="200" width="240" height="56" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <rect x="102" y="218" width="76" height="18" rx="3" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="292" y="222" width="18" height="12" rx="2" fill="#94a3b8"/>
+  <line x1="444" y1="168" x2="512" y2="238" stroke="#4f46e5" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="392" cy="120" r="66" fill="#fff" stroke="#4f46e5" stroke-width="3.4"/>
+  <text x="392" y="104" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">insert</text>
+  <text x="392" y="128" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">delete</text>
+  <text x="392" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">update</text>
+</svg>
+</div>
+<div class="caption">그림 1-5. 스프링은 이름을 모르므로 실행 중에 클래스 안을 읽어 메서드 목록을 확인합니다</div>
 <p>이 일을 가능하게 하는 기술이 <strong>리플렉션(Reflection)</strong> 입니다. 리플렉션은 프로그램이 실행되는 도중(런타임)에 클래스와 메서드, 필드 정보를 읽고 호출까지 할 수 있는 자바의 기능입니다.</p>
 <h2>1.3 if-else 라우팅과 그 한계</h2>
 <p>가장 원시적인 요청 처리 방식은 요청 주소를 <code>if</code> 문으로 비교해 알맞은 메서드를 직접 호출하는 것입니다.</p>
@@ -303,7 +339,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
   <text x="586" y="258" text-anchor="middle" font-size="9" fill="#64748b">처음 봐도 실행</text>
 </svg>
 </div>
-<div class="caption">그림 1-4. if문은 등록된 주소만 실행하지만, 리플렉션은 @표식을 읽어 처음 보는 주소도 실행합니다</div>
+<div class="caption">그림 1-6. if문은 등록된 주소만 실행하지만, 리플렉션은 @표식을 읽어 처음 보는 주소도 실행합니다</div>
 <p>스프링에는 <code>@RequestMapping</code> 같은 어노테이션이 이미 준비되어 있습니다. 그 정체를 이해하기 위해, 같은 이름의 어노테이션을 직접 만들어 보겠습니다.</p>
 <p><code>ex02/RequestMapping.java</code>를 열고 아래 코드를 작성합니다. 어노테이션은 클래스나 인터페이스처럼 <code>@interface</code> 키워드로 정의합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> ex02/RequestMapping.java. 주소를 담는 커스텀 어노테이션</div><span class="c1">// 1. 실행 중(런타임)에도 이 표식을 읽을 수 있게 유지한다</span>
@@ -412,7 +448,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
   <line x1="600" y1="198" x2="600" y2="248" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1cs-ar)"/>
 </svg>
 </div>
-<div class="caption">그림 1-5. 폴더 안의 클래스를 하나씩 살펴 표식이 붙은 것만 객체로 만들어 보관하고, 요청이 오면 그 객체에서 메서드를 찾아 실행합니다</div>
+<div class="caption">그림 1-7. 폴더 안의 클래스를 하나씩 살펴 표식이 붙은 것만 객체로 만들어 보관하고, 요청이 오면 그 객체에서 메서드를 찾아 실행합니다</div>
 <p>이번에는 메서드가 아니라 클래스에 붙일 표식이 필요합니다. 컨트롤러 역할을 하는 클래스라는 것을 나타내는 <code>@Controller</code> 어노테이션을 만듭니다.</p>
 <p><code>ex03/Controller.java</code>를 열고 아래 코드를 작성합니다. 메서드가 아닌 클래스에 붙이므로 <code>@Target</code>을 <code>ElementType.TYPE</code>으로 지정합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> ex03/Controller.java. 컨트롤러임을 나타내는 표식</div><span class="nd">@Retention</span><span class="p">(</span><span class="n">RetentionPolicy</span><span class="p">.</span><span class="na">RUNTIME</span><span class="p">)</span>
@@ -493,57 +529,55 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
   path: assets/CH1/terminal/01_ex03-scan-run.png
   desc: ex03/App.java의 main 실행 콘솔 출력. "파일명: App.class", "파일명: BoardController.class", "파일명: Controller.class", "파일명: RequestMapping.class"처럼 폴더 안 파일 이름이 줄줄이 찍히고, 구분선 아래에 "delete 호출됨"이 출력된 화면. IDE 콘솔 캡처.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH1\terminal\01_ex03-scan-run.png" alt="" /><div class="caption">그림 1-6. 폴더를 스캔해 파일 이름을 훑고, @Controller가 붙은 클래스에서 delete 메서드를 찾아 실행한 결과입니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH1\terminal\01_ex03-scan-run.png" alt="" /><div class="caption">그림 1-8. 폴더를 스캔해 파일 이름을 훑고, @Controller가 붙은 클래스에서 delete 메서드를 찾아 실행한 결과입니다</div></div>
 <p>이제 개발자가 할 일은 클래스에 <code>@Controller</code>를 붙이고 메서드에 주소 표식을 다는 것뿐입니다. 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 알아서 합니다. 이것이 등록한 적 없는 메서드가 실행되는 원리입니다.</p>
 <h2>1.6 스프링이 객체를 만들어 넣어준다</h2>
+<h3>1.6.1 빈과 컨테이너</h3>
 <p>방금 만든 스캔에서 <code>BoardController</code> 객체는 개발자가 만든 것이 아닙니다. 프로그램이 표식을 확인하고 대신 만들어 <code>instances</code>에 보관했습니다.</p>
-<p>스프링도 똑같이 동작합니다. 표식 붙은 클래스를 찾아 객체로 만들고, 자신이 관리하는 공간에 담아 둡니다. 이렇게 스프링이 직접 생성하고 관리하는 객체를 <strong>빈(Bean)</strong> 이라고 부릅니다.</p>
+<p>스프링도 똑같이 동작합니다. 표식 붙은 클래스를 찾아 객체로 만들고, 자기가 관리하는 공간에 담아 둡니다. 이 공간을 <strong>스프링 컨테이너</strong>, 거기 담긴 객체를 <strong>빈(Bean)</strong> 이라고 부릅니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="스프링이 표식 붙은 클래스를 객체로 만들어 창고 선반에 두고, 필요한 객체에 꺼내 끼워 준다.">
+<svg viewBox="0 0 620 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="골뱅이 표식이 붙은 설계도 한 장에서 만들어진 완성품들이, 선반이 두 칸인 보관장 위에 놓여 있다. 이 보관장이 스프링 컨테이너다.">
   <defs>
-    <marker id="c1bean-ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+    <marker id="c1bean-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <rect x="30" y="96" width="96" height="60" rx="4" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <rect x="38" y="102" width="15" height="16" rx="3" fill="#4f46e5"/>
-  <text x="45" y="114" text-anchor="middle" font-size="9" font-weight="800" fill="#fff">@</text>
-  <text x="80" y="140" text-anchor="middle" font-size="10" fill="#334155">클래스</text>
-  <text x="78" y="172" text-anchor="middle" font-size="9" fill="#64748b">표식 붙은 클래스</text>
-  <line x1="128" y1="126" x2="196" y2="126" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c1bean-ar)"/>
-  <text x="162" y="116" text-anchor="middle" font-size="8.5" fill="#3730a3">스프링이 생성</text>
-  <rect x="204" y="70" width="220" height="132" rx="4" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="314" y="88" text-anchor="middle" font-size="10.5" font-weight="700" fill="#3730a3">스프링 창고(컨테이너)</text>
-  <line x1="204" y1="150" x2="424" y2="150" stroke="#475569" stroke-width="1.5"/>
-  <g stroke="#4f46e5" stroke-width="1.5" fill="#eef2ff">
-    <path d="M232 122 L250 114 L278 114 L260 122 Z"/>
-    <path d="M232 122 L260 122 L260 148 L232 148 Z"/>
-    <path d="M260 122 L278 114 L278 140 L260 148 Z"/>
-  </g>
-  <g stroke="#4f46e5" stroke-width="1.5" fill="#eef2ff">
-    <path d="M298 122 L316 114 L344 114 L326 122 Z"/>
-    <path d="M298 122 L326 122 L326 148 L298 148 Z"/>
-    <path d="M326 122 L344 114 L344 140 L326 148 Z"/>
-  </g>
-  <g stroke="#4f46e5" stroke-width="1.5" fill="#eef2ff">
-    <path d="M364 122 L382 114 L410 114 L392 122 Z"/>
-    <path d="M364 122 L392 122 L392 148 L364 148 Z"/>
-    <path d="M392 122 L410 114 L410 140 L392 148 Z"/>
-  </g>
-  <text x="314" y="192" text-anchor="middle" font-size="9" fill="#64748b">완성된 객체(빈) 보관</text>
-  <line x1="426" y1="126" x2="500" y2="126" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c1bean-ar)"/>
-  <text x="463" y="116" text-anchor="middle" font-size="8.5" fill="#3730a3">필요한 곳에 주입</text>
-  <rect x="508" y="92" width="118" height="68" rx="6" fill="#fff" stroke="#475569" stroke-width="1.7"/>
-  <text x="567" y="112" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a">다른 객체</text>
-  <rect x="536" y="122" width="62" height="26" rx="2" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="4 3"/>
-  <g stroke="#4f46e5" stroke-width="1.4" fill="#eef2ff">
-    <path d="M548 130 L560 125 L582 125 L570 130 Z"/>
-    <path d="M548 130 L570 130 L570 146 L548 146 Z"/>
-    <path d="M570 130 L582 125 L582 141 L570 146 Z"/>
-  </g>
-  <text x="380" y="238" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">개발자가 new 하지 않아도, 스프링이 빈을 만들어 필요한 곳에 끼워 줍니다</text>
+  <rect x="26" y="88" width="112" height="134" rx="3" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="38" y="100" width="26" height="24" rx="5" fill="#4f46e5"/>
+  <text x="51" y="118" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">@</text>
+  <line x1="38" y1="146" x2="126" y2="146" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="38" y1="168" x2="126" y2="168" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="38" y1="190" x2="100" y2="190" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="82" y="246" text-anchor="middle" font-size="13" fill="#475569">클래스</text>
+  <line x1="150" y1="152" x2="198" y2="152" stroke="#4f46e5" stroke-width="2" marker-end="url(#c1bean-ar)"/>
+  <rect x="210" y="46" width="370" height="204" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <line x1="210" y1="150" x2="580" y2="150" stroke="#475569" stroke-width="1.7"/>
+  <rect x="248" y="86" width="94" height="52" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="295" y="119" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">빈</text>
+  <rect x="380" y="86" width="94" height="52" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <rect x="248" y="186" width="94" height="52" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="395" y="282" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">스프링 컨테이너</text>
 </svg>
 </div>
-<div class="caption">그림 1-7. 스프링이 표식 붙은 클래스를 객체(빈)로 만들어 컨테이너에 보관하고, 필요한 곳에 꺼내 넣어 줍니다</div>
-<p>스프링은 한 걸음 더 나아가, 만들어 둔 빈을 필요한 곳에 넣어 줍니다. 다음 챕터에서 만들 게시판 컨트롤러는 게시판 서비스 객체가 필요한데, 개발자가 직접 <code>new</code>로 넣지 않아도 스프링이 보관소에서 알맞은 빈을 꺼내 넣어 줍니다. 이처럼 필요한 객체를 외부에서 넣어 주는 방식을 <strong>의존성 주입(DI, Dependency Injection)</strong> 이라고 합니다.</p>
+<div class="caption">그림 1-9. 스프링이 표식 붙은 클래스를 객체로 만들어 컨테이너에 담아 둡니다. 이 객체가 빈입니다</div>
+<h3>1.6.2 의존성 주입</h3>
+<p>스프링은 한 걸음 더 나아가, 만들어 둔 빈을 필요한 곳에 넣어 줍니다. 다음 챕터에서 만들 게시판 컨트롤러는 게시판 서비스 객체가 필요한데, 개발자가 직접 <code>new</code>로 넣지 않아도 스프링이 컨테이너에서 알맞은 빈을 꺼내 넣어 줍니다. 이처럼 필요한 객체를 외부에서 넣어 주는 방식을 <strong>의존성 주입(DI, Dependency Injection)</strong> 이라고 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 660 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="보관장 아래 칸이 비어 있고, 거기서 꺼낸 빈 하나가 오른쪽 기계의 점선으로 표시된 빈 홈으로 들어간다. 기계는 컨트롤러다.">
+  <defs>
+    <marker id="c1di-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="26" y="46" width="212" height="182" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <line x1="26" y1="140" x2="238" y2="140" stroke="#475569" stroke-width="1.7"/>
+  <rect x="58" y="82" width="94" height="50" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="132" y="262" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">스프링 컨테이너</text>
+  <rect x="296" y="106" width="104" height="56" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="348" y="141" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">빈</text>
+  <line x1="410" y1="134" x2="458" y2="134" stroke="#4f46e5" stroke-width="2" marker-end="url(#c1di-ar)"/>
+  <rect x="470" y="46" width="164" height="182" rx="6" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <rect x="494" y="104" width="116" height="60" rx="5" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6 4"/>
+  <text x="552" y="262" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">컨트롤러</text>
+</svg>
+</div>
+<div class="caption">그림 1-10. 컨트롤러에 필요한 빈을 스프링이 컨테이너에서 꺼내 넣어 줍니다</div>
 <p>컨트롤러가 서비스를 주입받아 쓰는 모습은 다음 챕터에서 게시판을 만들며 직접 확인합니다.</p>
 <h2>1.7 요청 하나가 실행되기까지</h2>
 <p>리플렉션과 스캔이 스프링 안에서 어디에 놓이는지, 요청 하나의 여정을 따라갑니다. 브라우저가 주소를 요청한 순간부터 데이터베이스까지 이어지는 전체 흐름이며, 세부 동작은 이어지는 챕터에서 다룹니다.</p>
@@ -594,7 +628,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
   <line x1="904" y1="162" x2="904" y2="254" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
 </svg>
 </div>
-<div class="caption">그림 1-8. 요청이 톰캣과 디스패처 서블릿을 거쳐 컨트롤러 메서드로 전달되고, 서비스와 리포지토리를 지나 데이터베이스까지 이어지는 흐름입니다</div>
+<div class="caption">그림 1-11. 요청이 톰캣과 디스패처 서블릿을 거쳐 컨트롤러 메서드로 전달되고, 서비스와 리포지토리를 지나 데이터베이스까지 이어지는 흐름입니다</div>
 <p>브라우저가 8080 포트로 요청을 보내면 웹 서버인 톰캣(Tomcat)이 받습니다. 톰캣은 요청의 헤더와 바디를 담은 <code>req</code> 객체와, 응답을 담을 <code>resp</code> 객체를 만들어 스프링으로 넘깁니다.</p>
 <p>톰캣을 통과한 요청은 스프링 컨테이너의 진입점인 <strong>디스패처 서블릿(DispatcherServlet)</strong> 으로 넘어갑니다. 디스패처 서블릿은 들어온 주소를 담당하는 컨트롤러 메서드를 찾아 리플렉션으로 호출합니다.</p>
 <p>호출된 컨트롤러(C)는 응답 처리를 맡고, 핵심 로직은 서비스(S)로 넘깁니다. 서비스는 트랜잭션을 관리하며 리포지토리(R)를 통해 데이터베이스에 질의하고, 이 과정에서 영속성 컨텍스트(PC)가 자바 객체와 데이터베이스 사이의 데이터를 관리합니다.</p>
@@ -651,7 +685,7 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metac
   <text x="840" y="186" text-anchor="middle" font-size="13" fill="#475569">댓글 작성·삭제</text>
 </svg>
 </div>
-<div class="caption">그림 1-9. 게시판을 만들고 예외 처리와 로그인, 댓글까지 더하는 앞으로의 학습 여정입니다</div>
+<div class="caption">그림 1-12. 게시판을 만들고 예외 처리와 로그인, 댓글까지 더하는 앞으로의 학습 여정입니다</div>
 <p>각 챕터에서 다루는 내용은 다음과 같습니다.</p>
 <ul>
 <li>챕터 2에서는 스프링으로 게시판을 만들어 글을 저장하고 불러옵니다.</li>
