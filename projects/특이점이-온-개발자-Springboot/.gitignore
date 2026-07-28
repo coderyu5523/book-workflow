@@ -1,0 +1,3 @@
+# .build/styles 는 빌드가 스킬 원본(.claude/skills/pub-html-build/styles)에서
+# 심링크(또는 Windows 복사)로 매 빌드마다 재생성한다. 추적하지 않는다.
+.build/styles/
