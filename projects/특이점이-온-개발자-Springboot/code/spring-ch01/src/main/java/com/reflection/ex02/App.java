@@ -4,8 +4,8 @@ import java.lang.reflect.Method;
 
 public class App {
     public static void main(String[] args) {
-        String uri  = "/update";
 
+        String uri = "/update";
         BoardController boardController = new BoardController();
 
         Method[] methods = boardController.getClass().getDeclaredMethods();

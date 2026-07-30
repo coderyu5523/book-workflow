@@ -797,7 +797,7 @@ public class BoardController {
 }
 ```
 
-`@RestController`가 붙은 이 클래스는 반환값을 JSON으로 내보내고, `@RequestMapping("/api/boards")`로 공통 주소를 정한 뒤, 각 메서드에 `@GetMapping`·`@PostMapping`·`@DeleteMapping`을 달아 앞에서 본 HTTP 메서드에 대응시킵니다.
+`@RestController`가 붙은 이 클래스는 반환값을 JSON으로 내보내고, `@RequestMapping("/api/boards")`로 공통 주소를 정한 뒤, 각 메서드에 `@GetMapping`·`@PostMapping`·`@DeleteMapping`을 추가해 앞에서 본 HTTP 메서드에 대응시킵니다.
 
 주소에서 값을 꺼내는 두 어노테이션이 있습니다. `@PathVariable`은 `/api/boards/1`처럼 주소에 박힌 값을 꺼내 파라미터로 받고, `@RequestBody`는 요청 바디로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 `SaveDTO`는 요청 데이터를 담는 DTO입니다. `board/BoardRequest.java`에 정의합니다.
 

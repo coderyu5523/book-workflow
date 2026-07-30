@@ -84,7 +84,7 @@ GET http://localhost:8080/api/boards/999
 
 | 클래스 | 역할 |
 |--------|------|
-| BoardResponse | (신규) 응답으로 내보낼 값만 담는 DTO. `DTO`와 `DetailDTO` 두 가지를 둡니다. |
+| BoardResponse | (신규) 응답으로 내보낼 값만 담는 DTO. `DTO`와 `DetailDTO` 두 가지를 작성합니다. |
 | Exception404 | (신규) 자원을 찾을 수 없을 때 던지는 커스텀 예외입니다. |
 | GlobalExceptionHandler | (신규) 던져진 예외를 한 곳에서 JSON 응답으로 바꾸는 전역 처리기입니다. |
 | BoardRepository | (변경) `findById`가 `null` 대신 `Optional`을 반환합니다. |
@@ -177,7 +177,7 @@ public class BoardResponse {
 }
 ```
 
-`record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 두었습니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 둔 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
+`record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
 
 지금은 목록용 `DTO`와 상세용 `DetailDTO`의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 DTO만 손보면 되고, 목록은 건드릴 필요가 없습니다.
 
