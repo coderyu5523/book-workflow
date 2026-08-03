@@ -314,7 +314,8 @@ public class ReplyController {
 
     // 2. 댓글 삭제 (DELETE /api/replies/1)
     @DeleteMapping("/{replyId}")
-    public ResponseEntity<?> deleteById(HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
+    public ResponseEntity<?> deleteById(
+            HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
         User sessionUser = (User) request.getAttribute("sessionUser");
         replyService.댓글삭제(replyId, sessionUser.getId());
         return Resp.ok(null);
@@ -343,7 +344,8 @@ public class ReplyController {
             String username, Boolean isOwner, List<ReplyDTO> replies) {
         public DetailDTO(Board board, Integer sessionUserId) {
             this(board.getId(), board.getTitle(), board.getContent(), board.getUser().getId(),
-                    board.getUser().getUsername(), checkOwner(sessionUserId, board.getUser().getId()),
+                    board.getUser().getUsername(),
+                    checkOwner(sessionUserId, board.getUser().getId()),
                     board.getReplies().stream().map(r -> new ReplyDTO(r, sessionUserId)).toList());
         }
 
@@ -439,7 +441,8 @@ public class ReplyController {
     public void findByIdLazyLoading_test() {
         Board board = boardRepository.findById(1).get(); // 여기선 board만 조회
         System.out.println("Board ID : " + board.getId());
-        System.out.println("username : " + board.getUser().getUsername()); // 이 순간 user 조회가 나간다
+        // 이 순간 user 조회가 나간다
+        System.out.println("username : " + board.getUser().getUsername());
     }
 ```
 
@@ -495,8 +498,8 @@ public class ReplyController {
 ```java [실습 8] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     public Optional<Board> findByIdJoinUserAndReply(int boardId) {
         // TODO: 작성자와 댓글을 join fetch로 함께 가져온다
-        return em.createQuery(
-                "select b from Board b join fetch b.user left join fetch b.replies where b.id = :id", Board.class)
+        return em.createQuery("select b from Board b join fetch b.user "
+                + "left join fetch b.replies where b.id = :id", Board.class)
                 .setParameter("id", boardId)
                 .getResultStream().findFirst();
     }
@@ -513,7 +516,8 @@ public class ReplyController {
         System.out.println("Board ID : " + board.getId());
         System.out.println("username : " + board.getUser().getUsername());        // 추가 쿼리 없음
         System.out.println("Reply : " + board.getReplies().get(1).getComment());  // 추가 쿼리 없음
-        System.out.println("Reply author : " + board.getReplies().get(1).getUser().getUsername()); // 여기서 댓글 작성자 조회가 나간다
+        // 여기서 댓글 작성자 조회가 나간다
+        System.out.println("Reply author : " + board.getReplies().get(1).getUser().getUsername());
     }
 ```
 
