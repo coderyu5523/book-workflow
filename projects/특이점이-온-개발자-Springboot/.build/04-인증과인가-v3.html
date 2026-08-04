@@ -208,7 +208,7 @@
 </tr>
 <tr>
 <td>WebMvcConfig (신규)</td>
-<td>인터셉터를 등록하고 CORS를 설정합니다.</td>
+<td>인터셉터를 어느 주소에 적용할지 등록합니다.</td>
 </tr>
 <tr>
 <td>Exception400 · Exception401 · Exception403 (신규)</td>
@@ -258,7 +258,7 @@
 ├── core/util/JwtProvider.java                 [실습] 토큰 추출·유저 복원
 ├── core/filter/JwtAuthenticationFilter.java   [실습] 인증 필터
 ├── core/interceptor/AuthInterceptor.java      [실습] 인가 인터셉터
-├── core/config/WebMvcConfig.java              [참고] 인터셉터 등록 + CORS
+├── core/config/WebMvcConfig.java              [참고] 인터셉터 등록
 ├── core/handler/ex/Exception400,401,403.java  [참고] 잘못된 요청·인증·인가 예외
 ├── board/Board.java, BoardRepository.java     [설명] 작성자 연관관계
 ├── board/BoardService.java, BoardController.java [설명] 소유자 검증
@@ -270,46 +270,98 @@
 <p>방어된 성을 다시 봅니다. 성벽 위 경비는 오는 사람마다 누구인지 확인합니다. 하지만 성 안에 들어왔다고 아무 창고나 열 수 있는 것은 아닙니다. 무기 창고 문 앞에서는 그 사람에게 열 자격이 있는지를 따로 따집니다.</p>
 <p>앞의 확인, 요청을 보낸 사람이 누구인지 밝히는 일을 <strong>인증(Authentication)</strong> 이라고 합니다. 뒤의 확인, 그 사람이 특정 동작을 할 자격이 있는지 따지는 일을 <strong>인가(Authorization)</strong> 라고 합니다. 인증은 &quot;너 누구야&quot;에 답하고, 인가는 &quot;그걸 할 권한이 있어&quot;에 답합니다.</p>
 <p>이 장에서 두 확인은 서로 다른 장치가 맡습니다. 신원을 밝히는 인증은 요청을 받는 자리에서 토큰을 확인하는 필터가 담당하고, 자격을 따지는 인가는 그 뒤에서 요청을 막아서는 인터셉터가 담당합니다. 그림 4-1에서 나란히 있던 두 상자가 각각 이 둘입니다. 두 장치가 무엇인지는 뒤에서 하나씩 만들며 확인합니다. 먼저 신원을 무엇으로 밝힐지부터 정해야 합니다.</p>
-<h2>4.3 세션과 JWT</h2>
-<p>로그인을 붙이는 방법으로 먼저 떠오르는 것은 세션입니다. 서버가 로그인한 사람의 정보를 자기 안에 보관해 두고, 다음 요청이 오면 &quot;아까 그 사람&quot;이라고 알아보는 방식입니다. 이렇게 서버가 접속한 사람의 상태를 기억하고 있는 방식을 <strong>상태 유지(Stateful)</strong> 라고 합니다.</p>
-<p>그런데 여기엔 걸리는 데가 있습니다. HTTP는 원래 요청 하나하나를 따로 취급합니다. 방금 로그인한 사람이 다음 요청을 보내도, 서버는 그것이 같은 사람이 보낸 것인지 알지 못합니다. 그래서 세션 방식은 서버가 로그인 정보를 자기 메모리에 쌓아 두고 사람마다 번호표를 붙여 관리해야 합니다. 접속자가 늘면 서버가 기억해야 할 것도 함께 늘고, 서버를 여러 대로 나누면 누가 어느 서버에 로그인했는지까지 맞춰야 합니다.</p>
-<p>반대쪽 방법은 서버가 아무것도 기억하지 않는 것입니다. 로그인에 성공한 사람에게 신분을 증명하는 표를 하나 만들어 건네주고, 이후로는 그 표를 요청마다 지니고 오게 합니다. 서버는 표가 진짜인지만 확인하면 됩니다. 이렇게 서버가 상태를 기억하지 않는 방식을 <strong>무상태(Stateless)</strong> 라고 합니다.</p>
+<h2>4.3 JWT</h2>
+<p>로그인을 붙이기 전에 정할 것이 하나 있습니다. 로그인한 사람을 서버가 기억할 것인가, 기억하지 않을 것인가입니다.</p>
+<p>HTTP는 요청 하나하나를 따로 취급합니다. 방금 로그인한 사람이 다음 요청을 보내도, 서버는 그것이 같은 사람이 보낸 것인지 알지 못합니다. 그래서 로그인 상태를 이어 가려면 둘 중 하나를 골라야 합니다. 서버가 로그인한 사람을 기억해 두거나, 요청하는 쪽이 자기가 누구인지 증명할 것을 매번 들고 오거나입니다.</p>
+<p>이 책은 뒤쪽을 택합니다. 로그인에 성공한 사람에게 신분을 증명하는 표를 하나 만들어 건네주고, 이후로는 그 표를 요청마다 지니고 오게 합니다. 서버는 표가 진짜인지만 확인하면 됩니다. 이렇게 서버가 상태를 기억하지 않는 방식을 <strong>무상태(Stateless)</strong> 라고 합니다.</p>
+<p>그 표에 해당하는 것이 <strong>JWT(JSON Web Token)</strong> 입니다. 누구인지 알려 주는 정보를 JSON 형식으로 담고 거기에 서명을 붙여 만든 토큰으로, 서버와 클라이언트가 인증을 주고받는 데 씁니다.</p>
+<h3>4.3.1 토큰이 오가는 순서</h3>
 <div class="svg-figure">
-<svg viewBox="0 0 940 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="세션과 토큰 비교. 왼쪽 상태 유지 세션은 서버가 사람마다 정보를 서랍에 보관하는 캐비닛이고 사람은 번호표만 받는다. 오른쪽 무상태 JWT는 서버에 보관함이 없고, 사람이 자기 신분이 든 토큰 가방을 메고 다니며 창구에서 그 가방이 진짜인지만 확인한다.">
-  <line x1="470" y1="42" x2="470" y2="346" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="6,4"/>
-  <text x="235" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">상태 유지 · 세션</text>
-  <text x="705" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">무상태 · JWT</text>
-  <rect x="118" y="58" width="184" height="188" rx="6" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="210" y="82" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">세션 저장소 (서버)</text>
-  <rect x="134" y="94" width="152" height="40" rx="3" fill="#eef2ff" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="144" y="104" width="22" height="20" fill="#fff" stroke="#4f46e5" stroke-width="1"/>
-  <text x="226" y="119" text-anchor="middle" font-size="10" fill="#475569">사용자 A 정보</text>
-  <rect x="134" y="140" width="152" height="40" rx="3" fill="#eef2ff" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="144" y="150" width="22" height="20" fill="#fff" stroke="#4f46e5" stroke-width="1"/>
-  <text x="226" y="165" text-anchor="middle" font-size="10" fill="#475569">사용자 B 정보</text>
-  <rect x="134" y="186" width="152" height="40" rx="3" fill="#eef2ff" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="144" y="196" width="22" height="20" fill="#fff" stroke="#4f46e5" stroke-width="1"/>
-  <text x="226" y="211" text-anchor="middle" font-size="10" fill="#475569">사용자 C 정보</text>
-  <circle cx="180" cy="286" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.4"/>
-  <path d="M158 330 Q158 302 180 302 Q202 302 202 330 Z" fill="#cbd5e1" stroke="#475569" stroke-width="1.4"/>
-  <rect x="214" y="292" width="44" height="20" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="236" y="306" text-anchor="middle" font-size="10" fill="#475569">번호표</text>
-  <text x="210" y="356" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">서버가 기억한다</text>
-  <rect x="620" y="58" width="170" height="76" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="705" y="92" text-anchor="middle" font-size="11" fill="#94a3b8">빈 서버</text>
-  <text x="705" y="110" text-anchor="middle" font-size="11" fill="#94a3b8">(기억하지 않음)</text>
-  <text x="705" y="172" text-anchor="middle" font-size="11" fill="#475569">창구 · 토큰 검증</text>
-  <rect x="612" y="182" width="186" height="14" rx="3" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.2"/>
-  <circle cx="672" cy="252" r="13" fill="#cbd5e1" stroke="#475569" stroke-width="1.4"/>
-  <path d="M650 300 Q650 272 672 272 Q694 272 694 300 Z" fill="#cbd5e1" stroke="#475569" stroke-width="1.4"/>
-  <rect x="700" y="266" width="46" height="34" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.6"/>
-  <text x="723" y="281" text-anchor="middle" font-size="9" fill="#7b341e">토큰</text>
-  <text x="723" y="294" text-anchor="middle" font-size="9" fill="#7b341e">내 신분</text>
-  <text x="705" y="356" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">본인이 들고 다닌다</text>
+<svg viewBox="0 0 940 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="토큰이 오가는 순서. 윗줄은 로그인 구간으로, 클라이언트가 유저네임과 비밀번호를 보내면 서버가 토큰을 만들어 돌려주고 클라이언트가 그것을 저장한다. 아랫줄은 이후 요청 구간으로, 클라이언트가 요청에 토큰을 함께 보내면 서버가 서명을 검증한 뒤 응답한다.">
+  <defs>
+    <marker id="c4jwt-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c4jwt-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <text x="60" y="30" font-size="13" font-weight="800" fill="#3730a3">로그인할 때 한 번</text>
+  <rect x="60" y="46" width="170" height="84" rx="9" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <text x="145" y="82" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <text x="145" y="106" text-anchor="middle" font-size="10" fill="#6b7280">토큰을 저장합니다</text>
+  <rect x="710" y="46" width="170" height="84" rx="9" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="795" y="82" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">서버</text>
+  <text x="795" y="106" text-anchor="middle" font-size="10" fill="#3730a3">토큰을 만듭니다</text>
+  <line x1="234" y1="70" x2="706" y2="70" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c4jwt-a)"/>
+  <text x="470" y="62" text-anchor="middle" font-size="11" fill="#3730a3">1. 유저네임과 비밀번호를 보냅니다</text>
+  <line x1="706" y1="110" x2="234" y2="110" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c4jwt-b)"/>
+  <text x="470" y="128" text-anchor="middle" font-size="11" fill="#475569">2. 토큰을 돌려줍니다</text>
+  <line x1="40" y1="160" x2="900" y2="160" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="60" y="196" font-size="13" font-weight="800" fill="#3730a3">그 뒤 요청마다</text>
+  <rect x="60" y="212" width="170" height="84" rx="9" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <text x="145" y="248" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <text x="145" y="272" text-anchor="middle" font-size="10" fill="#6b7280">토큰을 함께 보냅니다</text>
+  <rect x="710" y="212" width="170" height="84" rx="9" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="795" y="248" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">서버</text>
+  <text x="795" y="272" text-anchor="middle" font-size="10" fill="#3730a3">서명만 확인합니다</text>
+  <line x1="234" y1="236" x2="706" y2="236" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c4jwt-a)"/>
+  <text x="470" y="228" text-anchor="middle" font-size="11" fill="#3730a3">3. 요청에 토큰을 실어 보냅니다</text>
+  <line x1="706" y1="276" x2="234" y2="276" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c4jwt-b)"/>
+  <text x="470" y="294" text-anchor="middle" font-size="11" fill="#475569">4. 검증을 통과하면 응답합니다</text>
 </svg>
 </div>
-*그림 4-4. 세션은 서버가 사람마다 상태를 기억하는 방식이고, 토큰은 본인이 신분 표를 들고 다니는 방식입니다*
-<p>이 표에 해당하는 것이 <strong>JWT(JSON Web Token)</strong> 입니다. 로그인에 성공하면 서버가 유저 정보를 담은 토큰을 만들어 건네고, 클라이언트는 이후 요청마다 그 토큰을 지니고 옵니다. 서버는 토큰이 위조되지 않았는지만 확인하면 되므로, 누가 로그인했는지 따로 기억해 둘 필요가 없습니다. 이 책의 게시판은 이 방식으로 로그인을 붙입니다.</p>
+<div class="caption">그림 4-4. 로그인은 한 번만 하고, 그 뒤로는 발급받은 토큰이 신원을 대신합니다</div>
+<p>먼저 클라이언트가 유저네임과 비밀번호로 로그인을 요청하고, 서버는 그것이 맞으면 토큰을 만들어 돌려줍니다. 클라이언트는 받은 토큰을 저장해 둡니다.</p>
+<p>그다음부터는 요청을 보낼 때마다 그 토큰을 함께 보냅니다. 서버는 토큰이 위조되지 않았는지 확인하고, 통과하면 요청을 처리합니다. 로그인은 한 번만 하고, 이후로는 토큰이 그 자리를 대신합니다.</p>
+<p>토큰이 단순한 문자열이라면 서버가 발급한 목록을 따로 보관해 두고 대조해야 합니다. JWT는 누구인지 알려 주는 정보를 토큰 안에 담고 위조 여부를 서명으로 가려내므로, 서버가 아무것도 보관하지 않고 검증할 수 있습니다.</p>
+<h3>4.3.2 서버가 여러 대일 때</h3>
+<p>기억하지 않는다는 선택이 어떤 차이를 만드는지는 서버가 한 대를 넘어설 때 분명해집니다. 이용자가 늘면 서버를 여러 대로 늘리고, 앞에 로드 밸런서(Load Balancer)를 두어 요청을 나눠 보냅니다. 요청이 어느 서버로 갈지는 그때그때 달라집니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서버가 두 대일 때의 차이. 위쪽 상태 유지 방식에서는 로그인 정보가 서버 A에만 있어서, 로드 밸런서가 다음 요청을 서버 B로 보내면 인증에 실패한다. 아래쪽 무상태 방식에서는 요청이 토큰을 지니고 오므로 서버 A로 가든 서버 B로 가든 똑같이 처리된다.">
+  <defs>
+    <marker id="c4lb-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c4lb-x" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#c2410c"/></marker>
+  </defs>
+  <text x="40" y="28" font-size="13" font-weight="800" fill="#0f172a">서버가 기억하는 방식</text>
+  <rect x="40" y="44" width="150" height="120" rx="9" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="115" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">요청</text>
+  <text x="115" y="120" text-anchor="middle" font-size="10" fill="#6b7280">번호표만 있습니다</text>
+  <rect x="290" y="44" width="150" height="120" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="365" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">로드 밸런서</text>
+  <text x="365" y="120" text-anchor="middle" font-size="10" fill="#6b7280">요청을 나눠 보냅니다</text>
+  <rect x="560" y="36" width="180" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="650" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">서버 A</text>
+  <text x="650" y="80" text-anchor="middle" font-size="10" fill="#3730a3">로그인 정보가 있습니다</text>
+  <rect x="560" y="116" width="180" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="650" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">서버 B</text>
+  <text x="650" y="160" text-anchor="middle" font-size="10" fill="#6b7280">로그인 정보가 없습니다</text>
+  <line x1="194" y1="104" x2="286" y2="104" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c4lb-a)"/>
+  <line x1="444" y1="94" x2="556" y2="66" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="444" y1="114" x2="556" y2="144" stroke="#c2410c" stroke-width="1.7" marker-end="url(#c4lb-x)"/>
+  <text x="800" y="148" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">여기로 가면 실패합니다</text>
+  <line x1="30" y1="200" x2="930" y2="200" stroke="#e2e8f0" stroke-width="1.4"/>
+  <text x="40" y="238" font-size="13" font-weight="800" fill="#0f172a">서버가 기억하지 않는 방식</text>
+  <rect x="40" y="254" width="150" height="120" rx="9" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="115" y="308" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">요청</text>
+  <text x="115" y="330" text-anchor="middle" font-size="10" fill="#6b7280">토큰을 지니고 옵니다</text>
+  <rect x="290" y="254" width="150" height="120" rx="9" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="365" y="308" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">로드 밸런서</text>
+  <text x="365" y="330" text-anchor="middle" font-size="10" fill="#6b7280">요청을 나눠 보냅니다</text>
+  <rect x="560" y="246" width="180" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="650" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">서버 A</text>
+  <text x="650" y="290" text-anchor="middle" font-size="10" fill="#3730a3">서명만 검증합니다</text>
+  <rect x="560" y="326" width="180" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="650" y="350" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">서버 B</text>
+  <text x="650" y="370" text-anchor="middle" font-size="10" fill="#3730a3">서명만 검증합니다</text>
+  <line x1="194" y1="314" x2="286" y2="314" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c4lb-a)"/>
+  <line x1="444" y1="304" x2="556" y2="276" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c4lb-a)"/>
+  <line x1="444" y1="324" x2="556" y2="354" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c4lb-a)"/>
+  <text x="800" y="318" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">어느 쪽으로 가도 같습니다</text>
+</svg>
+</div>
+<div class="caption">그림 4-5. 로그인 정보를 서버가 들고 있으면 요청이 다른 서버로 갈 때 실패하지만, 토큰을 지니고 오면 어느 서버로 가도 처리됩니다</div>
+<p>서버가 로그인 정보를 들고 있으면, 로그인한 서버와 다음 요청이 도착한 서버가 다를 때 그 사람을 알아보지 못합니다. 이를 맞추려면 서버끼리 로그인 정보를 공유하거나, 같은 사람의 요청을 늘 같은 서버로 보내야 합니다. 토큰 방식에는 그 작업이 필요 없습니다. 요청이 자기 신원을 들고 오므로, 어느 서버가 받든 서명만 확인하면 됩니다.</p>
+<div class="tip">
+<p><strong>서버가 기억하는 방식도 있습니다</strong></p>
+<p>반대쪽 선택은 서버가 로그인한 사람을 기억해 두는 것입니다. 서버가 로그인 정보를 보관하고 그 사람에게 식별 번호를 발급하면, 브라우저는 그 번호를 쿠키(Cookie)에 저장해 두었다가 요청마다 자동으로 함께 보냅니다. 서버는 번호로 보관해 둔 정보를 찾아 누구인지 확인합니다. 이렇게 서버가 상태를 기억하는 방식을 상태 유지(Stateful)라고 하고, 사람마다 보관하는 그 단위를 세션(Session)이라고 합니다. 접속자가 늘면 서버가 기억할 것도 함께 늘어납니다.</p>
+</div>
 <h2>4.4 회원 도메인과 연관관계</h2>
 <h3>4.4.1 회원 엔티티와 리포지토리</h3>
 <p>토큰을 발급하려면 먼저 로그인할 회원이 있어야 합니다. 게시글을 만들 때처럼 회원을 표현하는 엔티티부터 만듭니다.</p>
@@ -360,7 +412,45 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>findByUsername</code>은 JPQL로 유저네임이 일치하는 회원을 찾아, 있으면 <code>Optional</code>에 담고 없으면 빈 <code>Optional</code>을 돌려줍니다.</p>
-<h3>4.4.2 게시글에 작성자 연결</h3>
+<h3>4.4.2 회원 리포지토리 테스트</h3>
+<p>리포지토리를 만들었으니 회원가입을 붙이기 전에 저장과 조회가 되는지 확인합니다. 2장에서 게시글로 해 본 방식 그대로, <code>@DataJpaTest</code>로 JPA 부분만 띄우고 <code>@Import</code>로 검증할 리포지토리를 함께 올립니다.</p>
+<p><code>test/.../UserRepositoryTest.java</code>를 열고 아래 코드를 작성합니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> UserRepositoryTest.java. 회원 저장과 조회</div><span class="nd">@Import</span><span class="p">(</span><span class="n">UserRepository</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
+<span class="nd">@DataJpaTest</span>
+<span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserRepositoryTest</span><span class="w"> </span><span class="p">{</span>
+
+<span class="w">    </span><span class="nd">@Autowired</span>
+<span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">UserRepository</span><span class="w"> </span><span class="n">userRepository</span><span class="p">;</span>
+
+<span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">save_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// given</span>
+<span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">User</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                </span><span class="p">.</span><span class="na">username</span><span class="p">(</span><span class="s">&quot;user1&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">password</span><span class="p">(</span><span class="s">&quot;1234&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">email</span><span class="p">(</span><span class="s">&quot;user1@metacoding.com&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
+<span class="w">        </span><span class="c1">// when</span>
+<span class="w">        </span><span class="n">userRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// eye</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;id : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="na">getId</span><span class="p">());</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;username : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="na">getUsername</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="nd">@Test</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByUsername_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// given</span>
+<span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ssar&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="c1">// when</span>
+<span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userRepository</span><span class="p">.</span><span class="na">findByUsername</span><span class="p">(</span><span class="n">username</span><span class="p">).</span><span class="na">get</span><span class="p">();</span>
+<span class="w">        </span><span class="c1">// eye</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;id : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="na">getId</span><span class="p">());</span>
+<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;username : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="na">getUsername</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span></div>
+<p><code>save_test</code>는 빌더로 만든 회원을 저장한 뒤 <code>user.getId()</code>를 찍습니다. 저장하기 전에는 비어 있던 기본 키에 값이 들어와 있으면 데이터베이스에 저장된 것입니다.</p>
+<p><code>findByUsername_test</code>는 <code>data.sql</code>로 들어간 회원 <code>ssar</code>를 유저네임으로 찾습니다. 반환이 <code>Optional</code>이라 값을 꺼내야 하는데, 여기서는 그 회원이 있다는 것을 알고 실행하는 테스트라 3장에서 본 <code>orElseThrow</code> 대신 <code>get()</code>으로 꺼냅니다.</p>
+<h3>4.4.3 게시글에 작성자 연결</h3>
 <p>회원이 생기면 게시글에도 변화가 생깁니다. 이제 글마다 그것을 쓴 사람이 누구인지 붙일 수 있습니다. <code>board/Board.java</code>에 작성자를 가리키는 필드를 더합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> board/Board.java. 작성자 연관관계 추가</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">EAGER</span><span class="p">)</span>
 <span class="w">    </span><span class="nd">@JoinColumn</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;user_id&quot;</span><span class="p">)</span>
@@ -418,7 +508,7 @@
 </div>
 <h3>4.5.2 서비스</h3>
 <p>이제 회원가입과 로그인을 서비스에 담습니다. <code>user/UserService.java</code>를 열고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> user/UserService.java. 회원가입과 로그인</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> user/UserService.java. 회원가입과 로그인</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserService</span><span class="w"> </span><span class="p">{</span>
 
@@ -449,7 +539,7 @@
 <p><code>로그인</code>은 반대 순서입니다. 유저네임으로 회원을 찾고, 입력한 비밀번호를 저장된 비밀번호와 대조합니다. 유저네임이 없든 비밀번호가 틀리든 같은 메시지로 답해, 어떤 유저네임이 있는지 밖으로 드러나지 않게 합니다. 맞으면 <code>JwtUtil.create</code>로 토큰을 만들어 돌려줍니다. 토큰 내부는 다음 절에서 만듭니다.</p>
 <h3>4.5.3 컨트롤러</h3>
 <p>두 서비스를 바깥과 연결하는 컨트롤러를 만듭니다. <code>user/UserController.java</code>를 열고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> user/UserController.java. 회원가입·로그인 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> user/UserController.java. 회원가입·로그인 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserController</span><span class="w"> </span><span class="p">{</span>
 
@@ -506,7 +596,7 @@
   <text x="470" y="308" text-anchor="middle" font-size="11" fill="#6b7280">세 조각은 점(.)으로 이어져 한 줄의 토큰 문자열이 됩니다</text>
 </svg>
 </div>
-<div class="caption">그림 4-5. JWT는 헤더, 페이로드, 서명 세 조각으로 이루어지며 점으로 이어져 한 줄이 됩니다</div>
+<div class="caption">그림 4-6. JWT는 헤더, 페이로드, 서명 세 조각으로 이루어지며 점으로 이어져 한 줄이 됩니다</div>
 <p>세 조각 중 페이로드에 담긴 정보는 누구든 열어 볼 수 있습니다. 그래서 비밀번호처럼 감춰야 할 값은 넣지 않고, 누구인지 알려 줄 정도의 값만 담습니다. 위조를 막는 것은 마지막 서명 조각입니다. 서명은 서버만 아는 비밀 문자열로 만들어지므로, 페이로드를 몰래 고치면 서명이 맞지 않게 되어 검증에서 걸립니다. 그래서 서버는 토큰을 기억해 두지 않고도, 들어온 토큰의 서명만 확인해 위조 여부를 가려낼 수 있습니다.</p>
 <h3>4.6.2 토큰 발급과 검증</h3>
 <p>토큰을 만들고 확인하는 코드에는 상수가 여럿 등장합니다. 먼저 그 뜻을 정리합니다.</p>
@@ -542,7 +632,7 @@
 </tbody>
 </table>
 <p><code>core/util/JwtUtil.java</code>를 열고 아래 코드를 작성합니다. 위 상수 네 개는 클래스 맨 위에 필드로 선언되어 있고, 아래 두 메서드가 그 값을 씁니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> core/util/JwtUtil.java. JWT 발급과 검증</div><span class="w">    </span><span class="c1">// 1. 유저 정보를 담아 토큰을 만든다</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> core/util/JwtUtil.java. JWT 발급과 검증</div><span class="w">    </span><span class="c1">// 1. 유저 정보를 담아 토큰을 만든다</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">jwt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">JWT</span><span class="p">.</span><span class="na">create</span><span class="p">()</span>
 <span class="w">                </span><span class="p">.</span><span class="na">withSubject</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="na">getUsername</span><span class="p">())</span>
@@ -563,7 +653,7 @@
 <p><code>verify</code>는 반대 방향입니다. 서명을 확인해 같은 <code>SECRET</code>으로 만든 진짜 토큰인지 가려내고, 맞지 않으면 예외가 납니다. 통과하면 페이로드의 값으로 <code>User</code> 객체를 다시 만듭니다. 토큰 하나가 로그인한 사람의 신원으로 복원되는 것입니다.</p>
 <h3>4.6.3 토큰 꺼내기</h3>
 <p><code>JwtUtil</code>이 토큰을 만들고 여는 도구라면, 그 도구를 요청에 연결하는 코드가 하나 더 필요합니다. 요청 헤더에서 토큰을 꺼내고, 꺼낸 토큰을 <code>verify</code>에 넘겨 유저를 복원하는 일입니다. <code>core/util/JwtProvider.java</code>를 열고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtProvider</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="c1">// 1. 헤더에서 &quot;Bearer &quot; 접두어를 떼고 토큰만 꺼낸다</span>
@@ -589,7 +679,7 @@
 <p>이제 요청을 받는 자리에 인증을 둡니다. 인증과 인가로 나눈 둘 중 신원을 밝히는 쪽입니다. 요청마다 헤더의 토큰을 확인해, 유효하면 그 신원을 요청에 담아 둡니다.</p>
 <p>이 일을 맡는 것이 <strong>필터(Filter)</strong> 입니다. 필터는 요청이 컨트롤러에 도달하기 전에 먼저 거쳐 가는 지점입니다. 스프링에서는 <code>OncePerRequestFilter</code>를 상속해, 요청 한 건마다 한 번씩 실행되는 필터를 만듭니다.</p>
 <p><code>core/filter/JwtAuthenticationFilter.java</code>를 열고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtAuthenticationFilter</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">OncePerRequestFilter</span><span class="w"> </span><span class="p">{</span>
 
@@ -639,9 +729,9 @@
   <text x="66" y="252" font-size="13" font-weight="700" fill="#3730a3">요청</text>
 </svg>
 </div>
-<div class="caption">그림 4-6. 필터는 톰캣 구간에, 인터셉터는 스프링 구간에 놓입니다</div>
+<div class="caption">그림 4-7. 필터는 톰캣 구간에, 인터셉터는 스프링 구간에 놓입니다</div>
 <p><code>core/interceptor/AuthInterceptor.java</code>를 열고 아래 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/interceptor/AuthInterceptor.java. 인가 인터셉터</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">AuthInterceptor</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">HandlerInterceptor</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> core/interceptor/AuthInterceptor.java. 인가 인터셉터</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">AuthInterceptor</span><span class="w"> </span><span class="kd">implements</span><span class="w"> </span><span class="n">HandlerInterceptor</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="nd">@Override</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">boolean</span><span class="w"> </span><span class="nf">preHandle</span><span class="p">(</span>
@@ -661,7 +751,7 @@
 <span class="p">}</span></div>
 <p>인터셉터는 요청의 방식을 먼저 봅니다. 목록과 상세를 조회하는 <code>GET</code>은 로그인 없이도 열려 있어야 하므로 그대로 통과시킵니다. <code>OPTIONS</code>도 통과시키는데, 이는 브라우저가 본 요청을 보내기 전에 미리 확인차 던지는 요청이라 막으면 안 됩니다.</p>
 <p>글을 쓰거나 고치거나 지우는 요청만 여기서 걸러집니다. 필터가 담아 둔 <code>sessionUser</code>가 없으면 로그인하지 않은 요청이므로 <code>Exception401</code>을 던져 막고, 있으면 통과시킵니다. 던져진 예외가 어떤 응답이 되는지는 뒤에서 이어 다룹니다.</p>
-<p>만든 인터셉터는 스프링에 등록해야 동작합니다. 이 등록은 참고 코드 <code>core/config/WebMvcConfig.java</code>가 맡습니다. <code>AuthInterceptor</code>를 게시글 주소(<code>/api/boards</code>와 그 하위 경로)에만 세워, 로그인과 회원가입 주소에는 문을 두지 않습니다. 그래서 로그인하지 않은 사람도 가입하고 로그인할 수 있습니다. 같은 설정에서 CORS도 한 줄로 열어 두는데, 이는 화면과 서버가 서로 다른 주소에서 돌아갈 때 브라우저가 요청을 막지 않게 하는 설정으로, 자세한 내용은 이 책의 범위를 벗어나므로 짚고만 넘어갑니다.</p>
+<p>만든 인터셉터는 스프링에 등록해야 동작합니다. 이 등록은 참고 코드 <code>core/config/WebMvcConfig.java</code>가 맡습니다. <code>AuthInterceptor</code>를 게시글 주소(<code>/api/boards</code>와 그 하위 경로)에만 등록해, 로그인과 회원가입 주소는 검사 대상에서 빼 둡니다. 그래서 로그인하지 않은 사람도 가입하고 로그인할 수 있습니다.</p>
 <p>필터가 <code>@Component</code>로 자동 등록되고 인터셉터가 이 설정으로 등록되면, 두 문이 요청 하나를 차례로 거릅니다. 요청은 필터에서 신원이 담기고, 인터셉터에서 쓰기 여부에 따라 걸러진 뒤, 컨트롤러로 전달됩니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 980 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청 처리 순서. 요청이 필터를 지나며 토큰이 확인되면 신원이 담기고, 인터셉터가 쓰기 요청이면 신원을 확인해 없으면 401로 막고, 통과하면 컨트롤러로 전달된다.">
@@ -690,7 +780,7 @@
   <text x="570" y="232" text-anchor="middle" font-size="11" fill="#c2410c">신원 없이 쓰기면 여기서 401로 막힘</text>
 </svg>
 </div>
-<div class="caption">그림 4-7. 필터는 신원을 담고 통과시키며, 인터셉터는 쓰기 요청에서 신원을 확인해 없으면 막습니다</div>
+<div class="caption">그림 4-8. 필터는 신원을 담고 통과시키며, 인터셉터는 쓰기 요청에서 신원을 확인해 없으면 막습니다</div>
 <h2>4.9 소유자 검증</h2>
 <h3>4.9.1 본인 확인</h3>
 <p>필터와 인터셉터로 두 문을 세웠지만, 문제의 절반은 아직 남아 있습니다. 로그인한 사람이 남의 글에 수정을 보내도 응답은 그대로 200입니다. 인터셉터는 로그인을 했는지만 확인하기 때문에, 남의 글을 고치려는 요청도 일단 통과시킵니다. 그래서 이 글을 쓴 본인이 맞는지를 글마다 한 번 더 확인해야 합니다.</p>
@@ -767,7 +857,7 @@
   path: assets/CH4/terminal/01_login-and-403.png
   desc: 두 장면을 위아래로 담은 캡처. (1) POST /login 요청에 성공해 body에 "Bearer eyJ..." 형태의 JWT가 담긴 200 응답. (2) 그 토큰을 Authorization 헤더에 담아 남의 글에 PUT 요청을 보냈을 때 { "status": 403, "msg": "게시글을 수정할 권한이 없습니다", "body": null } 형태로 돌아오는 403 응답. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 각각 200, 403으로 표시되면 좋음.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH4\terminal\01_login-and-403.png" alt="" /><div class="caption">그림 4-8. 로그인하면 토큰이 발급되고, 남의 글을 수정하려 하면 403으로 막힙니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH4\terminal\01_login-and-403.png" alt="" /><div class="caption">그림 4-9. 로그인하면 토큰이 발급되고, 남의 글을 수정하려 하면 403으로 막힙니다</div></div>
 <p>로그인하지 않고 보낸 쓰기 요청은 인터셉터에서 401로 막히고, 로그인은 했지만 남의 글을 건드리는 요청은 서비스에서 403으로 막힙니다. 제목 없이 보낸 요청은 검증에서 400으로 걸러집니다. 활짝 열려 있던 게시판에, 이제 신원을 밝히는 문과 자격을 따지는 문이 차례로 섰습니다.</p>
 <p>오픈이는 자기 계정으로 로그인한 뒤, 남의 글에 다시 수정을 보냈습니다.</p>
 <p class="thought">이번엔 막히겠지.</p>

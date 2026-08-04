@@ -2,12 +2,12 @@
 
 게시판은 목록과 상세, 작성과 수정, 삭제까지 동작합니다. 그런데 앞 챕터를 닫으며 물음이 하나 남았습니다. 없는 번호로 상세를 부르면 어떻게 되느냐는 것이었습니다. 목록에 글이 두 건뿐인 서버에 아직 없는 999번 상세를 요청하면, 응답은 멀쩡히 돌아옵니다. 그런데 이상합니다. 없는 글인데도 `status`는 200 성공인데, 정작 `body`는 비어 있습니다. 없는 글을 두고 성공이라 답하고 있습니다.
 
-이것만 문제가 아닙니다. 정상으로 존재하는 1번 글을 부르면 응답은 잘 돌아옵니다. 그런데 그 응답 안에는 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보이지만, 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 그 값까지 바깥으로 새어 나갑니다.
+이것만 문제가 아닙니다. 정상으로 존재하는 1번 글을 부르면 응답은 잘 돌아옵니다. 그런데 그 응답 안에는 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보이지만, 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 그 값까지 바깥으로 나갑니다.
 
-문제 두 가지가 한꺼번에 드러났습니다. 없는 글인데 성공이라 답하며 빈 값이 나가는 것과, 내부 엔티티가 응답으로 새어 나가는 것입니다.
+문제 두 가지가 한꺼번에 드러났습니다. 없는 글인데 성공이라 답하며 빈 값이 나가는 것과, 내부 엔티티가 응답에 그대로 실리는 것입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 3 한눈에 보기. 문제 1은 없는 글을 조회하면 200 성공에 빈 값이 돌아오던 것을, Optional과 예외와 전역 처리로 404 응답으로 바꾼다. 문제 2는 엔티티를 통째로 내보내 createdAt까지 새어 나가던 것을, 응답 DTO로 감싸 boardId·title·content 세 값만 내보낸다.">
+<svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 3 한눈에 보기. 문제 1은 없는 글을 조회하면 200 성공에 빈 값이 돌아오던 것을, Optional과 예외와 전역 처리로 404 응답으로 바꾼다. 문제 2는 엔티티를 통째로 내보내 createdAt까지 나가던 것을, 응답 DTO로 감싸 boardId·title·content 세 값만 내보낸다.">
   <defs>
     <marker id="c3ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
@@ -26,7 +26,7 @@
   <text x="30" y="281" font-size="11" fill="#6b7280">엔티티 노출</text>
   <rect x="150" y="236" width="230" height="64" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="265" y="262" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">엔티티를 통째로</text>
-  <text x="265" y="282" text-anchor="middle" font-size="11" fill="#6b7280">createdAt까지 새어 나감</text>
+  <text x="265" y="282" text-anchor="middle" font-size="11" fill="#6b7280">createdAt까지 나감</text>
   <line x1="385" y1="268" x2="595" y2="268" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
   <text x="490" y="258" text-anchor="middle" font-size="11" fill="#4f46e5">응답 DTO로 감쌈</text>
   <rect x="600" y="236" width="370" height="64" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
@@ -80,7 +80,7 @@ GET http://localhost:8080/api/boards/999
 
 `body`를 보면 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보입니다. 그런데 응답에 엔티티를 통째로 담아 보내는 한, 엔티티에 필드가 붙을 때마다 그 값이 자동으로 바깥에 노출됩니다.
 
-이 둘을 이번 챕터에서 차례로 막습니다. 먼저 엔티티가 새어 나가는 문제를 응답 DTO로 막고, 그다음 없는 글이 성공으로 처리되는 문제를 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
+이 둘을 이번 챕터에서 차례로 막습니다. 먼저 엔티티가 응답에 그대로 실리는 문제를 응답 DTO로 막고, 그다음 없는 글이 성공으로 처리되는 문제를 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
 
 | 클래스 | 역할 |
 |--------|------|
@@ -121,7 +121,9 @@ spring-start/ch03  (변경·신규만)
 
 ## 3.2 응답 DTO
 
-새어 나가는 문제부터 막습니다. 응답에 엔티티를 그대로 담아 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 직접 연결되어 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.
+### 3.2.1 DTO가 필요한 이유
+
+엔티티가 그대로 나가는 문제부터 막습니다. 응답에 엔티티를 그대로 담아 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 직접 연결되어 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.
 
 응답으로 내보낼 접시를 따로 만들어 거기에 보여줄 값만 담으면, 엔티티는 주방 안에 남고 접시만 바깥으로 나갑니다. 이렇게 계층 사이에서 필요한 값만 담아 나르는 객체를 DTO(Data Transfer Object)라고 합니다.
 
@@ -156,6 +158,8 @@ spring-start/ch03  (변경·신규만)
 
 *그림 3-2. 엔티티는 내부에 두고, 응답으로 나갈 값만 DTO에 담아 내보냅니다*
 
+### 3.2.2 응답 DTO 만들기
+
 `board/BoardResponse.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 1] board/BoardResponse.java. 응답 DTO
@@ -180,6 +184,12 @@ public class BoardResponse {
 `record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
 
 지금은 목록용 `DTO`와 상세용 `DetailDTO`의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 DTO만 손보면 되고, 목록은 건드릴 필요가 없습니다.
+
+두 DTO를 각각 파일로 두지 않고 `BoardResponse` 안에 넣은 데에도 이유가 있습니다. 게시글 응답에 쓰는 DTO가 한 파일에 모이면 어느 자원의 응답인지 이름에서 드러나고, 뒤 챕터에서 회원과 댓글이 생겨 `UserResponse.DTO`나 `ReplyResponse.DTO`가 만들어져도 이름이 겹치지 않습니다. 클래스 안에 선언한 `record`는 바깥 클래스의 객체를 따로 만들지 않아도 쓸 수 있어, 서비스에서 `new BoardResponse.DTO(board)`로 바로 호출합니다.
+
+`record`로 선언하면 필드는 바깥에서 직접 바꿀 수 없고 `boardId()`, `title()` 같은 접근자로만 읽힙니다. 응답으로 나가는 값은 한 번 만들어진 뒤 바뀔 일이 없으므로, 값만 담아 나르는 DTO에 맞는 형태입니다.
+
+### 3.2.3 요청 DTO와 엔티티 변환
 
 들어오는 요청도 마찬가지로 DTO에 담습니다. 앞 챕터에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
 
@@ -214,7 +224,7 @@ public class Board {
 
 명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 `@NoArgsConstructor`도 함께 붙입니다. 빌더를 쓰면 필요한 필드만 골라 채워 엔티티를 만들 수 있습니다.
 
-## 3.3 없는 글과 예외
+## 3.3 Optional
 
 서비스는 아직 엔티티를 그대로 담아 넘깁니다. 이 부분을 DTO로 고쳐야 하는데, 그 전에 첫 번째 문제인 없는 글이 성공으로 처리되는 상황을 같이 다뤄야 합니다. 두 문제가 모두 조회 메서드에 있기 때문입니다.
 
@@ -229,7 +239,55 @@ public class Board {
     }
 ```
 
-이제 서비스가 이 상자를 열어 씁니다. 상자를 여는 방법은 `orElseThrow`입니다. 상자에 값이 있으면 꺼내 주고, 비었으면 괄호 안에 적은 예외를 던집니다. 대표로 상세 조회 메서드를 보겠습니다. `board/BoardService.java`의 `게시글상세`를 아래처럼 고칩니다.
+`Optional.ofNullable`은 넘긴 값이 `null`이면 빈 `Optional`을, 값이 있으면 그 값을 담은 `Optional`을 만듭니다. `em.find`는 없는 기본 키로 조회하면 `null`을 돌려주므로, 그 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.
+
+### 3.3.1 상자를 여는 세 가지 방법
+
+담았으면 꺼내야 합니다. `Optional`에서 값을 꺼내는 방법은 세 가지인데, 상자가 비어 있을 때의 처리가 각각 다릅니다.
+
+| 메서드 | 값이 있으면 | 비어 있으면 |
+|--------|------------|------------|
+| `get()` | 값을 돌려줍니다 | `NoSuchElementException`이 발생합니다 |
+| `orElse(기본값)` | 값을 돌려줍니다 | 괄호에 적은 기본값을 돌려줍니다 |
+| `orElseThrow(예외)` | 값을 돌려줍니다 | 괄호에 적은 예외를 던집니다 |
+
+<div class="svg-figure">
+<svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="비어 있는 Optional에서 값을 꺼내는 세 방법의 결과. get을 쓰면 NoSuchElementException이 발생하고, orElse를 쓰면 괄호에 적은 기본값이 나오며, orElseThrow를 쓰면 괄호에 적은 예외가 던져진다.">
+  <defs>
+    <marker id="c3opt-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="110" width="180" height="80" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="120" y="142" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">빈 Optional</text>
+  <text x="120" y="166" text-anchor="middle" font-size="11" fill="#6b7280">글을 찾지 못했습니다</text>
+  <line x1="214" y1="146" x2="516" y2="60" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c3opt-a)"/>
+  <text x="360" y="88" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">get()</text>
+  <line x1="214" y1="150" x2="516" y2="150" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c3opt-a)"/>
+  <text x="360" y="142" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">orElse(기본값)</text>
+  <line x1="214" y1="154" x2="516" y2="240" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c3opt-a)"/>
+  <text x="360" y="228" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">orElseThrow(예외)</text>
+  <rect x="520" y="28" width="350" height="64" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="695" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">NoSuchElementException</text>
+  <text x="695" y="76" text-anchor="middle" font-size="11" fill="#6b7280">무엇을 못 찾았는지 알리지 못합니다</text>
+  <rect x="520" y="118" width="350" height="64" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="695" y="144" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">괄호에 적은 기본값</text>
+  <text x="695" y="166" text-anchor="middle" font-size="11" fill="#6b7280">없는 글을 대신할 값은 없습니다</text>
+  <rect x="520" y="208" width="350" height="64" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="695" y="234" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">괄호에 적은 예외</text>
+  <text x="695" y="256" text-anchor="middle" font-size="11" fill="#3730a3">상황에 맞는 예외를 고를 수 있습니다</text>
+</svg>
+</div>
+
+*그림 3-3. 비어 있는 Optional에서 값을 꺼낼 때 세 방법의 결과가 다릅니다*
+
+`get()`은 값이 있다고 보고 꺼내는 방법입니다. 비어 있으면 `NoSuchElementException`이 발생하는데, 이 예외는 "없는 글을 조회했다"는 상황을 담고 있지 않습니다. 응답으로 바꿀 때 404인지 500인지 가릴 근거가 없습니다.
+
+`orElse`는 비었을 때 대신 쓸 값을 정합니다. 조회 결과가 없으면 빈 목록을 주는 자리에는 맞지만, 없는 글에 가짜 글을 대신 줄 수는 없습니다.
+
+남는 것이 `orElseThrow`입니다. 상자가 비었을 때 어떤 예외를 던질지 직접 정하므로, 없는 글에 맞는 예외를 골라 던질 수 있습니다. 그 예외를 404 응답으로 바꾸는 것이 이 챕터가 가려는 곳입니다.
+
+## 3.4 없는 글과 예외
+
+이제 서비스가 `orElseThrow`로 상자를 엽니다. 대표로 상세 조회 메서드를 보겠습니다. `board/BoardService.java`의 `게시글상세`를 아래처럼 고칩니다.
 
 ```java [설명] board/BoardService.java. 없으면 예외, 반환은 DTO
     // 없으면 Exception404를 던지고, 있으면 DetailDTO에 담아 반환한다
@@ -252,7 +310,9 @@ public class Board {
     }
 ```
 
-`BoardResponse.DTO::new`는 엔티티를 받아 `DTO`를 만드는 생성자입니다. 수정과 삭제는 상세와 같은 식으로, 없는 글이면 `Exception404`를 던집니다.
+`findAll()`이 돌려준 `List<Board>`에 `stream()`을 걸어 원소를 하나씩 다루고, `map`이 각 엔티티를 `DTO`로 바꾸고, `toList()`가 그 결과를 다시 리스트로 모읍니다. `BoardResponse.DTO::new`는 `board -> new BoardResponse.DTO(board)`를 줄여 쓴 것으로, 엔티티 하나를 받아 DTO 하나를 만드는 생성자를 가리킵니다. 반복문으로 하나씩 담아도 결과는 같지만, 여러 건을 같은 방식으로 바꾸는 자리에서는 이 세 단계가 더 짧습니다.
+
+수정과 삭제는 상세와 같은 식으로, 없는 글이면 `Exception404`를 던집니다.
 
 여기서 던지는 `Exception404`는 우리가 만들 커스텀 예외로, 아직 없는 클래스라 잠시 뒤에 정의합니다.
 
@@ -302,7 +362,7 @@ public class Board {
 </svg>
 </div>
 
-*그림 3-3. 저장 요청은 JSON에서 요청 DTO와 엔티티를 거쳐 데이터베이스에 담깁니다*
+*그림 3-4. 저장 요청은 JSON에서 요청 DTO와 엔티티를 거쳐 데이터베이스에 담깁니다*
 
 조회는 반대 방향입니다. 리포지토리가 데이터베이스에서 엔티티를 가져오고, 서비스가 보여줄 값만 응답 DTO에 옮겨 담고, 그 DTO가 JSON으로 바뀌어 나갑니다. 엔티티는 이 구간을 벗어나지 않으므로 `createdAt` 같은 내부 필드가 바깥으로 나가지 않습니다.
 
@@ -325,11 +385,11 @@ public class Board {
 </svg>
 </div>
 
-*그림 3-4. 조회 결과는 데이터베이스에서 엔티티와 응답 DTO를 거쳐 JSON으로 나갑니다*
+*그림 3-5. 조회 결과는 데이터베이스에서 엔티티와 응답 DTO를 거쳐 JSON으로 나갑니다*
 
 남은 것은 `Exception404`를 만들고, 그 예외를 깔끔한 404 응답으로 바꾸는 일입니다.
 
-## 3.4 예외의 종류와 상태 코드
+## 3.5 예외의 종류와 상태 코드
 
 `orElseThrow`가 던지는 `Exception404`를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
 
@@ -358,7 +418,7 @@ public class Exception404 extends RuntimeException {
 
 없는 글을 부른 상황은 404에 해당합니다. 200 성공으로 답하면 없는 글을 있는 것처럼 다루는 것이고, 500은 서버가 넘어졌다는 뜻이라 역시 맞지 않습니다. 없는 글은 서버의 잘못이 아니라 찾는 자원이 없는 것이니, 404로 응답해야 정확합니다. 이 표의 상태 코드마다 `Exception400`, `Exception401`처럼 짝이 되는 커스텀 예외를 하나씩 두는 것이 흔한 방식입니다. 이번 챕터는 없는 글을 다루니 `Exception404`만 만들고, 401과 403은 다음 챕터에서 인증과 권한을 붙이며 다시 만듭니다.
 
-## 3.5 예외 핸들러
+## 3.6 예외 핸들러
 
 던져진 `Exception404`는 어딘가에서 받아 404 JSON으로 바꿔야 합니다. 컨트롤러마다 `try-catch`로 잡으면 예외 처리 코드가 모든 컨트롤러에 흩어집니다.
 
@@ -415,7 +475,7 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-5. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
+*그림 3-6. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
 
 예외가 위로 전파될 때 한 가지가 더 일어납니다. 그 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 앞 챕터에서 쓰기 메서드에 붙인 `@Transactional`이 정한 범위가 여기서 작동합니다.
 
@@ -440,7 +500,7 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-6. 메서드가 끝까지 가면 그동안의 변경이 데이터베이스에 반영됩니다*
+*그림 3-7. 메서드가 끝까지 가면 그동안의 변경이 데이터베이스에 반영됩니다*
 
 도중에 예외가 나면 반영하지 않고 전부 없던 일로 되돌립니다. 이것을 롤백(rollback)이라고 합니다. 그래서 절반만 바뀐 데이터가 남지 않습니다.
 
@@ -464,7 +524,7 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-7. 도중에 예외가 나면 그때까지의 변경이 전부 되돌아갑니다*
+*그림 3-8. 도중에 예외가 나면 그때까지의 변경이 전부 되돌아갑니다*
 
 지금 다루는 상세 조회는 데이터를 바꾸지 않으므로 되돌릴 것이 없습니다. 예외는 그대로 전파되어 404 응답이 됩니다.
 
@@ -481,7 +541,7 @@ GET http://localhost:8080/api/boards/999
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 ![](../assets/CH3/terminal/01_404-response.png)
-*그림 3-8. 없는 글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
+*그림 3-9. 없는 글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
 
 없는 글을 부르면 빈 값이 성공으로 나가던 곳에, 이제 "찾을 수 없다"는 응답이 형식을 갖춰 돌아옵니다. 응답으로 나가는 것도 엔티티가 아니라 DTO에 담긴 값뿐입니다. 두 문제가 모두 해결됐습니다.
 
@@ -496,12 +556,12 @@ GET http://localhost:8080/api/boards/999
 
 *없는 글은 걸렀는데, 문은 여전히 다 열려 있잖아.*
 
-## 3.6 이것만은 기억하자
+## 3.7 이것만은 기억하자
 
 :::remember
 **이것만은 기억하자**
 
-- 엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 새어 나가지 않고, 바깥에 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.
+- 엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 바깥으로 나가지 않고, 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.
 - 없는 값은 `Optional`로 드러내고 `orElseThrow`로 예외를 던집니다. 커스텀 예외는 `RuntimeException`을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
 - 그런데 이 게시판은 아직 완전히 열려 있습니다. 로그인도, 주인 확인도 없어 아무나 남의 글을 수정하고 삭제할 수 있습니다. 다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.
 :::
