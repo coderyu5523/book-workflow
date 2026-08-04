@@ -58,14 +58,14 @@
 **이번 챕터가 끝나면**
 
 - REST API가 무엇이고, 게시판을 왜 자원으로 다루는지 이해합니다
-- 객체와 테이블이라는 두 세계의 불일치를 JPA가 어떻게 맞추는지, 영속성 컨텍스트의 캐싱·쓰기 지연·더티체킹이 무엇인지 설명할 수 있습니다
+- 객체와 테이블의 생김새 차이를 JPA가 어떻게 메우는지, 영속성 컨텍스트의 캐싱·쓰기 지연·더티체킹이 무엇인지 설명할 수 있습니다
 - 엔티티, 리포지토리, 서비스, 컨트롤러를 직접 만들어 글을 저장하고 불러오는 API를 완성하고, 단위 테스트로 검증합니다
 :::
 
 ::::prep
 **소스코드 준비**
 
-앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 여기서부터는 순수 자바가 아니라 스프링 부트 프로젝트입니다.
+앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다.
 
 ```bash [터미널] 챕터 2 폴더로 이동
 cd spring-start/ch02
@@ -75,11 +75,11 @@ cd spring-start/ch02
 
 ```
 spring-start/ch02  (com.metacoding.spring)
-├── board/Board.java                  [실습] 엔티티
-├── board/BoardRepository.java        [실습] EntityManager로 CRUD
-├── board/BoardService.java           [실습] 3계층 + 더티체킹
+├── board/Board.java                  [실습] 게시글 클래스
+├── board/BoardRepository.java        [실습] DB 저장·조회·삭제
+├── board/BoardService.java           [실습] 게시글 처리 흐름
 ├── board/BoardController.java        [실습] REST 엔드포인트 5개
-├── board/BoardRequest.java           [실습] SaveDTO/UpdateDTO
+├── board/BoardRequest.java           [실습] 요청 데이터
 ├── core/util/Resp.java               [참고] 공통 응답 래퍼
 ├── resources/application.properties  [참고] H2·JPA 설정
 ├── resources/db/data.sql             [참고] 더미 데이터
@@ -93,66 +93,89 @@ spring-start/ch02  (com.metacoding.spring)
 
 | 클래스 | 역할 |
 |--------|------|
-| Board | 게시글 한 건을 표현하는 엔티티. `board_tb` 테이블의 한 행과 매핑됩니다. |
-| BoardRepository | EntityManager로 게시글을 저장하고 조회하고 삭제합니다. |
+| Board | 게시글 한 건을 담는 클래스입니다. 데이터베이스의 게시글 표 한 줄에 대응합니다. |
+| BoardRepository | 게시글을 데이터베이스에 저장하고, 데이터베이스에서 조회하고 삭제합니다. |
 | BoardService | 목록, 상세, 작성, 수정, 삭제의 처리 흐름을 맡습니다. |
 | BoardController | REST 요청을 받아 서비스로 넘기는 입구입니다. |
-| BoardRequest | 작성과 수정 요청 데이터를 담는 DTO(SaveDTO, UpdateDTO)입니다. |
-| Resp | 모든 응답을 `{status, msg, body}` 한 가지 모양으로 통일하는 공통 래퍼입니다. |
+| BoardRequest | 작성과 수정 요청으로 들어온 데이터를 담습니다. |
+| Resp | 모든 응답을 한 가지 모양으로 통일하는 공통 래퍼입니다. |
+## 2.1 REST API
 
-## 2.1 우리가 만들 건 REST API다
+REST API(Representational State Transfer API)는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트가 주소(URI)로 자원을 가리키고, HTTP 메서드로 그 자원에 대한 요청과 응답을 처리합니다.
 
-REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습니다. 초창기 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 일만 했습니다. 이후 인터넷이 커지면서 서버는 요청에 따라 그때그때 내용을 만들어 응답하는 WAS(Web Application Server)로 발전했습니다. 이 시절 서버가 돌려주는 것은 브라우저가 해석하는 완성된 HTML 화면이었습니다.
+### 2.1.1 REST API 탄생 배경
 
-문제는 화면을 받는 쪽이 브라우저 하나가 아니게 됐다는 점입니다. 스마트폰 앱, TV, 다른 서버까지 같은 데이터를 요청하기 시작했습니다. 이들에게 HTML 화면을 통째로 넘기는 것은 맞지 않습니다. 그래서 서버는 화면 대신 데이터만, 그것도 어떤 기기든 해석할 수 있는 형식으로 넘기는 방향으로 바뀌었습니다. 그 형식이 JSON입니다.
+REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습니다. 초창기 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 일만 했습니다. 브라우저가 주소를 요청하면 서버는 그 자리에 있는 파일을 찾아 그대로 보냈습니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="REST가 자리 잡기까지의 흐름. 왼쪽 정적 자원의 시대에는 서버가 문서와 이미지를 브라우저에만 돌려준다. 가운데 동적 응답 WAS 시대에는 서버가 요청마다 HTML 화면을 만들어 브라우저에 돌려준다. 오른쪽 REST API 시대에는 서버가 JSON 데이터를 돌려주고, 브라우저뿐 아니라 스마트폰, TV, 다른 서버까지 같은 데이터를 받는다.">
+<svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="브라우저와 서버가 마주 보고 있다. 브라우저가 서버로 요청을 보내면, 서버는 문서나 이미지 같은 정적 자원을 그대로 돌려준다.">
   <defs>
-    <marker id="c2rest-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c2st-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <text x="500" y="28" text-anchor="middle" font-size="16" font-weight="800" fill="#0f172a">REST가 자리 잡기까지</text>
-  <rect x="24" y="52" width="286" height="230" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
-  <text x="167" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">정적 자원의 시대</text>
-  <rect x="52" y="100" width="90" height="46" rx="6" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="97" y="128" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">서버</text>
-  <rect x="192" y="100" width="90" height="46" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="237" y="122" text-anchor="middle" font-size="11" fill="#334155">브라우저</text>
-  <text x="237" y="138" text-anchor="middle" font-size="10" fill="#6b7280">문서·이미지</text>
-  <line x1="142" y1="123" x2="190" y2="123" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2rest-a)"/>
-  <text x="167" y="200" text-anchor="middle" font-size="11" fill="#6b7280">미리 만든 파일을</text>
-  <text x="167" y="218" text-anchor="middle" font-size="11" fill="#6b7280">그대로 돌려준다</text>
-  <rect x="356" y="52" width="286" height="230" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
-  <text x="499" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">동적 응답 (WAS)</text>
-  <rect x="384" y="100" width="90" height="46" rx="6" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="429" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">서버</text>
-  <text x="429" y="138" text-anchor="middle" font-size="10" fill="#6b7280">HTML 생성</text>
-  <rect x="524" y="100" width="90" height="46" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="569" y="122" text-anchor="middle" font-size="11" fill="#334155">브라우저</text>
-  <text x="569" y="138" text-anchor="middle" font-size="10" fill="#6b7280">화면</text>
-  <line x1="474" y1="123" x2="522" y2="123" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2rest-a)"/>
-  <text x="499" y="200" text-anchor="middle" font-size="11" fill="#6b7280">요청마다 화면을</text>
-  <text x="499" y="218" text-anchor="middle" font-size="11" fill="#6b7280">만들어 돌려준다</text>
-  <rect x="688" y="52" width="288" height="230" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="832" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">REST API (JSON)</text>
-  <rect x="710" y="100" width="80" height="46" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="750" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">서버</text>
-  <text x="750" y="138" text-anchor="middle" font-size="10" fill="#3730a3">JSON</text>
-  <rect x="852" y="92" width="104" height="26" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="904" y="109" text-anchor="middle" font-size="10" fill="#334155">브라우저</text>
-  <rect x="852" y="124" width="104" height="26" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="904" y="141" text-anchor="middle" font-size="10" fill="#334155">스마트폰</text>
-  <rect x="852" y="156" width="104" height="26" rx="5" fill="#fff" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="904" y="173" text-anchor="middle" font-size="10" fill="#334155">TV · 다른 서버</text>
-  <line x1="790" y1="123" x2="850" y2="107" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2rest-a)"/>
-  <line x1="790" y1="130" x2="850" y2="140" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2rest-a)"/>
-  <line x1="790" y1="137" x2="850" y2="167" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2rest-a)"/>
-  <text x="832" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">데이터만 넘기면</text>
-  <text x="832" y="230" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">어떤 기기든 받는다</text>
+  <rect x="60" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
+  <text x="160" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">브라우저</text>
+  <rect x="500" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
+  <text x="600" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">서버</text>
+  <line x1="268" y1="100" x2="492" y2="100" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2st-a)"/>
+  <text x="380" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">1. 요청</text>
+  <line x1="492" y1="140" x2="268" y2="140" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2st-a)"/>
+  <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 정적 자원</text>
 </svg>
 </div>
 
-*그림 2-2. 정적 자원을 돌려주던 서버가 화면을 만들어 주는 WAS를 거쳐, 데이터만 JSON으로 넘기는 REST API로 발전했습니다*
+*그림 2-2. 초창기 서버는 요청을 받으면 미리 만들어 둔 정적 자원을 그대로 돌려줍니다*
+
+이후 인터넷이 커지면서 서버는 요청에 따라 그때그때 내용을 만들어 응답하는 WAS(Web Application Server)로 발전했습니다. 돌려주는 것이 미리 만들어 둔 파일에서 요청마다 새로 만든 HTML 화면으로 바뀌었습니다. 다만 그 화면을 해석하는 것은 여전히 브라우저뿐이었습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 자리의 브라우저와 서버. 브라우저가 요청을 보내면 서버가 HTML 화면을 만들어 동적 자원으로 돌려준다.">
+  <defs>
+    <marker id="c2dy-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="60" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
+  <text x="160" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">브라우저</text>
+  <rect x="500" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
+  <text x="600" y="112" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">서버</text>
+  <text x="600" y="140" text-anchor="middle" font-size="15" fill="#6b7280">HTML 생성</text>
+  <line x1="268" y1="100" x2="492" y2="100" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2dy-a)"/>
+  <text x="380" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">1. 요청</text>
+  <line x1="492" y1="140" x2="268" y2="140" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2dy-a)"/>
+  <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 동적 자원</text>
+</svg>
+</div>
+
+*그림 2-3. WAS는 요청을 받을 때마다 화면을 만들어 돌려줍니다*
+
+문제는 서버에 요청을 보내는 것이 브라우저만이 아니게 됐다는 점입니다. 스마트폰 앱, TV, 다른 서버까지 같은 데이터를 요청하기 시작했습니다. 이들에게 HTML 화면을 통째로 넘기는 것은 맞지 않습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 640 320" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에 브라우저, 스마트폰, TV, 다른 서버 네 개가 세로로 놓여 있고 오른쪽에 서버가 있다. 네 기기가 저마다 서버와 양방향 화살표로 이어져 같은 데이터를 주고받는다.">
+  <defs>
+    <marker id="c2mul-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c2mul-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="18" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
+  <text x="115" y="52" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">브라우저</text>
+  <rect x="30" y="94" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
+  <text x="115" y="128" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">스마트폰</text>
+  <rect x="30" y="170" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
+  <text x="115" y="204" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">TV</text>
+  <rect x="30" y="246" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
+  <text x="115" y="280" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">다른 서버</text>
+  <rect x="430" y="125" width="180" height="90" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="2.4"/>
+  <text x="520" y="178" text-anchor="middle" font-size="21" font-weight="800" fill="#3730a3">서버</text>
+  <line x1="208" y1="45" x2="422" y2="140" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
+  <line x1="208" y1="121" x2="422" y2="158" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
+  <line x1="208" y1="197" x2="422" y2="182" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
+  <line x1="208" y1="273" x2="422" y2="200" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
+</svg>
+</div>
+
+*그림 2-4. 브라우저뿐 아니라 여러 기기가 같은 서버에 요청을 보내고 같은 데이터를 받아 갑니다*
+
+그래서 서버는 화면 대신 데이터만, 그것도 어떤 기기든 해석할 수 있는 형식으로 넘기는 방향으로 바뀌었습니다. 그 형식이 JSON입니다.
+
+### 2.1.2 JSON과 자원
 
 우리가 만들 서버도 화면을 돌려주지 않고 글 데이터를 JSON 형식으로 주고받습니다. JSON(JavaScript Object Notation)은 데이터를 키와 값의 쌍으로 표현하는, 사람이 읽기 쉬운 텍스트 형식입니다. 게시글 하나는 이런 모습입니다.
 
@@ -164,12 +187,14 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
 }
 ```
 
-이렇게 자원을 정해진 방식으로 주고받도록 약속한 설계 방식을 REST(Representational State Transfer)라고 합니다. REST에서는 게시글, 회원, 댓글처럼 다루려는 대상을 자원(Resource)이라고 부르고, 각 자원을 주소(URI)로 가리킵니다. 게시글이라는 자원은 `/api/boards`라는 주소가 됩니다.
+위 JSON에 담긴 게시글처럼, REST에서 다루려는 대상을 자원(Resource)이라고 부르고, 각 자원을 주소로 가리킵니다.
 
-주소가 정해졌으니 그 주소로 무엇이 오가는지 볼 차례입니다. 브라우저와 서버가 주고받는 요청과 응답에는 정해진 형식이 있습니다. 요청은 무엇을 어디에 요구하는지 적은 첫 줄과, 부가 정보를 담는 헤더, 보낼 데이터를 담는 바디로 이루어집니다.
+### 2.1.3 요청과 응답
+
+브라우저와 서버가 주고받는 요청과 응답에는 정해진 형식이 있습니다. 요청은 요청 라인(Request Line), 헤더(Header), 바디(Body) 세 부분으로 이루어집니다. 요청 라인에는 HTTP 메서드와 주소가 들어갑니다. 헤더에는 데이터 형식 같은 부가 정보가 담깁니다. 바디에는 서버로 보낼 데이터가 담깁니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 첫 줄에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 요청 라인에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
   <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <text x="84" y="68" font-size="16" font-weight="800" fill="#3730a3">POST /api/boards</text>
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
@@ -179,7 +204,7 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
   <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">첫 줄</text>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">요청 라인</text>
   <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
@@ -189,12 +214,12 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
 </svg>
 </div>
 
-*그림 2-3. 요청은 메서드와 주소를 적은 첫 줄, 헤더, 바디로 이루어집니다*
+*그림 2-5. 요청은 메서드와 주소를 담은 요청 라인, 헤더, 바디로 이루어집니다*
 
-응답도 구성이 비슷합니다. 첫 줄에는 요청이 어떻게 처리됐는지 알리는 상태 코드가 오고, 그 아래로 헤더와 바디가 따릅니다. 게시글 목록을 요청하면 앞에서 본 JSON이 이 바디에 담겨 돌아옵니다.
+응답도 응답 라인(Status Line), 헤더, 바디 세 부분으로 이루어집니다. 응답 라인에는 요청이 어떻게 처리됐는지 알리는 상태 코드가 들어갑니다. 게시글 목록을 요청하면 앞에서 본 JSON이 바디에 담겨 돌아옵니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 첫 줄에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
   <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <text x="84" y="68" font-size="16" font-weight="800" fill="#c2410c">200 OK</text>
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
@@ -204,7 +229,7 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
   <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">첫 줄</text>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">응답 라인</text>
   <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
@@ -214,11 +239,11 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
 </svg>
 </div>
 
-*그림 2-4. 응답은 상태 코드를 적은 첫 줄, 헤더, 바디로 이루어집니다*
+*그림 2-6. 응답은 상태 코드를 담은 응답 라인, 헤더, 바디로 이루어집니다*
 
-지금 필요한 것은 요청 첫 줄과 응답 바디입니다. 헤더와 상태 코드는 뒤에서 다시 꺼냅니다.
+### 2.1.4 메서드와 주소
 
-같은 주소를 두고도 무엇을 하고 싶은지는 HTTP 메서드로 구분합니다. 택배를 보낼 때 같은 상자라도 송장에 배송인지 반품인지 적어 구분하듯, 게시글이라는 같은 자원이라도 조회할 때와 저장할 때 붙이는 메서드가 다릅니다.
+주소는 어떤 자원인지를 가리키고, 그 자원에 무엇을 할지는 HTTP 메서드로 나타냅니다. 게시판에서 쓰는 메서드는 네 가지입니다.
 
 | 메서드 | 하는 일 | 예 |
 |--------|---------|-----|
@@ -227,9 +252,7 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
 | PUT | 수정한다 | 게시글 내용을 고친다 |
 | DELETE | 삭제한다 | 게시글을 지운다 |
 
-게시판에 필요한 동작이 이 네 가지에 그대로 들어맞습니다. 새로 쓰고(Create), 읽고(Read), 고치고(Update), 지우는(Delete) 네 동작을 앞 글자만 따 CRUD라고 부릅니다. 이번 챕터에서 만들 것이 게시글의 CRUD API입니다.
-
-주소를 짓는 데도 몇 가지 약속이 있습니다. 뒤에서 실제로 주소를 붙일 때 이 규칙을 따르게 됩니다.
+주소를 짓는 데도 몇 가지 약속이 있습니다.
 
 | 규칙 | 권장 | 피할 것 |
 |------|------|---------|
@@ -239,144 +262,79 @@ REST가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠습�
 | 긴 단어는 하이픈으로 연결한다 | `/check-username` | `/check_username` |
 | 확장자를 붙이지 않는다 | `/users` | `/users.json` |
 
-## 2.2 스프링 부트로 여는 프로젝트
+주소에는 확장자를 포함하지 않습니다. 대신 헤더에 타입을 포함합니다.
 
-### 2.2.1 톰캣은 어디에 있나
+## 2.2 스프링 부트
 
-주소 규칙까지 정했으니 이제 코드를 받아 실행할 차례입니다. 그 전에 짚을 것이 하나 있습니다. 1장에서 요청을 가장 먼저 받는 것이 톰캣이라고 했는데, 이번 챕터에서는 톰캣을 따로 내려받거나 설치하지 않습니다. 스프링 부트가 톰캣을 라이브러리로 함께 담고 있기 때문입니다.
+앞에서 옮겨 온 `ch02`는 스프링 부트 프로젝트입니다. 스프링 부트는 스프링을 쓰는 데 필요한 것들을 미리 묶어 둔 도구로, 서버를 붙이고 설정을 맞추는 일을 대신 해 줍니다. 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.
 
-<div class="svg-figure">
-<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="뚜껑이 열린 상자 안에 톰캣이라고 적힌 서버 본체가 들어 있다. 상자는 내 프로젝트를 뜻한다.">
-  <path d="M110,112 L160,58 L460,58 L410,112 Z" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
-  <rect x="110" y="112" width="300" height="170" rx="6" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <rect x="180" y="140" width="160" height="118" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
-  <line x1="196" y1="164" x2="324" y2="164" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <line x1="196" y1="184" x2="324" y2="184" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <line x1="196" y1="204" x2="324" y2="204" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <circle cx="318" cy="238" r="6" fill="#fff" stroke="#ff7849" stroke-width="1.5"/>
-  <text x="248" y="244" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">톰캣</text>
-  <text x="260" y="310" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">내 프로젝트</text>
-</svg>
-</div>
+### 2.2.1 프로젝트 생성
 
-*그림 2-5. 톰캣은 따로 설치하는 서버가 아니라 프로젝트 안에 함께 들어 있습니다*
+실습은 클론한 `ch02`로 진행하지만, 이 프로젝트가 어떻게 만들어졌는지는 알아 두어야 합니다. IDE는 Cursor를 기준으로 설명하며, VS Code도 화면이 같습니다.
 
-그래서 프로젝트를 실행하면 톰캣도 같이 실행되어 8080 포트를 엽니다. 이렇게 애플리케이션 안에 들어 있는 서버를 내장 톰캣(Embedded Tomcat)이라고 합니다.
+먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 `View > Extensions`를 선택합니다.
 
-<div class="svg-figure">
-<svg viewBox="0 0 620 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 상자 안의 서버 표시등에 불이 들어와 있고, 상자 옆에 8080이라고 적힌 팻말이 세워져 있다.">
-  <path d="M110,112 L160,58 L460,58 L410,112 Z" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
-  <rect x="110" y="112" width="300" height="170" rx="6" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <rect x="180" y="140" width="160" height="118" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
-  <line x1="196" y1="164" x2="324" y2="164" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <line x1="196" y1="184" x2="324" y2="184" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <line x1="196" y1="204" x2="324" y2="204" stroke="#ff7849" stroke-width="1.3" opacity="0.55"/>
-  <circle cx="318" cy="238" r="6" fill="#ff7849" stroke="#ff7849" stroke-width="1.5"/>
-  <circle cx="318" cy="238" r="12" fill="none" stroke="#ff7849" stroke-width="1.2" opacity="0.45"/>
-  <text x="248" y="244" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">톰캣</text>
-  <line x1="500" y1="140" x2="500" y2="282" stroke="#475569" stroke-width="3"/>
-  <rect x="440" y="96" width="120" height="50" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="500" y="129" text-anchor="middle" font-size="18" font-weight="800" fill="#3730a3">8080</text>
-  <text x="260" y="310" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">내 프로젝트</text>
-</svg>
-</div>
+![](../assets/CH2/setup/01_extensions-menu.png)
 
-*그림 2-6. 프로젝트를 실행하면 8080 포트가 열리고, 그때부터 요청을 받습니다*
+*그림 2-7. 상단 탭 View에서 Extensions를 선택합니다*
 
-스프링 부트는 이처럼 스프링을 쓰는 데 필요한 것들을 미리 묶어 둔 도구입니다. 서버를 붙이고 설정을 맞추는 일을 대신 해 주므로, 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.
+검색창에 `java`를 넣어 Extension Pack for Java를 설치합니다.
 
-파일을 채우기 전에, 스프링이 데이터베이스를 어떻게 다루는지부터 짚어야 합니다. 저장한 글은 결국 데이터베이스의 한 줄로 남지만, 자바 코드가 다루는 것은 `Board`라는 객체입니다. 이 둘 사이에는 생각보다 큰 간격이 있습니다.
+![](../assets/CH2/setup/02_java-pack.png)
 
-## 2.3 두 세계의 불일치와 하이버네이트
+*그림 2-8. 자바 개발에 필요한 확장을 한 번에 묶은 Extension Pack for Java입니다*
 
-### 2.3.1 객체와 테이블의 어긋남
+이어서 `spring`으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
 
-소프트웨어를 만들 때 개발자는 서로 다른 철학을 가진 두 세계를 동시에 마주합니다. 데이터의 정확성을 지키려는 관계형 데이터베이스와, 현실의 복잡함을 표현하려는 객체지향 언어입니다.
+![](../assets/CH2/setup/03_spring-pack.png)
 
-데이터베이스의 목표는 데이터를 안전하게 보관하고 빠르게 꺼내는 것입니다. 그래서 모든 데이터를 행과 열로 이루어진 평평한 표에 값으로만 담습니다. 다른 표를 가리키려면 외래 키(Foreign Key)라는 값을 공유해 조인으로 연결할 뿐, 표 안에 다른 표를 통째로 넣지는 못합니다. 상속 같은 개념도 없습니다. 반면 자바는 현실의 사물을 객체로 다룹니다. 객체는 값뿐 아니라 행동(메서드)을 가지고, 다른 객체를 필드로 품어 참조(Reference)로 서로를 가리킵니다. 같은 관계를 두고도 한쪽은 값으로 연결하고, 다른 쪽은 참조로 품습니다.
+*그림 2-9. Spring Boot Extension Pack에는 Spring Initializr Java Support가 함께 들어 있습니다*
 
-<div class="svg-figure">
-<svg viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="객체 세계와 DB 세계의 연결 방식 차이. 왼쪽 객체 세계에서는 주문 객체가 회원 객체를 필드로 참조한다. 오른쪽 DB 세계에서는 주문 테이블과 회원 테이블이 각각 따로 있고, user_id라는 값으로 조인해서 연결한다.">
-  <defs>
-    <marker id="c2two-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2two-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#c2410c"/></marker>
-  </defs>
-  <rect x="30" y="40" width="380" height="280" rx="12" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6" stroke-dasharray="6,4"/>
-  <text x="220" y="70" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">객체 세계 · 참조로 품는다</text>
-  <rect x="140" y="92" width="160" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="220" y="122" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">주문 객체</text>
-  <text x="220" y="140" text-anchor="middle" font-size="10" fill="#334155">member 필드를 가진다</text>
-  <rect x="140" y="232" width="160" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="220" y="268" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">회원 객체</text>
-  <line x1="220" y1="152" x2="220" y2="230" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2two-a)"/>
-  <text x="300" y="196" text-anchor="middle" font-size="11" fill="#3730a3">필드로 참조</text>
-  <rect x="490" y="40" width="380" height="280" rx="12" fill="#fff" stroke="#ff7849" stroke-width="1.6" stroke-dasharray="6,4"/>
-  <text x="680" y="70" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">DB 세계 · 값으로 연결한다</text>
-  <rect x="600" y="92" width="160" height="60" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="680" y="118" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">주문 테이블</text>
-  <text x="680" y="138" text-anchor="middle" font-size="10" fill="#475569">user_id 칸을 가진다</text>
-  <rect x="600" y="232" width="160" height="60" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="680" y="268" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">회원 테이블</text>
-  <line x1="680" y1="152" x2="680" y2="230" stroke="#c2410c" stroke-width="1.8" marker-end="url(#c2two-b)"/>
-  <text x="763" y="196" text-anchor="middle" font-size="11" fill="#c2410c">user_id 값으로 조인</text>
-</svg>
-</div>
+설치가 끝나면 `View > Command Palette`를 엽니다.
 
-*그림 2-7. 같은 관계라도 객체 세계는 다른 객체를 필드로 참조하고, DB 세계는 외래 키 값으로 조인해 연결합니다*
+![](../assets/CH2/setup/04_command-palette.png)
 
-이 차이는 햄버거 세트로 보면 분명해집니다. 자바에서는 `햄버거세트` 객체 하나가 `햄버거`, `콜라`, `감자` 객체를 품습니다(has-a). 세트 하나만 들면 그 안의 내용물을 바로 꺼낼 수 있습니다. 데이터베이스는 그렇게 못 합니다. 세트라는 상자 안에 음식을 넣지 못하므로, 햄버거 표, 콜라 표, 감자 표를 따로 만들어 두고 외래 키로 "우린 같은 세트야"라고 값으로 연결만 해 둡니다. 하나로 품는 세계와 값으로 나눠 연결하는 세계, 이 어긋남이 두 세계의 근본적인 불일치입니다.
+*그림 2-10. 상단 탭 View에서 Command Palette를 선택합니다*
 
-<div class="svg-figure">
-<svg viewBox="0 0 1000 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="햄버거 세트로 본 두 세계의 불일치. 왼쪽 자바 세계에서는 햄버거 세트 객체 하나가 햄버거, 콜라, 감자를 has-a 관계로 품는다. 오른쪽 DB 세계에서는 햄버거 테이블, 콜라 테이블, 감자 테이블이 따로 있고 각각 외래 키로 세트 테이블에 연결된다. 가운데 하이버네이트가 두 세계를 맞춘다.">
-  <defs>
-    <marker id="c2burger-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2burger-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
-    <marker id="c2burger-h" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#475569"/></marker>
-  </defs>
-  <rect x="20" y="40" width="330" height="320" rx="12" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6" stroke-dasharray="6,4"/>
-  <text x="185" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">자바 세계 · has-a</text>
-  <rect x="95" y="82" width="180" height="46" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="185" y="110" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">햄버거 세트 객체</text>
-  <rect x="60" y="230" width="80" height="44" rx="7" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="100" y="257" text-anchor="middle" font-size="12" fill="#3730a3">햄버거</text>
-  <rect x="145" y="230" width="80" height="44" rx="7" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="185" y="257" text-anchor="middle" font-size="12" fill="#3730a3">콜라</text>
-  <rect x="230" y="230" width="80" height="44" rx="7" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="270" y="257" text-anchor="middle" font-size="12" fill="#3730a3">감자</text>
-  <line x1="170" y1="128" x2="105" y2="228" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2burger-a)"/>
-  <line x1="185" y1="128" x2="185" y2="228" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2burger-a)"/>
-  <line x1="200" y1="128" x2="265" y2="228" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2burger-a)"/>
-  <text x="185" y="320" text-anchor="middle" font-size="11" fill="#6b7280">세트 하나에 다 품는다</text>
-  <rect x="400" y="150" width="200" height="80" rx="10" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="500" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">하이버네이트</text>
-  <text x="500" y="204" text-anchor="middle" font-size="11" fill="#475569">중간에서 일치시킨다</text>
-  <line x1="352" y1="190" x2="398" y2="190" stroke="#475569" stroke-width="1.8" marker-start="url(#c2burger-h)" marker-end="url(#c2burger-h)"/>
-  <line x1="602" y1="190" x2="648" y2="190" stroke="#475569" stroke-width="1.8" marker-start="url(#c2burger-h)" marker-end="url(#c2burger-h)"/>
-  <rect x="650" y="40" width="330" height="320" rx="12" fill="#fff" stroke="#ff7849" stroke-width="1.6" stroke-dasharray="6,4"/>
-  <text x="815" y="66" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">DB 세계 · 외래 키</text>
-  <rect x="672" y="92" width="90" height="44" rx="7" fill="#fff" stroke="#ff7849" stroke-width="1.5"/>
-  <text x="717" y="119" text-anchor="middle" font-size="11" fill="#c2410c">햄버거 표</text>
-  <rect x="770" y="92" width="90" height="44" rx="7" fill="#fff" stroke="#ff7849" stroke-width="1.5"/>
-  <text x="815" y="119" text-anchor="middle" font-size="11" fill="#c2410c">콜라 표</text>
-  <rect x="868" y="92" width="90" height="44" rx="7" fill="#fff" stroke="#ff7849" stroke-width="1.5"/>
-  <text x="913" y="119" text-anchor="middle" font-size="11" fill="#c2410c">감자 표</text>
-  <rect x="720" y="250" width="190" height="46" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="815" y="278" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">세트 테이블</text>
-  <line x1="717" y1="136" x2="795" y2="248" stroke="#ff7849" stroke-width="1.5" marker-end="url(#c2burger-b)"/>
-  <line x1="815" y1="136" x2="815" y2="248" stroke="#ff7849" stroke-width="1.5" marker-end="url(#c2burger-b)"/>
-  <line x1="913" y1="136" x2="835" y2="248" stroke="#ff7849" stroke-width="1.5" marker-end="url(#c2burger-b)"/>
-  <text x="780" y="180" text-anchor="middle" font-size="10" fill="#c2410c">FK</text>
-  <text x="815" y="326" text-anchor="middle" font-size="11" fill="#6b7280">따로 두고 값으로 연결한다</text>
-</svg>
-</div>
+`spring`을 입력해 Spring Initializr: Create a Gradle Project를 실행합니다.
 
-*그림 2-8. 자바는 세트 하나에 내용물을 품고, DB는 표를 따로 두어 외래 키로 연결합니다. 하이버네이트가 그 사이를 맞춰 줍니다*
+![](../assets/CH2/setup/05_initializr.png)
 
-### 2.3.2 ORM과 하이버네이트
+*그림 2-11. Gradle 프로젝트를 만드는 명령을 고릅니다*
 
-ORM이 없던 시절에는 개발자가 이 간극을 손으로 메웠습니다. 테이블이 하나 늘 때마다 비슷한 SQL과 매핑 코드를 수십 줄씩 반복해 썼고, 조회 결과를 객체에 한 칸씩 옮겨 담느라 정작 중요한 로직을 짤 시간이 줄었습니다. 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.
+이후 묻는 항목에 이 값들을 넣습니다.
 
-이 반복을 대신 해 주는 기술이 ORM(Object-Relational Mapping)입니다. 개발자가 객체로 코드를 짜면, ORM이 SQL로 바꿔 데이터베이스에 전하고 결과를 다시 객체로 돌려줍니다. JPA(Java Persistence API)는 자바가 정한 ORM 표준이고, 하이버네이트(Hibernate)는 그 표준을 구현한 대표 도구입니다. 덕분에 개발자는 조인과 외래 키를 직접 신경 쓰지 않고 객체만 다루면 됩니다.
+| 항목 | 값 |
+|------|-----|
+| 스프링 부트 버전 | 4.0.3 |
+| 언어 | Java |
+| Group Id | com.metacoding |
+| Artifact Id | spring-ch02 |
+| Packaging | JAR |
+| 자바 버전 | 21 |
+
+마지막으로 프로젝트에 넣을 의존성을 고릅니다. 챕터 2에서 쓰는 것은 네 가지입니다.
+
+| 의존성 | 역할 |
+|--------|------|
+| Spring Web | REST 요청을 받는 웹 계층과 내장 웹 서버가 들어 있습니다 |
+| Spring Data JPA | 객체와 테이블을 잇는 JPA와 하이버네이트가 들어 있습니다 |
+| H2 Database | 메모리에서 도는 실습용 데이터베이스입니다 |
+| Lombok | 게터·세터 같은 반복 코드를 대신 만들어 줍니다 |
+
+생성이 끝나면 이런 구조가 만들어집니다. `build.gradle`에 방금 고른 의존성이 적혀 있고, 코드는 `src` 아래에 들어갑니다.
+
+![](../assets/CH2/setup/06_project-tree.png)
+
+*그림 2-12. 생성된 스프링 부트 프로젝트의 구조입니다*
+
+## 2.3 객체와 테이블
+
+자바의 객체(Object)와 데이터베이스의 테이블(Table)은 태생적으로 데이터를 다루는 방식이 다릅니다. 객체는 데이터와 메서드를 하나로 묶어서 관리하지만, 테이블은 행과 열로 이루어진 표에 불과합니다.
+
+과거에는 이 구조적 차이를 메우기 위해 개발자가 직접 번역기 역할을 해야 했습니다. 데이터를 저장하거나 조회할 때마다 일일이 SQL을 작성하고, 그 결과를 다시 객체로 변환하는 단순 반복 작업에 많은 시간을 쏟았습니다. 컬럼이 하나만 추가되어도 관련된 SQL을 모두 찾아 수정해야 하는 구조였습니다.
+
+이러한 소모적인 번역 작업을 대신해 주는 기술이 ORM입니다. 자바 진영은 ORM을 JPA라는 표준으로 정리했고, 하이버네이트가 그 표준을 구현한 대표적인 엔진입니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자바 객체에서 ORM으로, ORM에서 SQL로 바뀌어 데이터베이스에 전달되고, 조회 결과는 다시 객체가 되어 돌아온다.">
@@ -398,74 +356,58 @@ ORM이 없던 시절에는 개발자가 이 간극을 손으로 메웠습니다.
 </svg>
 </div>
 
-*그림 2-9. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다*
+*그림 2-13. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다*
+
+우리가 프로젝트에 추가한 Spring Data JPA 의존성 내부에는 이 하이버네이트가 포함되어 있어, 복잡한 설정이나 반복적인 SQL 작성 없이도 객체와 데이터베이스를 쉽게 연결할 수 있습니다.
+
+| 기술 | 정체 |
+|------|------|
+| ORM(Object-Relational Mapping) | 개발자가 자바 객체 중심으로 코드를 작성하면, 적절한 SQL로 번역해 데이터베이스와 통신하고 그 결과를 다시 객체로 변환해 주는 기술입니다 |
+| JPA(Java Persistence API) | 자바 진영에서 정한 ORM 기술의 표준 규칙(인터페이스)입니다 |
+| 하이버네이트(Hibernate) | JPA라는 규칙을 실제 코드로 구현해 작동하게 만든 대표적인 엔진입니다 |
 
 ## 2.4 엔티티와 데이터베이스 설정
 
-### 2.4.1 엔티티 매핑
+가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.
 
-가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 `board_tb` 테이블의 한 행이 됩니다.
-
-`board/Board.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`board/Board.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 1] board/Board.java. 게시글 엔티티
-@Data
+@Data // 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다
 @Entity
-@Table(name = "board_tb")
+@Table(name = "board_tb") // 이 클래스를 board_tb 테이블에 매핑한다
 public class Board {
-    // 1. 기본 키. DB가 자동으로 1씩 증가시켜 채운다
-    @Id
+    @Id // 기본 키. DB가 자동으로 1씩 증가시켜 채운다
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     private String title;
     private String content;
 
-    // 2. 저장 시점의 현재 시간을 자동으로 기록한다
-    @CreationTimestamp
+    @CreationTimestamp // 저장 시점의 현재 시간을 자동으로 기록한다
     private Timestamp createdAt;
 }
 ```
 
-`@Entity`·`@Table`이 붙은 `Board`가 `board_tb` 테이블 한 장에 대응하고, 각 필드가 그 테이블의 칸이 됩니다. 각 어노테이션이 하는 일은 다음과 같습니다.
-
-| 어노테이션 | 역할 |
-|------|------|
-| `@Entity` · `@Table(name = "board_tb")` | 이 클래스를 `board_tb` 테이블에 매핑합니다 |
-| `@Id` · `@GeneratedValue(IDENTITY)` | 기본 키입니다. 데이터베이스가 1씩 자동으로 채웁니다 |
-| `@CreationTimestamp` | 글이 저장될 때 현재 시각을 자동으로 기록합니다 |
+`@Entity`·`@Table`이 붙은 `Board`가 `board_tb` 테이블에 대응하고, 각 필드가 그 테이블의 컬럼(Column)이 됩니다.
 
 :::tip
-**필드는 카멜, 테이블 칸은 스네이크로 만들어집니다**
+**필드는 카멜, 컬럼은 스네이크로 만들어집니다**
 
-엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 칸이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 쪽 표기만 신경 쓰면 됩니다.
+엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
 :::
 
-클래스 위의 `@Data` 하나가 눈에 띕니다. `Board` 어디에도 `getTitle()`이나 `setTitle()` 메서드가 보이지 않지만, 뒤에서 이 메서드들을 호출하게 됩니다. `@Data`는 롬복(Lombok)이 제공하는 어노테이션으로, 컴파일 시점에 게터, 세터, `toString` 같은 반복 코드를 대신 만들어 줍니다. 눈에 보이는 소스에는 없지만 컴파일된 결과물에는 이 메서드들이 들어 있습니다.
-
-### 2.4.2 인메모리 데이터베이스 설정
-
-엔티티가 준비됐으니 이 엔티티를 담을 데이터베이스를 설정합니다. 이번 챕터는 별도 설치 없이 애플리케이션 안에서 메모리에 떠서 동작하는 H2 인메모리 데이터베이스를 씁니다. 설치가 필요 없어 실습에 적합합니다. 설정은 `resources/application.properties`에 들어 있고, 핵심 항목은 다음과 같습니다.
-
-| 설정 | 값·역할 |
-|------|---------|
-| spring.datasource.url | `jdbc:h2:mem:test`. 메모리에 뜨는 H2 데이터베이스를 사용합니다. |
-| spring.jpa.hibernate.ddl-auto | `create`. 시작할 때마다 엔티티를 보고 테이블을 새로 만듭니다. 개발 단계에서만 씁니다. |
-| spring.jpa.show-sql | `true`. JPA가 실제로 내보내는 SQL을 콘솔에 찍어 줍니다. |
-| spring.sql.init.data-locations | `classpath:db/data.sql`. 시작할 때 초기 데이터를 넣습니다. |
-| spring.jpa.defer-datasource-initialization | `true`. 하이버네이트가 테이블을 만든 뒤에 `data.sql`을 실행하도록 미룹니다. 이 값이 없으면 테이블이 생기기 전에 `data.sql`이 돌아 부팅에 실패합니다. |
-
-인메모리라 껐다 켜면 데이터가 사라집니다. 그래서 시작할 때 `data.sql`의 내용을 넣어 초기 상태를 맞춥니다. `data.sql`에는 실습에서 바로 확인할 수 있도록 `title1`, `title2` 두 건이 미리 들어 있습니다.
+데이터베이스는 H2를 씁니다. 메모리에서 도는 데이터베이스라 껐다 켜면 비기 때문에, 시작할 때마다 `data.sql`에 담아 둔 게시글 두 건을 다시 넣습니다.
 
 ## 2.5 리포지토리와 EntityManager
 
-엔티티와 데이터베이스가 준비됐으니, 이제 둘 사이에서 실제로 저장하고 꺼내는 부분을 만듭니다. 이 역할을 맡는 것이 리포지토리(Repository)로, 데이터의 조회·저장·수정·삭제를 담당하는 계층입니다. 리포지토리가 데이터베이스 작업에 쓰는 도구가 `EntityManager`입니다. `EntityManager`는 데이터베이스 창구에 앉은 직원과 같습니다. 개발자가 객체로 부탁하면, 직원이 그것을 SQL로 바꿔 데이터베이스에 전하고 결과를 다시 객체로 돌려줍니다.
+엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터의 조회·저장·수정·삭제를 담당하는 계층입니다. 리포지토리가 데이터베이스 작업에 쓰는 도구가 `EntityManager`입니다. `EntityManager`는 데이터베이스 창구에 앉은 직원과 같습니다. 개발자가 객체로 부탁하면, 직원이 그것을 SQL로 바꿔 데이터베이스에 전하고 결과를 다시 객체로 돌려줍니다.
 
-`board/BoardRepository.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 2] board/BoardRepository.java. EntityManager로 CRUD
 @RequiredArgsConstructor
-@Repository
+@Repository // 스프링이 빈으로 등록하고, 생성자로 EntityManager를 주입한다
 public class BoardRepository {
 
     private final EntityManager em;
@@ -492,9 +434,7 @@ public class BoardRepository {
 }
 ```
 
-`@Repository`가 붙은 이 클래스를 스프링이 빈으로 등록하고, 생성자로 `EntityManager`를 넣어 줍니다. 앞 챕터에서 개념만 짚었던 의존성 주입이 여기서 실제로 일어납니다. `EntityManager`도 스프링에 이미 빈으로 있으므로, 직접 만들지 않고 주입받아 씁니다.
-
-네 메서드는 모두 `EntityManager`에 작업을 맡깁니다. 다만 여러 건을 조회하는 `findAll`은 JPQL(Java Persistence Query Language)을 씁니다. JPQL은 테이블이 아니라 엔티티와 필드를 기준으로 작성하는 JPA의 질의 언어로, `board_tb`가 아니라 `Board` 엔티티를 대상으로 삼습니다.
+앞 챕터에서 개념만 짚었던 의존성 주입이 여기서 실제로 일어납니다. `EntityManager`도 스프링에 빈으로 있으므로 직접 만들지 않고 주입받아 씁니다. 여러 건을 조회하는 `findAll`만 JPQL(Java Persistence Query Language)을 쓰는데, 테이블이 아니라 엔티티를 기준으로 쓰는 JPA의 질의 언어라 `board_tb`가 아니라 `Board`를 대상으로 삼습니다.
 
 ## 2.6 영속성 컨텍스트
 
@@ -548,7 +488,7 @@ public class BoardRepository {
 </svg>
 </div>
 
-*그림 2-10. 처음 조회는 캐시에 없어 DB까지 가지만, 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 SQL이 다시 실행되지 않습니다*
+*그림 2-14. 처음 조회는 캐시에 없어 DB까지 가지만, 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 SQL이 다시 실행되지 않습니다*
 
 ### 2.6.2 쓰기 지연
 
@@ -583,7 +523,7 @@ public class BoardRepository {
 </svg>
 </div>
 
-*그림 2-11. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다*
+*그림 2-15. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다*
 
 :::tip
 **IDENTITY 전략에서는 insert가 즉시 나갑니다**
@@ -630,7 +570,7 @@ public class BoardRepository {
 </svg>
 </div>
 
-*그림 2-12. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 그 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다*
+*그림 2-16. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 그 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다*
 
 쓰기 지연과 더티체킹이 만든 SQL은 `flush` 시점에 데이터베이스로 나갑니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 `@Transactional`이 끝날 때 자동으로 호출됩니다. 셋 중 더티체킹은 곧 게시글 수정에서 다시 만납니다.
 
@@ -667,7 +607,7 @@ public class BoardRepository {
 </svg>
 </div>
 
-*그림 2-13. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다*
+*그림 2-17. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다*
 
 층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.
 
@@ -689,9 +629,9 @@ public class BoardRepository {
 </svg>
 </div>
 
-*그림 2-14. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다*
+*그림 2-18. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다*
 
-컨트롤러가 제공할 게시판 API는 앞에서 정리한 CRUD를 주소와 메서드로 옮긴 것입니다.
+컨트롤러가 제공할 게시판 API는 앞에서 본 주소와 HTTP 메서드를 조합한 것입니다.
 
 | HTTP 메서드 | 경로 | 기능 |
 |---|---|---|
@@ -705,7 +645,7 @@ public class BoardRepository {
 
 먼저 서비스를 만듭니다. 서비스는 리포지토리를 호출해 목록, 상세, 작성, 삭제를 처리합니다. 수정은 더티체킹과 함께 다음 절에서 따로 다루므로, 여기서는 네 가지만 채웁니다.
 
-`board/BoardService.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`board/BoardService.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 3] board/BoardService.java. 목록·상세·작성·삭제
 @RequiredArgsConstructor
@@ -741,17 +681,19 @@ public class BoardService {
 }
 ```
 
-이 클래스는 `@Service`로 등록된 서비스이고, 작성·삭제 메서드에는 `@Transactional`이 붙어 있습니다. 트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다. 앞 절의 자동 `flush`가 이 `@Transactional`이 끝나는 순간에 일어납니다.
+`게시글추가`에서 `new Board()`로 만든 엔티티는 `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다. 앞 절의 자동 `flush`는 `@Transactional`이 끝나는 순간에 일어납니다. 여기 쓰인 `BoardRequest.SaveDTO`는 뒤에서 만들므로, 관련 파일을 다 채운 뒤 실행합니다.
 
-`게시글추가`에서 `new Board()`로 만든 엔티티는 아직 영속성 컨텍스트가 모르는 상태입니다. `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다.
+:::tip
+**트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
 
-여기 쓰인 `BoardRequest.SaveDTO`는 뒤에서 만듭니다. 지금 컴파일하면 아직 없다고 나오니, 관련 파일을 다 채운 뒤 실행합니다.
+트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 `@Transactional`을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
+:::
 
 ### 2.7.2 컨트롤러와 요청 DTO
 
 이제 이 서비스를 바깥과 연결할 컨트롤러를 만듭니다. 컨트롤러는 위의 API 표대로, 주소와 HTTP 메서드에 맞춰 요청을 서비스로 넘깁니다.
 
-`board/BoardController.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`board/BoardController.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 4] board/BoardController.java. REST 엔드포인트
 @RequiredArgsConstructor
@@ -791,11 +733,9 @@ public class BoardController {
 }
 ```
 
-`@RestController`가 붙은 이 클래스는 반환값을 JSON으로 내보내고, `@RequestMapping("/api/boards")`로 공통 주소를 정한 뒤, 각 메서드에 `@GetMapping`·`@PostMapping`·`@DeleteMapping`을 추가해 앞에서 본 HTTP 메서드에 대응시킵니다.
+`@RestController`는 반환값을 JSON으로 내보내고, `@RequestMapping`이 공통 주소를 정합니다. 주소에 박힌 값은 `@PathVariable`로, 요청 바디의 JSON은 `@RequestBody`로 받습니다. 여기서 받는 `SaveDTO`는 `board/BoardRequest.java`에 정의합니다.
 
-주소에서 값을 꺼내는 두 어노테이션이 있습니다. `@PathVariable`은 `/api/boards/1`처럼 주소에 박힌 값을 꺼내 파라미터로 받고, `@RequestBody`는 요청 바디로 들어온 JSON을 자바 객체로 바꿔 받습니다. 여기서 받는 `SaveDTO`는 요청 데이터를 담는 DTO입니다. `board/BoardRequest.java`에 정의합니다.
-
-`board/BoardRequest.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 5] board/BoardRequest.java. 요청 데이터 DTO
 public class BoardRequest {
@@ -807,9 +747,9 @@ public class BoardRequest {
 }
 ```
 
-`record`는 값을 담기만 하는 간단한 클래스를 짧게 정의하는 자바 문법입니다. `SaveDTO`는 글을 작성할 때, `UpdateDTO`는 수정할 때 받을 데이터를 담습니다. 지금은 두 DTO의 필드가 같지만, 저장과 수정은 서로 다른 요청이라 나중에 검증 규칙이나 필드가 달라질 수 있어 처음부터 나눠 둡니다.
+`record`는 값만 담는 클래스를 짧게 정의하는 자바 문법입니다. 저장과 수정은 서로 다른 요청이라, 지금은 필드가 같아도 DTO를 나눠 둡니다.
 
-컨트롤러의 반환값은 모두 `Resp.ok(...)`로 감싸져 있습니다. `Resp`는 앞의 클래스 표에서 정리한 공통 응답 래퍼로, `core/util/Resp.java`에 미리 준비되어 있습니다. `Resp.ok(body)`로 감싸면 응답이 항상 `status`(상태 코드), `msg`(메시지), `body`(실제 데이터) 세 칸을 가진 같은 모양으로 나갑니다. 어떤 요청이든 응답 구조가 일정하면, 화면을 만드는 쪽이 결과를 다루기가 편해집니다.
+컨트롤러의 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양으로 나갑니다.
 
 이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.
 
@@ -832,9 +772,9 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql의 두 건이 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-15. 목록 조회 요청에 두 게시글이 Resp 형식으로 감싸여 돌아온 응답입니다*
+*그림 2-19. 목록 조회 요청에 두 게시글이 Resp 형식으로 감싸여 돌아온 응답입니다*
 
-## 2.8 더티체킹으로 수정하기
+## 2.8 더티체킹으로 수정
 
 이제 마지막으로 남은 수정을 만듭니다.
 
@@ -852,9 +792,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
     } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
 ```
 
-이 수정 메서드에는 저장하는 호출이 없습니다. `findById`로 가져온 `board`의 값을 바꾸고 그대로 반환할 뿐인데도 수정은 데이터베이스에 반영됩니다. 앞에서 본 더티체킹이 여기서 동작하기 때문입니다.
-
-`findById`로 가져온 `board`는 영속 상태가 되고, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
+이 메서드에는 저장하는 호출이 없습니다. `findById`로 가져온 `board`가 영속 상태이므로, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
 
 이 수정 메서드를 컨트롤러의 PUT 엔드포인트에 연결합니다. `board/BoardController.java`에 아래 메서드를 추가합니다.
 
@@ -870,7 +808,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 이것으로 작성, 조회, 수정, 삭제가 모두 갖춰졌습니다. 그런데 더티체킹은 눈에 바로 보이지 않습니다. 저장 호출이 없으니, 정말 반영됐는지 확인하려면 데이터베이스를 다시 조회해 봐야 합니다. 이때 필요한 것이 테스트입니다.
 
-## 2.9 단위 테스트로 확인하기
+## 2.9 단위 테스트
 
 지금까지는 애플리케이션 전체를 띄워 API로 결과를 봤습니다. 하지만 리포지토리 하나가 제대로 도는지 확인하려고 매번 서버를 띄우고 요청을 보내는 것은 번거롭습니다.
 
@@ -916,7 +854,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 </svg>
 </div>
 
-*그림 2-16. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다*
+*그림 2-20. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다*
 
 리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리 계층만 가볍게 띄우는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
 
@@ -949,9 +887,9 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 </svg>
 </div>
 
-*그림 2-17. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다*
+*그림 2-21. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다*
 
-`test/.../BoardRepositoryTest.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+`test/.../BoardRepositoryTest.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 8] BoardRepositoryTest.java. 더티체킹 검증
 @Import(BoardRepository.class)
@@ -983,7 +921,7 @@ public class BoardRepositoryTest {
 
 `@DataJpaTest`가 JPA 관련 부분만 띄우고, `@Import(BoardRepository.class)`로 검증할 리포지토리를 올려 주입받습니다. `data.sql`의 두 건이 들어와 있으므로, `id=2`인 글을 기준으로 확인합니다.
 
-`update_test`가 더티체킹을 눈으로 보게 해 줍니다. `findById`로 글을 가져와 제목과 내용을 바꾼 뒤 `save()`는 부르지 않습니다. 대신 `em.flush()`로 지금까지의 변경을 데이터베이스에 밀어 넣고, `em.clear()`로 영속성 컨텍스트를 강제로 비웁니다. 컨텍스트가 비었으니 이어지는 `findById`는 앞에서 본 캐시가 아니라 데이터베이스에서 새로 읽어 옵니다. 그렇게 다시 읽은 글의 제목이 `title-update`로 바뀌어 있다면, 저장 호출 없이도 변경이 반영됐다는 증거입니다.
+`update_test`가 더티체킹을 눈으로 보게 해 줍니다. 제목과 내용을 바꾸고 `save()`는 부르지 않은 채 `em.flush()`로 변경을 밀어 넣고, `em.clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 이어지는 `findById`는 캐시가 아니라 데이터베이스에서 새로 읽어 오고, 그 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
 
 같은 방식으로 `findById_test`는 한 건 조회를, `findAll_test`는 전체 개수를, `save_test`와 `delete_test`는 저장과 삭제 후 개수를 세어 확인합니다. 완성 코드에 다섯 테스트가 모두 들어 있으니, 전체 테스트를 실행해 보겠습니다.
 
@@ -996,11 +934,11 @@ public class BoardRepositoryTest {
   desc: BoardRepositoryTest 실행 결과. findById_test, findAll_test, save_test, update_test, delete_test 다섯 개가 모두 초록색으로 통과한 화면. IDE의 테스트 러너 창 또는 gradle 콘솔 BUILD SUCCESSFUL. update_test의 콘솔 출력에 "Board title : title-update"가 보이면 더욱 좋음.
 ] -->
 ![](../assets/CH2/terminal/02_test-pass.png)
-*그림 2-18. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다*
+*그림 2-22. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다*
 
 테스트가 초록색으로 통과했습니다. 오픈이는 화면을 열어 목록을 부르는 대신, 테스트 하나로 리포지토리가 제대로 도는지 확인하는 방법을 손에 넣었습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
 
-동료가 화면 쪽 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.
+동료가 화면 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.
 
 **동료**: "목록이랑 상세 잘 나와요. 그런데 없는 번호로 상세를 부르면 어떻게 돼요? 3번 글은 아직 없는데."
 
@@ -1013,7 +951,7 @@ public class BoardRepositoryTest {
 :::remember
 **이것만은 기억하자**
 
-- JPA는 객체와 테이블이라는 두 세계 사이를 변환합니다. 조회한 엔티티는 영속성 컨텍스트에서 관리되고, 값을 바꾸면 트랜잭션이 끝날 때 더티체킹이 변경을 알아서 반영합니다. 그래서 수정에는 `save()`가 없습니다.
+- JPA는 객체와 테이블 사이를 변환합니다. 조회한 엔티티는 영속성 컨텍스트에서 관리되고, 값을 바꾸면 트랜잭션이 끝날 때 더티체킹이 변경을 알아서 반영합니다. 그래서 수정에는 `save()`가 없습니다.
 - 컨트롤러, 서비스, 리포지토리 세 층으로 나눠 요청을 받고, 처리하고, 데이터베이스를 다룹니다. 이 흐름으로 게시글의 작성, 조회, 수정, 삭제 API를 완성하고 단위 테스트로 검증했습니다.
 - 그런데 없는 글을 조회하면 없는데도 성공이라 답하며 빈 값이 돌아옵니다. 다음 챕터에서는 없는 글을 404로 바로잡고, 엔티티가 응답에 그대로 새어 나가지 않도록 DTO로 정리합니다.
 :::

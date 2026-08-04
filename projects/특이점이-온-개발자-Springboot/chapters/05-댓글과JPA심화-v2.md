@@ -55,7 +55,7 @@
 - 지연 로딩이 왜 쿼리를 늘리는지 이해하고, fetch join으로 조회를 한 번에 끝냅니다
 :::
 
-## 5.1 댓글은 글에 딸린다
+## 5.1 댓글과 게시글
 
 ### 5.1.1 양방향 연관관계와 주인
 
@@ -63,7 +63,7 @@
 
 이 관계를 자바 객체로 옮기면 양쪽이 서로를 가리킵니다. 게시글은 자기에게 달린 댓글 목록을 가지고, 댓글은 자기가 붙은 게시글을 가집니다. 이렇게 두 엔티티가 서로를 참조하는 관계를 양방향 연관관계(Bidirectional Relationship)라고 합니다.
 
-그런데 데이터베이스는 이 관계를 한 곳에만 저장합니다. 포스트잇에 "몇 번 글"이라고 적는 것처럼, `reply_tb`에 `board_id` 칸을 만들고 거기에 소속 글의 기본 키를 담습니다. 이 외래 키를 실제로 들고 있는 쪽, 즉 댓글이 이 관계의 연관관계 주인(Owner)입니다. 게시글 쪽은 외래 키를 갖지 않고, "이 관계는 댓글의 `board` 필드가 관리한다"고 표시만 해 둡니다. 이 표시가 `mappedBy`입니다.
+그런데 데이터베이스는 이 관계를 한 곳에만 저장합니다. 포스트잇에 "몇 번 글"이라고 적는 것처럼, `reply_tb`에 `board_id` 컬럼을 만들고 거기에 소속 글의 기본 키를 담습니다. 이 외래 키를 실제로 들고 있는 댓글이 이 관계의 연관관계 주인(Owner)입니다. 게시글은 외래 키를 갖지 않고, "이 관계는 댓글의 `board` 필드가 관리한다"고 표시만 해 둡니다. 이 표시가 `mappedBy`입니다.
 
 포스트잇 비유에는 하나가 더 있습니다. 글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 한다는 것입니다. 게시글을 지울 때 그 글에 달린 댓글이 데이터베이스에 그대로 남으면 주인 없는 댓글이 됩니다. 그래서 게시글을 지우면 딸린 댓글까지 함께 지워지도록 삭제를 댓글에 전이시킵니다. 이렇게 부모 엔티티의 작업을 자식 엔티티에 함께 적용하는 것을 영속성 전이(cascade)라고 합니다.
 
@@ -187,9 +187,9 @@ public class Reply {
 }
 ```
 
-댓글 하나는 누가 썼는지(`user`)와 어느 글에 달렸는지(`board`)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 `@ManyToOne`입니다. 여기서 `@JoinColumn(name = "board_id")`이 앞서 말한 그 표시입니다. `reply_tb`에 `board_id` 칸을 만들고 소속 글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 `fetch = FetchType.LAZY`는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 뒤에서 제대로 다룹니다.
+댓글 하나는 누가 썼는지(`user`)와 어느 글에 달렸는지(`board`)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 `@ManyToOne`입니다. 여기서 `@JoinColumn(name = "board_id")`이 앞서 말한 그 표시입니다. `reply_tb`에 `board_id` 컬럼을 만들고 소속 글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 `fetch = FetchType.LAZY`는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 뒤에서 제대로 다룹니다.
 
-이제 게시글 쪽에 반대 방향을 추가합니다. `board/Board.java`를 열고 TODO의 `pass`를 지우고 아래 필드를 작성합니다.
+이제 게시글에 반대 방향을 추가합니다. `board/Board.java`를 열고 아래 필드를 작성합니다.
 
 ```java [실습 1] board/Board.java. 댓글 목록 연관관계 추가
     // 이 관계의 주인은 Reply의 board 필드다. Board는 목록만 비춰 본다
@@ -199,11 +199,11 @@ public class Reply {
 
 게시글 하나에 댓글 여러 개가 달리므로 `@OneToMany`이고, `mappedBy = "board"`로 "이 관계의 주인은 `Reply`의 `board` 필드"라고 밝힙니다. 게시글은 외래 키를 갖지 않고 댓글의 `board_id`를 거꾸로 따라가 `replies`에 채우므로, 이 `replies`는 테이블 컬럼으로 생기지 않습니다. 뒤에 붙인 `cascade = CascadeType.REMOVE`가 영속성 전이여서, 게시글을 지우면 딸린 댓글까지 함께 지워집니다. `replies`를 `new ArrayList<>()`로 초기화하면 댓글이 없는 글도 빈 목록을 가집니다.
 
-## 5.2 댓글을 쓰고 지운다
+## 5.2 댓글 작성과 삭제
 
 ### 5.2.1 리포지토리와 DTO
 
-두 엔티티를 연관관계로 연결했으니, 이제 댓글을 실제로 쓰고 지우는 부분을 만듭니다. 구조는 게시글을 만들 때와 같아서, 리포지토리로 저장하고 서비스가 흐름을 맡고 컨트롤러가 요청을 받습니다.
+댓글을 쓰고 지우는 구조는 게시글을 만들 때와 같습니다. 리포지토리로 저장하고, 서비스가 흐름을 맡고, 컨트롤러가 요청을 받습니다.
 
 먼저 댓글을 저장하고 꺼내는 리포지토리입니다. `reply/ReplyRepository.java`를 열고 아래 코드를 작성합니다.
 
@@ -256,7 +256,7 @@ public class ReplyResponse {
 
 ### 5.2.2 서비스와 컨트롤러
 
-부품이 준비됐으니 서비스에 조립합니다. `reply/ReplyService.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+리포지토리와 DTO를 서비스에서 조립합니다. `reply/ReplyService.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 2] reply/ReplyService.java. 댓글 저장과 삭제
 @RequiredArgsConstructor
@@ -293,7 +293,7 @@ public class ReplyService {
 
 `댓글쓰기`는 `boardId`로 댓글을 달 글을 찾아, 없으면 `Exception404`를 던지고 있으면 `toEntity`로 로그인 유저와 그 글을 붙인 댓글을 만들어 저장합니다. `댓글삭제`는 대상이 글에서 댓글로 바뀌었을 뿐, 작성자 아이디를 견주는 소유자 검증은 4장과 똑같습니다.
 
-두 서비스를 바깥과 연결하는 컨트롤러를 만듭니다. `reply/ReplyController.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+두 서비스를 바깥과 연결하는 컨트롤러를 만듭니다. `reply/ReplyController.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 3] reply/ReplyController.java. 댓글 작성·삭제 엔드포인트
 @RequiredArgsConstructor
@@ -403,7 +403,7 @@ public class ReplyController {
 
 글의 `isOwner`가 `true`이고, `ssar`가 쓴 1·2번 댓글도 `true`, `cos`가 쓴 3번 댓글은 `false`입니다. 화면은 이 값만 보고 본인 것에만 삭제 버튼을 붙이면 됩니다.
 
-## 5.3 조회 한 번에 쿼리가 폭증한다
+## 5.3 지연 로딩과 1+N
 
 댓글까지 나가는 것을 확인하고 나면, 4장에서 켜 둔 `show-sql` 설정 덕에 콘솔에 찍히는 SQL이 눈에 들어옵니다. 글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.
 
@@ -434,7 +434,7 @@ public class ReplyController {
 
 다른 것은 `Board.user`의 어노테이션 상태뿐입니다. `findByIdEager_test`를 실행할 때는 방금 `LAZY`로 바꾼 작성자 필드를 잠시 `EAGER`로 되돌립니다. 이때 SQL 로그를 보면 `findById` 한 줄에 board와 user를 함께 조회하는 select가 나갑니다. 확인했으면 어노테이션을 다시 `LAZY`로 되돌리고 `findByIdLazy_test`를 실행합니다. 이번에는 같은 `findById`인데 board만 조회하는 select 한 줄만 나가고, 작성자는 프록시로 남아 로그에 나타나지 않습니다.
 
-여기까지는 쿼리가 오히려 줄어든 것처럼 보입니다. 문제는 미뤄 둔 작성자를 실제로 꺼낼 때 드러납니다. `LAZY` 상태에서 작성자 이름을 꺼내는 테스트를 하나 더 작성해 확인합니다. `test/board/BoardRepositoryTest.java`를 열고 TODO의 `pass`를 지우고 아래 코드를 작성합니다.
+여기까지는 쿼리가 오히려 줄어든 것처럼 보입니다. 문제는 미뤄 둔 작성자를 실제로 꺼낼 때 드러납니다. `LAZY` 상태에서 작성자 이름을 꺼내는 테스트를 하나 더 작성해 확인합니다. `test/board/BoardRepositoryTest.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 7] test/board/BoardRepositoryTest.java. 프록시가 추가 쿼리를 부른다
     @Test
@@ -487,13 +487,13 @@ public class ReplyController {
 
 그림의 오른쪽 해법이 눈에 들어옵니다. 작성자를 나중에 따로 가져오지 말고 글을 조회할 때 아예 함께 묶어 가져오면 쿼리는 한 번으로 끝납니다. 이 방법이 다음 절의 fetch join입니다.
 
-## 5.4 fetch join으로 해결
+## 5.4 fetch join
 
 작성자를 글과 함께 묶어 가져오는 조회는 이미 있습니다. 앞 장에서 `findByIdJoinUser`를 만들어 게시글 상세와 수정, 삭제에 썼습니다. 그때는 "작성자를 함께 가져오는 조회"라는 이름으로만 쓰고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, 그 메서드의 JPQL이 `select b from Board b join fetch b.user where b.id = :id`였습니다.
 
 핵심은 `join fetch b.user`입니다. 지연 로딩에서는 글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, `join fetch`는 글을 조회하는 그 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 글은 작성자가 이미 채워져 있어, `getUser().getUsername()`을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 앞 장에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.
 
-댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 쓰고 넘어갔던 `findByIdJoinUserAndReply`입니다. `board/BoardRepository.java`를 열고 TODO의 `pass`를 지우고 아래 메서드를 작성합니다.
+댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 쓰고 넘어갔던 `findByIdJoinUserAndReply`입니다. `board/BoardRepository.java`를 열고 아래 메서드를 작성합니다.
 
 ```java [실습 8] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     public Optional<Board> findByIdJoinUserAndReply(int boardId) {
