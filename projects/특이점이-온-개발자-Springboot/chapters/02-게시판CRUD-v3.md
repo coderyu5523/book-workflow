@@ -474,30 +474,26 @@ public class Board {
 
 엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터의 조회·저장·수정·삭제를 담당하는 계층입니다.
 
-리포지토리가 그 일에 쓰는 도구가 `EntityManager`입니다. JPA에서 데이터베이스 작업을 총괄하는 객체로, 개발자가 객체로 요청하면 `EntityManager`가 SQL로 바꿔 데이터베이스에 전하고 돌아온 결과를 다시 객체로 만들어 돌려줍니다.
-
-`EntityManager`는 스프링이 빈으로 등록해 두므로 직접 만들지 않고 주입받아 씁니다. 앞 챕터에서 개념만 짚었던 의존성 주입이 여기서 실제로 일어납니다. `@RequiredArgsConstructor`가 `final` 필드를 받는 생성자를 대신 만들고, 스프링이 그 생성자로 `EntityManager`를 넣어 줍니다.
+리포지토리가 그 일에 쓰는 도구가 `EntityManager`입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 씁니다. 앞 챕터에서 개념만 짚었던 의존성 주입이 여기서 실제로 일어납니다.
 
 `board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 2] board/BoardRepository.java. 리포지토리 골격
 @RequiredArgsConstructor
-@Repository // 스프링이 빈으로 등록하고, 생성자로 EntityManager를 주입한다
+@Repository // 스프링이 빈으로 등록한다
 public class BoardRepository {
 
-    private final EntityManager em;
+    private final EntityManager em; // 의존성 주입
 
     // 아래 절에서 메서드를 하나씩 채운다
 }
 ```
 
-게시판에 필요한 메서드는 한 건 조회, 전체 조회, 저장, 삭제 네 가지입니다. 하나씩 채워 나갑니다.
-
 `application.properties`에 `spring.jpa.show-sql=true`가 켜져 있어, 메서드를 실행하면 하이버네이트가 만든 SQL이 콘솔에 그대로 찍힙니다. 각 메서드가 어떤 질의로 번역되는지 함께 보겠습니다.
 
-### 2.5.1 한 건 조회
+### 2.5.1 게시글 한 건 조회
 
-`em.find`는 기본 키(PK)로 엔티티 한 건을 조회하는 메서드입니다. 첫 번째 인자로 어떤 엔티티를 찾을지 클래스 타입을 넘기고, 두 번째 인자로 찾을 기본 키 값을 넘깁니다. 결과는 `Board` 엔티티 하나로 돌아옵니다.
+`EntityManager`의 `find` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 어떤 엔티티를 찾을지 클래스 타입을 넘기고, 두 번째 인자로 찾을 기본 키 값을 넘깁니다. 결과는 `Board` 엔티티 하나로 돌아옵니다.
 
 `board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
 
@@ -507,15 +503,15 @@ public class BoardRepository {
     }
 ```
 
-데이터베이스에 전달되는 질의는 기본 키 하나로 행을 골라내는 select 문입니다.
+`find` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
 
 ```sql
 select id, title, content, created_at from board_tb where id = ?
 ```
 
-### 2.5.2 전체 조회
+### 2.5.2 게시글 전체 조회
 
-전체 조회에는 기준으로 삼을 기본 키가 없으니 `em.find`를 쓸 수 없습니다. 대신 질의를 직접 적어 넘기는데, 이때 쓰는 언어가 JPQL(Java Persistence Query Language)입니다. 테이블이 아니라 엔티티를 기준으로 쓰는 JPA의 질의 언어라 `board_tb`가 아니라 `Board`를 대상으로 삼습니다. 결과는 여러 건이므로 `List`로 받습니다.
+전체 조회에는 기준으로 삼을 기본 키가 없으니 `find`를 쓸 수 없습니다. 대신 질의를 직접 적어 넘기는데, 이때 쓰는 언어가 JPQL(Java Persistence Query Language)입니다. 테이블이 아니라 엔티티를 기준으로 쓰는 JPA의 질의 언어라 `board_tb`가 아니라 `Board`를 대상으로 삼습니다. 결과는 여러 건이므로 `List`로 받습니다.
 
 ```java [실습 4] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
@@ -523,7 +519,7 @@ select id, title, content, created_at from board_tb where id = ?
     }
 ```
 
-`em.createQuery`에 JPQL 문자열과 결과 타입을 넘겨 질의를 만들고, `getResultList`로 실행합니다. 하이버네이트는 이 JPQL을 아래 SQL로 번역합니다. 엔티티 이름 `Board`가 실제 테이블 이름 `board_tb`로 바뀝니다.
+`createQuery`에 JPQL 문자열과 결과 타입을 넘겨 질의를 만들고, `getResultList`로 실행합니다. 하이버네이트는 이 JPQL을 아래 SQL로 번역합니다.
 
 ```sql
 select id, title, content, created_at from board_tb
@@ -531,9 +527,9 @@ select id, title, content, created_at from board_tb
 
 JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따로 정리합니다.
 
-### 2.5.3 저장
+### 2.5.3 게시글 저장
 
-`em.persist`는 새로 만든 엔티티를 JPA의 관리 대상으로 등록하는 메서드입니다. 등록된 뒤에는 원본 엔티티 객체에 기본 키가 채워집니다. `Board`의 기본 키는 `@GeneratedValue(IDENTITY)`로 데이터베이스가 매기므로, 그 값을 받아 와 객체에 넣어 줍니다.
+`persist` 메서드는 새로 만든 엔티티를 데이터베이스에 저장합니다.
 
 ```java [실습 5] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
@@ -541,15 +537,15 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
     }
 ```
 
-기본 키를 데이터베이스가 채우므로, 질의에는 나머지 세 컬럼만 담깁니다.
+`persist`가 데이터베이스에 전달하는 질의는 다음과 같습니다.
 
 ```sql
 insert into board_tb (title, content, created_at) values (?, ?, ?)
 ```
 
-### 2.5.4 삭제
+### 2.5.4 게시글 삭제
 
-`em.remove`는 엔티티를 삭제 대상으로 표시하는 메서드입니다. 인자로 받는 것이 기본 키가 아니라 엔티티라서, 지우려면 `findById`로 먼저 조회해 가져와야 합니다.
+`remove` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다. 인자로 엔티티를 받으므로, 지울 글을 `findById`로 먼저 조회해 와야 합니다.
 
 ```java [실습 6] board/BoardRepository.java. 게시글 삭제
     public void delete(Board board) {
@@ -557,7 +553,7 @@ insert into board_tb (title, content, created_at) values (?, ?, ?)
     }
 ```
 
-넘긴 엔티티의 기본 키를 조건으로 삼은 delete 문이 나갑니다.
+`remove`가 만드는 질의는 다음과 같습니다.
 
 ```sql
 delete from board_tb where id = ?
@@ -567,7 +563,7 @@ delete from board_tb where id = ?
 
 ## 2.6 JPQL
 
-JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 쓴 `em.persist`를 씁니다.
+JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 쓴 `persist`를 씁니다.
 
 기본 형태는 테이블 이름 자리에 엔티티 이름을 넣고, 별칭을 붙여 그 별칭으로 대상을 가리키는 것입니다. 전체 조회에 쓴 질의가 이 형태입니다.
 
@@ -595,7 +591,7 @@ update Board b set b.title = '제목 수정' where b.id = :id
 delete from Board b where b.id = :id
 ```
 
-작성한 JPQL은 `em.createQuery`에 넘겨 실행합니다. 파라미터가 있으면 `setParameter`로 값을 채운 뒤, 결과가 여러 건이면 `getResultList`로, 한 건이면 `getSingleResult`로 받습니다.
+작성한 JPQL은 `createQuery`에 넘겨 실행합니다. 파라미터가 있으면 `setParameter`로 값을 채운 뒤, 결과가 여러 건이면 `getResultList`로, 한 건이면 `getSingleResult`로 받습니다.
 
 ```java
 em.createQuery("select b from Board b where b.id = :id", Board.class)
@@ -603,11 +599,11 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
   .getResultList();
 ```
 
-기본 키로 한 건을 찾는 일은 `em.find`가 맡으므로, 이 프로젝트에서 JPQL을 쓰는 곳은 전체 조회 하나입니다. 나머지 문법은 조건이 붙는 조회가 필요해지는 뒤 챕터에서 다시 꺼내 씁니다.
+기본 키로 한 건을 찾는 일은 `find`가 맡으므로, 이 프로젝트에서 JPQL을 쓰는 곳은 전체 조회 하나입니다. 나머지 문법은 조건이 붙는 조회가 필요해지는 뒤 챕터에서 다시 꺼내 씁니다.
 
 ## 2.7 영속성 컨텍스트
 
-리포지토리 코드를 보면 `em.persist`나 `em.find`를 호출할 뿐, 데이터베이스에 직접 SQL을 던지는 부분이 없습니다. `EntityManager`가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. `em.persist`나 `em.find`로 엔티티가 등록되거나 조회되는 순간, 그 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
+리포지토리 코드를 보면 `persist`나 `find`를 호출할 뿐, 데이터베이스에 직접 SQL을 던지는 부분이 없습니다. `EntityManager`가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. `persist`나 `find`로 엔티티가 등록되거나 조회되는 순간, 그 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
 
 영속성 컨텍스트가 하는 일은 크게 세 가지입니다. 하나씩 그림으로 따라가 보겠습니다.
 
@@ -661,7 +657,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ### 2.7.2 쓰기 지연
 
-쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `em.persist`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush` 시점에 만들어진 순서대로 한꺼번에 나갑니다.
+쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `persist`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush` 시점에 만들어진 순서대로 한꺼번에 나갑니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 em.persist로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
@@ -697,12 +693,12 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 :::tip
 **IDENTITY 전략에서는 insert가 즉시 나갑니다**
 
-일반적으로는 insert도 버퍼에 모였다가 flush 시점에 나갑니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `em.persist`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연이 뚜렷하게 드러나는 것은 수정과 삭제입니다.
+일반적으로는 insert도 버퍼에 모였다가 flush 시점에 나갑니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `persist`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연이 뚜렷하게 드러나는 것은 수정과 삭제입니다.
 :::
 
 ### 2.7.3 더티체킹
 
-더티체킹은 조회하던 시점의 상태와 지금 상태를 견주어 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `em.find`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 그 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문 역시 `flush` 시점에 데이터베이스로 나갑니다. 개발자가 저장 명령을 따로 내리지 않아도, 값을 바꾸기만 하면 변경이 감지됩니다.
+더티체킹은 조회하던 시점의 상태와 지금 상태를 견주어 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 그 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문 역시 `flush` 시점에 데이터베이스로 나갑니다. 개발자가 저장 명령을 따로 내리지 않아도, 값을 바꾸기만 하면 변경이 감지됩니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 960 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 더티체킹. em.find로 조회한 board가 영속화되면서 조회 당시 상태가 스냅샷으로 찍힌다. 이후 setTitle로 값을 바꾸면 board가 달라지고, 영속성 컨텍스트는 스냅샷과 현재를 비교해 변경을 감지한 뒤 update 문을 버퍼에 만든다. flush 시점에 update 문이 DB로 전송되어 반영된다.">
@@ -1133,7 +1129,7 @@ public class BoardRepositoryTest {
     }
 ```
 
-수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `em.flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `em.clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 그 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
+수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 그 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
 
 ```java [실습 16] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
@@ -1152,7 +1148,7 @@ public class BoardRepositoryTest {
     }
 ```
 
-삭제는 지울 엔티티를 먼저 조회해 준비합니다. `em.remove`는 삭제 대상으로 표시만 하므로, `em.flush()`까지 호출해야 delete 문이 데이터베이스로 나갑니다. 남은 개수가 하나면 지워진 것입니다.
+삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 데이터베이스로 나갑니다. 남은 개수가 하나면 지워진 것입니다.
 
 ```java [실습 17] BoardRepositoryTest.java. 삭제
     @Test

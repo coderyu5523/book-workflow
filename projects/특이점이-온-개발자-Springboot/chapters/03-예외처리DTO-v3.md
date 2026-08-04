@@ -239,7 +239,7 @@ public class Board {
     }
 ```
 
-`Optional.ofNullable`은 넘긴 값이 `null`이면 빈 `Optional`을, 값이 있으면 그 값을 담은 `Optional`을 만듭니다. `em.find`는 없는 기본 키로 조회하면 `null`을 돌려주므로, 그 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.
+`Optional.ofNullable`은 넘긴 값이 `null`이면 빈 `Optional`을, 값이 있으면 그 값을 담은 `Optional`을 만듭니다. `find`는 없는 기본 키로 조회하면 `null`을 돌려주므로, 그 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.
 
 ### 3.3.1 상자를 여는 세 가지 방법
 

@@ -229,7 +229,7 @@
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Optional</span><span class="p">.</span><span class="na">ofNullable</span><span class="p">(</span><span class="n">em</span><span class="p">.</span><span class="na">find</span><span class="p">(</span><span class="n">Board</span><span class="p">.</span><span class="na">class</span><span class="p">,</span><span class="w"> </span><span class="n">boardId</span><span class="p">));</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>Optional.ofNullable</code>은 넘긴 값이 <code>null</code>이면 빈 <code>Optional</code>을, 값이 있으면 그 값을 담은 <code>Optional</code>을 만듭니다. <code>em.find</code>는 없는 기본 키로 조회하면 <code>null</code>을 돌려주므로, 그 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.</p>
+<p><code>Optional.ofNullable</code>은 넘긴 값이 <code>null</code>이면 빈 <code>Optional</code>을, 값이 있으면 그 값을 담은 <code>Optional</code>을 만듭니다. <code>find</code>는 없는 기본 키로 조회하면 <code>null</code>을 돌려주므로, 그 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.</p>
 <h3>3.3.1 상자를 여는 세 가지 방법</h3>
 <p>담았으면 꺼내야 합니다. <code>Optional</code>에서 값을 꺼내는 방법은 세 가지인데, 상자가 비어 있을 때의 처리가 각각 다릅니다.</p>
 <table>
