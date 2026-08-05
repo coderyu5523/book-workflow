@@ -265,7 +265,7 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 
 주소에는 확장자를 포함하지 않습니다. 대신 헤더에 타입을 포함합니다.
 
-## 2.2 스프링 부트
+## 2.2 프로젝트 생성과 구조
 
 앞에서 옮겨 온 `ch02`는 스프링 부트 프로젝트입니다. 스프링 부트는 스프링을 쓰는 데 필요한 것들을 미리 묶어 둔 도구로, 서버를 붙이고 설정을 맞추는 일을 대신 해 줍니다. 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.
 
@@ -329,11 +329,44 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 
 *그림 2-12. 생성된 스프링 부트 프로젝트의 구조입니다*
 
-## 2.3 객체와 테이블
+## 2.3 데이터베이스 설정과 엔티티
+
+가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.
+
+`board/Board.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 1] board/Board.java. 게시글 엔티티
+@Data // 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다
+@Entity
+@Table(name = "board_tb") // 이 클래스를 board_tb 테이블에 매핑한다
+public class Board {
+    @Id // 기본 키. DB가 자동으로 1씩 증가시켜 채운다
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String title;
+    private String content;
+
+    @CreationTimestamp // 저장 시점의 현재 시간을 자동으로 기록한다
+    private Timestamp createdAt;
+}
+```
+
+애플리케이션이 뜰 때 하이버네이트가 이 클래스 정의를 바탕으로 `board_tb` 테이블을 만듭니다.
+
+:::tip
+**필드는 카멜, 컬럼은 스네이크로 만들어집니다**
+
+엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
+:::
+
+이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 씁니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다.
+
+## 2.4 하이버네이트
 
 앞에서 고른 의존성 가운데 Spring Data JPA는 객체와 테이블을 이어 주는 기술입니다. 이어 준다는 말이 나온 이상, 둘이 왜 떨어져 있는지부터 봐야 합니다. 자바의 객체(Object)와 데이터베이스의 테이블(Table)은 데이터를 담는 방식이 처음부터 다릅니다.
 
-### 2.3.1 데이터를 담는 방식의 차이
+### 2.4.1 데이터를 담는 방식의 차이
 
 데이터베이스는 데이터를 정확하게 보관하고 빠르게 찾기 위해 만들어졌습니다. 모든 데이터를 행(Row)과 열(Column)로 이루어진 표에 값으로만 담고, 한 칸에는 값 하나만 넣습니다. 다른 표를 가리켜야 할 때도 표 안에 표를 넣지 않고 외래 키(Foreign Key)라는 값을 공유합니다.
 
@@ -391,9 +424,60 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 
 *그림 2-13. 데이터베이스는 한 칸에 값 하나만 담지만, 자바 객체는 다른 객체와 컬렉션도 필드로 가집니다*
 
+이 차이가 가장 잘 드러나는 예가 햄버거 세트입니다. 자바에서는 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 품습니다. 세트 하나만 들고 다니면 그 안의 내용물에 바로 닿습니다. 데이터베이스는 세트라는 상자 안에 다른 음식을 집어넣지 못합니다. 햄버거, 콜라, 감자 표를 각각 만들고 외래 키로 "우리는 같은 세트"라고 연결해 둘 뿐입니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 자바 객체 세상에서는 햄버거 세트 객체가 햄버거와 콜라와 감자를 필드로 품는다. 오른쪽 데이터베이스 테이블 세상에서는 햄버거 표와 콜라 표와 감자 표가 따로 있고 햄버거 세트 표를 외래 키로 참조한다. 가운데 하이버네이트가 두 세상을 일치시킨다.">
+  <defs>
+    <marker id="c2hb-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="170" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">자바 - 객체 세상</text>
+  <rect x="20" y="42" width="300" height="240" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <rect x="70" y="64" width="200" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="170" y="89" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">햄버거 세트 객체</text>
+  <line x1="170" y1="104" x2="170" y2="136" stroke="#475569" stroke-width="1.6" marker-end="url(#c2hb-a)"/>
+  <text x="170" y="128" text-anchor="middle" font-size="10" fill="#64748b">필드로 품는다</text>
+  <rect x="44" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="82" y="177" text-anchor="middle" font-size="11" fill="#475569">햄버거</text>
+  <rect x="132" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="170" y="177" text-anchor="middle" font-size="11" fill="#475569">콜라</text>
+  <rect x="220" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="258" y="177" text-anchor="middle" font-size="11" fill="#475569">감자</text>
+  <text x="170" y="234" text-anchor="middle" font-size="11" fill="#64748b">세트 하나만 들면</text>
+  <text x="170" y="252" text-anchor="middle" font-size="11" fill="#64748b">안의 내용물에 바로 닿습니다</text>
+
+  <rect x="356" y="128" width="168" height="66" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="440" y="155" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">하이버네이트</text>
+  <text x="440" y="176" text-anchor="middle" font-size="11" fill="#475569">중간에서 일치시킵니다</text>
+  <line x1="322" y1="161" x2="354" y2="161" stroke="#475569" stroke-width="1.6"/>
+  <line x1="526" y1="161" x2="558" y2="161" stroke="#475569" stroke-width="1.6"/>
+
+  <text x="730" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">데이터베이스 - 테이블 세상</text>
+  <rect x="560" y="42" width="320" height="240" rx="10" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <rect x="582" y="64" width="86" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="625" y="89" text-anchor="middle" font-size="11" fill="#334155">햄버거 표</text>
+  <rect x="688" y="64" width="86" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="731" y="89" text-anchor="middle" font-size="11" fill="#334155">콜라 표</text>
+  <rect x="794" y="64" width="66" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="827" y="89" text-anchor="middle" font-size="11" fill="#334155">감자 표</text>
+  <path d="M625,104 L625,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <path d="M731,104 L731,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <path d="M827,104 L827,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="600" y="128" font-size="10" fill="#64748b">외래 키</text>
+  <text x="706" y="128" font-size="10" fill="#64748b">외래 키</text>
+  <text x="802" y="128" font-size="10" fill="#64748b">외래 키</text>
+  <rect x="596" y="150" width="264" height="44" rx="6" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="728" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">햄버거 세트 표</text>
+  <text x="728" y="234" text-anchor="middle" font-size="11" fill="#64748b">표 안에 표를 넣지 못하므로</text>
+  <text x="728" y="252" text-anchor="middle" font-size="11" fill="#64748b">외래 키로 연결만 해 둡니다</text>
+</svg>
+</div>
+
+*그림 2-14. 자바는 세트 객체가 내용물을 품지만, 데이터베이스는 표를 따로 두고 외래 키로 연결합니다*
+
 이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.
 
-### 2.3.2 직접 SQL을 쓰던 방식
+### 2.4.2 직접 SQL을 쓰던 방식
 
 쪼개고 모으는 일을 대신해 주는 기술이 없을 때는 개발자가 직접 했습니다. 데이터를 저장하거나 조회할 때마다 SQL을 작성하고, 돌아온 결과를 한 칸씩 꺼내 객체에 채워 넣었습니다.
 
@@ -403,7 +487,7 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 - 실제 기능을 짜는 시간보다 조회 결과를 객체에 옮겨 담는 시간이 더 길었습니다.
 - 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.
 
-### 2.3.3 ORM과 JPA, 하이버네이트
+### 2.4.3 ORM과 JPA, 하이버네이트
 
 이 소모적인 번역을 대신해 주는 기술이 ORM입니다. 개발자는 객체만 다루고, 객체와 표 사이를 오가는 SQL은 ORM이 만듭니다. 자바 진영은 ORM을 JPA라는 표준으로 정리했고, 하이버네이트가 JPA를 구현한 대표적인 엔진입니다.
 
@@ -427,7 +511,7 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 </svg>
 </div>
 
-*그림 2-14. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다*
+*그림 2-15. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다*
 
 우리가 프로젝트에 추가한 Spring Data JPA 의존성 내부에는 이 하이버네이트가 포함되어 있어, 복잡한 설정이나 반복적인 SQL 작성 없이도 객체와 데이터베이스를 쉽게 연결할 수 있습니다.
 
@@ -437,40 +521,7 @@ REST API가 왜 지금의 방식이 됐는지 잠깐 거슬러 올라가 보겠�
 | JPA(Java Persistence API) | 자바 진영에서 정한 ORM 기술의 표준 규칙(인터페이스)입니다 |
 | 하이버네이트(Hibernate) | JPA라는 규칙을 실제 코드로 구현해 작동하게 만든 대표적인 엔진입니다 |
 
-## 2.4 엔티티와 데이터베이스 설정
-
-가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.
-
-`board/Board.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 1] board/Board.java. 게시글 엔티티
-@Data // 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다
-@Entity
-@Table(name = "board_tb") // 이 클래스를 board_tb 테이블에 매핑한다
-public class Board {
-    @Id // 기본 키. DB가 자동으로 1씩 증가시켜 채운다
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
-    private String title;
-    private String content;
-
-    @CreationTimestamp // 저장 시점의 현재 시간을 자동으로 기록한다
-    private Timestamp createdAt;
-}
-```
-
-애플리케이션이 뜰 때 하이버네이트가 이 클래스 정의를 바탕으로 `board_tb` 테이블을 만듭니다.
-
-:::tip
-**필드는 카멜, 컬럼은 스네이크로 만들어집니다**
-
-엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
-:::
-
-이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 씁니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다.
-
-## 2.5 리포지토리와 EntityManager
+## 2.5 리포지토리의 다섯 기능
 
 엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 두는 계층입니다.
 
@@ -541,7 +592,11 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
 insert into board_tb (title, content, created_at) values (?, ?, ?)
 ```
 
-### 2.5.4 게시글 삭제
+### 2.5.4 게시글 수정
+
+게시글 수정은 메서드를 만들지 않습니다. JPA는 값을 바꿔 저장하라고 지시하는 메서드를 따로 두지 않기 때문입니다. 조회해 온 엔티티의 값을 바꾸는 것만으로 수정이 이뤄지는데, 어떻게 그렇게 되는지는 영속성 컨텍스트를 다루며 확인합니다.
+
+### 2.5.5 게시글 삭제
 
 `remove` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다.
 
@@ -606,48 +661,61 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 담아 두고, 같은 엔티티를 다시 찾으면 데이터베이스까지 가지 않고 영속성 컨텍스트에서 바로 돌려주는 동작입니다. 그래서 같은 글을 두 번 조회해도 select 문은 한 번만 실행됩니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 940 440" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 캐싱. 위쪽은 처음 조회. 리포지토리가 em.find를 부르면 영속성 컨텍스트는 캐시에 없어(miss) select SQL로 DB에서 읽어 와 영속화한 뒤 엔티티를 돌려준다. 아래쪽은 같은 글을 다시 조회. 이번엔 캐시에 있어서(hit) DB에 가지 않고 영속성 컨텍스트가 바로 돌려준다.">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 없는 첫 조회. 리포지토리가 em.find를 부르면 영속성 컨텍스트는 캐시 miss 상태라 select SQL로 데이터베이스에서 읽어 오고, 읽어 온 board를 영속화한 뒤 리포지토리에 엔티티를 돌려준다.">
   <defs>
-    <marker id="c2cache-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2cache-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="c2c1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="120" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="470" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="820" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
-  <text x="60" y="62" font-size="12" font-weight="800" fill="#4f46e5">① 처음 조회 - 캐시에 없음 (miss)</text>
-  <rect x="40" y="74" width="160" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <rect x="380" y="74" width="180" height="120" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="470" y="100" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">캐시 miss</text>
-  <rect x="392" y="118" width="156" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="470" y="143" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1) 영속화</text>
-  <rect x="740" y="74" width="160" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="820" y="128" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
-  <text x="820" y="150" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
-  <line x1="200" y1="108" x2="378" y2="108" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2cache-a)"/>
-  <text x="289" y="100" text-anchor="middle" font-size="10" fill="#4f46e5">1. em.find()</text>
-  <line x1="560" y1="108" x2="738" y2="108" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2cache-a)"/>
-  <text x="649" y="100" text-anchor="middle" font-size="10" fill="#4f46e5">2. select SQL</text>
-  <line x1="738" y1="150" x2="562" y2="150" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2cache-b)"/>
-  <text x="649" y="170" text-anchor="middle" font-size="10" fill="#6b7280">3. 영속화</text>
-  <line x1="378" y1="176" x2="202" y2="176" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2cache-b)"/>
-  <text x="289" y="196" text-anchor="middle" font-size="10" fill="#6b7280">4. 엔티티 반환</text>
-  <text x="60" y="256" font-size="12" font-weight="800" fill="#4f46e5">② 같은 글 다시 조회 - 캐시 적중 (hit)</text>
-  <rect x="40" y="268" width="160" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <rect x="380" y="268" width="180" height="120" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="470" y="294" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">캐시 hit</text>
-  <rect x="392" y="312" width="156" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="470" y="337" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1) 그대로</text>
-  <rect x="740" y="268" width="160" height="120" rx="8" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5,4"/>
-  <text x="820" y="324" text-anchor="middle" font-size="11" fill="#94a3b8">접근하지 않음</text>
-  <text x="820" y="344" text-anchor="middle" font-size="10" fill="#94a3b8">SQL 실행 없음</text>
-  <line x1="200" y1="302" x2="378" y2="302" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2cache-a)"/>
-  <text x="289" y="294" text-anchor="middle" font-size="10" fill="#4f46e5">em.find()</text>
-  <line x1="378" y1="360" x2="202" y2="360" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2cache-b)"/>
-  <text x="289" y="380" text-anchor="middle" font-size="10" fill="#6b7280">캐시에서 바로 반환</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="330" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">캐시 miss</text>
+  <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="107" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="10.5" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2, 내용2)</text>
+  <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
+  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
+  <text x="469" y="62" text-anchor="middle" font-size="10" fill="#475569">2. select SQL</text>
+  <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c1-a)"/>
+  <text x="470" y="122" text-anchor="middle" font-size="10" fill="#64748b">3. 영속화</text>
+  <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c1-a)"/>
+  <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">4. 엔티티 반환</text>
 </svg>
 </div>
 
-*그림 2-15. 처음 조회는 캐시에 없어 DB까지 가지만, 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 SQL이 다시 실행되지 않습니다*
+*그림 2-16. 처음 조회는 캐시에 없어 데이터베이스까지 가서 읽어 온 뒤 영속화합니다*
+
+같은 글을 한 번 더 조회하면 데이터베이스에 가지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 돌려줍니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 글을 다시 em.find로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려주고 데이터베이스에는 접근하지 않는다.">
+  <defs>
+    <marker id="c2c2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5,4"/>
+  <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="107" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="100" text-anchor="middle" font-size="10.5" fill="#94a3b8">접근하지 않음</text>
+  <text x="580" y="120" text-anchor="middle" font-size="10" fill="#94a3b8">SQL 실행 없음</text>
+  <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c2-a)"/>
+  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c2-a)"/>
+  <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">2. 캐싱</text>
+</svg>
+</div>
+
+*그림 2-17. 같은 글을 다시 조회하면 캐시에서 바로 돌려주어 select 문이 다시 실행되지 않습니다*
 
 ### 2.7.2 쓰기 지연
 
@@ -682,7 +750,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-16. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다*
+*그림 2-18. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다*
 
 :::tip
 **IDENTITY 전략에서는 insert가 즉시 나갑니다**
@@ -695,285 +763,77 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 더티체킹은 조회하던 시점의 상태와 지금 상태를 견주어 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문 역시 `flush` 시점에 데이터베이스로 나갑니다. 개발자가 저장 명령을 따로 내리지 않아도, 값을 바꾸기만 하면 변경이 감지됩니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 960 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 더티체킹. em.find로 조회한 board가 영속화되면서 조회 당시 상태가 스냅샷으로 찍힌다. 이후 setTitle로 값을 바꾸면 board가 달라지고, 영속성 컨텍스트는 스냅샷과 현재를 비교해 변경을 감지한 뒤 update 문을 버퍼에 만든다. flush 시점에 update 문이 DB로 전송되어 반영된다.">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 em.find로 수정할 게시글을 조회하면 데이터베이스에서 읽어 온 board가 영속화되고, 영속성 컨텍스트는 조회 당시 상태를 스냅샷으로 함께 보관한다.">
   <defs>
-    <marker id="c2dc-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2dc-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="c2d1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="480" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="850" y="30" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
-  <rect x="60" y="48" width="640" height="290" rx="10" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="110" y="70" width="180" height="44" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="200" y="90" text-anchor="middle" font-size="10" fill="#94a3b8">스냅샷 (조회 당시)</text>
-  <text x="200" y="106" text-anchor="middle" font-size="11" fill="#475569">board(제목1, 내용1)</text>
-  <rect x="110" y="140" width="180" height="44" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
-  <text x="200" y="160" text-anchor="middle" font-size="10" fill="#3730a3">영속 엔티티 (현재)</text>
-  <text x="200" y="176" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1, 내용1)</text>
-  <line x1="200" y1="114" x2="200" y2="138" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2dc-a)"/>
-  <text x="200" y="132" text-anchor="middle" font-size="9" fill="#4f46e5">1. setTitle로 값 변경</text>
-  <rect x="380" y="105" width="150" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="455" y="130" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">변경 감지</text>
-  <text x="455" y="150" text-anchor="middle" font-size="10" fill="#475569">스냅샷과 비교</text>
-  <line x1="290" y1="135" x2="378" y2="135" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2dc-a)"/>
-  <text x="334" y="126" text-anchor="middle" font-size="9" fill="#4f46e5">2. 감지</text>
-  <rect x="560" y="200" width="120" height="46" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="620" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">update SQL</text>
-  <text x="620" y="238" text-anchor="middle" font-size="10" fill="#6b7280">버퍼</text>
-  <line x1="455" y1="165" x2="600" y2="198" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2dc-a)"/>
-  <text x="470" y="192" text-anchor="middle" font-size="9" fill="#4f46e5">3. update 문 저장</text>
-  <rect x="770" y="130" width="160" height="130" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="850" y="188" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1)</text>
-  <text x="850" y="210" text-anchor="middle" font-size="11" fill="#334155">board(제목2)</text>
-  <line x1="680" y1="223" x2="768" y2="200" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2dc-a)"/>
-  <text x="724" y="240" text-anchor="middle" font-size="9" fill="#4f46e5">4. flush</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="256" y="58" width="148" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
+  <text x="330" y="79" text-anchor="middle" font-size="10.5" fill="#475569">board(제목1, 내용1)</text>
+  <text x="330" y="104" text-anchor="middle" font-size="10" fill="#64748b">스냅샷</text>
+  <rect x="256" y="116" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="137" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="166" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="10.5" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2, 내용2)</text>
+  <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
+  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2d1-a)"/>
+  <text x="470" y="122" text-anchor="middle" font-size="10" fill="#64748b">2. 영속화</text>
 </svg>
 </div>
 
-*그림 2-17. 조회 당시 상태를 스냅샷으로 찍어 두고, 값이 바뀌면 차이를 감지해 UPDATE 문을 만든 뒤 flush 시점에 데이터베이스에 반영합니다*
+*그림 2-19. 조회한 엔티티가 영속화되면서 조회 당시 상태가 스냅샷으로 함께 보관됩니다*
+
+영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush` 시점에 데이터베이스로 내보냅니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속 엔티티의 제목을 바꾸면 스냅샷과 달라져 변경이 감지되고, update 문이 버퍼에 쌓였다가 em.flush 시점에 데이터베이스로 전송되어 반영된다.">
+  <defs>
+    <marker id="c2d2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="40" y="36" width="380" height="176" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="60" y="56" width="150" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
+  <text x="135" y="77" text-anchor="middle" font-size="10.5" fill="#475569">board(제목1, 내용1)</text>
+  <text x="135" y="102" text-anchor="middle" font-size="10" fill="#64748b">스냅샷</text>
+  <rect x="60" y="118" width="150" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="135" y="139" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목수정1, 내용1)</text>
+  <text x="135" y="164" text-anchor="middle" font-size="10" fill="#64748b">3. 데이터 수정</text>
+  <line x1="228" y1="110" x2="268" y2="110" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="248" y="100" text-anchor="middle" font-size="10" fill="#475569">비교</text>
+  <rect x="276" y="88" width="126" height="44" rx="7" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="339" y="115" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">변경 감지</text>
+  <rect x="276" y="152" width="126" height="40" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="339" y="171" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">update SQL</text>
+  <text x="339" y="186" text-anchor="middle" font-size="10" fill="#64748b">버퍼</text>
+  <line x1="339" y1="132" x2="339" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="410" y="146" text-anchor="middle" font-size="10" fill="#475569">4. 버퍼에 저장</text>
+  <rect x="520" y="60" width="120" height="120" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="580" y="112" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목수정1)</text>
+  <text x="580" y="134" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2)</text>
+  <line x1="402" y1="172" x2="518" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="462" y="192" text-anchor="middle" font-size="10" fill="#475569">5. em.flush()</text>
+</svg>
+</div>
+
+*그림 2-20. 값이 바뀌면 스냅샷과 비교해 변경을 감지하고, update 문이 flush 시점에 데이터베이스로 전송됩니다*
 
 쓰기 지연과 더티체킹이 만든 SQL은 `flush` 시점에 데이터베이스로 나갑니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 `@Transactional`이 끝날 때 자동으로 호출됩니다.
 
 리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.
 
-## 2.8 서비스와 컨트롤러
-
-리포지토리가 데이터베이스를 다루고, 리포지토리를 언제 어떻게 호출할지는 서비스가 정하며, 바깥의 요청을 받아 서비스로 넘기는 것이 컨트롤러입니다. 도입부의 그림 2-1에서 본 세 층이 이 구조이며, 이렇게 나눈 것을 3계층 아키텍처라고 합니다.
-
-한 클래스에 요청을 받는 일과 데이터를 저장하는 일을 모두 넣어도 게시판은 동작합니다. 문제는 고칠 때 드러납니다. 주소를 바꿀 일과 저장 방식을 바꿀 일이 한자리에 섞여 있으면, 한쪽을 손볼 때마다 다른 쪽까지 함께 들여다봐야 합니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="칸막이가 없는 창고 한 칸에 요청을 다루는 물건과 저장을 다루는 물건이 기울어진 채 뒤섞여 쌓여 있다.">
-  <path d="M46,64 L260,18 L474,64" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="60" y="64" width="400" height="200" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <g transform="rotate(-9 130 122)">
-    <rect x="95" y="97" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-    <text x="130" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청</text>
-  </g>
-  <g transform="rotate(7 232 110)">
-    <rect x="197" y="85" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-    <text x="232" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">저장</text>
-  </g>
-  <g transform="rotate(-5 336 128)">
-    <rect x="301" y="103" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(11 168 205)">
-    <rect x="133" y="180" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(-6 272 212)">
-    <rect x="237" y="187" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(8 380 198)">
-    <rect x="345" y="173" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
-</svg>
-</div>
-
-*그림 2-18. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다*
-
-층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="삼층 건물. 맨 위 층에 컨트롤러, 가운데 층에 서비스, 맨 아래 층에 리포지토리가 있고 각 층에는 같은 종류의 물건만 놓여 있다.">
-  <path d="M66,62 L260,16 L454,62" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="80" y="62" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="110" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <rect x="270" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="348" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="80" y="142" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="190" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
-  <rect x="270" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="348" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="80" y="222" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="270" font-size="14" font-weight="700" fill="#0f172a">리포지토리</text>
-  <rect x="270" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
-  <rect x="348" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
-</svg>
-</div>
-
-*그림 2-19. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다*
-
-컨트롤러가 제공할 게시판 API는 앞에서 본 주소와 HTTP 메서드를 조합한 것입니다.
-
-| HTTP 메서드 | 경로 | 기능 |
-|---|---|---|
-| GET | /api/boards | 게시글 목록 |
-| GET | /api/boards/{boardId} | 게시글 상세 |
-| POST | /api/boards | 게시글 작성 |
-| PUT | /api/boards/{boardId} | 게시글 수정 |
-| DELETE | /api/boards/{boardId} | 게시글 삭제 |
-
-### 2.8.1 서비스
-
-먼저 서비스를 만듭니다. 서비스는 리포지토리를 호출해 목록, 상세, 작성, 삭제를 처리합니다. 수정은 더티체킹과 함께 다음 절에서 따로 다루므로, 여기서는 네 가지만 채웁니다.
-
-`board/BoardService.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 7] board/BoardService.java. 목록·상세·작성·삭제
-@RequiredArgsConstructor
-@Service
-public class BoardService {
-
-    private final BoardRepository boardRepository;
-
-    public List<Board> 게시글목록() {
-        return boardRepository.findAll();
-    }
-
-    public Board 게시글상세(Integer boardId) {
-        return boardRepository.findById(boardId);
-    }
-
-    // 1. 새 엔티티를 만들어 값을 채우고 저장한다
-    @Transactional
-    public Board 게시글추가(BoardRequest.SaveDTO requestDTO) {
-        Board board = new Board();
-        board.setTitle(requestDTO.title());
-        board.setContent(requestDTO.content());
-        boardRepository.save(board);
-        return board;
-    }
-
-    // 2. 조회한 글을 삭제 대상으로 넘긴다
-    @Transactional
-    public void 게시글삭제(Integer boardId) {
-        Board board = boardRepository.findById(boardId);
-        boardRepository.delete(board);
-    }
-}
-```
-
-`게시글추가`에서 `new Board()`로 만든 엔티티는 `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다. 앞 절의 자동 `flush`는 `@Transactional`이 끝나는 순간에 일어납니다. 여기 쓰인 `BoardRequest.SaveDTO`는 뒤에서 만들므로, 관련 파일을 다 채운 뒤 실행합니다.
-
-:::tip
-**트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
-
-트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 `@Transactional`을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
-:::
-
-### 2.8.2 컨트롤러와 요청 DTO
-
-이제 이 서비스를 바깥과 연결할 컨트롤러를 만듭니다. 컨트롤러는 위의 API 표대로, 주소와 HTTP 메서드에 맞춰 요청을 서비스로 넘깁니다.
-
-`board/BoardController.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 8] board/BoardController.java. REST 엔드포인트
-@RequiredArgsConstructor
-@RestController
-@RequestMapping("/api/boards")
-public class BoardController {
-
-    private final BoardService boardService;
-
-    // 1. 목록 조회 (GET /api/boards)
-    @GetMapping
-    public ResponseEntity<?> findAll() {
-        List<Board> boardList = boardService.게시글목록();
-        return Resp.ok(boardList);
-    }
-
-    // 2. 상세 조회 (GET /api/boards/1)
-    @GetMapping("/{boardId}")
-    public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
-        Board board = boardService.게시글상세(boardId);
-        return Resp.ok(board);
-    }
-
-    // 3. 작성 (POST /api/boards)
-    @PostMapping
-    public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
-        Board board = boardService.게시글추가(requestDTO);
-        return Resp.ok(board);
-    }
-
-    // 4. 삭제 (DELETE /api/boards/1)
-    @DeleteMapping("/{boardId}")
-    public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
-        boardService.게시글삭제(boardId);
-        return Resp.ok(null);
-    }
-}
-```
-
-`@RestController`는 반환값을 JSON으로 내보내고, `@RequestMapping`이 공통 주소를 정합니다. 주소에 박힌 값은 `@PathVariable`로, 요청 바디의 JSON은 `@RequestBody`로 받습니다. 여기서 받는 `SaveDTO`는 `board/BoardRequest.java`에 정의합니다.
-
-`board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 9] board/BoardRequest.java. 요청 데이터 DTO
-public class BoardRequest {
-    public record SaveDTO(String title, String content) {
-    }
-
-    public record UpdateDTO(String title, String content) {
-    }
-}
-```
-
-`record`는 값만 담는 클래스를 짧게 정의하는 자바 문법입니다. 저장과 수정은 서로 다른 요청이라, 지금은 필드가 같아도 DTO를 나눠 둡니다.
-
-컨트롤러의 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양으로 나갑니다.
-
-이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.
-
-```bash [터미널] 애플리케이션 실행
-./gradlew bootRun
-```
-
-서버가 뜨면 `GET /api/boards`로 목록을 요청합니다. `data.sql`로 들어간 게시글 두 개가 `Resp` 형식에 감싸여 돌아옵니다.
-
-목록 조회 같은 GET 요청은 브라우저 주소창에 주소를 넣으면 됩니다. 값을 함께 보내는 POST·PUT은 입력할 화면이 없어, API 테스트 도구인 Hoppscotch(hoppscotch.io)로 요청을 보내고 결과를 확인합니다.
-
-:::tip
-**브라우저 버전은 localhost 요청이 막혀 있습니다**
-
-Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
-:::
-
-<!-- [CAPTURE NEEDED: 01_api-response
-  path: assets/CH2/terminal/01_api-response.png
-  desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
-] -->
-![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-20. 목록 조회 요청에 게시글 두 개가 Resp 형식으로 감싸여 돌아온 응답입니다*
-
-## 2.9 더티체킹으로 수정
-
-이제 마지막으로 남은 수정을 만듭니다.
-
-`board/BoardService.java`에 아래 수정 메서드를 추가합니다.
-
-```java [실습 10] board/BoardService.java. 더티체킹으로 수정
-    // 1. 수정할 글을 조회해 영속 상태로 가져온다
-    @Transactional
-    public Board 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
-        Board board = boardRepository.findById(boardId);
-        // 2. 값만 바꾼다. save() 호출이 없다
-        board.setTitle(requestDTO.title());
-        board.setContent(requestDTO.content());
-        return board;
-    } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
-```
-
-이 메서드에는 저장하는 호출이 없습니다. `findById`로 가져온 `board`가 영속 상태이므로, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
-
-이 수정 메서드를 컨트롤러의 PUT 엔드포인트에 연결합니다. `board/BoardController.java`에 아래 메서드를 추가합니다.
-
-```java [실습 11] board/BoardController.java. 수정 엔드포인트
-    // 수정 (PUT /api/boards/1)
-    @PutMapping("/{boardId}")
-    public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
-                                    @RequestBody BoardRequest.UpdateDTO requestDTO) {
-        Board board = boardService.게시글수정(boardId, requestDTO);
-        return Resp.ok(board);
-    }
-```
-
-이것으로 작성, 조회, 수정, 삭제가 모두 갖춰졌습니다. 그런데 더티체킹은 눈에 바로 보이지 않습니다. 저장 호출이 없으니, 정말 반영됐는지 확인하려면 데이터베이스를 다시 조회해 봐야 합니다. 이때 필요한 것이 테스트입니다.
-
-## 2.10 단위 테스트
+## 2.8 단위 테스트와 통합 테스트
 
 지금까지는 애플리케이션 전체를 띄워 API로 결과를 봤습니다. 하지만 리포지토리 하나가 제대로 도는지 확인하려고 매번 서버를 띄우고 요청을 보내는 것은 번거롭습니다.
 
-### 2.10.1 단위 테스트와 통합 테스트
+### 2.8.1 단위 테스트와 통합 테스트
 
 커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 떼어 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)이고, 검증된 기능들을 결합해 전체 흐름을 확인하는 것이 통합 테스트입니다.
 
@@ -1021,7 +881,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리 계층만 가볍게 띄우는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
 
-### 2.10.2 given-when-eye
+### 2.8.2 given-when-eye
 
 테스트는 세 단계로 씁니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
 
@@ -1054,11 +914,11 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 *그림 2-22. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다*
 
-### 2.10.3 리포지토리 테스트 작성
+## 2.9 리포지토리 테스트 작성
 
 `test/.../BoardRepositoryTest.java`를 열고 먼저 클래스 골격을 작성합니다.
 
-```java [실습 12] BoardRepositoryTest.java. 테스트 클래스 골격
+```java [실습 7] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class)
 @DataJpaTest
 public class BoardRepositoryTest {
@@ -1077,7 +937,7 @@ public class BoardRepositoryTest {
 
 먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById`를 호출하고(when), 돌아온 엔티티의 값을 찍어 봅니다(eye).
 
-```java [실습 13] BoardRepositoryTest.java. 한 건 조회
+```java [실습 8] BoardRepositoryTest.java. 한 건 조회
     @Test
     public void findById_test() {
         // given
@@ -1092,7 +952,7 @@ public class BoardRepositoryTest {
 
 전체 조회는 준비할 값이 없어 given이 비어 있습니다. 결과가 여러 건이므로 개수와 첫 번째 글의 제목을 확인합니다.
 
-```java [실습 14] BoardRepositoryTest.java. 전체 조회
+```java [실습 9] BoardRepositoryTest.java. 전체 조회
     @Test
     public void findAll_test() {
         // given
@@ -1107,7 +967,7 @@ public class BoardRepositoryTest {
 
 저장은 저장된 결과를 바로 볼 수 없어, `findAll`로 다시 조회해 확인합니다. 두 개였던 게시글이 세 개가 되고, 세 번째 자리에 방금 넣은 글이 있으면 저장된 것입니다.
 
-```java [실습 15] BoardRepositoryTest.java. 저장
+```java [실습 10] BoardRepositoryTest.java. 저장
     @Test
     public void save_test() {
         // given
@@ -1125,7 +985,7 @@ public class BoardRepositoryTest {
 
 수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
 
-```java [실습 16] BoardRepositoryTest.java. 수정과 더티체킹
+```java [실습 11] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
     public void update_test() {
         // given
@@ -1144,7 +1004,7 @@ public class BoardRepositoryTest {
 
 삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 데이터베이스로 나갑니다. 남은 개수가 하나면 지워진 것입니다.
 
-```java [실습 17] BoardRepositoryTest.java. 삭제
+```java [실습 12] BoardRepositoryTest.java. 삭제
     @Test
     public void delete_test() {
         // given
@@ -1174,7 +1034,280 @@ public class BoardRepositoryTest {
 
 다섯 테스트가 모두 초록색으로 통과했습니다. 서버를 띄우지 않고 리포지토리만 떼어 놓고도 조회·저장·수정·삭제가 제대로 도는지 확인할 수 있습니다.
 
-## 2.11 요청 처리 흐름
+## 2.10 게시글 목록
+
+리포지토리가 데이터베이스를 다루고, 리포지토리를 언제 어떻게 호출할지는 서비스가 정하며, 바깥의 요청을 받아 서비스로 넘기는 것이 컨트롤러입니다. 도입부의 그림 2-1에서 본 세 층이 이 구조이며, 이렇게 나눈 것을 3계층 아키텍처라고 합니다.
+
+한 클래스에 요청을 받는 일과 데이터를 저장하는 일을 모두 넣어도 게시판은 동작합니다. 문제는 고칠 때 드러납니다. 주소를 바꿀 일과 저장 방식을 바꿀 일이 한자리에 섞여 있으면, 한쪽을 손볼 때마다 다른 쪽까지 함께 들여다봐야 합니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="칸막이가 없는 창고 한 칸에 요청을 다루는 물건과 저장을 다루는 물건이 기울어진 채 뒤섞여 쌓여 있다.">
+  <path d="M46,64 L260,18 L474,64" fill="none" stroke="#475569" stroke-width="1.9"/>
+  <rect x="60" y="64" width="400" height="200" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <g transform="rotate(-9 130 122)">
+    <rect x="95" y="97" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+    <text x="130" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청</text>
+  </g>
+  <g transform="rotate(7 232 110)">
+    <rect x="197" y="85" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+    <text x="232" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">저장</text>
+  </g>
+  <g transform="rotate(-5 336 128)">
+    <rect x="301" y="103" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(11 168 205)">
+    <rect x="133" y="180" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(-6 272 212)">
+    <rect x="237" y="187" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  </g>
+  <g transform="rotate(8 380 198)">
+    <rect x="345" y="173" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  </g>
+</svg>
+</div>
+
+*그림 2-24. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다*
+
+층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="삼층 건물. 맨 위 층에 컨트롤러, 가운데 층에 서비스, 맨 아래 층에 리포지토리가 있고 각 층에는 같은 종류의 물건만 놓여 있다.">
+  <path d="M66,62 L260,16 L454,62" fill="none" stroke="#475569" stroke-width="1.9"/>
+  <rect x="80" y="62" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="110" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <rect x="270" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="348" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <rect x="80" y="142" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="190" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
+  <rect x="270" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="348" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="80" y="222" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="120" y="270" font-size="14" font-weight="700" fill="#0f172a">리포지토리</text>
+  <rect x="270" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+  <rect x="348" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+</svg>
+</div>
+
+*그림 2-25. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다*
+
+컨트롤러가 제공할 게시판 API는 앞에서 본 주소와 HTTP 메서드를 조합한 것입니다.
+
+| HTTP 메서드 | 경로 | 기능 |
+|---|---|---|
+| GET | /api/boards | 게시글 목록 |
+| GET | /api/boards/{boardId} | 게시글 상세 |
+| POST | /api/boards | 게시글 작성 |
+| PUT | /api/boards/{boardId} | 게시글 수정 |
+| DELETE | /api/boards/{boardId} | 게시글 삭제 |
+
+먼저 서비스와 컨트롤러의 골격을 만듭니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.
+
+`board/BoardService.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 13] board/BoardService.java. 서비스 골격
+@RequiredArgsConstructor
+@Service // 스프링이 빈으로 등록한다
+public class BoardService {
+
+    private final BoardRepository boardRepository;
+
+    // 아래 절에서 메서드를 하나씩 채운다
+}
+```
+
+목록 조회 메서드를 채웁니다. 리포지토리의 `findAll`을 그대로 호출해 결과를 돌려줍니다.
+
+```java [실습 14] board/BoardService.java. 게시글 목록
+    public List<Board> 게시글목록() {
+        return boardRepository.findAll();
+    }
+```
+
+이제 요청을 받을 컨트롤러를 만듭니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 15] board/BoardController.java. 컨트롤러 골격과 목록 조회
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/boards") // 공통 주소
+public class BoardController {
+
+    private final BoardService boardService;
+
+    // 목록 조회 (GET /api/boards)
+    @GetMapping
+    public ResponseEntity<?> findAll() {
+        List<Board> boardList = boardService.게시글목록();
+        return Resp.ok(boardList);
+    }
+}
+```
+
+`@RestController`는 반환값을 JSON으로 내보내고, `@RequestMapping`이 공통 주소를 정합니다. 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양으로 나갑니다.
+
+이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.
+
+```bash [터미널] 애플리케이션 실행
+./gradlew bootRun
+```
+
+서버가 뜨면 `GET /api/boards`로 목록을 요청합니다. `data.sql`로 들어간 게시글 두 개가 `Resp` 형식에 감싸여 돌아옵니다.
+
+목록 조회 같은 GET 요청은 브라우저 주소창에 주소를 넣으면 됩니다. 값을 함께 보내는 POST·PUT은 입력할 화면이 없어, API 테스트 도구인 Hoppscotch(hoppscotch.io)로 요청을 보내고 결과를 확인합니다.
+
+:::tip
+**브라우저 버전은 localhost 요청이 막혀 있습니다**
+
+Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
+:::
+
+<!-- [CAPTURE NEEDED: 01_api-response
+  path: assets/CH2/terminal/01_api-response.png
+  desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
+] -->
+![](../assets/CH2/terminal/01_api-response.png)
+*그림 2-26. 목록 조회 요청에 게시글 두 개가 Resp 형식으로 감싸여 돌아온 응답입니다*
+
+## 2.11 게시글 상세
+
+상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById`를 호출합니다.
+
+`board/BoardService.java`에 아래 메서드를 추가합니다.
+
+```java [실습 16] board/BoardService.java. 게시글 상세
+    public Board 게시글상세(Integer boardId) {
+        return boardRepository.findById(boardId);
+    }
+```
+
+컨트롤러는 주소에 박힌 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 `@PathVariable`로 꺼냅니다.
+
+`board/BoardController.java`에 아래 메서드를 추가합니다.
+
+```java [실습 17] board/BoardController.java. 상세 조회
+    // 상세 조회 (GET /api/boards/1)
+    @GetMapping("/{boardId}")
+    public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
+        Board board = boardService.게시글상세(boardId);
+        return Resp.ok(board);
+    }
+```
+
+## 2.12 게시글 쓰기
+
+작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 그 값을 받을 그릇이 필요합니다. 계층 사이에서 데이터만 나르는 이 그릇을 DTO(Data Transfer Object)라고 합니다.
+
+`board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 18] board/BoardRequest.java. 요청 데이터 DTO
+public class BoardRequest {
+    public record SaveDTO(String title, String content) {
+    }
+
+    public record UpdateDTO(String title, String content) {
+    }
+}
+```
+
+`record`는 값만 담는 클래스를 짧게 정의하는 자바 문법입니다. 저장과 수정은 서로 다른 요청이라, 지금은 필드가 같아도 DTO를 나눠 둡니다.
+
+서비스는 DTO로 받은 값을 새 엔티티에 옮겨 담아 저장합니다.
+
+```java [실습 19] board/BoardService.java. 게시글 쓰기
+    // 1. 새 엔티티를 만들어 값을 채우고 저장한다
+    @Transactional
+    public Board 게시글추가(BoardRequest.SaveDTO requestDTO) {
+        Board board = new Board();
+        board.setTitle(requestDTO.title());
+        board.setContent(requestDTO.content());
+        boardRepository.save(board);
+        return board;
+    }
+```
+
+`new Board()`로 만든 엔티티는 비영속 상태이고, `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다.
+
+:::tip
+**트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
+
+트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 `@Transactional`을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
+:::
+
+컨트롤러는 요청 바디의 JSON을 `@RequestBody`로 받아 DTO에 담습니다.
+
+```java [실습 20] board/BoardController.java. 게시글 쓰기
+    // 작성 (POST /api/boards)
+    @PostMapping
+    public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
+        Board board = boardService.게시글추가(requestDTO);
+        return Resp.ok(board);
+    }
+```
+
+저장한 게시글을 응답 바디에 담아 돌려줍니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
+
+## 2.13 게시글 수정
+
+수정에는 저장하는 호출이 없습니다. 리포지토리에 수정 메서드를 만들지 않은 것도 이 때문입니다.
+
+`board/BoardService.java`에 아래 메서드를 추가합니다.
+
+```java [실습 21] board/BoardService.java. 더티체킹으로 수정
+    // 1. 수정할 글을 조회해 영속 상태로 가져온다
+    @Transactional
+    public Board 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
+        Board board = boardRepository.findById(boardId);
+        // 2. 값만 바꾼다. save() 호출이 없다
+        board.setTitle(requestDTO.title());
+        board.setContent(requestDTO.content());
+        return board;
+    } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
+```
+
+`findById`로 가져온 `board`는 영속 상태입니다. `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
+
+`board/BoardController.java`에 아래 메서드를 추가합니다.
+
+```java [실습 22] board/BoardController.java. 게시글 수정
+    // 수정 (PUT /api/boards/1)
+    @PutMapping("/{boardId}")
+    public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
+                                    @RequestBody BoardRequest.UpdateDTO requestDTO) {
+        Board board = boardService.게시글수정(boardId, requestDTO);
+        return Resp.ok(board);
+    }
+```
+
+## 2.14 게시글 삭제
+
+삭제는 지울 엔티티를 먼저 조회해 리포지토리에 넘깁니다.
+
+`board/BoardService.java`에 아래 메서드를 추가합니다.
+
+```java [실습 23] board/BoardService.java. 게시글 삭제
+    // 조회한 글을 넘겨 삭제한다
+    @Transactional
+    public void 게시글삭제(Integer boardId) {
+        Board board = boardRepository.findById(boardId);
+        boardRepository.delete(board);
+    }
+```
+
+`board/BoardController.java`에 아래 메서드를 추가합니다.
+
+```java [실습 24] board/BoardController.java. 게시글 삭제
+    // 삭제 (DELETE /api/boards/1)
+    @DeleteMapping("/{boardId}")
+    public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
+        boardService.게시글삭제(boardId);
+        return Resp.ok(null);
+    }
+```
+
+삭제는 돌려줄 데이터가 없으므로 `Resp.ok(null)`로 성공만 알립니다. 이것으로 목록, 상세, 작성, 수정, 삭제가 모두 갖춰졌습니다.
+
+
+## 2.15 요청 처리 흐름
 
 지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 주소를 부른 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.
 
@@ -1231,7 +1364,7 @@ public class BoardRepositoryTest {
 </svg>
 </div>
 
-*그림 2-24. 요청 하나는 톰캣과 디스패처 서블릿을 지나 세 계층을 거치고, 영속성 컨텍스트와 커넥션 풀을 통해 데이터베이스로 전달됩니다*
+*그림 2-27. 요청 하나는 톰캣과 디스패처 서블릿을 지나 세 계층을 거치고, 영속성 컨텍스트와 커넥션 풀을 통해 데이터베이스로 전달됩니다*
 
 응답은 같은 경로를 거꾸로 지납니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, `@RestController`가 그것을 JSON으로 바꿔 톰캣을 지나 클라이언트에게 갑니다.
 
@@ -1245,7 +1378,7 @@ public class BoardRepositoryTest {
 
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 
-## 2.12 이것만은 기억하자
+## 2.16 이것만은 기억하자
 
 :::remember
 **이것만은 기억하자**

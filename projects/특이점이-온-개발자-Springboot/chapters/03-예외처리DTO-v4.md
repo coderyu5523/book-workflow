@@ -40,6 +40,7 @@
 :::goal
 **이번 챕터가 끝나면**
 
+- `JpaRepository`가 기본 조회·저장 메서드를 어떻게 대신하는지 이해합니다
 - 엔티티를 응답에 직접 쓰지 않고 DTO로 감싸는 이유를 설명할 수 있습니다
 - `Optional`과 `orElseThrow`로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 `RuntimeException`인지 이해합니다
 - `@RestControllerAdvice`로 예외를 한 곳에서 JSON으로 바꿔, 없는 글도 깔끔한 404로 응답합니다
@@ -80,14 +81,14 @@ GET http://localhost:8080/api/boards/999
 
 `body`를 보면 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보입니다. 그런데 응답에 엔티티를 통째로 담아 보내는 한, 엔티티에 필드가 붙을 때마다 값이 자동으로 바깥에 노출됩니다.
 
-이 둘을 이번 챕터에서 차례로 막습니다. 먼저 엔티티가 응답에 그대로 실리는 문제를 응답 DTO로 막고, 그다음 없는 글이 성공으로 처리되는 문제를 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
+이 둘을 이번 챕터에서 차례로 막습니다. 먼저 리포지토리를 `JpaRepository`로 바꾸고, 엔티티가 응답에 그대로 실리는 문제를 응답 DTO로 막은 뒤, 없는 글이 성공으로 처리되는 문제를 예외로 처리합니다. 이번 챕터에서 새로 만들거나 손보는 클래스는 다음과 같습니다.
 
 | 클래스 | 역할 |
 |--------|------|
 | BoardResponse | (신규) 응답으로 내보낼 값만 담는 DTO. `DTO`와 `DetailDTO` 두 가지를 작성합니다. |
 | Exception404 | (신규) 자원을 찾을 수 없을 때 던지는 커스텀 예외입니다. |
 | GlobalExceptionHandler | (신규) 던져진 예외를 한 곳에서 JSON 응답으로 바꾸는 전역 처리기입니다. |
-| BoardRepository | (변경) `findById`가 `null` 대신 `Optional`을 반환합니다. |
+| BoardRepository | (변경) `JpaRepository`를 상속하는 인터페이스로 바뀝니다. |
 | BoardService | (변경) `orElseThrow`로 없음을 예외로 바꾸고, 엔티티 대신 DTO를 반환합니다. |
 | BoardController | (변경) 응답 반환 타입이 엔티티에서 DTO로 바뀝니다. |
 | BoardRequest | (변경) 요청 DTO를 엔티티로 바꾸는 `toEntity`를 더합니다. |
@@ -109,7 +110,7 @@ spring-start/ch03  (변경·신규만)
 ├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
 ├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
 ├── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
-├── board/BoardRepository.java               [설명] findById → Optional
+├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
 ├── board/BoardService.java                  [설명] orElseThrow + DTO 반환
 ├── board/BoardController.java               [설명] 응답 타입 DTO로 교체
 ├── board/Board.java                         [설명] @Builder + 생성자 추가
@@ -119,9 +120,38 @@ spring-start/ch03  (변경·신규만)
 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
 ::::
 
-## 3.2 응답 DTO
+## 3.2 JpaRepository로 바꾸기
 
-### 3.2.1 DTO가 필요한 이유
+두 문제를 손보기 전에 리포지토리부터 바꿉니다. 앞 챕터에서 만든 다섯 메서드는 게시글에만 쓸 수 있는 코드가 아닙니다. 회원이든 댓글이든 기본 키로 한 건을 찾고, 전체를 가져오고, 저장하고, 지우는 일은 똑같습니다. 엔티티만 바뀔 뿐 안의 내용은 같습니다.
+
+스프링은 이 반복을 인터페이스 하나로 대신합니다. `JpaRepository`를 상속하면 기본 메서드가 딸려 오고, 구현 클래스는 스프링이 실행 시점에 만들어 줍니다.
+
+`board/BoardRepository.java`를 열고 아래 코드로 바꿉니다.
+
+```java [실습 1] board/BoardRepository.java. JpaRepository 상속
+public interface BoardRepository extends JpaRepository<Board, Integer> {
+}
+```
+
+클래스가 인터페이스가 되고, 안이 비었습니다. `JpaRepository<Board, Integer>`의 두 자리에는 다룰 엔티티와 그 기본 키의 타입을 적습니다. `@Repository`도, `EntityManager` 주입도 필요 없습니다.
+
+앞 챕터에서 손으로 만든 메서드가 어디로 갔는지 보면 이렇습니다.
+
+| 앞 챕터에서 만든 것 | 지금 | 비고 |
+|---|---|---|
+| `findById(int)` | 상속 | 반환 타입이 `Optional<Board>`입니다 |
+| `findAll()` | 상속 | JPQL을 쓰지 않습니다 |
+| `save(Board)` | 상속 | 저장된 엔티티를 돌려줍니다 |
+| `delete(Board)` | 상속 | 그대로입니다 |
+| (수정 메서드 없음) | 그대로 | 더티체킹으로 처리합니다 |
+
+`EntityManager`가 사라진 것은 아닙니다. `JpaRepository`의 구현체가 안에서 `EntityManager`를 그대로 씁니다. 앞 챕터에서 본 영속성 컨텍스트와 캐싱, 쓰기 지연, 더티체킹도 그대로 동작합니다. 개발자가 반복해서 쓰던 코드만 걷어낸 것입니다.
+
+뒤 챕터에서 조건이 붙는 조회가 필요해지면, 인터페이스 안에 메서드를 선언하고 `@Query`에 JPQL을 적어 붙입니다. 앞 챕터에서 배운 JPQL은 그때 다시 쓰입니다.
+
+## 3.3 응답 DTO
+
+### 3.3.1 DTO가 필요한 이유
 
 엔티티가 그대로 나가는 문제부터 막습니다. 응답에 엔티티를 그대로 담아 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 직접 연결되어 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.
 
@@ -158,11 +188,11 @@ spring-start/ch03  (변경·신규만)
 
 *그림 3-2. 엔티티는 내부에 두고, 응답으로 나갈 값만 DTO에 담아 내보냅니다*
 
-### 3.2.2 응답 DTO 만들기
+### 3.3.2 응답 DTO 만들기
 
 `board/BoardResponse.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 1] board/BoardResponse.java. 응답 DTO
+```java [실습 2] board/BoardResponse.java. 응답 DTO
 public class BoardResponse {
 
     // 1. 목록용 DTO. 엔티티를 받아 보여줄 값만 담는다
@@ -189,7 +219,7 @@ public class BoardResponse {
 
 `record`로 선언하면 필드는 바깥에서 직접 바꿀 수 없고 `boardId()`, `title()` 같은 접근자로만 읽힙니다. 응답으로 나가는 값은 한 번 만들어진 뒤 바뀔 일이 없으므로, 값만 담아 나르는 DTO에 맞는 형태입니다.
 
-### 3.2.3 요청 DTO와 엔티티 변환
+## 3.4 요청 DTO와 엔티티 변환
 
 들어오는 요청도 마찬가지로 DTO에 담습니다. 앞 챕터에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
 
@@ -224,24 +254,19 @@ public class Board {
 
 명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 `@NoArgsConstructor`도 함께 붙입니다. 빌더를 쓰면 필요한 필드만 골라 채워 엔티티를 만들 수 있습니다.
 
-## 3.3 Optional
+## 3.5 Optional과 orElseThrow
 
-서비스는 아직 엔티티를 그대로 담아 넘깁니다. 이 부분을 DTO로 고쳐야 하는데, 먼저 첫 번째 문제인 없는 글이 성공으로 처리되는 상황을 같이 다뤄야 합니다. 두 문제가 모두 조회 메서드에 있기 때문입니다.
+남은 문제는 없는 글이 성공으로 처리되는 것입니다. 앞 챕터의 `findById`는 없는 글을 찾으면 `null`을 돌려줬습니다. `null`은 아무 표시가 없는 값이라, 이 값을 받은 코드는 진짜 글인지 아닌지 열어 보기 전엔 모릅니다.
 
-빈 값이 성공으로 나가는 원인은 `findById`가 없는 글에 `null`을 돌려주기 때문입니다. `null`은 아무 표시가 없는 값입니다. 이 값을 받은 코드는 그것이 진짜 글인지 아닌지 열어 보기 전엔 모릅니다. 자바에는 이 애매함을 없애는 문법이 있습니다. 값이 있을 수도, 없을 수도 있음을 상자에 담아 드러내는 `Optional`입니다.
+`JpaRepository`의 `findById`는 `null`을 돌려주지 않습니다. 반환 타입이 `Optional<Board>`입니다.
 
-`findById`가 `null` 대신 `Optional`을 돌려주면, 이 값을 받은 코드는 타입만 보고도 "빈 상자일 수 있다"는 걸 압니다. `board/BoardRepository.java`의 `findById`를 아래처럼 고칩니다.
-
-```java [설명] board/BoardRepository.java. findById가 Optional을 반환
-    // 없으면 null 대신 빈 Optional을 돌려준다
-    public Optional<Board> findById(int boardId) {
-        return Optional.ofNullable(em.find(Board.class, boardId));
-    }
+```java
+Optional<Board> board = boardRepository.findById(1);
 ```
 
-`Optional.ofNullable`은 넘긴 값이 `null`이면 빈 `Optional`을, 값이 있으면 값을 담은 `Optional`을 만듭니다. `find`는 없는 기본 키로 조회하면 `null`을 돌려주므로, `find`의 결과를 그대로 감싸면 있음과 없음이 하나의 타입으로 정리됩니다.
+`Optional`은 값이 있을 수도, 없을 수도 있음을 상자에 담아 드러내는 자바 문법입니다. 이 값을 받은 코드는 타입만 보고도 "빈 상자일 수 있다"는 걸 압니다. 리포지토리를 인터페이스로 바꾸면서 없음을 표현하는 방식까지 함께 따라온 것입니다.
 
-### 3.3.1 상자를 여는 세 가지 방법
+### 3.5.1 상자를 여는 세 가지 방법
 
 담았으면 꺼내야 합니다. `Optional`에서 값을 꺼내는 방법은 세 가지인데, 상자가 비어 있을 때의 처리가 각각 다릅니다.
 
@@ -285,7 +310,7 @@ public class Board {
 
 남는 것이 `orElseThrow`입니다. 상자가 비었을 때 어떤 예외를 던질지 직접 정하므로, 없는 글에 맞는 예외를 골라 던질 수 있습니다. 던진 예외를 404 응답으로 바꾸는 것이 이 챕터가 가려는 곳입니다.
 
-## 3.4 없는 글과 예외
+### 3.5.2 없는 글을 예외로
 
 이제 서비스가 `orElseThrow`로 상자를 엽니다. 대표로 상세 조회 메서드를 보겠습니다. `board/BoardService.java`의 `게시글상세`를 아래처럼 고칩니다.
 
@@ -389,11 +414,11 @@ public class Board {
 
 남은 것은 `Exception404`를 만들고, 던져진 예외를 깔끔한 404 응답으로 바꾸는 일입니다.
 
-## 3.5 예외의 종류와 상태 코드
+## 3.6 예외의 종류와 상태 코드
 
 `orElseThrow`가 던지는 `Exception404`를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 2] core/handler/ex/Exception404.java. 커스텀 예외
+```java [실습 3] core/handler/ex/Exception404.java. 커스텀 예외
 // 자원을 찾을 수 없을 때 (HTTP 404)
 public class Exception404 extends RuntimeException {
     public Exception404(String message) {
@@ -418,7 +443,7 @@ public class Exception404 extends RuntimeException {
 
 없는 글을 부른 상황은 404에 해당합니다. 200 성공으로 답하면 없는 글을 있는 것처럼 다루는 것이고, 500은 서버가 넘어졌다는 뜻이라 역시 맞지 않습니다. 없는 글은 서버의 잘못이 아니라 찾는 자원이 없는 것이니, 404로 응답해야 정확합니다. 이 표의 상태 코드마다 `Exception400`, `Exception401`처럼 짝이 되는 커스텀 예외를 하나씩 두는 것이 흔한 방식입니다. 이번 챕터는 없는 글을 다루니 `Exception404`만 만들고, 401과 403은 다음 챕터에서 인증과 권한을 붙이며 다시 만듭니다.
 
-## 3.6 예외 핸들러
+## 3.7 전역 예외 처리
 
 던져진 `Exception404`는 어딘가에서 받아 404 JSON으로 바꿔야 합니다. 컨트롤러마다 `try-catch`로 잡으면 예외 처리 코드가 모든 컨트롤러에 흩어집니다.
 
@@ -426,7 +451,7 @@ public class Exception404 extends RuntimeException {
 
 `core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 3] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
+```java [실습 4] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -556,7 +581,7 @@ GET http://localhost:8080/api/boards/999
 
 *없는 글은 걸렀는데, 문은 여전히 다 열려 있잖아.*
 
-## 3.7 이것만은 기억하자
+## 3.8 이것만은 기억하자
 
 :::remember
 **이것만은 기억하자**

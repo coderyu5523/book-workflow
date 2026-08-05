@@ -1,44 +1,16 @@
 package com.metacoding.spring.board;
 
-import java.util.*;
+import java.util.Optional;
 
-import org.springframework.stereotype.Repository;
-import jakarta.persistence.EntityManager;
-import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-@RequiredArgsConstructor
-@Repository
-public class BoardRepository {
+public interface BoardRepository extends JpaRepository<Board, Integer> {
 
-    private final EntityManager em;
+    @Query("select b from Board b join fetch b.user where b.id = :boardId")
+    Optional<Board> findByIdJoinUser(@Param("boardId") Integer boardId);
 
-    public Optional<Board> findById(int boardId) {
-        return Optional.ofNullable(em.find(Board.class, boardId));
-    }
-
-    public List<Board> findAll() {
-        return em.createQuery("select b from Board b", Board.class).getResultList();
-    }
-
-    public void save(Board board) {
-        em.persist(board);
-    }
-
-    public void delete(Board board) {
-        em.remove(board);
-    }
-
-    public Optional<Board> findByIdJoinUser(int boardId) {
-        return em.createQuery("select b from Board b join fetch b.user where b.id = :id", Board.class)
-                .setParameter("id", boardId)
-                .getResultStream()
-                .findFirst();
-    }
-
-    public Optional<Board> findByIdJoinUserAndReply(int boardId) {
-        return em.createQuery("select b from Board b join fetch b.user left join fetch b.replies where b.id = :id", Board.class)
-                .setParameter("id", boardId)
-                .getResultStream()
-                .findFirst();
-    }
+    @Query("select b from Board b join fetch b.user left join fetch b.replies where b.id = :boardId")
+    Optional<Board> findByIdJoinUserAndReply(@Param("boardId") Integer boardId);
 }
