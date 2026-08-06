@@ -593,7 +593,7 @@
 </tbody>
 </table>
 <h2>2.5 리포지토리의 다섯 기능</h2>
-<p>엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 두는 계층입니다.</p>
+<p>엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.</p>
 <p>리포지토리가 데이터베이스에 접근할 때 쓰는 도구가 <code>EntityManager</code>입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 씁니다.</p>
 <p><code>board/BoardRepository.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/BoardRepository.java. 리포지토리 골격</div><span class="nd">@RequiredArgsConstructor</span>
@@ -807,7 +807,7 @@
 <p>쓰기 지연과 더티체킹이 만든 SQL은 <code>flush</code> 시점에 데이터베이스로 나갑니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 <code>flush</code>를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 <code>@Transactional</code>이 끝날 때 자동으로 호출됩니다.</p>
 <p>리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.</p>
 <h2>2.8 단위 테스트와 통합 테스트</h2>
-<p>지금까지는 애플리케이션 전체를 띄워 API로 결과를 봤습니다. 하지만 리포지토리 하나가 제대로 도는지 확인하려고 매번 서버를 띄우고 요청을 보내는 것은 번거롭습니다.</p>
+<p>리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 도는지는 실행해 봐야 알 수 있는데, 확인하는 방법은 하나가 아닙니다.</p>
 <h3>2.8.1 단위 테스트와 통합 테스트</h3>
 <p>커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 떼어 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)이고, 검증된 기능들을 결합해 전체 흐름을 확인하는 것이 통합 테스트입니다.</p>
 <div class="svg-figure">
@@ -850,7 +850,7 @@
 </svg>
 </div>
 <div class="caption">그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다</div>
-<p>리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리 계층만 가볍게 띄우는 <code>@DataJpaTest</code>를 제공합니다. 여기에 우리가 만든 <code>BoardRepository</code>를 <code>@Import</code>로 함께 올려 검증합니다.</p>
+<p>리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리만 가볍게 띄우는 <code>@DataJpaTest</code>를 제공합니다. 여기에 우리가 만든 <code>BoardRepository</code>를 <code>@Import</code>로 함께 올려 검증합니다.</p>
 <h3>2.8.2 given-when-eye</h3>
 <p>테스트는 세 단계로 씁니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.</p>
 <div class="svg-figure">
@@ -967,56 +967,59 @@
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_test-pass.png" alt="" /><div class="caption">그림 2-23. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다</div></div>
 <p>다섯 테스트가 모두 초록색으로 통과했습니다. 서버를 띄우지 않고 리포지토리만 떼어 놓고도 조회·저장·수정·삭제가 제대로 도는지 확인할 수 있습니다.</p>
-<h2>2.10 게시글 목록</h2>
-<p>리포지토리가 데이터베이스를 다루고, 리포지토리를 언제 어떻게 호출할지는 서비스가 정하며, 바깥의 요청을 받아 서비스로 넘기는 것이 컨트롤러입니다. 도입부의 그림 2-1에서 본 세 층이 이 구조이며, 이렇게 나눈 것을 3계층 아키텍처라고 합니다.</p>
-<p>한 클래스에 요청을 받는 일과 데이터를 저장하는 일을 모두 넣어도 게시판은 동작합니다. 문제는 고칠 때 드러납니다. 주소를 바꿀 일과 저장 방식을 바꿀 일이 한자리에 섞여 있으면, 한쪽을 손볼 때마다 다른 쪽까지 함께 들여다봐야 합니다.</p>
+<h2>2.10 3계층 아키텍처</h2>
+<p>리포지토리만 떼어 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="칸막이가 없는 창고 한 칸에 요청을 다루는 물건과 저장을 다루는 물건이 기울어진 채 뒤섞여 쌓여 있다.">
-  <path d="M46,64 L260,18 L474,64" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="60" y="64" width="400" height="200" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <g transform="rotate(-9 130 122)">
-    <rect x="95" y="97" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-    <text x="130" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청</text>
-  </g>
-  <g transform="rotate(7 232 110)">
-    <rect x="197" y="85" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-    <text x="232" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">저장</text>
-  </g>
-  <g transform="rotate(-5 336 128)">
-    <rect x="301" y="103" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(11 168 205)">
-    <rect x="133" y="180" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(-6 272 212)">
-    <rect x="237" y="187" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(8 380 198)">
-    <rect x="345" y="173" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="한 클래스 파일 안에 요청을 받는 코드, 흐름을 정하는 코드, 데이터베이스를 다루는 코드가 번갈아 놓여 있다.">
+  <text x="52" y="30" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
+  <text x="168" y="30" font-size="11" fill="#94a3b8">전부 한 클래스에 넣었다면</text>
+  <rect x="44" y="44" width="472" height="220" rx="6" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <line x1="44" y1="88" x2="516" y2="88" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="132" x2="516" y2="132" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="176" x2="516" y2="176" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="220" x2="516" y2="220" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="68" y="71" font-size="12" font-family="monospace" fill="#334155">@GetMapping("/api/boards")</text>
+  <rect x="358" y="53" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="71" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <text x="68" y="115" font-size="12" font-family="monospace" fill="#334155">em.createQuery("select b …")</text>
+  <rect x="358" y="97" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
+  <text x="68" y="159" font-size="12" font-family="monospace" fill="#334155">new Board(); setTitle(…)</text>
+  <rect x="358" y="141" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="425" y="159" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
+  <text x="68" y="203" font-size="12" font-family="monospace" fill="#334155">@PostMapping("/api/boards")</text>
+  <rect x="358" y="185" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="203" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <text x="68" y="247" font-size="12" font-family="monospace" fill="#334155">em.persist(board)</text>
+  <rect x="358" y="229" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="247" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
-<div class="caption">그림 2-24. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다</div>
-<p>층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.</p>
+<div class="caption">그림 2-24. 한 클래스에 다 넣으면 성격이 다른 코드가 한곳에 섞입니다</div>
+<p>성격이 같은 코드끼리 나눠 두면 클래스 하나가 맡는 일이 하나로 줄어듭니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="삼층 건물. 맨 위 층에 컨트롤러, 가운데 층에 서비스, 맨 아래 층에 리포지토리가 있고 각 층에는 같은 종류의 물건만 놓여 있다.">
-  <path d="M66,62 L260,16 L454,62" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="80" y="62" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="110" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <rect x="270" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="348" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="80" y="142" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="190" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
-  <rect x="270" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="348" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="80" y="222" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="270" font-size="14" font-weight="700" fill="#0f172a">리포지토리</text>
-  <rect x="270" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
-  <rect x="348" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="파일 세 개가 위아래로 놓여 있다. 컨트롤러 파일은 요청 받기, 서비스 파일은 흐름 정하기, 리포지토리 파일은 데이터베이스 다루기만 담고 있다.">
+  <rect x="44" y="20" width="472" height="76" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="68" y="50" font-size="13" font-weight="800" fill="#0f172a">BoardController.java</text>
+  <text x="68" y="76" font-size="12" font-family="monospace" fill="#334155">@GetMapping   @PostMapping</text>
+  <rect x="358" y="34" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <rect x="44" y="106" width="472" height="76" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.8"/>
+  <text x="68" y="136" font-size="13" font-weight="800" fill="#0f172a">BoardService.java</text>
+  <text x="68" y="162" font-size="12" font-family="monospace" fill="#334155">게시글목록()   게시글추가()</text>
+  <rect x="358" y="120" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="425" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
+  <rect x="44" y="192" width="472" height="76" rx="6" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="68" y="222" font-size="13" font-weight="800" fill="#0f172a">BoardRepository.java</text>
+  <text x="68" y="248" font-size="12" font-family="monospace" fill="#334155">em.find   em.persist</text>
+  <rect x="358" y="206" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
-<div class="caption">그림 2-25. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다</div>
-<p>컨트롤러가 제공할 게시판 API는 앞에서 본 주소와 HTTP 메서드를 조합한 것입니다.</p>
+<div class="caption">그림 2-25. 층을 나누면 같은 성격의 코드끼리 한곳에 모입니다</div>
+<p>이렇게 일의 성격대로 층을 나누는 구조를 계층형 아키텍처(Layered Architecture)라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다. 요청을 받는 컨트롤러, 처리 흐름을 정하는 서비스, 데이터베이스를 다루는 리포지토리가 그 셋입니다.</p>
+<h2>2.11 게시글 목록</h2>
+<p>앞에서 본 주소와 HTTP 메서드를 조합하면 컨트롤러가 제공할 게시판 API 다섯 가지가 나옵니다.</p>
 <table>
 <thead>
 <tr>
@@ -1096,7 +1099,7 @@
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH2\terminal\01_api-response.png" alt="" /><div class="caption">그림 2-26. 목록 조회 요청에 게시글 두 개가 Resp 형식으로 감싸여 돌아온 응답입니다</div></div>
-<h2>2.11 게시글 상세</h2>
+<h2>2.12 게시글 상세</h2>
 <p>상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 <code>findById</code>를 호출합니다.</p>
 <p><code>board/BoardService.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardService.java. 게시글 상세</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1110,7 +1113,7 @@
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글상세</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<h2>2.12 게시글 쓰기</h2>
+<h2>2.13 게시글 쓰기</h2>
 <p>작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 그 값을 받을 그릇이 필요합니다. 계층 사이에서 데이터만 나르는 이 그릇을 DTO(Data Transfer Object)라고 합니다.</p>
 <p><code>board/BoardRequest.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardRequest.java. 요청 데이터 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
@@ -1144,7 +1147,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>저장한 게시글을 응답 바디에 담아 돌려줍니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.</p>
-<h2>2.13 게시글 수정</h2>
+<h2>2.14 게시글 수정</h2>
 <p>수정에는 저장하는 호출이 없습니다. 리포지토리에 수정 메서드를 만들지 않은 것도 이 때문입니다.</p>
 <p><code>board/BoardService.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 21</span> board/BoardService.java. 더티체킹으로 수정</div><span class="w">    </span><span class="c1">// 1. 수정할 글을 조회해 영속 상태로 가져온다</span>
@@ -1165,7 +1168,7 @@
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글수정</span><span class="p">(</span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<h2>2.14 게시글 삭제</h2>
+<h2>2.15 게시글 삭제</h2>
 <p>삭제는 지울 엔티티를 먼저 조회해 리포지토리에 넘깁니다.</p>
 <p><code>board/BoardService.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 23</span> board/BoardService.java. 게시글 삭제</div><span class="w">    </span><span class="c1">// 조회한 글을 넘겨 삭제한다</span>
@@ -1182,7 +1185,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>삭제는 돌려줄 데이터가 없으므로 <code>Resp.ok(null)</code>로 성공만 알립니다. 이것으로 목록, 상세, 작성, 수정, 삭제가 모두 갖춰졌습니다.</p>
-<h2>2.15 요청 처리 흐름</h2>
+<h2>2.16 요청 처리 흐름</h2>
 <p>지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 주소를 부른 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.</p>
 <p>먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 만든 뒤, 미리 만들어 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 만들지 않고 빌려 쓴 다음 반납하는 방식이라, 요청이 몰려도 서버가 감당할 수 있습니다.</p>
 <p>요청은 스프링 컨테이너로 넘어갑니다. 앞 챕터에서 본 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.</p>
@@ -1239,7 +1242,7 @@
 <div class="dialogue"><span class="speaker">동료</span>: "목록이랑 상세 잘 나와요. 그런데 없는 번호로 상세를 부르면 어떻게 돼요? 3번 글은 아직 없는데."</div>
 <p>오픈이는 순간 답이 막혔습니다. <code>findById</code>로 없는 글을 찾으면 무엇이 돌아오는지, 그다음 어떻게 되는지 확인해 본 적이 없었습니다.</p>
 <p class="thought">없는 번호를 넣으면. 그대로 터지는 거 아닌가?</p>
-<h2>2.16 이것만은 기억하자</h2>
+<h2>2.17 이것만은 기억하자</h2>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>

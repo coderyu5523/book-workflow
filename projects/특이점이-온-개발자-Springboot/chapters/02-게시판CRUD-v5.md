@@ -523,7 +523,7 @@ public class Board {
 
 ## 2.5 리포지토리의 다섯 기능
 
-엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 두는 계층입니다.
+엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.
 
 리포지토리가 데이터베이스에 접근할 때 쓰는 도구가 `EntityManager`입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 씁니다.
 
@@ -831,7 +831,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ## 2.8 단위 테스트와 통합 테스트
 
-지금까지는 애플리케이션 전체를 띄워 API로 결과를 봤습니다. 하지만 리포지토리 하나가 제대로 도는지 확인하려고 매번 서버를 띄우고 요청을 보내는 것은 번거롭습니다.
+리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 도는지는 실행해 봐야 알 수 있는데, 확인하는 방법은 하나가 아닙니다.
 
 ### 2.8.1 단위 테스트와 통합 테스트
 
@@ -879,7 +879,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다*
 
-리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리 계층만 가볍게 띄우는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
+리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리만 가볍게 띄우는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
 
 ### 2.8.2 given-when-eye
 
@@ -1034,64 +1034,68 @@ public class BoardRepositoryTest {
 
 다섯 테스트가 모두 초록색으로 통과했습니다. 서버를 띄우지 않고 리포지토리만 떼어 놓고도 조회·저장·수정·삭제가 제대로 도는지 확인할 수 있습니다.
 
-## 2.10 게시글 목록
+## 2.10 3계층 아키텍처
 
-리포지토리가 데이터베이스를 다루고, 리포지토리를 언제 어떻게 호출할지는 서비스가 정하며, 바깥의 요청을 받아 서비스로 넘기는 것이 컨트롤러입니다. 도입부의 그림 2-1에서 본 세 층이 이 구조이며, 이렇게 나눈 것을 3계층 아키텍처라고 합니다.
-
-한 클래스에 요청을 받는 일과 데이터를 저장하는 일을 모두 넣어도 게시판은 동작합니다. 문제는 고칠 때 드러납니다. 주소를 바꿀 일과 저장 방식을 바꿀 일이 한자리에 섞여 있으면, 한쪽을 손볼 때마다 다른 쪽까지 함께 들여다봐야 합니다.
+리포지토리만 떼어 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 520 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="칸막이가 없는 창고 한 칸에 요청을 다루는 물건과 저장을 다루는 물건이 기울어진 채 뒤섞여 쌓여 있다.">
-  <path d="M46,64 L260,18 L474,64" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="60" y="64" width="400" height="200" rx="4" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <g transform="rotate(-9 130 122)">
-    <rect x="95" y="97" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-    <text x="130" y="127" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청</text>
-  </g>
-  <g transform="rotate(7 232 110)">
-    <rect x="197" y="85" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-    <text x="232" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">저장</text>
-  </g>
-  <g transform="rotate(-5 336 128)">
-    <rect x="301" y="103" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(11 168 205)">
-    <rect x="133" y="180" width="70" height="50" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(-6 272 212)">
-    <rect x="237" y="187" width="70" height="50" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  </g>
-  <g transform="rotate(8 380 198)">
-    <rect x="345" y="173" width="70" height="50" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
-  </g>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="한 클래스 파일 안에 요청을 받는 코드, 흐름을 정하는 코드, 데이터베이스를 다루는 코드가 번갈아 놓여 있다.">
+  <text x="52" y="30" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
+  <text x="168" y="30" font-size="11" fill="#94a3b8">전부 한 클래스에 넣었다면</text>
+  <rect x="44" y="44" width="472" height="220" rx="6" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <line x1="44" y1="88" x2="516" y2="88" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="132" x2="516" y2="132" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="176" x2="516" y2="176" stroke="#e2e8f0" stroke-width="1"/>
+  <line x1="44" y1="220" x2="516" y2="220" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="68" y="71" font-size="12" font-family="monospace" fill="#334155">@GetMapping("/api/boards")</text>
+  <rect x="358" y="53" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="71" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <text x="68" y="115" font-size="12" font-family="monospace" fill="#334155">em.createQuery("select b …")</text>
+  <rect x="358" y="97" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
+  <text x="68" y="159" font-size="12" font-family="monospace" fill="#334155">new Board(); setTitle(…)</text>
+  <rect x="358" y="141" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="425" y="159" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
+  <text x="68" y="203" font-size="12" font-family="monospace" fill="#334155">@PostMapping("/api/boards")</text>
+  <rect x="358" y="185" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="203" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <text x="68" y="247" font-size="12" font-family="monospace" fill="#334155">em.persist(board)</text>
+  <rect x="358" y="229" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="247" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
 
-*그림 2-24. 한 곳에 모아 두면 고칠 때마다 전체를 함께 살펴야 합니다*
+*그림 2-24. 한 클래스에 다 넣으면 성격이 다른 코드가 한곳에 섞입니다*
 
-층을 나누면 바꿀 이유가 같은 것끼리 모입니다. 하나씩 떼어 확인할 수도 있어서, 뒤에서 리포지토리 하나만 놓고 제대로 도는지 검증하는 것도 이 구조 덕입니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.
+성격이 같은 코드끼리 나눠 두면 클래스 하나가 맡는 일이 하나로 줄어듭니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 손대면 됩니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 520 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="삼층 건물. 맨 위 층에 컨트롤러, 가운데 층에 서비스, 맨 아래 층에 리포지토리가 있고 각 층에는 같은 종류의 물건만 놓여 있다.">
-  <path d="M66,62 L260,16 L454,62" fill="none" stroke="#475569" stroke-width="1.9"/>
-  <rect x="80" y="62" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="110" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <rect x="270" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="348" y="82" width="60" height="40" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <rect x="80" y="142" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="190" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
-  <rect x="270" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="348" y="162" width="60" height="40" rx="4" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.5"/>
-  <rect x="80" y="222" width="360" height="80" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="270" font-size="14" font-weight="700" fill="#0f172a">리포지토리</text>
-  <rect x="270" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
-  <rect x="348" y="242" width="60" height="40" rx="4" fill="#fff7ed" stroke="#ff7849" stroke-width="1.5"/>
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="파일 세 개가 위아래로 놓여 있다. 컨트롤러 파일은 요청 받기, 서비스 파일은 흐름 정하기, 리포지토리 파일은 데이터베이스 다루기만 담고 있다.">
+  <rect x="44" y="20" width="472" height="76" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="68" y="50" font-size="13" font-weight="800" fill="#0f172a">BoardController.java</text>
+  <text x="68" y="76" font-size="12" font-family="monospace" fill="#334155">@GetMapping   @PostMapping</text>
+  <rect x="358" y="34" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <rect x="44" y="106" width="472" height="76" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.8"/>
+  <text x="68" y="136" font-size="13" font-weight="800" fill="#0f172a">BoardService.java</text>
+  <text x="68" y="162" font-size="12" font-family="monospace" fill="#334155">게시글목록()   게시글추가()</text>
+  <rect x="358" y="120" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="425" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
+  <rect x="44" y="192" width="472" height="76" rx="6" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="68" y="222" font-size="13" font-weight="800" fill="#0f172a">BoardRepository.java</text>
+  <text x="68" y="248" font-size="12" font-family="monospace" fill="#334155">em.find   em.persist</text>
+  <rect x="358" y="206" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
 
-*그림 2-25. 층을 나누면 바꿀 이유가 같은 것끼리 모여, 고칠 곳과 확인할 곳이 분명해집니다*
+*그림 2-25. 층을 나누면 같은 성격의 코드끼리 한곳에 모입니다*
 
-컨트롤러가 제공할 게시판 API는 앞에서 본 주소와 HTTP 메서드를 조합한 것입니다.
+이렇게 일의 성격대로 층을 나누는 구조를 계층형 아키텍처(Layered Architecture)라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다. 요청을 받는 컨트롤러, 처리 흐름을 정하는 서비스, 데이터베이스를 다루는 리포지토리가 그 셋입니다.
+
+## 2.11 게시글 목록
+
+앞에서 본 주소와 HTTP 메서드를 조합하면 컨트롤러가 제공할 게시판 API 다섯 가지가 나옵니다.
 
 | HTTP 메서드 | 경로 | 기능 |
 |---|---|---|
@@ -1168,7 +1172,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 ![](../assets/CH2/terminal/01_api-response.png)
 *그림 2-26. 목록 조회 요청에 게시글 두 개가 Resp 형식으로 감싸여 돌아온 응답입니다*
 
-## 2.11 게시글 상세
+## 2.12 게시글 상세
 
 상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById`를 호출합니다.
 
@@ -1193,7 +1197,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
     }
 ```
 
-## 2.12 게시글 쓰기
+## 2.13 게시글 쓰기
 
 작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 그 값을 받을 그릇이 필요합니다. 계층 사이에서 데이터만 나르는 이 그릇을 DTO(Data Transfer Object)라고 합니다.
 
@@ -1246,7 +1250,7 @@ public class BoardRequest {
 
 저장한 게시글을 응답 바디에 담아 돌려줍니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
 
-## 2.13 게시글 수정
+## 2.14 게시글 수정
 
 수정에는 저장하는 호출이 없습니다. 리포지토리에 수정 메서드를 만들지 않은 것도 이 때문입니다.
 
@@ -1278,7 +1282,7 @@ public class BoardRequest {
     }
 ```
 
-## 2.14 게시글 삭제
+## 2.15 게시글 삭제
 
 삭제는 지울 엔티티를 먼저 조회해 리포지토리에 넘깁니다.
 
@@ -1307,7 +1311,7 @@ public class BoardRequest {
 삭제는 돌려줄 데이터가 없으므로 `Resp.ok(null)`로 성공만 알립니다. 이것으로 목록, 상세, 작성, 수정, 삭제가 모두 갖춰졌습니다.
 
 
-## 2.15 요청 처리 흐름
+## 2.16 요청 처리 흐름
 
 지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 주소를 부른 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.
 
@@ -1378,7 +1382,7 @@ public class BoardRequest {
 
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 
-## 2.16 이것만은 기억하자
+## 2.17 이것만은 기억하자
 
 :::remember
 **이것만은 기억하자**
