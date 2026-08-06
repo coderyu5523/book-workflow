@@ -69,6 +69,26 @@
 <li>지연 로딩이 왜 쿼리를 늘리는지 이해하고, fetch join으로 조회를 한 번에 끝냅니다</li>
 </ul>
 </div>
+<div class="prep-section-md">
+<p><strong>소스코드 준비</strong></p>
+<p>소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 챕터 4와 같은 <code>com.metacoding.spring</code>입니다.</p>
+<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 5 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch05</div>
+<p>이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다.</p>
+<pre><code>spring-start/ch05  (신규·변경)
+├── reply/Reply.java                      [설명] 댓글 엔티티(@ManyToOne user/board)
+├── reply/ReplyRepository.java            [설명] EntityManager로 저장·조회·삭제
+├── reply/ReplyRequest.java, ReplyResponse.java [참고] 댓글 DTO
+├── reply/ReplyService.java               [실습 1] 댓글 저장·삭제(소유자 검증)
+├── reply/ReplyController.java            [실습 2] 작성·삭제 엔드포인트
+├── core/config/WebMvcConfig.java         [변경] 인터셉터에 /api/replies 추가
+├── board/Board.java                      [실습 3] @OneToMany replies, user EAGER→LAZY
+├── board/BoardRepository.java            [실습 4] findByIdJoinUserAndReply(fetch join)
+├── board/BoardResponse.java              [설명] DetailDTO에 replies·isOwner
+├── board/BoardService.java, BoardController.java [설명] 상세에 sessionUserId
+└── test/board/BoardRepositoryTest.java   [실습 5] fetch 5단계(EAGER 토글 포함)
+</code></pre>
+<p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
+</div>
 <h2>5.1 댓글과 게시글</h2>
 <h3>5.1.1 양방향 연관관계와 주인</h3>
 <p>포스트잇에는 저마다 &quot;어느 글의 것&quot;이라는 표시가 적혀 있습니다. 글은 자기에게 붙은 포스트잇이 몇 장인지 일일이 들고 있지 않아도 됩니다. 각 포스트잇이 자기가 어느 글 소속인지 알고 있으니, 표시만 따라가면 글에 붙은 포스트잇을 전부 모을 수 있습니다.</p>
@@ -164,26 +184,6 @@
 </tr>
 </tbody>
 </table>
-<div class="prep-section-md">
-<p><strong>소스코드 준비</strong></p>
-<p>앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 앞 챕터와 같은 <code>com.metacoding.spring</code>입니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 5 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch05</div>
-<p>이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다.</p>
-<pre><code>spring-start/ch05  (신규·변경)
-├── reply/Reply.java                      [설명] 댓글 엔티티(@ManyToOne user/board)
-├── reply/ReplyRepository.java            [설명] EntityManager로 저장·조회·삭제
-├── reply/ReplyRequest.java, ReplyResponse.java [참고] 댓글 DTO
-├── reply/ReplyService.java               [실습 1] 댓글 저장·삭제(소유자 검증)
-├── reply/ReplyController.java            [실습 2] 작성·삭제 엔드포인트
-├── core/config/WebMvcConfig.java         [변경] 인터셉터에 /api/replies 추가
-├── board/Board.java                      [실습 3] @OneToMany replies, user EAGER→LAZY
-├── board/BoardRepository.java            [실습 4] findByIdJoinUserAndReply(fetch join)
-├── board/BoardResponse.java              [설명] DetailDTO에 replies·isOwner
-├── board/BoardService.java, BoardController.java [설명] 상세에 sessionUserId
-└── test/board/BoardRepositoryTest.java   [실습 5] fetch 5단계(EAGER 토글 포함)
-</code></pre>
-<p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
-</div>
 <h2>5.2 댓글 엔티티와 목록 매핑</h2>
 <p>먼저 댓글 엔티티부터 만듭니다. 댓글은 작성자와 게시글을 각각 참조하므로 두 개의 <code>@ManyToOne</code>을 가집니다. <code>reply/Reply.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> reply/Reply.java. 댓글 엔티티</div><span class="nd">@NoArgsConstructor</span>
@@ -227,8 +227,8 @@
 <p>먼저 댓글을 저장하고 꺼내는 리포지토리입니다. <code>reply/ReplyRepository.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
-<p>3장에서 바꾼 <code>BoardRepository</code>와 같은 모양입니다. <code>save</code>·<code>findById</code>·<code>delete</code>가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.</p>
-<p>요청과 응답을 담을 DTO도 앞 챕터의 방식을 그대로 씁니다. <code>reply/ReplyRequest.java</code>와 <code>reply/ReplyResponse.java</code>는 각각 이렇게 되어 있습니다.</p>
+<p>챕터 3에서 바꾼 <code>BoardRepository</code>와 같은 모양입니다. <code>save</code>·<code>findById</code>·<code>delete</code>가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.</p>
+<p>요청과 응답을 담을 DTO도 챕터 3의 방식을 그대로 씁니다. <code>reply/ReplyRequest.java</code>와 <code>reply/ReplyResponse.java</code>는 각각 이렇게 되어 있습니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> reply/ReplyRequest.java, ReplyResponse.java. 댓글 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="nd">@NotEmpty</span><span class="p">(</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;댓글 내용을 입력해주세요&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">comment</span><span class="p">,</span>
@@ -247,7 +247,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>SaveDTO</code>는 댓글 내용과 어느 글에 달지(<code>boardId</code>)를 받고, <code>toEntity</code>는 4장에서 게시글을 만들 때처럼 로그인 유저와 대상 글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. <code>DTO</code>는 응답으로 나갈 댓글 하나를 담습니다.</p>
+<p><code>SaveDTO</code>는 댓글 내용과 어느 글에 달지(<code>boardId</code>)를 받고, <code>toEntity</code>는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. <code>DTO</code>는 응답으로 나갈 댓글 하나를 담습니다.</p>
 <p>리포지토리와 DTO를 서비스에서 조립합니다. <code>reply/ReplyService.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> reply/ReplyService.java. 댓글 저장</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
@@ -284,7 +284,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>request.getAttribute(&quot;sessionUser&quot;)</code>로 로그인 유저를 꺼내 작성자로 붙입니다. 4장에서 필터가 담아 둔 유저입니다.</p>
+<p><code>request.getAttribute(&quot;sessionUser&quot;)</code>로 로그인 유저를 꺼내 작성자로 붙입니다. 챕터 4에서 필터가 담아 둔 유저입니다.</p>
 <h2>5.4 댓글 삭제</h2>
 <p>삭제는 작성자 본인만 할 수 있습니다. <code>reply/ReplyService.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> reply/ReplyService.java. 댓글 삭제</div><span class="w">    </span><span class="c1">// 작성자 본인만 지울 수 있다</span>
@@ -308,16 +308,16 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>삭제는 돌려줄 데이터가 없으므로 <code>Resp.ok(null)</code>로 성공만 알립니다. 로그인 유저의 아이디만 소유자 검증에 넘깁니다.</p>
-<p>댓글 쓰기와 삭제도 로그인한 사람만 하도록 막아야 합니다. 4장에서 만든 인터셉터가 게시글 주소만 지키고 있으므로, <code>core/config/WebMvcConfig.java</code>의 <code>addPathPatterns</code>에 <code>/api/replies</code>와 하위 경로를 더합니다.</p>
+<p>댓글 쓰기와 삭제도 로그인한 사람만 하도록 막아야 합니다. 챕터 4에서 만든 인터셉터가 게시글 주소만 지키고 있으므로, <code>core/config/WebMvcConfig.java</code>의 <code>addPathPatterns</code>에 <code>/api/replies</code>와 하위 경로를 더합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> core/config/WebMvcConfig.java. 보호 경로에 댓글 추가</div><span class="w">    </span><span class="n">registry</span><span class="p">.</span><span class="na">addInterceptor</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">AuthInterceptor</span><span class="p">())</span>
 <span class="w">            </span><span class="p">.</span><span class="na">addPathPatterns</span><span class="p">(</span><span class="s">&quot;/api/boards&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/api/boards/**&quot;</span><span class="p">,</span>
 <span class="w">                    </span><span class="s">&quot;/api/replies&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/api/replies/**&quot;</span><span class="p">);</span><span class="w"> </span><span class="c1">// 댓글 주소도 보호</span></div>
 <p>그러면 게시글과 똑같이 댓글 쓰기와 삭제도 로그인하지 않으면 인터셉터에서 401로 막힙니다.</p>
 <h2>5.5 지연 로딩과 프록시</h2>
-<p>댓글까지 나가는 것을 확인하고 나면, 4장에서 켜 둔 <code>show-sql</code> 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.</p>
+<p>댓글까지 나가는 것을 확인하고 나면, 챕터 4에서 켜 둔 <code>show-sql</code> 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.</p>
 <div class="dialogue"><span class="speaker">선배</span>: "글 목록 불러올 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 나가는지 세어 봤어요?"</div>
-<p>세어 본 적이 없는 질문입니다. 답하기 전에 짚어야 할 것이 지연 로딩입니다. 앞에서 댓글에 붙인 <code>FetchType.LAZY</code>가 그것입니다. 4장에서는 <code>Board.user</code>를 <code>EAGER</code>로 설정했는데, 이번 챕터에서 이 값을 <code>LAZY</code>로 바꿉니다. <code>board/Board.java</code>의 작성자 필드를 아래처럼 고칩니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="c1">// 4장의 EAGER에서 LAZY로 바꾼다</span>
+<p>세어 본 적이 없는 질문입니다. 답하기 전에 짚어야 할 것이 지연 로딩입니다. 앞에서 댓글에 붙인 <code>FetchType.LAZY</code>가 그것입니다. 챕터 4에서는 <code>Board.user</code>를 <code>EAGER</code>로 설정했는데, 이번 챕터에서 이 값을 <code>LAZY</code>로 바꿉니다. <code>board/Board.java</code>의 작성자 필드를 아래처럼 고칩니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="c1">// 챕터 4의 EAGER에서 LAZY로 바꾼다</span>
 <span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="nd">@JoinColumn</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;user_id&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span></div>
@@ -472,18 +472,17 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>글의 <code>isOwner</code>가 <code>true</code>이고, <code>ssar</code>가 쓴 1·2번 댓글도 <code>true</code>, <code>cos</code>가 쓴 3번 댓글은 <code>false</code>입니다. 화면은 이 값만 보고 본인 것에만 삭제 버튼을 붙이면 됩니다.</p>
-<h2>5.9 이것만은 기억하자</h2>
 <p>댓글까지 붙자, 오픈이는 화면을 붙이던 동료를 불렀습니다. 목록에서 1번 글을 눌러 상세를 열자, 글 아래로 댓글 세 개가 나란히 나타났습니다. 본인이 쓴 댓글에만 삭제 버튼이 붙어 있었습니다.</p>
 <div class="dialogue"><span class="speaker">동료</span>: "댓글도 되고, 남의 댓글엔 삭제 버튼도 안 뜨네요. 이제 진짜 게시판 같은데요."</div>
 <p>게시판이 완성됐습니다. 글을 쓰고 읽고 고치고 지우고, 로그인한 본인만 자기 글과 댓글을 건드리고, 무거운 상세 조회도 fetch join으로 묶어 쿼리를 줄였습니다.</p>
 <p class="thought">처음엔 하나도 설명할 수 없던 것들이었는데.</p>
-<p>오픈이는 1장을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 2장에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 나갔습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 부르는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 쓰는 도구가 됐습니다.</p>
+<p>오픈이는 챕터 1을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 챕터 2에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 나갔습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 부르는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 쓰는 도구가 됐습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li>댓글은 외래 키를 든 연관관계 주인이고, 게시글은 <code>mappedBy</code>로 관계의 주인을 가리킵니다. <code>cascade = REMOVE</code>로 게시글을 지우면 딸린 댓글도 함께 지워집니다.</li>
-<li>지연 로딩은 연관 엔티티를 프록시로 미뤄 두었다가 꺼내는 순간 조회 쿼리를 냅니다. 이것이 목록 조회에서는 N+1개의 쿼리가 나가는데, <code>join fetch</code>로 함께 가져오면 쿼리 하나로 끝납니다. 4장에서 이름만 쓰던 <code>findByIdJoinUser</code>가 바로 이 해법이었습니다.</li>
-<li>리플렉션에서 시작해 게시판 하나를 인증과 성능까지 챙겨 완성했습니다. 스프링이 대신 해 주던 일들의 이름을 이제 하나씩 부를 수 있습니다. 마법처럼 보이던 것은 리플렉션 위에 세운 규칙이었습니다.</li>
+<li><strong>댓글은 외래 키를 든 연관관계 주인이고, 게시글은 <code>mappedBy</code>로 관계의 주인을 가리킵니다.</strong> <code>cascade = REMOVE</code>로 게시글을 지우면 딸린 댓글도 함께 지워집니다.</li>
+<li><strong>지연 로딩은 연관 엔티티를 프록시로 미뤄 두었다가 꺼내는 순간 조회 쿼리를 냅니다.</strong> 이것이 목록 조회에서는 N+1개의 쿼리가 나가는데, <code>join fetch</code>로 함께 가져오면 쿼리 하나로 끝납니다. 챕터 4에서 이름만 쓰던 <code>findByIdJoinUser</code>가 이 해법입니다.</li>
+<li><strong>리플렉션에서 시작해 게시판 하나를 인증과 성능까지 챙겨 완성했습니다.</strong> 스프링이 대신 해 주던 일들의 이름을 이제 하나씩 부를 수 있습니다. 마법처럼 보이던 것은 리플렉션 위에 세운 규칙이었습니다.</li>
 </ul>
 </div>
 

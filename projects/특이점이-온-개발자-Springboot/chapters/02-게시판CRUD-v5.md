@@ -66,7 +66,7 @@
 ::::prep
 **소스코드 준비**
 
-앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다.
+소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다.
 
 ```bash [터미널] 챕터 2 폴더로 이동
 cd spring-start/ch02
@@ -838,42 +838,61 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 떼어 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)이고, 검증된 기능들을 결합해 전체 흐름을 확인하는 것이 통합 테스트입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트와 통합 테스트. 왼쪽은 분쇄기와 추출기를 한 기계에 넣고 커피콩에서 커피까지 한 번에 돌리는 통합 방식으로, 문제가 나면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기와 추출기를 따로 떼어 각각 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 독립적으로 검증하는 단위 방식이다.">
+<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트와 통합 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 커피콩을 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
   <defs>
-    <marker id="c2coffee-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2coffee-w" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="c2coffee-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+    <g id="c2bean"><ellipse rx="6.2" ry="4.4" fill="#92400e" transform="rotate(-20)"/><path d="M-4.2,-1.4 Q0,0 4.2,1.4" fill="none" stroke="#fde68a" stroke-width="1" transform="rotate(-20)"/></g>
   </defs>
   <rect x="24" y="40" width="420" height="300" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
   <text x="234" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">한 번에 돌리기 (통합)</text>
-  <text x="234" y="98" text-anchor="middle" font-size="11" fill="#475569">커피콩</text>
-  <line x1="234" y1="104" x2="234" y2="126" stroke="#475569" stroke-width="1.5" marker-end="url(#c2coffee-a)"/>
-  <rect x="94" y="128" width="280" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="234" y="153" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">분쇄기 + 추출기</text>
-  <text x="234" y="174" text-anchor="middle" font-size="10" fill="#3730a3">한 통에 같이</text>
-  <line x1="234" y1="188" x2="234" y2="212" stroke="#475569" stroke-width="1.5" marker-end="url(#c2coffee-a)"/>
-  <text x="234" y="232" text-anchor="middle" font-size="11" fill="#475569">커피</text>
-  <text x="234" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">안 나오면 어디가 문제인지</text>
-  <text x="234" y="308" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">알기 어렵다</text>
+  <use href="#c2bean" x="196" y="90"/>
+  <use href="#c2bean" x="210" y="86"/>
+  <use href="#c2bean" x="224" y="90"/>
+  <text x="238" y="94" font-size="11" fill="#475569">커피콩</text>
+  <polygon points="182,102 286,102 264,128 204,128" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6" stroke-linejoin="round"/>
+  <rect x="164" y="128" width="140" height="104" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="234" y="164" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">분쇄기</text>
+  <line x1="184" y1="180" x2="284" y2="180" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="234" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">추출기</text>
+  <rect x="226" y="232" width="16" height="12" rx="2" fill="#4f46e5"/>
+  <line x1="234" y1="246" x2="234" y2="256" stroke="#475569" stroke-width="1.4" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
+  <path d="M208,258 L260,258 L252,286 L216,286 Z" fill="#fff" stroke="#475569" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M260,264 Q273,272 259,281" fill="none" stroke="#475569" stroke-width="1.6"/>
+  <text x="234" y="280" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">?</text>
+  <text x="234" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">안 나오면 어디가 문제인지</text>
+  <text x="234" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">알기 어렵다</text>
   <rect x="496" y="40" width="420" height="300" rx="12" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
   <text x="706" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">따로 돌리기 (단위)</text>
-  <rect x="528" y="92" width="170" height="150" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="613" y="114" text-anchor="middle" font-size="10" fill="#6b7280">테스트 1</text>
-  <text x="613" y="134" text-anchor="middle" font-size="10" fill="#475569">커피콩</text>
-  <line x1="613" y1="140" x2="613" y2="158" stroke="#4f46e5" stroke-width="1.4" marker-end="url(#c2coffee-a)"/>
-  <rect x="548" y="160" width="130" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="613" y="185" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">분쇄기</text>
-  <line x1="613" y1="200" x2="613" y2="216" stroke="#4f46e5" stroke-width="1.4" marker-end="url(#c2coffee-a)"/>
-  <text x="613" y="232" text-anchor="middle" font-size="10" fill="#475569">1cm 커피콩</text>
-  <rect x="714" y="92" width="170" height="150" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="799" y="114" text-anchor="middle" font-size="10" fill="#6b7280">테스트 2</text>
-  <text x="799" y="134" text-anchor="middle" font-size="10" fill="#475569">1cm 커피콩</text>
-  <line x1="799" y1="140" x2="799" y2="158" stroke="#4f46e5" stroke-width="1.4" marker-end="url(#c2coffee-a)"/>
-  <rect x="734" y="160" width="130" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="799" y="185" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">추출기</text>
-  <line x1="799" y1="200" x2="799" y2="216" stroke="#4f46e5" stroke-width="1.4" marker-end="url(#c2coffee-a)"/>
-  <text x="799" y="232" text-anchor="middle" font-size="10" fill="#475569">커피</text>
-  <text x="706" y="290" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">문제가 나면 그 기능만</text>
-  <text x="706" y="308" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
+  <rect x="522" y="86" width="176" height="196" rx="10" fill="#fcfdff" stroke="#c7d2fe" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="610" y="108" text-anchor="middle" font-size="10" fill="#6b7280">테스트 1</text>
+  <use href="#c2bean" x="580" y="126"/>
+  <use href="#c2bean" x="592" y="126"/>
+  <text x="602" y="130" font-size="10" fill="#475569">커피콩</text>
+  <polygon points="576,138 644,138 630,156 590,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
+  <rect x="562" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="610" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">분쇄기</text>
+  <rect x="604" y="218" width="12" height="10" rx="2" fill="#4f46e5"/>
+  <line x1="610" y1="230" x2="610" y2="240" stroke="#4f46e5" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
+  <circle cx="601" cy="252" r="2.2" fill="#92400e"/>
+  <circle cx="610" cy="252" r="2.2" fill="#92400e"/>
+  <circle cx="619" cy="252" r="2.2" fill="#92400e"/>
+  <text x="610" y="274" text-anchor="middle" font-size="10" fill="#475569">1cm 커피콩</text>
+  <rect x="712" y="86" width="176" height="196" rx="10" fill="#fcfdff" stroke="#c7d2fe" stroke-width="1.3" stroke-dasharray="5 4"/>
+  <text x="800" y="108" text-anchor="middle" font-size="10" fill="#6b7280">테스트 2</text>
+  <circle cx="762" cy="126" r="2.2" fill="#92400e"/>
+  <circle cx="770" cy="126" r="2.2" fill="#92400e"/>
+  <circle cx="778" cy="126" r="2.2" fill="#92400e"/>
+  <text x="786" y="130" font-size="10" fill="#475569">1cm 커피콩</text>
+  <polygon points="766,138 834,138 820,156 780,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
+  <rect x="752" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="800" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">추출기</text>
+  <rect x="794" y="218" width="12" height="10" rx="2" fill="#4f46e5"/>
+  <line x1="800" y1="230" x2="800" y2="240" stroke="#4f46e5" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
+  <path d="M787,244 L813,244 L809,262 L791,262 Z" fill="#fff" stroke="#475569" stroke-width="1.4" stroke-linejoin="round"/>
+  <path d="M813,248 Q822,254 812,259" fill="none" stroke="#475569" stroke-width="1.4"/>
+  <text x="800" y="274" text-anchor="middle" font-size="10" fill="#475569">커피</text>
+  <text x="706" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">문제가 나면 그 기능만</text>
+  <text x="706" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
 </svg>
 </div>
 
@@ -1095,16 +1114,6 @@ public class BoardRepositoryTest {
 
 ## 2.11 게시글 목록
 
-앞에서 본 주소와 HTTP 메서드를 조합하면 컨트롤러가 제공할 게시판 API 다섯 가지가 나옵니다.
-
-| HTTP 메서드 | 경로 | 기능 |
-|---|---|---|
-| GET | /api/boards | 게시글 목록 |
-| GET | /api/boards/{boardId} | 게시글 상세 |
-| POST | /api/boards | 게시글 작성 |
-| PUT | /api/boards/{boardId} | 게시글 수정 |
-| DELETE | /api/boards/{boardId} | 게시글 삭제 |
-
 먼저 서비스와 컨트롤러의 골격을 만듭니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.
 
 `board/BoardService.java`를 열고 아래 코드를 작성합니다.
@@ -1317,7 +1326,7 @@ public class BoardRequest {
 
 먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 만든 뒤, 미리 만들어 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 만들지 않고 빌려 쓴 다음 반납하는 방식이라, 요청이 몰려도 서버가 감당할 수 있습니다.
 
-요청은 스프링 컨테이너로 넘어갑니다. 앞 챕터에서 본 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
+요청은 스프링 컨테이너로 넘어갑니다. 챕터 1에서 본 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
 
 컨트롤러는 요청에서 값을 꺼내 서비스로 넘깁니다. 서비스에서는 `@Transactional`이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush`가 일어나는 지점이 이 순간입니다.
 
@@ -1382,12 +1391,11 @@ public class BoardRequest {
 
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 
-## 2.17 이것만은 기억하자
+없는 글을 조회하면 없는데도 성공이라 답하며 빈 값이 돌아옵니다. 다음 챕터에서는 없는 글을 404로 바로잡고, 엔티티가 응답에 그대로 실리지 않도록 DTO로 정리합니다.
 
 :::remember
 **이것만은 기억하자**
 
-- JPA는 객체와 테이블 사이를 변환합니다. 조회한 엔티티는 영속성 컨텍스트에서 관리되고, 값을 바꾸면 트랜잭션이 끝날 때 더티체킹으로 변경이 반영됩니다. 그래서 수정에는 `save()`가 없습니다.
-- 컨트롤러, 서비스, 리포지토리 세 층으로 나눠 요청을 받고, 처리하고, 데이터베이스를 다룹니다. 이 흐름으로 게시글의 작성, 조회, 수정, 삭제 API를 완성하고 단위 테스트로 검증했습니다.
-- 그런데 없는 글을 조회하면 없는데도 성공이라 답하며 빈 값이 돌아옵니다. 다음 챕터에서는 없는 글을 404로 바로잡고, 엔티티가 응답에 그대로 실리지 않도록 DTO로 정리합니다.
+- **JPA는 객체와 테이블 사이를 변환합니다.** 조회한 엔티티는 영속성 컨텍스트에서 관리되고, 값을 바꾸면 트랜잭션이 끝날 때 더티체킹으로 변경이 반영됩니다. 그래서 수정에는 `save()`가 없습니다.
+- **컨트롤러·서비스·리포지토리 세 층으로 나눕니다.** 요청을 받고, 처리하고, 데이터베이스를 다루는 일이 각각의 층에 놓입니다. 이 흐름으로 게시글의 작성, 조회, 수정, 삭제 API를 완성하고 단위 테스트로 검증했습니다.
 :::

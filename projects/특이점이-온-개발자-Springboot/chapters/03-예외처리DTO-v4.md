@@ -1,10 +1,26 @@
 # 챕터 3. 예외 처리와 DTO
 
-게시판은 목록과 상세, 작성과 수정, 삭제까지 동작합니다. 그런데 앞 챕터를 닫으며 물음이 하나 남았습니다. 없는 번호로 상세를 부르면 어떻게 되느냐는 것이었습니다. 목록에 글이 두 건뿐인 서버에 아직 없는 999번 상세를 요청하면, 응답은 멀쩡히 돌아옵니다. 그런데 이상합니다. 없는 글인데도 `status`는 200 성공인데, 정작 `body`는 비어 있습니다. 없는 글을 두고 성공이라 답하고 있습니다.
+게시판의 기본 기능인 목록, 상세 조회, 작성, 수정, 삭제 기능이 모두 완성되었습니다. 하지만 오픈이의 머릿속에는 앞서 동료가 무심코 던졌던 질문이 계속 맴돌았습니다.
 
-이것만 문제가 아닙니다. 정상으로 존재하는 1번 글을 부르면 응답은 잘 돌아옵니다. 그런데 응답 안에는 `createdAt` 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보이지만, 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 비밀번호까지 바깥으로 나갑니다.
+*그런데, 없는 글 번호를 조회하면 어떻게 되지?*
 
-문제 두 가지가 한꺼번에 드러났습니다. 없는 글인데 성공이라 답하며 빈 값이 나가는 것과, 내부 엔티티가 응답에 그대로 실리는 것입니다.
+오픈이는 서버에 없는 999번 글을 직접 조회해 보았습니다. 결과는 당황스러웠습니다. HTTP 상태는 200(성공)인데 응답 본문은 텅 비어 있었습니다.
+
+*데이터가 없는데 성공이라고 답하네.*
+
+이어서 존재하는 1번 글을 호출하자, 이번엔 `createdAt`(생성 일시) 같은 내부 기록용 필드까지 고스란히 노출되었습니다. 당장은 문제가 없지만, 나중에 비밀번호라도 추가된다면 클라이언트에게 여과 없이 전달될 상황이었습니다.
+
+*하나는 없는 글인데 성공이라 답하고, 하나는 안 내보내도 될 값까지 내보내고 있잖아.*
+
+두 응답을 화면에 나란히 띄워둔 채, 오픈이는 선배를 찾아갔습니다.
+
+**오픈이**: "선배님, 없는 글을 부르면 성공으로 나오고, 있는 글을 부르면 숨겨야 할 내부 필드까지 같이 나가요. 어디서부터 손대야 할까요?"
+
+**선배**: "둘 다 서버가 응답을 만드는 방식에서 생기는 문제예요. 두 가지만 바꾸면 돼요.
+
+첫째, 데이터 없음은 결과가 아니라 **예외(Exception)** 로 다루세요. 조회한 값이 비었으면 즉시 예외를 던지고, 그 예외를 한 곳에서만 받게 하면 돼요. 그래야 없는 글에 정확한 에러 응답이 나가요.
+
+둘째, 저장할 때 쓰는 **객체(Entity)** 를 그대로 내보내지 마세요. 화면에 보여줄 값만 옮겨 담는 응답용 객체를 따로 만들어야, 나중에 필드가 늘어도 엉뚱한 값이 딸려 나가지 않아요."
 
 <div class="svg-figure">
 <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 3 한눈에 보기. 문제 1은 없는 글을 조회하면 200 성공에 빈 값이 돌아오던 것을, Optional과 예외와 전역 처리로 404 응답으로 바꾼다. 문제 2는 엔티티를 통째로 내보내 createdAt까지 나가던 것을, 응답 DTO로 감싸 boardId·title·content 세 값만 내보낸다.">
@@ -46,6 +62,32 @@
 - `@RestControllerAdvice`로 예외를 한 곳에서 JSON으로 바꿔, 없는 글도 깔끔한 404로 응답합니다
 :::
 
+::::prep
+**소스코드 준비**
+
+소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 챕터 2와 같은 `com.metacoding.spring`입니다.
+
+```bash [터미널] 챕터 3 폴더로 이동
+cd spring-start/ch03
+```
+
+이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 챕터 2 그대로입니다.
+
+```
+spring-start/ch03  (변경·신규만)
+├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
+├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
+├── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
+├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
+├── board/BoardService.java                  [설명] orElseThrow + DTO 반환
+├── board/BoardController.java               [설명] 응답 타입 DTO로 교체
+├── board/Board.java                         [설명] @Builder + 생성자 추가
+└── board/BoardRequest.java                  [참고] toEntity() 추가
+```
+
+챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
+::::
+
 ## 3.1 두 개의 문제
 
 먼저 없는 글을 조회하는 첫 번째 문제입니다. 999번 상세를 요청하면 이런 응답이 돌아옵니다.
@@ -62,7 +104,7 @@ GET http://localhost:8080/api/boards/999
 }
 ```
 
-`status`는 200, `msg`는 성공인데 `body`가 비어 있습니다. 원인은 조회 코드에 있습니다. 앞 챕터의 `findById`는 없는 글을 찾으면 글 대신 `null`을 돌려줍니다. `null`이 그대로 응답 `body`에 담겨, 없는 글인데도 성공이라 답하고 빈 값이 나갑니다. 응답을 받은 화면에서는 글이 없어서 빈 것인지, 정말 성공인지 구분할 수 없습니다.
+`status`는 200, `msg`는 성공인데 `body`가 비어 있습니다. 원인은 조회 코드에 있습니다. 챕터 2의 `findById`는 없는 글을 찾으면 글 대신 `null`을 돌려줍니다. `null`이 그대로 응답 `body`에 담겨, 없는 글인데도 성공이라 답하고 빈 값이 나갑니다. 응답을 받은 화면에서는 글이 없어서 빈 것인지, 정말 성공인지 구분할 수 없습니다.
 
 두 번째 문제는 오히려 정상으로 동작하는 요청에 있습니다. 정상으로 존재하는 1번 글을 부르면 응답은 이렇게 돌아옵니다.
 
@@ -94,35 +136,9 @@ GET http://localhost:8080/api/boards/999
 | BoardRequest | (변경) 요청 DTO를 엔티티로 바꾸는 `toEntity`를 더합니다. |
 | Board | (변경) 빌더로 만들 수 있도록 `@Builder`와 생성자를 더합니다. |
 
-::::prep
-**소스코드 준비**
-
-앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 앞 챕터와 같은 `com.metacoding.spring`입니다.
-
-```bash [터미널] 챕터 3 폴더로 이동
-cd spring-start/ch03
-```
-
-이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 앞 챕터 그대로입니다.
-
-```
-spring-start/ch03  (변경·신규만)
-├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
-├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
-├── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
-├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
-├── board/BoardService.java                  [설명] orElseThrow + DTO 반환
-├── board/BoardController.java               [설명] 응답 타입 DTO로 교체
-├── board/Board.java                         [설명] @Builder + 생성자 추가
-└── board/BoardRequest.java                  [참고] toEntity() 추가
-```
-
-챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
-::::
-
 ## 3.2 JpaRepository로 바꾸기
 
-두 문제를 손보기 전에 리포지토리부터 바꿉니다. 앞 챕터에서 만든 다섯 메서드는 게시글에만 쓸 수 있는 코드가 아닙니다. 회원이든 댓글이든 기본 키로 한 건을 찾고, 전체를 가져오고, 저장하고, 지우는 일은 똑같습니다. 엔티티만 바뀔 뿐 안의 내용은 같습니다.
+두 문제를 손보기 전에 리포지토리부터 바꿉니다. 챕터 2에서 만든 다섯 메서드는 게시글에만 쓸 수 있는 코드가 아닙니다. 회원이든 댓글이든 기본 키로 한 건을 찾고, 전체를 가져오고, 저장하고, 지우는 일은 똑같습니다. 엔티티만 바뀔 뿐 안의 내용은 같습니다.
 
 스프링은 이 반복을 인터페이스 하나로 대신합니다. `JpaRepository`를 상속하면 기본 메서드가 딸려 오고, 구현 클래스는 스프링이 실행 시점에 만들어 줍니다.
 
@@ -135,9 +151,9 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 클래스가 인터페이스가 되고, 안이 비었습니다. `JpaRepository<Board, Integer>`의 두 자리에는 다룰 엔티티와 그 기본 키의 타입을 적습니다. `@Repository`도, `EntityManager` 주입도 필요 없습니다.
 
-앞 챕터에서 손으로 만든 메서드가 어디로 갔는지 보면 이렇습니다.
+챕터 2에서 손으로 만든 메서드가 어디로 갔는지 보면 이렇습니다.
 
-| 앞 챕터에서 만든 것 | 지금 | 비고 |
+| 챕터 2에서 만든 것 | 지금 | 비고 |
 |---|---|---|
 | `findById(int)` | 상속 | 반환 타입이 `Optional<Board>`입니다 |
 | `findAll()` | 상속 | JPQL을 쓰지 않습니다 |
@@ -145,9 +161,9 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 | `delete(Board)` | 상속 | 그대로입니다 |
 | (수정 메서드 없음) | 그대로 | 더티체킹으로 처리합니다 |
 
-`EntityManager`가 사라진 것은 아닙니다. `JpaRepository`의 구현체가 안에서 `EntityManager`를 그대로 씁니다. 앞 챕터에서 본 영속성 컨텍스트와 캐싱, 쓰기 지연, 더티체킹도 그대로 동작합니다. 개발자가 반복해서 쓰던 코드만 걷어낸 것입니다.
+`EntityManager`가 사라진 것은 아닙니다. `JpaRepository`의 구현체가 안에서 `EntityManager`를 그대로 씁니다. 챕터 2에서 본 영속성 컨텍스트와 캐싱, 쓰기 지연, 더티체킹도 그대로 동작합니다. 개발자가 반복해서 쓰던 코드만 걷어낸 것입니다.
 
-뒤 챕터에서 조건이 붙는 조회가 필요해지면, 인터페이스 안에 메서드를 선언하고 `@Query`에 JPQL을 적어 붙입니다. 앞 챕터에서 배운 JPQL은 그때 다시 쓰입니다.
+뒤 챕터에서 조건이 붙는 조회가 필요해지면, 인터페이스 안에 메서드를 선언하고 `@Query`에 JPQL을 적어 붙입니다. 챕터 2에서 배운 JPQL은 그때 다시 쓰입니다.
 
 ## 3.3 응답 DTO
 
@@ -211,7 +227,7 @@ public class BoardResponse {
 }
 ```
 
-`record`는 앞 챕터의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
+`record`는 챕터 2의 `BoardRequest`에서 이미 쓴 문법입니다. 두 DTO 모두 `Board`를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 `board.getId()`, `getTitle()`, `getContent()`에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 `id`가 아니라 `boardId`로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.
 
 지금은 목록용 `DTO`와 상세용 `DetailDTO`의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 DTO만 손보면 되고, 목록은 건드릴 필요가 없습니다.
 
@@ -221,7 +237,7 @@ public class BoardResponse {
 
 ## 3.4 요청 DTO와 엔티티 변환
 
-들어오는 요청도 마찬가지로 DTO에 담습니다. 앞 챕터에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
+들어오는 요청도 마찬가지로 DTO에 담습니다. 챕터 2에서 만든 `SaveDTO`에 `toEntity()`를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. `board/BoardRequest.java`의 `SaveDTO`에 아래 메서드를 추가합니다.
 
 ```java [참고] board/BoardRequest.java. 요청 DTO에 toEntity 추가
     public record SaveDTO(String title, String content) {
@@ -232,7 +248,7 @@ public class BoardResponse {
     }
 ```
 
-`toEntity()`가 `Board.builder()`를 쓰므로, 앞 챕터에서 `@Data`만 붙였던 `Board` 엔티티에 빌더를 더합니다. `@Builder`는 아래처럼 명시 생성자 위에 붙입니다.
+`toEntity()`가 `Board.builder()`를 쓰므로, 챕터 2에서 `@Data`만 붙였던 `Board` 엔티티에 빌더를 더합니다. `@Builder`는 아래처럼 명시 생성자 위에 붙입니다.
 
 ```java [설명] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor
@@ -240,7 +256,7 @@ public class BoardResponse {
 @Entity
 @Table(name = "board_tb")
 public class Board {
-    // id, title, content, createdAt 필드 (앞 챕터와 같음)
+    // id, title, content, createdAt 필드 (챕터 2와 같음)
 
     @Builder // 객체 생성 용도
     public Board(Integer id, String title, String content, Timestamp createdAt) {
@@ -256,7 +272,7 @@ public class Board {
 
 ## 3.5 Optional과 orElseThrow
 
-남은 문제는 없는 글이 성공으로 처리되는 것입니다. 앞 챕터의 `findById`는 없는 글을 찾으면 `null`을 돌려줬습니다. `null`은 아무 표시가 없는 값이라, 이 값을 받은 코드는 진짜 글인지 아닌지 열어 보기 전엔 모릅니다.
+남은 문제는 없는 글이 성공으로 처리되는 것입니다. 챕터 2의 `findById`는 없는 글을 찾으면 `null`을 돌려줬습니다. `null`은 아무 표시가 없는 값이라, 이 값을 받은 코드는 진짜 글인지 아닌지 열어 보기 전엔 모릅니다.
 
 `JpaRepository`의 `findById`는 `null`을 돌려주지 않습니다. 반환 타입이 `Optional<Board>`입니다.
 
@@ -348,7 +364,7 @@ Optional<Board> board = boardRepository.findById(1);
 | `GET /api/boards` | `List<Board>` | `List<BoardResponse.DTO>` |
 | `GET /api/boards/{boardId}` | `Board` | `BoardResponse.DetailDTO` |
 
-서비스가 넘겨준 DTO를 받아 `Resp.ok`로 감싸는 것은 앞 챕터와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성과 수정도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.
+서비스가 넘겨준 DTO를 받아 `Resp.ok`로 감싸는 것은 챕터 2와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성과 수정도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.
 
 ```json
 {
@@ -471,7 +487,7 @@ public class GlobalExceptionHandler {
 
 `@RestControllerAdvice`는 이 클래스를 전역 예외 처리기로 등록하고, `@ExceptionHandler`가 어떤 예외를 맡을지 지정합니다. `Exception404`는 404로, 미처 대비하지 못한 나머지 예외는 500으로 바꿔, 어떤 경우에도 낯선 기본 화면이 나가지 않게 막습니다.
 
-응답을 만드는 `Resp.fail`은 앞 챕터에서 `Resp.ok`와 함께 준비해 둔 실패용 메서드로, 오류 응답도 `status`·`msg`·`body` 형식을 그대로 지킵니다.
+응답을 만드는 `Resp.fail`은 챕터 2에서 `Resp.ok`와 함께 준비해 둔 실패용 메서드로, 오류 응답도 `status`·`msg`·`body` 형식을 그대로 지킵니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 던진 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
@@ -502,7 +518,7 @@ public class GlobalExceptionHandler {
 
 *그림 3-6. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
 
-예외가 위로 전파될 때 한 가지가 더 일어납니다. 예외가 난 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 앞 챕터에서 쓰기 메서드에 붙인 `@Transactional`이 정한 범위가 여기서 작동합니다.
+예외가 위로 전파될 때 한 가지가 더 일어납니다. 예외가 난 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 챕터 2에서 쓰기 메서드에 붙인 `@Transactional`이 정한 범위가 여기서 작동합니다.
 
 메서드가 끝까지 가면 그동안의 변경이 한꺼번에 반영됩니다.
 
@@ -581,12 +597,11 @@ GET http://localhost:8080/api/boards/999
 
 *없는 글은 걸렀는데, 문은 여전히 다 열려 있잖아.*
 
-## 3.8 이것만은 기억하자
+다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.
 
 :::remember
 **이것만은 기억하자**
 
-- 엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 바깥으로 나가지 않고, 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.
-- 없는 값은 `Optional`로 드러내고 `orElseThrow`로 예외를 던집니다. 커스텀 예외는 `RuntimeException`을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
-- 그런데 이 게시판은 아직 완전히 열려 있습니다. 로그인도, 주인 확인도 없어 아무나 남의 글을 수정하고 삭제할 수 있습니다. 다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.
+- **엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다.** 내부 필드가 바깥으로 나가지 않고, 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.
+- **없는 값은 `Optional`로 드러내고 `orElseThrow`로 예외를 던집니다.** 커스텀 예외는 `RuntimeException`을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
 :::

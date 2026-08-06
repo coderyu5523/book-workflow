@@ -20,9 +20,17 @@
 <body>
 <div class="container">
 <h1>챕터 3. 예외 처리와 DTO</h1>
-<p>게시판은 목록과 상세, 작성과 수정, 삭제까지 동작합니다. 그런데 앞 챕터를 닫으며 물음이 하나 남았습니다. 없는 번호로 상세를 부르면 어떻게 되느냐는 것이었습니다. 목록에 글이 두 건뿐인 서버에 아직 없는 999번 상세를 요청하면, 응답은 멀쩡히 돌아옵니다. 그런데 이상합니다. 없는 글인데도 <code>status</code>는 200 성공인데, 정작 <code>body</code>는 비어 있습니다. 없는 글을 두고 성공이라 답하고 있습니다.</p>
-<p>이것만 문제가 아닙니다. 정상으로 존재하는 1번 글을 부르면 응답은 잘 돌아옵니다. 그런데 응답 안에는 <code>createdAt</code> 같은 내부 기록 필드가 그대로 담겨 나갑니다. 지금은 사소해 보이지만, 뒤 챕터에서 엔티티에 작성자나 비밀번호가 붙으면, 응답을 감싸지 않는 한 비밀번호까지 바깥으로 나갑니다.</p>
-<p>문제 두 가지가 한꺼번에 드러났습니다. 없는 글인데 성공이라 답하며 빈 값이 나가는 것과, 내부 엔티티가 응답에 그대로 실리는 것입니다.</p>
+<p>게시판의 기본 기능인 목록, 상세 조회, 작성, 수정, 삭제 기능이 모두 완성되었습니다. 하지만 오픈이의 머릿속에는 앞서 동료가 무심코 던졌던 질문이 계속 맴돌았습니다.</p>
+<p class="thought">그런데, 없는 글 번호를 조회하면 어떻게 되지?</p>
+<p>오픈이는 서버에 없는 999번 글을 직접 조회해 보았습니다. 결과는 당황스러웠습니다. HTTP 상태는 200(성공)인데 응답 본문은 텅 비어 있었습니다.</p>
+<p class="thought">데이터가 없는데 성공이라고 답하네.</p>
+<p>이어서 존재하는 1번 글을 호출하자, 이번엔 <code>createdAt</code>(생성 일시) 같은 내부 기록용 필드까지 고스란히 노출되었습니다. 당장은 문제가 없지만, 나중에 비밀번호라도 추가된다면 클라이언트에게 여과 없이 전달될 상황이었습니다.</p>
+<p class="thought">하나는 없는 글인데 성공이라 답하고, 하나는 안 내보내도 될 값까지 내보내고 있잖아.</p>
+<p>두 응답을 화면에 나란히 띄워둔 채, 오픈이는 선배를 찾아갔습니다.</p>
+<div class="dialogue"><span class="speaker">오픈이</span>: "선배님, 없는 글을 부르면 성공으로 나오고, 있는 글을 부르면 숨겨야 할 내부 필드까지 같이 나가요. 어디서부터 손대야 할까요?"</div>
+<div class="dialogue"><span class="speaker">선배</span>: "둘 다 서버가 응답을 만드는 방식에서 생기는 문제예요. 두 가지만 바꾸면 돼요.</div>
+<p>첫째, 데이터 없음은 결과가 아니라 <strong>예외(Exception)</strong> 로 다루세요. 조회한 값이 비었으면 즉시 예외를 던지고, 그 예외를 한 곳에서만 받게 하면 돼요. 그래야 없는 글에 정확한 에러 응답이 나가요.</p>
+<p>둘째, 저장할 때 쓰는 <strong>객체(Entity)</strong> 를 그대로 내보내지 마세요. 화면에 보여줄 값만 옮겨 담는 응답용 객체를 따로 만들어야, 나중에 필드가 늘어도 엉뚱한 값이 딸려 나가지 않아요.&quot;</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 3 한눈에 보기. 문제 1은 없는 글을 조회하면 200 성공에 빈 값이 돌아오던 것을, Optional과 예외와 전역 처리로 404 응답으로 바꾼다. 문제 2는 엔티티를 통째로 내보내 createdAt까지 나가던 것을, 응답 DTO로 감싸 boardId·title·content 세 값만 내보낸다.">
   <defs>
@@ -61,6 +69,23 @@
 <li><code>@RestControllerAdvice</code>로 예외를 한 곳에서 JSON으로 바꿔, 없는 글도 깔끔한 404로 응답합니다</li>
 </ul>
 </div>
+<div class="prep-section-md">
+<p><strong>소스코드 준비</strong></p>
+<p>소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 챕터 2와 같은 <code>com.metacoding.spring</code>입니다.</p>
+<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 3 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch03</div>
+<p>이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 챕터 2 그대로입니다.</p>
+<pre><code>spring-start/ch03  (변경·신규만)
+├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
+├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
+├── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
+├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
+├── board/BoardService.java                  [설명] orElseThrow + DTO 반환
+├── board/BoardController.java               [설명] 응답 타입 DTO로 교체
+├── board/Board.java                         [설명] @Builder + 생성자 추가
+└── board/BoardRequest.java                  [참고] toEntity() 추가
+</code></pre>
+<p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
+</div>
 <h2>3.1 두 개의 문제</h2>
 <p>먼저 없는 글을 조회하는 첫 번째 문제입니다. 999번 상세를 요청하면 이런 응답이 돌아옵니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 없는 글 조회</div>GET<span class="w"> </span>http://localhost:8080/api/boards/999</div>
@@ -69,7 +94,7 @@
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
 <span class="p">}</span></div>
-<p><code>status</code>는 200, <code>msg</code>는 성공인데 <code>body</code>가 비어 있습니다. 원인은 조회 코드에 있습니다. 앞 챕터의 <code>findById</code>는 없는 글을 찾으면 글 대신 <code>null</code>을 돌려줍니다. <code>null</code>이 그대로 응답 <code>body</code>에 담겨, 없는 글인데도 성공이라 답하고 빈 값이 나갑니다. 응답을 받은 화면에서는 글이 없어서 빈 것인지, 정말 성공인지 구분할 수 없습니다.</p>
+<p><code>status</code>는 200, <code>msg</code>는 성공인데 <code>body</code>가 비어 있습니다. 원인은 조회 코드에 있습니다. 챕터 2의 <code>findById</code>는 없는 글을 찾으면 글 대신 <code>null</code>을 돌려줍니다. <code>null</code>이 그대로 응답 <code>body</code>에 담겨, 없는 글인데도 성공이라 답하고 빈 값이 나갑니다. 응답을 받은 화면에서는 글이 없어서 빈 것인지, 정말 성공인지 구분할 수 없습니다.</p>
 <p>두 번째 문제는 오히려 정상으로 동작하는 요청에 있습니다. 정상으로 존재하는 1번 글을 부르면 응답은 이렇게 돌아옵니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
@@ -125,35 +150,18 @@
 </tr>
 </tbody>
 </table>
-<div class="prep-section-md">
-<p><strong>소스코드 준비</strong></p>
-<p>앞 챕터에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 앞 챕터와 같은 <code>com.metacoding.spring</code>입니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 3 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch03</div>
-<p>이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 앞 챕터 그대로입니다.</p>
-<pre><code>spring-start/ch03  (변경·신규만)
-├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
-├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
-├── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
-├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
-├── board/BoardService.java                  [설명] orElseThrow + DTO 반환
-├── board/BoardController.java               [설명] 응답 타입 DTO로 교체
-├── board/Board.java                         [설명] @Builder + 생성자 추가
-└── board/BoardRequest.java                  [참고] toEntity() 추가
-</code></pre>
-<p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
-</div>
 <h2>3.2 JpaRepository로 바꾸기</h2>
-<p>두 문제를 손보기 전에 리포지토리부터 바꿉니다. 앞 챕터에서 만든 다섯 메서드는 게시글에만 쓸 수 있는 코드가 아닙니다. 회원이든 댓글이든 기본 키로 한 건을 찾고, 전체를 가져오고, 저장하고, 지우는 일은 똑같습니다. 엔티티만 바뀔 뿐 안의 내용은 같습니다.</p>
+<p>두 문제를 손보기 전에 리포지토리부터 바꿉니다. 챕터 2에서 만든 다섯 메서드는 게시글에만 쓸 수 있는 코드가 아닙니다. 회원이든 댓글이든 기본 키로 한 건을 찾고, 전체를 가져오고, 저장하고, 지우는 일은 똑같습니다. 엔티티만 바뀔 뿐 안의 내용은 같습니다.</p>
 <p>스프링은 이 반복을 인터페이스 하나로 대신합니다. <code>JpaRepository</code>를 상속하면 기본 메서드가 딸려 오고, 구현 클래스는 스프링이 실행 시점에 만들어 줍니다.</p>
 <p><code>board/BoardRepository.java</code>를 열고 아래 코드로 바꿉니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/BoardRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Board</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
 <p>클래스가 인터페이스가 되고, 안이 비었습니다. <code>JpaRepository&lt;Board, Integer&gt;</code>의 두 자리에는 다룰 엔티티와 그 기본 키의 타입을 적습니다. <code>@Repository</code>도, <code>EntityManager</code> 주입도 필요 없습니다.</p>
-<p>앞 챕터에서 손으로 만든 메서드가 어디로 갔는지 보면 이렇습니다.</p>
+<p>챕터 2에서 손으로 만든 메서드가 어디로 갔는지 보면 이렇습니다.</p>
 <table>
 <thead>
 <tr>
-<th>앞 챕터에서 만든 것</th>
+<th>챕터 2에서 만든 것</th>
 <th>지금</th>
 <th>비고</th>
 </tr>
@@ -186,8 +194,8 @@
 </tr>
 </tbody>
 </table>
-<p><code>EntityManager</code>가 사라진 것은 아닙니다. <code>JpaRepository</code>의 구현체가 안에서 <code>EntityManager</code>를 그대로 씁니다. 앞 챕터에서 본 영속성 컨텍스트와 캐싱, 쓰기 지연, 더티체킹도 그대로 동작합니다. 개발자가 반복해서 쓰던 코드만 걷어낸 것입니다.</p>
-<p>뒤 챕터에서 조건이 붙는 조회가 필요해지면, 인터페이스 안에 메서드를 선언하고 <code>@Query</code>에 JPQL을 적어 붙입니다. 앞 챕터에서 배운 JPQL은 그때 다시 쓰입니다.</p>
+<p><code>EntityManager</code>가 사라진 것은 아닙니다. <code>JpaRepository</code>의 구현체가 안에서 <code>EntityManager</code>를 그대로 씁니다. 챕터 2에서 본 영속성 컨텍스트와 캐싱, 쓰기 지연, 더티체킹도 그대로 동작합니다. 개발자가 반복해서 쓰던 코드만 걷어낸 것입니다.</p>
+<p>뒤 챕터에서 조건이 붙는 조회가 필요해지면, 인터페이스 안에 메서드를 선언하고 <code>@Query</code>에 JPQL을 적어 붙입니다. 챕터 2에서 배운 JPQL은 그때 다시 쓰입니다.</p>
 <h2>3.3 응답 DTO</h2>
 <h3>3.3.1 DTO가 필요한 이유</h3>
 <p>엔티티가 그대로 나가는 문제부터 막습니다. 응답에 엔티티를 그대로 담아 보내는 것은, 주방에서 쓰던 냄비를 손님상에 그대로 올리는 것과 같습니다. 엔티티는 데이터베이스와 직접 연결되어 온갖 정보를 담고, 값을 넣고 빼며 다루는 주방 냄비입니다. 손님상에 나가는 것은 접시라야 하고, 접시에는 손님이 볼 값만 덜어 담습니다.</p>
@@ -239,25 +247,25 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>record</code>는 앞 챕터의 <code>BoardRequest</code>에서 이미 쓴 문법입니다. 두 DTO 모두 <code>Board</code>를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 <code>board.getId()</code>, <code>getTitle()</code>, <code>getContent()</code>에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 <code>new BoardResponse.DTO(board)</code> 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 <code>id</code>가 아니라 <code>boardId</code>로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.</p>
+<p><code>record</code>는 챕터 2의 <code>BoardRequest</code>에서 이미 쓴 문법입니다. 두 DTO 모두 <code>Board</code>를 받는 생성자를 하나씩 작성합니다. 엔티티를 넘기면 <code>board.getId()</code>, <code>getTitle()</code>, <code>getContent()</code>에서 값을 꺼내 옮겨 담습니다. 이 생성자 덕분에 서비스에서 <code>new BoardResponse.DTO(board)</code> 한 줄로 엔티티를 DTO로 바꿀 수 있습니다. 응답 필드 이름을 엔티티의 <code>id</code>가 아니라 <code>boardId</code>로 정한 것도, 바깥에 나가는 이름을 응답 DTO에서 따로 정할 수 있기 때문입니다.</p>
 <p>지금은 목록용 <code>DTO</code>와 상세용 <code>DetailDTO</code>의 내용이 똑같습니다. 그런데 상세 화면은 앞으로 댓글 같은 정보가 더 붙어 목록과 달라집니다. 미리 나눠 두면 그때 상세 DTO만 손보면 되고, 목록은 건드릴 필요가 없습니다.</p>
 <p>두 DTO를 각각 파일로 두지 않고 <code>BoardResponse</code> 안에 넣은 데에도 이유가 있습니다. 게시글 응답에 쓰는 DTO가 한 파일에 모이면 어느 자원의 응답인지 이름에서 드러나고, 뒤 챕터에서 회원과 댓글이 생겨 <code>UserResponse.DTO</code>나 <code>ReplyResponse.DTO</code>가 만들어져도 이름이 겹치지 않습니다. 클래스 안에 선언한 <code>record</code>는 바깥 클래스의 객체를 따로 만들지 않아도 쓸 수 있어, 서비스에서 <code>new BoardResponse.DTO(board)</code>로 바로 호출합니다.</p>
 <p><code>record</code>로 선언하면 필드는 바깥에서 직접 바꿀 수 없고 <code>boardId()</code>, <code>title()</code> 같은 접근자로만 읽힙니다. 응답으로 나가는 값은 한 번 만들어진 뒤 바뀔 일이 없으므로, 값만 담아 나르는 DTO에 맞는 형태입니다.</p>
 <h2>3.4 요청 DTO와 엔티티 변환</h2>
-<p>들어오는 요청도 마찬가지로 DTO에 담습니다. 앞 챕터에서 만든 <code>SaveDTO</code>에 <code>toEntity()</code>를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. <code>board/BoardRequest.java</code>의 <code>SaveDTO</code>에 아래 메서드를 추가합니다.</p>
+<p>들어오는 요청도 마찬가지로 DTO에 담습니다. 챕터 2에서 만든 <code>SaveDTO</code>에 <code>toEntity()</code>를 더해, 요청 DTO를 엔티티로 바꾸는 메서드를 더합니다. <code>board/BoardRequest.java</code>의 <code>SaveDTO</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/BoardRequest.java. 요청 DTO에 toEntity 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 빌더로 요청 값을 엔티티에 옮겨 담는다</span>
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">()).</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">()).</span><span class="na">build</span><span class="p">();</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>toEntity()</code>가 <code>Board.builder()</code>를 쓰므로, 앞 챕터에서 <code>@Data</code>만 붙였던 <code>Board</code> 엔티티에 빌더를 더합니다. <code>@Builder</code>는 아래처럼 명시 생성자 위에 붙입니다.</p>
+<p><code>toEntity()</code>가 <code>Board.builder()</code>를 쓰므로, 챕터 2에서 <code>@Data</code>만 붙였던 <code>Board</code> 엔티티에 빌더를 더합니다. <code>@Builder</code>는 아래처럼 명시 생성자 위에 붙입니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
 <span class="nd">@Table</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board_tb&quot;</span><span class="p">)</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Board</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// id, title, content, createdAt 필드 (앞 챕터와 같음)</span>
+<span class="w">    </span><span class="c1">// id, title, content, createdAt 필드 (챕터 2와 같음)</span>
 
 <span class="w">    </span><span class="nd">@Builder</span><span class="w"> </span><span class="c1">// 객체 생성 용도</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">Board</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">Timestamp</span><span class="w"> </span><span class="n">createdAt</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -269,7 +277,7 @@
 <span class="p">}</span></div>
 <p>명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 <code>@NoArgsConstructor</code>도 함께 붙입니다. 빌더를 쓰면 필요한 필드만 골라 채워 엔티티를 만들 수 있습니다.</p>
 <h2>3.5 Optional과 orElseThrow</h2>
-<p>남은 문제는 없는 글이 성공으로 처리되는 것입니다. 앞 챕터의 <code>findById</code>는 없는 글을 찾으면 <code>null</code>을 돌려줬습니다. <code>null</code>은 아무 표시가 없는 값이라, 이 값을 받은 코드는 진짜 글인지 아닌지 열어 보기 전엔 모릅니다.</p>
+<p>남은 문제는 없는 글이 성공으로 처리되는 것입니다. 챕터 2의 <code>findById</code>는 없는 글을 찾으면 <code>null</code>을 돌려줬습니다. <code>null</code>은 아무 표시가 없는 값이라, 이 값을 받은 코드는 진짜 글인지 아닌지 열어 보기 전엔 모릅니다.</p>
 <p><code>JpaRepository</code>의 <code>findById</code>는 <code>null</code>을 돌려주지 않습니다. 반환 타입이 <code>Optional&lt;Board&gt;</code>입니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span></div>
 <p><code>Optional</code>은 값이 있을 수도, 없을 수도 있음을 상자에 담아 드러내는 자바 문법입니다. 이 값을 받은 코드는 타입만 보고도 &quot;빈 상자일 수 있다&quot;는 걸 압니다. 리포지토리를 인터페이스로 바꾸면서 없음을 표현하는 방식까지 함께 따라온 것입니다.</p>
@@ -370,7 +378,7 @@
 </tr>
 </tbody>
 </table>
-<p>서비스가 넘겨준 DTO를 받아 <code>Resp.ok</code>로 감싸는 것은 앞 챕터와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성과 수정도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.</p>
+<p>서비스가 넘겨준 DTO를 받아 <code>Resp.ok</code>로 감싸는 것은 챕터 2와 같습니다. 주소와 HTTP 메서드도 그대로입니다. 작성과 수정도 똑같이 서비스가 넘겨준 DTO를 받습니다. 이제 상세를 부르면 DTO에 담긴 세 값만 나갑니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
@@ -491,7 +499,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>@RestControllerAdvice</code>는 이 클래스를 전역 예외 처리기로 등록하고, <code>@ExceptionHandler</code>가 어떤 예외를 맡을지 지정합니다. <code>Exception404</code>는 404로, 미처 대비하지 못한 나머지 예외는 500으로 바꿔, 어떤 경우에도 낯선 기본 화면이 나가지 않게 막습니다.</p>
-<p>응답을 만드는 <code>Resp.fail</code>은 앞 챕터에서 <code>Resp.ok</code>와 함께 준비해 둔 실패용 메서드로, 오류 응답도 <code>status</code>·<code>msg</code>·<code>body</code> 형식을 그대로 지킵니다.</p>
+<p>응답을 만드는 <code>Resp.fail</code>은 챕터 2에서 <code>Resp.ok</code>와 함께 준비해 둔 실패용 메서드로, 오류 응답도 <code>status</code>·<code>msg</code>·<code>body</code> 형식을 그대로 지킵니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 던진 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
   <defs>
@@ -519,7 +527,7 @@
 </svg>
 </div>
 <div class="caption">그림 3-6. 서비스에서 던진 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다</div>
-<p>예외가 위로 전파될 때 한 가지가 더 일어납니다. 예외가 난 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 앞 챕터에서 쓰기 메서드에 붙인 <code>@Transactional</code>이 정한 범위가 여기서 작동합니다.</p>
+<p>예외가 위로 전파될 때 한 가지가 더 일어납니다. 예외가 난 요청이 데이터를 바꾸는 작업이었다면, 그때까지 바꾼 내용이 데이터베이스에 반영되지 않고 되돌아갑니다. 챕터 2에서 쓰기 메서드에 붙인 <code>@Transactional</code>이 정한 범위가 여기서 작동합니다.</p>
 <p>메서드가 끝까지 가면 그동안의 변경이 한꺼번에 반영됩니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 420 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="트랜잭션이 시작되고 값이 바뀐 뒤, 기록된 줄이 그대로 남아 데이터베이스에 반영된다.">
@@ -577,13 +585,12 @@
 <p class="thought">여기까진 됐다.</p>
 <p>두 문제는 해결했지만, 오픈이는 화면을 내려다보다 한 가지가 걸렸습니다. 지금은 로그인 화면도, 글 주인을 확인하는 절차도 없습니다. 999번 하나 못 찾는 것은 막아 놨는데, 정작 아무나 남의 글을 고치고 지울 수 있는 서버였습니다.</p>
 <p class="thought">없는 글은 걸렀는데, 문은 여전히 다 열려 있잖아.</p>
-<h2>3.8 이것만은 기억하자</h2>
+<p>다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li>엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다. 내부 필드가 바깥으로 나가지 않고, 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.</li>
-<li>없는 값은 <code>Optional</code>로 드러내고 <code>orElseThrow</code>로 예외를 던집니다. 커스텀 예외는 <code>RuntimeException</code>을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 <code>@RestControllerAdvice</code>가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
-<li>그런데 이 게시판은 아직 완전히 열려 있습니다. 로그인도, 주인 확인도 없어 아무나 남의 글을 수정하고 삭제할 수 있습니다. 다음 챕터에서는 로그인을 붙이고, 본인만 자기 글을 건드리게 합니다.</li>
+<li><strong>엔티티를 응답에 직접 쓰지 않고 DTO에 담아 내보냅니다.</strong> 내부 필드가 바깥으로 나가지 않고, 보여줄 값과 이름을 응답 DTO에서 따로 정할 수 있습니다.</li>
+<li><strong>없는 값은 <code>Optional</code>로 드러내고 <code>orElseThrow</code>로 예외를 던집니다.</strong> 커스텀 예외는 <code>RuntimeException</code>을 상속해, 던지는 일과 받는 일을 나눕니다. 던져진 예외는 <code>@RestControllerAdvice</code>가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
 </ul>
 </div>
 
