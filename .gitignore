@@ -10,3 +10,7 @@ outputs/
 .pdf-build/
 .playwright-mcp/
 .vscode/
+
+# Gradle 빌드 산출물 (빌드할 때마다 자동 재생성)
+.gradle/
+projects/**/build/
