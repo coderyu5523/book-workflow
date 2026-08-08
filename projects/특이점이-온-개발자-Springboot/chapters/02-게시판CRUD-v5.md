@@ -360,7 +360,7 @@ public class Board {
 엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
 :::
 
-이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 씁니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다.
+이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다.
 
 ## 2.4 하이버네이트
 
@@ -525,7 +525,7 @@ public class Board {
 
 엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.
 
-리포지토리가 데이터베이스에 접근할 때 쓰는 도구가 `EntityManager`입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 씁니다.
+리포지토리가 데이터베이스에 접근할 때 쓰는 도구가 `EntityManager`입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 사용합니다.
 
 `board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
 
@@ -614,7 +614,7 @@ delete from board_tb where id = ?
 
 ## 2.6 JPQL
 
-JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 쓴 `persist`를 씁니다.
+JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 쓴 `persist`를 사용합니다.
 
 기본 형태는 테이블 이름 자리에 엔티티 이름을 넣고, 별칭을 붙여 대상을 가리키는 것입니다. 전체 조회에 쓴 질의가 이 형태입니다.
 
@@ -634,7 +634,7 @@ select b.title, b.content from Board b
 select b from Board b where b.id = :id
 ```
 
-수정과 삭제도 같은 방식으로 씁니다.
+수정과 삭제도 같은 방식으로 작성합니다.
 
 ```java
 update Board b set b.title = '제목 수정' where b.id = :id
@@ -902,7 +902,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ### 2.8.2 given-when-eye
 
-테스트는 세 단계로 씁니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
+테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 assert로 검증하지만 학습 단계에서는 eye로 대체한다.">
@@ -931,7 +931,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-22. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 씁니다*
+*그림 2-22. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 작성합니다*
 
 ## 2.9 리포지토리 테스트 작성
 
@@ -1208,7 +1208,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 ## 2.13 게시글 쓰기
 
-작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 그 값을 받을 그릇이 필요합니다. 계층 사이에서 데이터만 나르는 이 그릇을 DTO(Data Transfer Object)라고 합니다.
+작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 들어온 값을 받을 클래스가 필요합니다. 계층 사이에서 데이터만 나르는 이 클래스를 DTO(Data Transfer Object)라고 합니다.
 
 `board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
 

@@ -76,7 +76,7 @@
 <p>이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다.</p>
 <pre><code>spring-start/ch05  (신규·변경)
 ├── reply/Reply.java                      [설명] 댓글 엔티티(@ManyToOne user/board)
-├── reply/ReplyRepository.java            [설명] EntityManager로 저장·조회·삭제
+├── reply/ReplyRepository.java            [설명] JpaRepository 상속으로 저장·조회·삭제
 ├── reply/ReplyRequest.java, ReplyResponse.java [참고] 댓글 DTO
 ├── reply/ReplyService.java               [실습 1] 댓글 저장·삭제(소유자 검증)
 ├── reply/ReplyController.java            [실습 2] 작성·삭제 엔드포인트
@@ -148,7 +148,7 @@
 </tr>
 <tr>
 <td>ReplyRepository (신규)</td>
-<td><code>EntityManager</code>로 댓글을 저장하고 조회하고 삭제합니다.</td>
+<td><code>JpaRepository</code>를 상속해 댓글을 저장하고 조회하고 삭제합니다.</td>
 </tr>
 <tr>
 <td>ReplyRequest · ReplyResponse (신규)</td>
@@ -228,7 +228,7 @@
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
 <p>챕터 3에서 바꾼 <code>BoardRepository</code>와 같은 모양입니다. <code>save</code>·<code>findById</code>·<code>delete</code>가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.</p>
-<p>요청과 응답을 담을 DTO도 챕터 3의 방식을 그대로 씁니다. <code>reply/ReplyRequest.java</code>와 <code>reply/ReplyResponse.java</code>는 각각 이렇게 되어 있습니다.</p>
+<p>요청과 응답을 담을 DTO도 챕터 3의 방식을 그대로 사용합니다. <code>reply/ReplyRequest.java</code>와 <code>reply/ReplyResponse.java</code>는 각각 이렇게 되어 있습니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> reply/ReplyRequest.java, ReplyResponse.java. 댓글 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="nd">@NotEmpty</span><span class="p">(</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;댓글 내용을 입력해주세요&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">comment</span><span class="p">,</span>
@@ -376,17 +376,13 @@
 <div class="caption">그림 5-3. 지연 로딩은 작성자를 꺼낼 때마다 쿼리가 붙어 N+1개가 되고, fetch join은 글과 작성자를 한 번에 가져와 쿼리 하나로 끝냅니다</div>
 <p>그림의 오른쪽이 해법입니다. 작성자를 나중에 따로 가져오지 말고 글을 조회할 때 아예 함께 묶어 가져오면 쿼리는 한 번으로 끝납니다. 이 방법이 다음 절의 fetch join입니다.</p>
 <h2>5.7 fetch join</h2>
-<p>작성자를 글과 함께 묶어 가져오는 조회는 이미 있습니다. 앞 장에서 <code>findByIdJoinUser</code>를 만들어 게시글 상세와 수정, 삭제에 썼습니다. 그때는 &quot;작성자를 함께 가져오는 조회&quot;라는 이름으로만 쓰고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, <code>findByIdJoinUser</code>의 JPQL이 <code>select b from Board b join fetch b.user where b.id = :id</code>였습니다.</p>
+<p>작성자를 글과 함께 묶어 가져오는 조회는 이미 있습니다. 앞 장에서 <code>findByIdJoinUser</code>를 만들어 게시글 상세와 수정, 삭제에 썼습니다. 그때는 &quot;작성자를 함께 가져오는 조회&quot;라는 이름으로만 쓰고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, <code>findByIdJoinUser</code>의 JPQL이 <code>select b from Board b join fetch b.user where b.id = :boardId</code>였습니다.</p>
 <p>핵심은 <code>join fetch b.user</code>입니다. 지연 로딩에서는 글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, <code>join fetch</code>는 글을 조회하는 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 글은 작성자가 이미 채워져 있어, <code>getUser().getUsername()</code>을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 앞 장에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.</p>
 <p>댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 쓰고 넘어갔던 <code>findByIdJoinUserAndReply</code>입니다. <code>board/BoardRepository.java</code>를 열고 아래 메서드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReply</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="c1">// TODO: 작성자와 댓글을 join fetch로 함께 가져온다</span>
-<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">em</span><span class="p">.</span><span class="na">createQuery</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user &quot;</span>
-<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;left join fetch b.replies where b.id = :id&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
-<span class="w">                </span><span class="p">.</span><span class="na">setParameter</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span>
-<span class="w">                </span><span class="p">.</span><span class="na">getResultStream</span><span class="p">().</span><span class="na">findFirst</span><span class="p">();</span>
-<span class="w">    </span><span class="p">}</span></div>
-<p>이번에는 <code>join fetch</code>가 두 개입니다. <code>join fetch b.user</code>로 작성자를, <code>left join fetch b.replies</code>로 댓글 목록을 함께 가져옵니다. 댓글 쪽에 <code>left</code>를 붙인 것은 댓글이 하나도 없는 글도 조회에서 빠지지 않게 하기 위해서입니다. <code>left</code> 없이 쓰는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 글은 결과에서 사라집니다. <code>left</code>를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 글도 함께 나옵니다. 댓글을 묶으면 글 하나가 댓글 수만큼 중복된 행으로 나오기 때문에, <code>getResultList</code> 대신 <code>getResultStream().findFirst()</code>로 첫 글 하나만 취합니다. 이 조회 하나로 글과 작성자와 댓글 목록이 채워진 채 돌아오므로, 상세 응답에서 <code>board.getUser()</code>나 <code>board.getReplies()</code>를 꺼내도 추가 쿼리가 나가지 않습니다. 다만 댓글 작성자(<code>reply.user</code>)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="c1">// TODO: 작성자와 댓글을 join fetch로 함께 가져온다</span>
+<span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user left join fetch b.replies where b.id = :boardId&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReply</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
+<p>이번에는 <code>join fetch</code>가 두 개입니다. <code>join fetch b.user</code>로 작성자를, <code>left join fetch b.replies</code>로 댓글 목록을 함께 가져옵니다. 댓글 쪽에 <code>left</code>를 붙인 것은 댓글이 하나도 없는 글도 조회에서 빠지지 않게 하기 위해서입니다. <code>left</code> 없이 쓰는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 글은 결과에서 사라집니다. <code>left</code>를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 글도 함께 나옵니다. 댓글을 묶으면 데이터베이스에서는 글 하나가 댓글 수만큼 중복된 행으로 돌아오지만, JPA가 같은 영속성 컨텍스트의 <code>Board</code> 하나로 합쳐 주므로 결과는 글 한 건입니다. 이 조회 하나로 글과 작성자와 댓글 목록이 채워진 채 돌아오므로, 상세 응답에서 <code>board.getUser()</code>나 <code>board.getReplies()</code>를 꺼내도 추가 쿼리가 나가지 않습니다. 다만 댓글 작성자(<code>reply.user</code>)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.</p>
 <p>이 조회가 실제로 쿼리를 한 번에 끝내는지 테스트로 확인합니다. <code>test/board/BoardRepositoryTest.java</code>에 <code>findByIdJoinUserAndReply_test</code>를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> test/board/BoardRepositoryTest.java. fetch join 조회</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReply_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -451,7 +447,7 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="n">sessionUserId</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>조회는 <code>findByIdJoinUserAndReply</code>로 합니다. 작성자와 댓글을 함께 가져오는 조회인데, 왜 이렇게 묶어 가져와야 하는지는 뒤에서 밝힙니다. 앞 장에서 <code>findByIdJoinUser</code>를 이름만 쓰고 넘어갔던 것과 같아서, 여기서는 &quot;작성자와 댓글을 한 번에 가져오는 조회&quot;로만 씁니다. 가져온 글과 <code>sessionUserId</code>를 <code>DetailDTO</code>에 넘기면 앞의 <code>isOwner</code>와 댓글 목록이 채워집니다.</p>
+<p>조회는 <code>findByIdJoinUserAndReply</code>로 합니다. 앞에서 본 fetch join 조회라 글과 작성자, 댓글이 한 번에 담겨 옵니다. 가져온 글과 <code>sessionUserId</code>를 <code>DetailDTO</code>에 넘기면 앞의 <code>isOwner</code>와 댓글 목록이 채워집니다.</p>
 <p>마지막으로 컨트롤러가 로그인 유저를 꺼내 서비스로 넘깁니다. 상세는 공개라 로그인하지 않아도 볼 수 있으므로, <code>board/BoardController.java</code>의 상세 메서드는 <code>request.getAttribute(&quot;sessionUser&quot;)</code>로 유저를 꺼내되 비로그인이면 <code>null</code>을 넘깁니다. <code>null</code>이 넘어가도 <code>checkOwner</code>가 <code>false</code>를 돌려주므로, 로그인하지 않은 사람에게는 모든 <code>isOwner</code>가 <code>false</code>로 나갑니다.</p>
 <p>이제 <code>ssar</code>로 로그인해 1번 글을 조회하면, 글과 함께 거기 달린 댓글이 함께 나옵니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
