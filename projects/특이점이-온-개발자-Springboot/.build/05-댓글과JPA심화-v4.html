@@ -20,18 +20,18 @@
 <body>
 <div class="container">
 <h1>챕터 5. 댓글과 JPA 심화</h1>
-<p>게시판은 이제 글을 쓰고 읽고 고치고 지우는 데까지 왔고, 로그인한 본인만 자기 글을 건드립니다. 그런데 정작 게시판다운 것 하나가 비어 있습니다. 글 아래 댓글 입력칸에는 아무것도 달리지 않습니다.</p>
-<p>글은 그 자체로 하나의 자원입니다. 하지만 댓글은 다릅니다. &quot;누구의 어느 글에 달린 댓글인가&quot;가 빠지면 댓글은 어디에 달렸는지 알 수 없는 글이 됩니다. 그래서 댓글을 만들려면, 먼저 댓글이 어느 글에 달리는지부터 정해야 합니다. 이 연결을 어떻게 잡아야 할지 감이 서지 않을 때, 선배가 방향을 하나 던져 줍니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "댓글은 글에 붙이는 포스트잇 같은 거예요. 포스트잇마다 '몇 번 글에 붙는다'가 적혀 있고, 글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 하잖아요. 그렇게 글과 댓글이 서로를 아는 관계를 만들어 두면 돼요."</div>
-<p>포스트잇으로 관계를 잡아 두면, 게시글 상세를 부를 때 글에 붙은 댓글이 함께 나와야 합니다. 그런데 이 &quot;함께 나오는 조회&quot;가 뒤에서 문제를 일으킵니다.</p>
+<p>게시판은 이제 게시글을 쓰고 읽고 고치고 지우는 데까지 왔고, 로그인한 본인만 자기 게시글을 건드립니다. 그런데 정작 게시판다운 것 하나가 비어 있습니다. 게시글 아래 댓글 입력칸에는 아무것도 달리지 않습니다.</p>
+<p>게시글은 그 자체로 하나의 자원입니다. 하지만 댓글은 다릅니다. &quot;누구의 어느 게시글에 달린 댓글인가&quot;가 빠지면 댓글은 어디에 달렸는지 알 수 없게 됩니다. 그래서 댓글을 만들려면, 먼저 댓글이 어느 게시글에 달리는지부터 정해야 합니다. 이 연결을 어떻게 잡아야 할지 감이 서지 않을 때, 선배가 방향을 하나 알려 줍니다.</p>
+<div class="dialogue"><span class="speaker">선배</span>: "댓글은 게시글에 붙이는 포스트잇 같은 거예요. 포스트잇마다 '몇 번 게시글에 붙는다'가 적혀 있고, 게시글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 하잖아요. 그렇게 게시글과 댓글이 서로를 아는 관계를 만들어 두면 돼요."</div>
+<p>포스트잇으로 관계를 잡아 두면, 게시글 상세를 부를 때 게시글에 붙은 댓글이 함께 나와야 합니다. 그런데 이 &quot;함께 나오는 조회&quot;가 뒤에서 문제를 일으킵니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 5 한눈에 보기. 게시글 상세를 요청하면 글에 작성자와 댓글이 딸려 온다. 이 조회를 지연 로딩에 맡기면 작성자와 댓글을 꺼낼 때마다 쿼리가 붙어 1 더하기 N개가 되고, fetch join으로 묶으면 한 번의 조회로 작성자와 댓글까지 가져와 쿼리 하나로 끝난다.">
+<svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 5 한눈에 보기. 게시글 상세를 요청하면 게시글에 작성자와 댓글이 딸려 온다. 이 조회를 지연 로딩에 맡기면 작성자와 댓글을 꺼낼 때마다 쿼리가 붙어 1 더하기 N개가 되고, fetch join으로 묶으면 한 번의 조회로 작성자와 댓글까지 가져와 쿼리 하나로 끝난다.">
   <defs>
     <marker id="c5ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c5ov-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
   </defs>
   <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 5 한눈에 보기 - 연관관계부터 조회 성능까지</text>
-  <text x="40" y="70" font-size="12" font-weight="700" fill="#475569">1단계 · 글에 작성자와 댓글이 딸린다</text>
+  <text x="40" y="70" font-size="12" font-weight="700" fill="#475569">1단계 · 게시글에 작성자와 댓글이 딸린다</text>
   <rect x="40" y="82" width="150" height="64" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="115" y="110" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
   <text x="115" y="130" text-anchor="middle" font-size="11" fill="#6b7280">상세 요청</text>
@@ -54,13 +54,13 @@
   <text x="295" y="360" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">합계 쿼리 N+1개</text>
   <rect x="520" y="238" width="370" height="150" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="705" y="268" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">fetch join</text>
-  <text x="705" y="298" text-anchor="middle" font-size="12" fill="#334155">글·작성자·댓글을 묶어</text>
+  <text x="705" y="298" text-anchor="middle" font-size="12" fill="#334155">게시글·작성자·댓글을 묶어</text>
   <text x="705" y="318" text-anchor="middle" font-size="12" fill="#334155">한 번의 조회로 가져온다</text>
   <rect x="595" y="336" width="220" height="38" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
   <text x="705" y="360" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">합계 쿼리 1개</text>
 </svg>
 </div>
-<div class="caption">그림 5-1. 게시글 상세를 부르면 글에 작성자와 댓글이 딸려 오고, 이 조회를 지연 로딩에 맡기면 쿼리가 N+1개로 늘어나지만 fetch join으로 묶으면 하나로 끝납니다</div>
+<div class="caption">그림 5-1. 게시글 상세를 부르면 게시글에 작성자와 댓글이 딸려 오고, 이 조회를 지연 로딩에 맡기면 쿼리가 N+1개로 늘어나지만 fetch join으로 묶으면 하나로 끝납니다</div>
 <div class="goal-box">
 <p><strong>이번 챕터가 끝나면</strong></p>
 <ul>
@@ -90,13 +90,13 @@
 <p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>5.1 댓글과 게시글</h2>
-<h3>5.1.1 양방향 연관관계와 주인</h3>
-<p>포스트잇에는 저마다 &quot;어느 글의 것&quot;이라는 표시가 적혀 있습니다. 글은 자기에게 붙은 포스트잇이 몇 장인지 일일이 들고 있지 않아도 됩니다. 각 포스트잇이 자기가 어느 글 소속인지 알고 있으니, 표시만 따라가면 글에 붙은 포스트잇을 전부 모을 수 있습니다.</p>
+<h3>5.1.1 양방향 연관관계와 연관관계 주인</h3>
+<p>포스트잇에는 저마다 &quot;어느 게시글의 것&quot;이라는 표시가 적혀 있습니다. 게시글은 자기에게 붙은 포스트잇이 몇 장인지 일일이 들고 있지 않아도 됩니다. 각 포스트잇이 자기가 어느 게시글 소속인지 알고 있으니, 표시만 따라가면 게시글에 붙은 포스트잇을 전부 모을 수 있습니다.</p>
 <p>이 관계를 자바 객체로 옮기면 양쪽이 서로를 가리킵니다. 게시글은 자기에게 달린 댓글 목록을 가지고, 댓글은 자기가 붙은 게시글을 가집니다. 이렇게 두 엔티티가 서로를 참조하는 관계를 양방향 연관관계(Bidirectional Relationship)라고 합니다.</p>
-<p>그런데 데이터베이스는 이 관계를 한 곳에만 저장합니다. 포스트잇에 &quot;몇 번 글&quot;이라고 적는 것처럼, <code>reply_tb</code>에 <code>board_id</code> 컬럼을 만들고 거기에 소속 글의 기본 키를 담습니다. 이 외래 키를 실제로 들고 있는 댓글이 이 관계의 연관관계 주인(Owner)입니다. 게시글은 외래 키를 갖지 않고, &quot;이 관계는 댓글의 <code>board</code> 필드가 관리한다&quot;고 표시만 해 둡니다. 이 표시가 <code>mappedBy</code>입니다.</p>
-<p>포스트잇 비유에는 하나가 더 있습니다. 글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 한다는 것입니다. 게시글을 지울 때 달린 댓글이 데이터베이스에 그대로 남으면 주인 없는 댓글이 됩니다. 그래서 게시글을 지우면 딸린 댓글까지 함께 지워지도록 삭제를 댓글에 전이시킵니다. 이렇게 부모 엔티티의 작업을 자식 엔티티에 함께 적용하는 것을 영속성 전이(cascade)라고 합니다.</p>
+<p>그런데 데이터베이스는 이 관계를 한 곳에만 저장합니다. 포스트잇에 &quot;몇 번 게시글&quot;이라고 적는 것처럼, <code>reply_tb</code>에 <code>board_id</code> 컬럼을 만들고 거기에 소속 게시글의 기본 키를 담습니다. 이 외래 키를 실제로 들고 있는 댓글이 이 관계의 연관관계 주인(Owner)입니다. 게시글은 외래 키를 갖지 않고, &quot;이 관계는 댓글의 <code>board</code> 필드가 관리한다&quot;고 표시만 해 둡니다. 이 표시가 <code>mappedBy</code>입니다.</p>
+<p>포스트잇 비유에는 하나가 더 있습니다. 게시글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 한다는 것입니다. 게시글을 지울 때 달린 댓글이 데이터베이스에 그대로 남으면 주인 없는 댓글이 됩니다. 그래서 게시글을 지우면 딸린 댓글까지 함께 지워지도록 삭제를 댓글에 전이시킵니다. 이렇게 부모 엔티티의 작업을 자식 엔티티에 함께 적용하는 것을 영속성 전이(cascade)라고 합니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 820 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글과 댓글의 연관관계. 가운데 위 게시글(Board) 공지 한 장 아래로 댓글(Reply) 포스트잇 세 장이 매달려 있고, 각 포스트잇은 자기가 어느 글에 붙는지 화살표로 게시글을 가리킨다. 이 참조를 가진 댓글이 연관관계 주인이다. 게시글에서 포스트잇으로 가는 화살표는 얇고 흐리며, 글을 떼면 포스트잇도 함께 떨어진다.">
+<svg viewBox="0 0 820 390" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글과 댓글의 연관관계. 가운데 위 게시글(Board) 공지 한 장 아래로 댓글(Reply) 포스트잇 세 장이 매달려 있고, 각 포스트잇은 자기가 어느 게시글에 붙는지 화살표로 게시글을 가리킨다. 이 참조를 가진 댓글이 연관관계 주인이다. 게시글에서 포스트잇으로 가는 화살표는 얇고 흐리며, 게시글을 떼면 포스트잇도 함께 떨어진다.">
   <defs>
     <marker id="c5rel-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c5rel-b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#cbd5e1"/></marker>
@@ -109,30 +109,30 @@
   <g transform="rotate(-4 251 300)">
     <rect x="196" y="252" width="110" height="96" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.6"/>
     <text x="251" y="290" text-anchor="middle" font-size="12" font-weight="800" fill="#7b341e">댓글 1</text>
-    <text x="251" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 글</text>
+    <text x="251" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 게시글</text>
   </g>
   <g transform="rotate(3 410 300)">
     <rect x="355" y="252" width="110" height="96" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.6"/>
     <text x="410" y="290" text-anchor="middle" font-size="12" font-weight="800" fill="#7b341e">댓글 2</text>
-    <text x="410" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 글</text>
+    <text x="410" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 게시글</text>
   </g>
   <g transform="rotate(-2 569 300)">
     <rect x="514" y="252" width="110" height="96" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.6"/>
     <text x="569" y="290" text-anchor="middle" font-size="12" font-weight="800" fill="#7b341e">댓글 3</text>
-    <text x="569" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 글</text>
+    <text x="569" y="318" text-anchor="middle" font-size="11" fill="#7b341e">→ 1번 게시글</text>
   </g>
   <line x1="255" y1="250" x2="360" y2="172" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c5rel-a)"/>
   <line x1="410" y1="248" x2="410" y2="172" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c5rel-a)"/>
   <line x1="565" y1="250" x2="462" y2="172" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c5rel-a)"/>
   <line x1="330" y1="168" x2="285" y2="246" stroke="#cbd5e1" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#c5rel-b)"/>
   <text x="700" y="214" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">연관관계 주인</text>
-  <text x="700" y="232" text-anchor="middle" font-size="10" fill="#6b7280">댓글이 글을 가리킨다</text>
-  <text x="628" y="96" text-anchor="middle" font-size="10" fill="#6b7280">글을 떼면</text>
+  <text x="700" y="232" text-anchor="middle" font-size="10" fill="#6b7280">댓글이 게시글을 가리킨다</text>
+  <text x="628" y="96" text-anchor="middle" font-size="10" fill="#6b7280">게시글을 떼면</text>
   <text x="628" y="110" text-anchor="middle" font-size="10" fill="#6b7280">댓글도 함께 (cascade)</text>
   <text x="410" y="378" text-anchor="middle" font-size="12" font-weight="700" fill="#7b341e">댓글 (Reply)</text>
 </svg>
 </div>
-*그림 5-2. 댓글은 자기가 어느 글에 붙는지 표시를 들고 있고(연관관계 주인), 게시글은 표시를 따라 댓글을 모읍니다*
+*그림 5-2. 댓글은 자기가 어느 게시글에 붙는지 표시를 들고 있고(연관관계 주인), 게시글은 표시를 따라 댓글을 모읍니다*
 <h3>5.1.2 이번 챕터에서 만드는 것</h3>
 <table>
 <thead>
@@ -156,7 +156,7 @@
 </tr>
 <tr>
 <td>ReplyService (신규)</td>
-<td>댓글 저장(대상 글 조회)과 삭제(소유자 검증)를 처리합니다.</td>
+<td>댓글 저장(대상 게시글 조회)과 삭제(소유자 검증)를 처리합니다.</td>
 </tr>
 <tr>
 <td>ReplyController (신규)</td>
@@ -216,24 +216,24 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>댓글 하나는 누가 썼는지(<code>user</code>)와 어느 글에 달렸는지(<code>board</code>)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 <code>@ManyToOne</code>입니다. 여기서 <code>@JoinColumn(name = &quot;board_id&quot;)</code>이 앞서 말한 표시입니다. <code>reply_tb</code>에 <code>board_id</code> 컬럼을 만들고 소속 글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 <code>fetch = FetchType.LAZY</code>는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 뒤에서 제대로 다룹니다.</p>
+<p>댓글 하나는 누가 썼는지(<code>user</code>)와 어느 게시글에 달렸는지(<code>board</code>)를 함께 담습니다. 댓글 여러 개가 한 명의 회원에 속하고 한 게시글에 속하므로 두 필드 모두 <code>@ManyToOne</code>입니다. 여기서 <code>@JoinColumn(name = &quot;board_id&quot;)</code>이 앞서 말한 표시입니다. <code>reply_tb</code>에 <code>board_id</code> 컬럼을 만들고 소속 게시글의 기본 키를 담으니, 외래 키를 든 이 댓글이 연관관계 주인입니다. 두 필드에 붙은 <code>fetch = FetchType.LAZY</code>는 지연 로딩 설정인데, 이것이 이번 챕터 후반의 핵심이 되므로 지금은 붙여만 두고 뒤에서 제대로 다룹니다.</p>
 <p>이제 게시글에 반대 방향을 추가합니다. <code>board/Board.java</code>를 열고 아래 필드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/Board.java. 댓글 목록 연관관계 추가</div><span class="w">    </span><span class="c1">// 이 관계의 주인은 Reply의 board 필드다. Board는 목록만 비춰 본다</span>
 <span class="w">    </span><span class="nd">@OneToMany</span><span class="p">(</span><span class="n">mappedBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">,</span><span class="w"> </span><span class="n">cascade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CascadeType</span><span class="p">.</span><span class="na">REMOVE</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Reply</span><span class="o">&gt;</span><span class="w"> </span><span class="n">replies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span></div>
-<p>게시글 하나에 댓글 여러 개가 달리므로 <code>@OneToMany</code>이고, <code>mappedBy = &quot;board&quot;</code>로 &quot;이 관계의 주인은 <code>Reply</code>의 <code>board</code> 필드&quot;라고 밝힙니다. 게시글은 외래 키를 갖지 않고 댓글의 <code>board_id</code>를 거꾸로 따라가 <code>replies</code>에 채우므로, 이 <code>replies</code>는 테이블 컬럼으로 생기지 않습니다. 뒤에 붙인 <code>cascade = CascadeType.REMOVE</code>가 영속성 전이여서, 게시글을 지우면 딸린 댓글까지 함께 지워집니다. <code>replies</code>를 <code>new ArrayList&lt;&gt;()</code>로 초기화하면 댓글이 없는 글도 빈 목록을 가집니다.</p>
+<p>게시글 하나에 댓글 여러 개가 달리므로 <code>@OneToMany</code>이고, <code>mappedBy = &quot;board&quot;</code>로 &quot;이 관계의 주인은 <code>Reply</code>의 <code>board</code> 필드&quot;라고 밝힙니다. 게시글은 외래 키를 갖지 않고, JPA가 댓글의 <code>board_id</code>를 따라가 <code>replies</code>를 채웁니다. 그래서 이 <code>replies</code>는 테이블 컬럼으로 생기지 않습니다. 뒤에 붙인 <code>cascade = CascadeType.REMOVE</code>가 영속성 전이여서, 게시글을 지우면 딸린 댓글까지 함께 지워집니다. <code>replies</code>를 <code>new ArrayList&lt;&gt;()</code>로 초기화하면 댓글이 없는 게시글도 빈 목록을 가집니다.</p>
 <h2>5.3 댓글 쓰기</h2>
 <p>댓글을 쓰고 지우는 구조는 게시글을 만들 때와 같습니다. 리포지토리로 저장하고, 서비스가 흐름을 맡고, 컨트롤러가 요청을 받습니다.</p>
 <p>먼저 댓글을 저장하고 꺼내는 리포지토리입니다. <code>reply/ReplyRepository.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
-<p>챕터 3에서 바꾼 <code>BoardRepository</code>와 같은 모양입니다. <code>save</code>·<code>findById</code>·<code>delete</code>가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 글과 함께 나가기 때문입니다.</p>
+<p>챕터 3에서 바꾼 <code>BoardRepository</code>와 같은 모양입니다. <code>save</code>·<code>findById</code>·<code>delete</code>가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 게시글과 함께 나가기 때문입니다.</p>
 <p>요청과 응답을 담을 DTO도 챕터 3의 방식을 그대로 사용합니다. <code>reply/ReplyRequest.java</code>와 <code>reply/ReplyResponse.java</code>는 각각 이렇게 되어 있습니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> reply/ReplyRequest.java, ReplyResponse.java. 댓글 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="nd">@NotEmpty</span><span class="p">(</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;댓글 내용을 입력해주세요&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">comment</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@NotNull</span><span class="p">(</span><span class="n">message</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;게시글 번호가 필요합니다&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="c1">// 로그인 유저와 대상 글을 받아 엔티티로 만든다</span>
+<span class="w">        </span><span class="c1">// 로그인 유저와 대상 게시글을 받아 엔티티로 만든다</span>
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Reply</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">(</span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">,</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Reply</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">comment</span><span class="p">(</span><span class="n">comment</span><span class="p">).</span><span class="na">user</span><span class="p">(</span><span class="n">user</span><span class="p">).</span><span class="na">board</span><span class="p">(</span><span class="n">board</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 <span class="w">        </span><span class="p">}</span>
@@ -247,7 +247,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>SaveDTO</code>는 댓글 내용과 어느 글에 달지(<code>boardId</code>)를 받고, <code>toEntity</code>는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. <code>DTO</code>는 응답으로 나갈 댓글 하나를 담습니다.</p>
+<p><code>SaveDTO</code>는 댓글 내용과 어느 게시글에 달지(<code>boardId</code>)를 받고, <code>toEntity</code>는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 게시글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. <code>DTO</code>는 응답으로 나갈 댓글 하나를 담습니다.</p>
 <p>리포지토리와 DTO를 서비스에서 조립합니다. <code>reply/ReplyService.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> reply/ReplyService.java. 댓글 저장</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
@@ -256,7 +256,7 @@
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">ReplyRepository</span><span class="w"> </span><span class="n">replyRepository</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">BoardRepository</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">;</span>
 
-<span class="w">    </span><span class="c1">// 대상 글을 찾아 댓글을 연결해 저장한다</span>
+<span class="w">    </span><span class="c1">// 대상 게시글을 찾아 댓글을 연결해 저장한다</span>
 <span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ReplyResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">댓글쓰기</span><span class="p">(</span><span class="n">ReplyRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">sessionUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">boardId</span><span class="p">())</span>
@@ -266,7 +266,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ReplyResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">(</span><span class="n">reply</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>boardId</code>로 댓글을 달 글을 찾아, 없으면 <code>Exception404</code>를 던지고 있으면 <code>toEntity</code>로 로그인 유저와 찾은 글을 붙인 댓글을 만들어 저장합니다.</p>
+<p><code>boardId</code>로 댓글을 달 게시글을 찾아, 없으면 <code>Exception404</code>를 발생시키고, 있으면 <code>toEntity</code>로 로그인 유저와 찾은 게시글을 붙인 댓글을 만들어 저장합니다.</p>
 <p>요청을 받을 컨트롤러를 만듭니다. <code>reply/ReplyController.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> reply/ReplyController.java. 댓글 작성 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
@@ -297,7 +297,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">        </span><span class="n">replyRepository</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">reply</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>대상이 글에서 댓글로 바뀌었을 뿐, 작성자 아이디를 견주는 소유자 검증은 4장과 똑같습니다.</p>
+<p>대상이 게시글에서 댓글로 바뀌었을 뿐, 작성자 아이디를 견주는 소유자 검증은 챕터 4와 똑같습니다.</p>
 <p><code>reply/ReplyController.java</code>에 아래 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> reply/ReplyController.java. 댓글 삭제 엔드포인트</div><span class="w">    </span><span class="c1">// 댓글 삭제 (DELETE /api/replies/1)</span>
 <span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{replyId}&quot;</span><span class="p">)</span>
@@ -314,23 +314,23 @@
 <span class="w">                    </span><span class="s">&quot;/api/replies&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/api/replies/**&quot;</span><span class="p">);</span><span class="w"> </span><span class="c1">// 댓글 주소도 보호</span></div>
 <p>그러면 게시글과 똑같이 댓글 쓰기와 삭제도 로그인하지 않으면 인터셉터에서 401로 막힙니다.</p>
 <h2>5.5 지연 로딩과 프록시</h2>
-<p>댓글까지 나가는 것을 확인하고 나면, 챕터 4에서 켜 둔 <code>show-sql</code> 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "글 목록 불러올 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 나가는지 세어 봤어요?"</div>
+<p>댓글까지 나가는 것을 확인하고 나면, 챕터 4에서 켜 둔 <code>show-sql</code> 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 게시글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.</p>
+<div class="dialogue"><span class="speaker">선배</span>: "게시글 목록 불러올 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 나가는지 세어 봤어요?"</div>
 <p>세어 본 적이 없는 질문입니다. 답하기 전에 짚어야 할 것이 지연 로딩입니다. 앞에서 댓글에 붙인 <code>FetchType.LAZY</code>가 그것입니다. 챕터 4에서는 <code>Board.user</code>를 <code>EAGER</code>로 설정했는데, 이번 챕터에서 이 값을 <code>LAZY</code>로 바꿉니다. <code>board/Board.java</code>의 작성자 필드를 아래처럼 고칩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="c1">// 챕터 4의 EAGER에서 LAZY로 바꾼다</span>
 <span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="nd">@JoinColumn</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;user_id&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span></div>
-<p>즉시 로딩(EAGER)은 글을 조회할 때 작성자를 무조건 함께 가져오고, 지연 로딩(LAZY)은 글만 먼저 가져온 뒤 작성자는 실제로 꺼내 쓰는 순간까지 미룹니다. 미뤄 둔 작성자 자리에는 진짜 작성자 대신 이를 대신할 객체가 들어가는데, 이것을 프록시(Proxy)라고 합니다. 프록시는 겉으로는 <code>User</code>처럼 보이지만 속은 비어 있어서, <code>getUsername()</code>처럼 실제 값이 필요한 순간에야 데이터베이스에 작성자를 조회하는 쿼리를 내보냅니다.</p>
-<p>말로는 잘 와닿지 않으니 테스트로 확인합니다. 먼저 조심할 것이 하나 있습니다. 지금 볼 테스트는 콘솔에 <code>board.getId()</code>만 찍는데, 즉시 로딩이든 지연 로딩이든 이 출력은 똑같습니다. 둘의 차이는 콘솔이 아니라 <code>show-sql</code>이 찍어 주는 SQL 로그에서 드러납니다.</p>
-<p><code>test/board/BoardRepositoryTest.java</code>에 <code>findByIdEager_test</code>와 <code>findByIdLazy_test</code>를 준비합니다. 두 테스트의 코드는 글자 그대로 같아서, 글 하나를 <code>findById</code>로 조회해 <code>board.getId()</code>만 출력하고 작성자는 건드리지 않습니다.</p>
+<p>즉시 로딩(EAGER)은 게시글을 조회할 때 작성자를 무조건 함께 가져오고, 지연 로딩(LAZY)은 게시글만 먼저 가져온 뒤 작성자는 실제로 사용하는 순간까지 미룹니다. 미뤄 둔 작성자 자리에는 진짜 작성자 대신 이를 대신할 객체가 들어가는데, 이것을 프록시(Proxy)라고 합니다. 프록시는 겉으로는 <code>User</code>처럼 보이지만 속은 비어 있어서, <code>getUsername()</code>처럼 실제 값이 필요한 순간에야 데이터베이스에 작성자를 조회하는 쿼리를 내보냅니다.</p>
+<p>두 방식의 차이는 테스트로 확인합니다. 먼저 조심할 것이 하나 있습니다. 지금 볼 테스트는 콘솔에 <code>board.getId()</code>만 찍는데, 즉시 로딩이든 지연 로딩이든 이 출력은 똑같습니다. 둘의 차이는 콘솔이 아니라 <code>show-sql</code>이 찍어 주는 SQL 로그에서 갈립니다.</p>
+<p><code>test/board/BoardRepositoryTest.java</code>에 <code>findByIdEager_test</code>와 <code>findByIdLazy_test</code>를 준비합니다. 두 테스트의 코드는 글자 그대로 같아서, 게시글 하나를 <code>findById</code>로 조회해 <code>board.getId()</code>만 출력하고 작성자는 건드리지 않습니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> test/board/BoardRepositoryTest.java. 즉시·지연 로딩 비교 (두 테스트 본문이 같다)</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdLazy_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="na">get</span><span class="p">();</span>
 <span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Board ID : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getId</span><span class="p">());</span><span class="w"> </span><span class="c1">// 작성자는 건드리지 않는다</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>다른 것은 <code>Board.user</code>의 어노테이션 상태뿐입니다. <code>findByIdEager_test</code>를 실행할 때는 방금 <code>LAZY</code>로 바꾼 작성자 필드를 잠시 <code>EAGER</code>로 되돌립니다. 이때 SQL 로그를 보면 <code>findById</code> 한 줄에 board와 user를 함께 조회하는 select가 나갑니다. 확인했으면 어노테이션을 다시 <code>LAZY</code>로 되돌리고 <code>findByIdLazy_test</code>를 실행합니다. 이번에는 같은 <code>findById</code>인데 board만 조회하는 select 한 줄만 나가고, 작성자는 프록시로 남아 로그에 나타나지 않습니다.</p>
-<p>여기까지는 쿼리가 오히려 줄어든 것처럼 보입니다. 문제는 미뤄 둔 작성자를 실제로 꺼낼 때 드러납니다. <code>LAZY</code> 상태에서 작성자 이름을 꺼내는 테스트를 하나 더 작성해 확인합니다. <code>test/board/BoardRepositoryTest.java</code>를 열고 아래 코드를 작성합니다.</p>
+<p>여기까지는 쿼리가 오히려 줄어든 것처럼 보입니다. 문제는 미뤄 둔 작성자를 실제로 꺼낼 때 나타납니다. <code>LAZY</code> 상태에서 작성자 이름을 꺼내는 테스트를 하나 더 작성해 확인합니다. <code>test/board/BoardRepositoryTest.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> test/board/BoardRepositoryTest.java. 프록시가 추가 쿼리를 부른다</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdLazyLoading_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="na">get</span><span class="p">();</span><span class="w"> </span><span class="c1">// 여기선 board만 조회</span>
@@ -338,25 +338,25 @@
 <span class="w">        </span><span class="c1">// 이 순간 user 조회가 나간다</span>
 <span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;username : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getUsername</span><span class="p">());</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>findById</code>로 글을 가져올 때는 board select 하나만 나갑니다. 그런데 마지막 줄에서 <code>board.getUser().getUsername()</code>으로 작성자 이름을 꺼내는 순간, 미뤄 두었던 프록시가 그때 진짜 작성자를 가져오면서 SQL 로그에 user를 조회하는 select가 한 줄 더 찍힙니다. 글 하나를 조회하는 데 select가 두 번 나간 것입니다.</p>
+<p><code>findById</code>로 게시글을 가져올 때는 board select 하나만 나갑니다. 그런데 마지막 줄에서 <code>board.getUser().getUsername()</code>으로 작성자 이름을 꺼내는 순간, 미뤄 두었던 프록시가 그때 진짜 작성자를 가져오면서 SQL 로그에 user를 조회하는 select가 한 줄 더 찍힙니다. 게시글 하나를 조회하는 데 select가 두 번 나간 것입니다.</p>
 <h2>5.6 N+1 문제</h2>
-<p>글 하나면 두 번이라 별것 아닌 것 같지만, 글이 여러 개인 목록이면 상황이 달라집니다. 글 목록을 불러 글마다 작성자 이름을 화면에 보여 준다고 하겠습니다. 먼저 목록을 조회하는 select가 한 번 나가고, 그다음 목록의 각 글에서 작성자 이름을 꺼낼 때마다 방금 본 추가 select가 글 수만큼 반복됩니다. 글이 N개면 작성자 조회가 N번 더 붙어 전부 N+1개가 됩니다. 목록 하나를 불렀을 뿐인데 쿼리가 글 수에 비례해 늘어나는 이 현상을 N+1 문제라고 합니다.</p>
+<p>게시글 하나면 두 번이라 별것 아닌 것 같지만, 게시글이 여러 개인 목록이면 상황이 달라집니다. 게시글 목록을 불러 게시글마다 작성자 이름을 화면에 보여 준다고 하겠습니다. 먼저 목록을 조회하는 select가 한 번 나가고, 그다음 목록의 각 게시글에서 작성자 이름을 꺼낼 때마다 방금 본 추가 select가 게시글 수만큼 반복됩니다. 게시글이 N개면 작성자 조회가 N번 더 붙어 전부 N+1개가 됩니다. 목록 하나를 불렀을 뿐인데 쿼리가 게시글 수에 비례해 늘어나는 이 현상을 N+1 문제라고 합니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 940 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="지연 로딩은 글 목록 조회 1개에 글마다 작성자 조회가 붙어 1 더하기 N개의 쿼리가 나가지만, fetch join은 글과 작성자를 한 번에 가져와 쿼리 1개로 끝난다.">
+<svg viewBox="0 0 940 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="지연 로딩은 게시글 목록 조회 1개에 게시글마다 작성자 조회가 붙어 1 더하기 N개의 쿼리가 나가지만, fetch join은 게시글과 작성자를 한 번에 가져와 쿼리 1개로 끝난다.">
   <defs>
     <marker id="c5nq-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
   <rect x="20" y="26" width="440" height="288" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
   <text x="240" y="54" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">지연 로딩 (N+1)</text>
   <rect x="150" y="72" width="180" height="42" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="240" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">글 목록 조회 (쿼리 1)</text>
+  <text x="240" y="98" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">게시글 목록 조회 (쿼리 1)</text>
   <line x1="240" y1="114" x2="240" y2="140" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c5nq-ar)"/>
   <rect x="48" y="146" width="120" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="108" y="171" text-anchor="middle" font-size="11" fill="#334155">1번 글 작성자</text>
+  <text x="108" y="171" text-anchor="middle" font-size="11" fill="#334155">1번 게시글 작성자</text>
   <rect x="180" y="146" width="120" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="240" y="171" text-anchor="middle" font-size="11" fill="#334155">2번 글 작성자</text>
+  <text x="240" y="171" text-anchor="middle" font-size="11" fill="#334155">2번 게시글 작성자</text>
   <rect x="312" y="146" width="120" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="372" y="171" text-anchor="middle" font-size="11" fill="#334155">N번 글 작성자</text>
+  <text x="372" y="171" text-anchor="middle" font-size="11" fill="#334155">N번 게시글 작성자</text>
   <line x1="200" y1="114" x2="118" y2="144" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#c5nq-ar)"/>
   <line x1="240" y1="114" x2="240" y2="144" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#c5nq-ar)"/>
   <line x1="280" y1="114" x2="362" y2="144" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#c5nq-ar)"/>
@@ -366,23 +366,25 @@
   <rect x="480" y="26" width="440" height="288" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
   <text x="700" y="54" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">fetch join</text>
   <rect x="560" y="120" width="280" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="700" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">글 + 작성자를 한 번에 조회</text>
+  <text x="700" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">게시글 + 작성자를 한 번에 조회</text>
   <text x="700" y="168" text-anchor="middle" font-size="11" fill="#3730a3">join으로 묶어서 가져온다</text>
   <rect x="580" y="240" width="240" height="46" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="700" y="269" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">합계 쿼리 1개</text>
   <text x="700" y="212" text-anchor="middle" font-size="11" fill="#6b7280">작성자를 나중에 따로 조회하지 않는다</text>
 </svg>
 </div>
-<div class="caption">그림 5-3. 지연 로딩은 작성자를 꺼낼 때마다 쿼리가 붙어 N+1개가 되고, fetch join은 글과 작성자를 한 번에 가져와 쿼리 하나로 끝냅니다</div>
-<p>그림의 오른쪽이 해법입니다. 작성자를 나중에 따로 가져오지 말고 글을 조회할 때 아예 함께 묶어 가져오면 쿼리는 한 번으로 끝납니다. 이 방법이 다음 절의 fetch join입니다.</p>
+<div class="caption">그림 5-3. 지연 로딩은 작성자를 꺼낼 때마다 쿼리가 붙어 N+1개가 되고, fetch join은 게시글과 작성자를 한 번에 가져와 쿼리 하나로 끝냅니다</div>
+<p>그림의 오른쪽이 해법입니다. 작성자를 나중에 따로 가져오지 말고 게시글을 조회할 때 아예 함께 묶어 가져오면 쿼리는 한 번으로 끝납니다. 이 방법이 다음 절의 fetch join입니다.</p>
 <h2>5.7 fetch join</h2>
-<p>작성자를 글과 함께 묶어 가져오는 조회는 이미 있습니다. 앞 장에서 <code>findByIdJoinUser</code>를 만들어 게시글 상세와 수정, 삭제에 썼습니다. 그때는 &quot;작성자를 함께 가져오는 조회&quot;라는 이름으로만 쓰고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, <code>findByIdJoinUser</code>의 JPQL이 <code>select b from Board b join fetch b.user where b.id = :boardId</code>였습니다.</p>
-<p>핵심은 <code>join fetch b.user</code>입니다. 지연 로딩에서는 글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, <code>join fetch</code>는 글을 조회하는 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 글은 작성자가 이미 채워져 있어, <code>getUser().getUsername()</code>을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 앞 장에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.</p>
-<p>댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 쓰고 넘어갔던 <code>findByIdJoinUserAndReply</code>입니다. <code>board/BoardRepository.java</code>를 열고 아래 메서드를 작성합니다.</p>
+<p>작성자를 게시글과 함께 묶어 가져오는 조회는 이미 있습니다. 챕터 4에서 <code>findByIdJoinUser</code>를 만들어 게시글 상세와 수정, 삭제에 사용했습니다. 그때는 &quot;작성자를 함께 가져오는 조회&quot;라는 이름으로만 사용하고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, <code>findByIdJoinUser</code>의 JPQL이 <code>select b from Board b join fetch b.user where b.id = :boardId</code>였습니다.</p>
+<p>핵심은 <code>join fetch b.user</code>입니다. 지연 로딩에서는 게시글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, <code>join fetch</code>는 게시글을 조회하는 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 게시글은 작성자가 이미 채워져 있어, <code>getUser().getUsername()</code>을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 챕터 4에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.</p>
+<p>댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 사용하고 넘어갔던 <code>findByIdJoinUserAndReply</code>입니다. <code>board/BoardRepository.java</code>를 열고 아래 메서드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="c1">// TODO: 작성자와 댓글을 join fetch로 함께 가져온다</span>
 <span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user left join fetch b.replies where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReply</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
-<p>이번에는 <code>join fetch</code>가 두 개입니다. <code>join fetch b.user</code>로 작성자를, <code>left join fetch b.replies</code>로 댓글 목록을 함께 가져옵니다. 댓글 쪽에 <code>left</code>를 붙인 것은 댓글이 하나도 없는 글도 조회에서 빠지지 않게 하기 위해서입니다. <code>left</code> 없이 쓰는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 글은 결과에서 사라집니다. <code>left</code>를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 글도 함께 나옵니다. 댓글을 묶으면 데이터베이스에서는 글 하나가 댓글 수만큼 중복된 행으로 돌아오지만, JPA가 같은 영속성 컨텍스트의 <code>Board</code> 하나로 합쳐 주므로 결과는 글 한 건입니다. 이 조회 하나로 글과 작성자와 댓글 목록이 채워진 채 돌아오므로, 상세 응답에서 <code>board.getUser()</code>나 <code>board.getReplies()</code>를 꺼내도 추가 쿼리가 나가지 않습니다. 다만 댓글 작성자(<code>reply.user</code>)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.</p>
+<p>이번에는 <code>join fetch</code>가 두 개입니다. <code>join fetch b.user</code>로 작성자를, <code>left join fetch b.replies</code>로 댓글 목록을 함께 가져옵니다. 댓글 쪽에 <code>left</code>를 붙인 것은 댓글이 하나도 없는 게시글도 조회에서 빠지지 않게 하기 위해서입니다.</p>
+<p><code>left</code> 없이 사용하는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 게시글은 결과에서 사라집니다. <code>left</code>를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 게시글도 함께 나옵니다.</p>
+<p>댓글을 묶으면 데이터베이스에서는 게시글 하나가 댓글 수만큼 중복된 행으로 돌아오지만, JPA가 같은 영속성 컨텍스트의 <code>Board</code> 하나로 합쳐 주므로 결과는 게시글 한 건입니다. 이 조회 하나로 게시글과 작성자와 댓글 목록이 채워진 채 돌아오므로, 상세 응답에서 <code>board.getUser()</code>나 <code>board.getReplies()</code>를 꺼내도 추가 쿼리가 나가지 않습니다. 다만 댓글 작성자(<code>reply.user</code>)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.</p>
 <p>이 조회가 실제로 쿼리를 한 번에 끝내는지 테스트로 확인합니다. <code>test/board/BoardRepositoryTest.java</code>에 <code>findByIdJoinUserAndReply_test</code>를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> test/board/BoardRepositoryTest.java. fetch join 조회</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReply_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -393,28 +395,30 @@
 <span class="w">        </span><span class="c1">// 여기서 댓글 작성자 조회가 나간다</span>
 <span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;Reply author : &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getReplies</span><span class="p">().</span><span class="na">get</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="na">getUser</span><span class="p">().</span><span class="na">getUsername</span><span class="p">());</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 글·작성자·댓글이 담겨 왔기 때문입니다. 앞의 <code>findByIdLazyLoading_test</code>에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 두 번째 select가 사라졌습니다. 그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 댓글 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 <code>DetailDTO</code>는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다. 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 <code>left join fetch</code>를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.</p>
+<p>게시글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 게시글·작성자·댓글이 담겨 왔기 때문입니다. 앞의 <code>findByIdLazyLoading_test</code>에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 두 번째 select가 사라졌습니다.</p>
+<p>그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 댓글 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 <code>DetailDTO</code>는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다.</p>
+<p>댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 <code>left join fetch</code>를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.</p>
 <p>두 로그를 나란히 두면 차이가 분명합니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title"><span class="badge">로그</span> show-sql 콘솔 (요약)</div># findByIdLazyLoading_test — 지연 로딩
-select ... from board_tb where id=?        # 1) 글만 조회
+select ... from board_tb where id=?        # 1) 게시글만 조회
 select ... from user_tb  where id=?        # 2) getUsername() 순간, 작성자 조회
 
 # findByIdJoinUserAndReply_test — fetch join
 select ... from board_tb b
-    join user_tb u ... left join reply_tb r ... where b.id=?   # 글+작성자+댓글을 한 번에
+    join user_tb u ... left join reply_tb r ... where b.id=?   # 게시글+작성자+댓글을 한 번에
 select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 lazy라 꺼낼 때 추가</div>
 <!-- [CAPTURE NEEDED: 01_show-sql-nplus1-vs-fetchjoin
   path: assets/CH5/terminal/01_show-sql-nplus1-vs-fetchjoin.png
   desc: show-sql 로그 두 장면을 위아래로 담은 캡처. (1) findByIdLazyLoading_test 실행 로그. board를 조회하는 select 한 줄이 먼저 나가고, "username :"을 출력하기 직전에 user를 조회하는 select가 한 줄 더 나가 select가 총 두 번 찍힌 화면(지연 로딩의 추가 쿼리). (2) findByIdJoinUserAndReply_test 실행 로그. board와 user, replies를 join으로 함께 가져오는 select 한 줄만 나가고, username과 댓글을 출력할 때 추가 select가 없는 화면(fetch join 한 방). 각 로그에 select 문이 몇 번 나갔는지가 눈에 보이면 좋음. IDE 콘솔 또는 gradle test 출력.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\01_show-sql-nplus1-vs-fetchjoin.png" alt="" /><div class="caption">그림 5-4. 지연 로딩은 작성자를 꺼낼 때 select가 한 번 더 나가지만, fetch join은 조회 한 번으로 작성자와 댓글까지 담아 옵니다</div></div>
-<p>게시글 상세를 <code>findByIdJoinUserAndReply</code>로 조회하도록 앞에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 쿼리가 여러 번 나가기 때문입니다.</p>
+<p>게시글 상세를 <code>findByIdJoinUserAndReply</code>로 조회하도록 앞에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 게시글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 쿼리가 여러 번 나가기 때문입니다.</p>
 <div class="tip">
 <p><strong>fetch 전략에서 생각해 볼 것들</strong></p>
 <ul>
 <li><strong>기본값</strong>: <code>@ManyToOne</code>은 즉시 로딩, <code>@OneToMany</code>는 지연 로딩이 기본입니다. 어느 쪽이든 연관관계가 많아지면 조회 한 번이 쿼리 여러 개로 늘어날 수 있어, 필요한 조회에는 fetch join으로 가져올 것을 함께 정합니다.</li>
 <li><strong>지연 로딩을 기본으로</strong>: 연관관계를 모두 즉시 로딩으로 두면, 작성자와 댓글이 필요 없는 조회에서도 매번 함께 조회됩니다. 평소에는 지연 로딩으로 두고, 함께 필요한 조회에서만 fetch join으로 묶는 편이 낫습니다.</li>
-<li><strong>left join의 이유</strong>: 댓글이 없는 글도 조회에서 빠지지 않게 하려고 <code>left</code>를 붙입니다. <code>left</code> 없이 묶으면 댓글이 하나도 없는 글은 결과에서 사라집니다.</li>
+<li><strong>left join의 이유</strong>: 댓글이 없는 게시글도 조회에서 빠지지 않게 하려고 <code>left</code>를 붙입니다. <code>left</code> 없이 묶으면 댓글이 하나도 없는 게시글은 결과에서 사라집니다.</li>
 </ul>
 </div>
 <h2>5.8 상세 응답에 댓글 담기</h2>
@@ -440,16 +444,16 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 <span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">sessionUserId</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">sessionUserId</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">writerId</span><span class="p">);</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>DetailDTO</code>에 두 가지가 붙었습니다. 하나는 댓글 목록입니다. <code>board.getReplies()</code>로 글에 달린 댓글을 꺼내 각각을 안쪽의 <code>ReplyDTO</code>로 바꿔 담으므로, 상세를 부르면 글과 함께 댓글이 한 덩어리로 나갑니다. 다른 하나는 <code>isOwner</code>인데, 로그인한 사람이 이 글(또는 이 댓글)의 작성자인지를 참·거짓으로 알려 주는 값입니다. <code>checkOwner</code>가 요청을 보낸 사람의 아이디(<code>sessionUserId</code>)와 작성자 아이디를 견줘 같으면 <code>true</code>를 돌려주고, 비로그인이라 <code>sessionUserId</code>가 <code>null</code>이면 <code>false</code>입니다. 이 값은 화면에서 수정·삭제 버튼을 본인에게만 보여 줄 때 쓰입니다. 서버가 &quot;이건 당신 글입니다&quot;를 미리 계산해 내려 줍니다.</p>
+<p><code>DetailDTO</code>에 두 가지가 붙었습니다. 하나는 댓글 목록입니다. <code>board.getReplies()</code>로 게시글에 달린 댓글을 꺼내 각각을 안쪽의 <code>ReplyDTO</code>로 바꿔 담으므로, 상세를 부르면 게시글과 함께 댓글이 한 덩어리로 나갑니다. 다른 하나는 <code>isOwner</code>인데, 로그인한 사람이 이 게시글(또는 이 댓글)의 작성자인지를 참·거짓으로 알려 주는 값입니다. <code>checkOwner</code>가 요청을 보낸 사람의 아이디(<code>sessionUserId</code>)와 작성자 아이디를 견줘 같으면 <code>true</code>를 돌려주고, 비로그인이라 <code>sessionUserId</code>가 <code>null</code>이면 <code>false</code>입니다. 이 값은 화면에서 수정·삭제 버튼을 본인에게만 보여 줄 때 쓰입니다.</p>
 <p><code>isOwner</code>를 채우려면 상세 조회가 로그인한 사람이 누구인지 알아야 하므로, 서비스가 <code>sessionUserId</code>를 받습니다. <code>board/BoardService.java</code>의 상세 메서드를 아래처럼 고칩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge explain">설명</span> board/BoardService.java. 상세가 sessionUserId를 받는다</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">sessionUserId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findByIdJoinUserAndReply</span><span class="p">(</span><span class="n">boardId</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="n">sessionUserId</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>조회는 <code>findByIdJoinUserAndReply</code>로 합니다. 앞에서 본 fetch join 조회라 글과 작성자, 댓글이 한 번에 담겨 옵니다. 가져온 글과 <code>sessionUserId</code>를 <code>DetailDTO</code>에 넘기면 앞의 <code>isOwner</code>와 댓글 목록이 채워집니다.</p>
+<p>조회는 <code>findByIdJoinUserAndReply</code>로 합니다. 앞에서 본 fetch join 조회라 게시글과 작성자, 댓글이 한 번에 담겨 옵니다. 가져온 게시글과 <code>sessionUserId</code>를 <code>DetailDTO</code>에 넘기면 앞의 <code>isOwner</code>와 댓글 목록이 채워집니다.</p>
 <p>마지막으로 컨트롤러가 로그인 유저를 꺼내 서비스로 넘깁니다. 상세는 공개라 로그인하지 않아도 볼 수 있으므로, <code>board/BoardController.java</code>의 상세 메서드는 <code>request.getAttribute(&quot;sessionUser&quot;)</code>로 유저를 꺼내되 비로그인이면 <code>null</code>을 넘깁니다. <code>null</code>이 넘어가도 <code>checkOwner</code>가 <code>false</code>를 돌려주므로, 로그인하지 않은 사람에게는 모든 <code>isOwner</code>가 <code>false</code>로 나갑니다.</p>
-<p>이제 <code>ssar</code>로 로그인해 1번 글을 조회하면, 글과 함께 거기 달린 댓글이 함께 나옵니다.</p>
+<p>이제 <code>ssar</code>로 로그인해 1번 게시글을 조회하면, 게시글과 함께 거기 달린 댓글이 함께 나옵니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;msg&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;성공&quot;</span><span class="p">,</span>
@@ -467,12 +471,12 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>글의 <code>isOwner</code>가 <code>true</code>이고, <code>ssar</code>가 쓴 1·2번 댓글도 <code>true</code>, <code>cos</code>가 쓴 3번 댓글은 <code>false</code>입니다. 화면은 이 값만 보고 본인 것에만 삭제 버튼을 붙이면 됩니다.</p>
-<p>댓글까지 붙자, 오픈이는 화면을 붙이던 동료를 불렀습니다. 목록에서 1번 글을 눌러 상세를 열자, 글 아래로 댓글 세 개가 나란히 나타났습니다. 본인이 쓴 댓글에만 삭제 버튼이 붙어 있었습니다.</p>
+<p>게시글의 <code>isOwner</code>가 <code>true</code>이고, <code>ssar</code>가 쓴 1·2번 댓글도 <code>true</code>, <code>cos</code>가 쓴 3번 댓글은 <code>false</code>입니다. 화면은 이 값만 보고 본인 것에만 삭제 버튼을 붙이면 됩니다.</p>
+<p>댓글까지 붙자, 오픈이는 화면을 붙이던 동료를 불렀습니다. 목록에서 1번 게시글을 눌러 상세를 열자, 게시글 아래로 댓글 세 개가 나란히 나타났습니다. 본인이 쓴 댓글에만 삭제 버튼이 붙어 있었습니다.</p>
 <div class="dialogue"><span class="speaker">동료</span>: "댓글도 되고, 남의 댓글엔 삭제 버튼도 안 뜨네요. 이제 진짜 게시판 같은데요."</div>
-<p>게시판이 완성됐습니다. 글을 쓰고 읽고 고치고 지우고, 로그인한 본인만 자기 글과 댓글을 건드리고, 무거운 상세 조회도 fetch join으로 묶어 쿼리를 줄였습니다.</p>
+<p>게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 로그인한 본인만 자기 게시글과 댓글을 건드리고, 무거운 상세 조회도 fetch join으로 묶어 쿼리를 줄였습니다.</p>
 <p class="thought">처음엔 하나도 설명할 수 없던 것들이었는데.</p>
-<p>오픈이는 챕터 1을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 챕터 2에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 나갔습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 부르는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 쓰는 도구가 됐습니다.</p>
+<p>오픈이는 챕터 1을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 챕터 2에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 나갔습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 부르는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 사용하는 도구가 됐습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>

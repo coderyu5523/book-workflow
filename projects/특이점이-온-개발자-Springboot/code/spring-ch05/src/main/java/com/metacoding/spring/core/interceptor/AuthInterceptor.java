@@ -19,7 +19,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
         User sessionUser = (User) request.getAttribute("sessionUser");
         if (sessionUser == null) {
-            // 던지면 GlobalExceptionHandler가 JSON 응답으로 변환
+            // 발생시키면 GlobalExceptionHandler가 JSON 응답으로 변환
             throw new Exception401("로그인이 필요합니다");
         }
         return true;
