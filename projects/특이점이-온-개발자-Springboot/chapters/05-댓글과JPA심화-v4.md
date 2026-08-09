@@ -1,21 +1,21 @@
 # 챕터 5. 댓글과 JPA 심화
 
-게시판은 이제 게시글을 쓰고 읽고 고치고 지우는 데까지 왔고, 로그인한 본인만 자기 게시글을 건드립니다. 그런데 정작 게시판다운 것 하나가 비어 있습니다. 게시글 아래 댓글 입력칸에는 아무것도 달리지 않습니다.
+게시판은 이제 게시글을 쓰고 읽고 고치고 지울 수 있고, 게시글은 작성자만 관리합니다. 그런데 정작 게시판다운 것 하나가 비어 있습니다. 게시글 아래 댓글 입력칸에는 아무것도 달리지 않습니다.
 
-게시글은 그 자체로 하나의 자원입니다. 하지만 댓글은 다릅니다. "누구의 어느 게시글에 달린 댓글인가"가 빠지면 댓글은 어디에 달렸는지 알 수 없게 됩니다. 그래서 댓글을 만들려면, 먼저 댓글이 어느 게시글에 달리는지부터 정해야 합니다. 이 연결을 어떻게 잡아야 할지 감이 서지 않을 때, 선배가 방향을 하나 알려 줍니다.
+게시글은 그 자체로 하나의 자원입니다. 하지만 댓글은 다릅니다. 댓글을 만들려면 먼저 어느 게시글에 달리는지부터 정해야 합니다. 이 연결을 어떻게 잡아야 할지 감이 서지 않을 때, 선배가 방향을 하나 알려 줍니다.
 
 **선배**: "댓글은 게시글에 붙이는 포스트잇 같은 거예요. 포스트잇마다 '몇 번 게시글에 붙는다'가 적혀 있고, 게시글이 사라지면 거기 붙은 포스트잇도 같이 사라져야 하잖아요. 그렇게 게시글과 댓글이 서로를 아는 관계를 만들어 두면 돼요."
 
-포스트잇으로 관계를 잡아 두면, 게시글 상세를 부를 때 게시글에 붙은 댓글이 함께 나와야 합니다. 그런데 이 "함께 나오는 조회"가 뒤에서 문제를 일으킵니다.
+포스트잇으로 관계를 잡아 두면, 게시글 상세 API를 호출할 때 게시글에 붙은 댓글도 함께 응답에 담겨야 합니다. 그런데 이 "함께 나오는 조회"가 뒤에서 문제를 일으킵니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 5 한눈에 보기. 게시글 상세를 요청하면 게시글에 작성자와 댓글이 딸려 온다. 이 조회를 지연 로딩에 맡기면 작성자와 댓글을 꺼낼 때마다 쿼리가 붙어 1 더하기 N개가 되고, fetch join으로 묶으면 한 번의 조회로 작성자와 댓글까지 가져와 쿼리 하나로 끝난다.">
+<svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 5 한눈에 보기. 게시글 상세를 요청하면 작성자와 댓글도 함께 조회된다. 이 조회를 지연 로딩에 맡기면 작성자와 댓글을 꺼낼 때마다 쿼리가 붙어 1 더하기 N개가 되고, fetch join으로 묶으면 한 번의 조회로 작성자와 댓글까지 가져와 쿼리 하나로 끝난다.">
   <defs>
     <marker id="c5ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c5ov-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
   </defs>
   <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 5 한눈에 보기 - 연관관계부터 조회 성능까지</text>
-  <text x="40" y="70" font-size="12" font-weight="700" fill="#475569">1단계 · 게시글에 작성자와 댓글이 딸린다</text>
+  <text x="40" y="70" font-size="12" font-weight="700" fill="#475569">1단계 · 게시글에 작성자와 댓글이 함께 조회된다</text>
   <rect x="40" y="82" width="150" height="64" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="115" y="110" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
   <text x="115" y="130" text-anchor="middle" font-size="11" fill="#6b7280">상세 요청</text>
@@ -33,7 +33,7 @@
   <rect x="110" y="238" width="370" height="150" rx="10" fill="#fff" stroke="#ff7849" stroke-width="1.9"/>
   <text x="295" y="268" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">지연 로딩</text>
   <text x="295" y="298" text-anchor="middle" font-size="12" fill="#334155">작성자와 댓글을 꺼낼 때마다</text>
-  <text x="295" y="318" text-anchor="middle" font-size="12" fill="#334155">select가 하나씩 더 나간다</text>
+  <text x="295" y="318" text-anchor="middle" font-size="12" fill="#334155">select가 하나씩 더 실행된다</text>
   <rect x="185" y="336" width="220" height="38" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.8"/>
   <text x="295" y="360" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">합계 쿼리 N+1개</text>
   <rect x="520" y="238" width="370" height="150" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
@@ -45,7 +45,7 @@
 </svg>
 </div>
 
-*그림 5-1. 게시글 상세를 부르면 게시글에 작성자와 댓글이 딸려 오고, 이 조회를 지연 로딩에 맡기면 쿼리가 N+1개로 늘어나지만 fetch join으로 묶으면 하나로 끝납니다*
+*그림 5-1. 게시글 상세 API를 호출하면 작성자와 댓글도 함께 조회되고, 이 조회를 지연 로딩에 맡기면 쿼리가 N+1개로 늘어나지만 fetch join으로 묶으면 하나로 끝납니다*
 
 :::goal
 **이번 챕터가 끝나면**
@@ -66,19 +66,25 @@ cd spring-start/ch05
 
 이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다.
 
-```
-spring-start/ch05  (신규·변경)
-├── reply/Reply.java                      [설명] 댓글 엔티티(@ManyToOne user/board)
-├── reply/ReplyRepository.java            [설명] JpaRepository 상속으로 저장·조회·삭제
-├── reply/ReplyRequest.java, ReplyResponse.java [참고] 댓글 DTO
-├── reply/ReplyService.java               [실습 1] 댓글 저장·삭제(소유자 검증)
-├── reply/ReplyController.java            [실습 2] 작성·삭제 엔드포인트
-├── core/config/WebMvcConfig.java         [변경] 인터셉터에 /api/replies 추가
-├── board/Board.java                      [실습 3] @OneToMany replies, user EAGER→LAZY
-├── board/BoardRepository.java            [실습 4] findByIdJoinUserAndReply(fetch join)
-├── board/BoardResponse.java              [설명] DetailDTO에 replies·isOwner
-├── board/BoardService.java, BoardController.java [설명] 상세에 sessionUserId
-└── test/board/BoardRepositoryTest.java   [실습 5] fetch 5단계(EAGER 토글 포함)
+```text ch05 파일 구조
+spring-start/ch05/src/main/java/com/metacoding/spring/
+├── board/
+│   ├── Board.java                        # [작성] @OneToMany replies, user EAGER→LAZY
+│   ├── BoardController.java              # [참고] 상세에 sessionUserId
+│   ├── BoardRepository.java              # [작성] findByIdJoinUserAndReply(fetch join)
+│   ├── BoardResponse.java                # [참고] DetailDTO에 replies·isOwner
+│   └── BoardService.java                 # [참고] 상세에 sessionUserId
+├── core/config/WebMvcConfig.java         # [작성] 인터셉터에 /api/replies 추가
+└── reply/
+    ├── Reply.java                        # [참고] 댓글 엔티티(@ManyToOne user/board)
+    ├── ReplyController.java              # [작성] 작성·삭제 엔드포인트
+    ├── ReplyRepository.java              # [참고] JpaRepository 상속으로 저장·조회·삭제
+    ├── ReplyRequest.java                 # [참고] 댓글 DTO
+    ├── ReplyResponse.java                # [참고] 댓글 DTO
+    └── ReplyService.java                 # [작성] 댓글 저장·삭제(소유자 검증)
+
+spring-start/ch05/src/test/java/com/metacoding/spring/board/
+└── BoardRepositoryTest.java              # [작성] fetch 5단계(EAGER 토글 포함)
 ```
 
 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
@@ -210,15 +216,13 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
 
-챕터 3에서 바꾼 `BoardRepository`와 같은 모양입니다. `save`·`findById`·`delete`가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세를 부를 때 게시글과 함께 나가기 때문입니다.
+챕터 3에서 바꾼 `BoardRepository`와 같은 모양입니다. `save`·`findById`·`delete`가 모두 상속으로 들어오므로 안이 비어 있습니다. 댓글은 목록을 따로 조회하지 않는데, 게시글 상세 API를 호출할 때 게시글과 함께 응답에 담기기 때문입니다.
 
 요청과 응답을 담을 DTO도 챕터 3의 방식을 그대로 사용합니다. `reply/ReplyRequest.java`와 `reply/ReplyResponse.java`는 각각 이렇게 되어 있습니다.
 
 ```java [참고] reply/ReplyRequest.java, ReplyResponse.java. 댓글 DTO
 public class ReplyRequest {
-    public record SaveDTO(
-            @NotEmpty(message = "댓글 내용을 입력해주세요") String comment,
-            @NotNull(message = "게시글 번호가 필요합니다") Integer boardId) {
+    public record SaveDTO(String comment, Integer boardId) {
         // 로그인 유저와 대상 게시글을 받아 엔티티로 만든다
         public Reply toEntity(User user, Board board) {
             return Reply.builder().comment(comment).user(user).board(board).build();
@@ -235,7 +239,7 @@ public class ReplyResponse {
 }
 ```
 
-`SaveDTO`는 댓글 내용과 어느 게시글에 달지(`boardId`)를 받고, `toEntity`는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 게시글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. `DTO`는 응답으로 나갈 댓글 하나를 담습니다.
+`SaveDTO`는 댓글 내용과 어느 게시글에 달지(`boardId`)를 받고, `toEntity`는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 게시글을 넘겨받아 댓글 엔티티로 옮겨 담습니다. `DTO`는 응답할 댓글 하나를 담습니다.
 
 리포지토리와 DTO를 서비스에서 조립합니다. `reply/ReplyService.java`를 열고 아래 코드를 작성합니다.
 
@@ -274,7 +278,7 @@ public class ReplyController {
     // 댓글 작성 (POST /api/replies)
     @PostMapping
     public ResponseEntity<?> save(HttpServletRequest request,
-            @Valid @RequestBody ReplyRequest.SaveDTO requestDTO) {
+            @RequestBody ReplyRequest.SaveDTO requestDTO) {
         User sessionUser = (User) request.getAttribute("sessionUser");
         ReplyResponse.DTO respDTO = replyService.댓글쓰기(requestDTO, sessionUser);
         return Resp.ok(respDTO);
@@ -282,7 +286,7 @@ public class ReplyController {
 }
 ```
 
-`request.getAttribute("sessionUser")`로 로그인 유저를 꺼내 작성자로 붙입니다. 챕터 4에서 필터가 담아 둔 유저입니다.
+`request.getAttribute("sessionUser")`로 로그인 유저를 꺼내 작성자로 지정합니다. 챕터 4에서 필터가 담아 둔 유저입니다.
 
 ## 5.4 댓글 삭제
 
@@ -330,9 +334,11 @@ public class ReplyController {
 
 ## 5.5 지연 로딩과 프록시
 
-댓글까지 나가는 것을 확인하고 나면, 챕터 4에서 켜 둔 `show-sql` 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 게시글 하나를 조회했을 뿐인데 select 문이 여러 줄 지나갑니다. 왜 이렇게 여러 번 나가는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다. 마침 선배가 지나가다 화면을 봅니다.
+댓글까지 응답에 담기는 것을 확인하고 나면, 챕터 4에서 켜 둔 `show-sql` 설정 덕에 콘솔에 찍히는 SQL을 보게 됩니다. 게시글 하나를 조회했을 뿐인데 select 문이 여러 줄 실행됩니다. 왜 이렇게 여러 번 실행되는지 확인하려면 조회를 하나씩 뜯어보는 테스트가 필요합니다.
 
-**선배**: "게시글 목록 불러올 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 나가는지 세어 봤어요?"
+지나가던 선배가 화면을 봅니다.
+
+**선배**: "게시글 목록 API 호출할 때 작성자 이름도 같이 보여 주죠? 그거 쿼리 몇 개 실행되는지 세어 봤어요?"
 
 세어 본 적이 없는 질문입니다. 답하기 전에 짚어야 할 것이 지연 로딩입니다. 앞에서 댓글에 붙인 `FetchType.LAZY`가 그것입니다. 챕터 4에서는 `Board.user`를 `EAGER`로 설정했는데, 이번 챕터에서 이 값을 `LAZY`로 바꿉니다. `board/Board.java`의 작성자 필드를 아래처럼 고칩니다.
 
@@ -347,17 +353,17 @@ public class ReplyController {
 
 두 방식의 차이는 테스트로 확인합니다. 먼저 조심할 것이 하나 있습니다. 지금 볼 테스트는 콘솔에 `board.getId()`만 찍는데, 즉시 로딩이든 지연 로딩이든 이 출력은 똑같습니다. 둘의 차이는 콘솔이 아니라 `show-sql`이 찍어 주는 SQL 로그에서 갈립니다.
 
-`test/board/BoardRepositoryTest.java`에 `findByIdEager_test`와 `findByIdLazy_test`를 준비합니다. 두 테스트의 코드는 글자 그대로 같아서, 게시글 하나를 `findById`로 조회해 `board.getId()`만 출력하고 작성자는 건드리지 않습니다.
+`test/board/BoardRepositoryTest.java`에 `findByIdEager_test`와 `findByIdLazy_test`를 준비합니다. 두 테스트의 코드는 글자 그대로 같아서, 게시글 하나를 `findById`로 조회해 `board.getId()`만 출력하고 작성자는 꺼내지 않습니다.
 
 ```java [실습 13] test/board/BoardRepositoryTest.java. 즉시·지연 로딩 비교 (두 테스트 본문이 같다)
     @Test
     public void findByIdLazy_test() {
         Board board = boardRepository.findById(1).get();
-        System.out.println("Board ID : " + board.getId()); // 작성자는 건드리지 않는다
+        System.out.println("Board ID : " + board.getId()); // 작성자는 꺼내지 않는다
     }
 ```
 
-다른 것은 `Board.user`의 어노테이션 상태뿐입니다. `findByIdEager_test`를 실행할 때는 방금 `LAZY`로 바꾼 작성자 필드를 잠시 `EAGER`로 되돌립니다. 이때 SQL 로그를 보면 `findById` 한 줄에 board와 user를 함께 조회하는 select가 나갑니다. 확인했으면 어노테이션을 다시 `LAZY`로 되돌리고 `findByIdLazy_test`를 실행합니다. 이번에는 같은 `findById`인데 board만 조회하는 select 한 줄만 나가고, 작성자는 프록시로 남아 로그에 나타나지 않습니다.
+다른 것은 `Board.user`의 어노테이션 상태뿐입니다. `findByIdEager_test`를 실행할 때는 방금 `LAZY`로 바꾼 작성자 필드를 잠시 `EAGER`로 되돌립니다. 이때 SQL 로그를 보면 `findById` 한 줄에 board와 user를 함께 조회하는 select가 실행됩니다. 확인했으면 어노테이션을 다시 `LAZY`로 되돌리고 `findByIdLazy_test`를 실행합니다. 이번에는 같은 `findById`인데 board만 조회하는 select 한 줄만 실행되고, 작성자는 프록시로 남아 로그에 나타나지 않습니다.
 
 여기까지는 쿼리가 오히려 줄어든 것처럼 보입니다. 문제는 미뤄 둔 작성자를 실제로 꺼낼 때 나타납니다. `LAZY` 상태에서 작성자 이름을 꺼내는 테스트를 하나 더 작성해 확인합니다. `test/board/BoardRepositoryTest.java`를 열고 아래 코드를 작성합니다.
 
@@ -366,16 +372,16 @@ public class ReplyController {
     public void findByIdLazyLoading_test() {
         Board board = boardRepository.findById(1).get(); // 여기선 board만 조회
         System.out.println("Board ID : " + board.getId());
-        // 이 순간 user 조회가 나간다
+        // 이 순간 user 조회 쿼리가 실행된다
         System.out.println("username : " + board.getUser().getUsername());
     }
 ```
 
-`findById`로 게시글을 가져올 때는 board select 하나만 나갑니다. 그런데 마지막 줄에서 `board.getUser().getUsername()`으로 작성자 이름을 꺼내는 순간, 미뤄 두었던 프록시가 그때 진짜 작성자를 가져오면서 SQL 로그에 user를 조회하는 select가 한 줄 더 찍힙니다. 게시글 하나를 조회하는 데 select가 두 번 나간 것입니다.
+`findById`로 게시글을 가져올 때는 board select 하나만 실행됩니다. 그런데 마지막 줄에서 `board.getUser().getUsername()`으로 작성자 이름을 꺼내는 순간, 미뤄 두었던 프록시가 그때 진짜 작성자를 가져오면서 SQL 로그에 user를 조회하는 select가 한 줄 더 찍힙니다. 게시글 하나를 조회하는 데 select가 두 번 실행된 것입니다.
 
 ## 5.6 N+1 문제
 
-게시글 하나면 두 번이라 별것 아닌 것 같지만, 게시글이 여러 개인 목록이면 상황이 달라집니다. 게시글 목록을 불러 게시글마다 작성자 이름을 화면에 보여 준다고 하겠습니다. 먼저 목록을 조회하는 select가 한 번 나가고, 그다음 목록의 각 게시글에서 작성자 이름을 꺼낼 때마다 방금 본 추가 select가 게시글 수만큼 반복됩니다. 게시글이 N개면 작성자 조회가 N번 더 붙어 전부 N+1개가 됩니다. 목록 하나를 불렀을 뿐인데 쿼리가 게시글 수에 비례해 늘어나는 이 현상을 N+1 문제라고 합니다.
+게시글 하나면 두 번이라 별것 아닌 것 같지만, 게시글이 여러 개인 목록이면 상황이 달라집니다. 게시글 목록을 조회해 게시글마다 작성자 이름을 화면에 보여 준다고 하겠습니다. 먼저 목록을 조회하는 select가 한 번 실행되고, 그다음 목록의 각 게시글에서 작성자 이름을 꺼낼 때마다 방금 본 추가 select가 게시글 수만큼 반복됩니다. 게시글이 N개면 작성자 조회가 N번 더 붙어 전부 N+1개가 됩니다. 게시글 목록 API를 한 번 호출했을 뿐인데 쿼리가 게시글 수에 비례해 늘어나는 이 현상을 N+1 문제라고 합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 940 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="지연 로딩은 게시글 목록 조회 1개에 게시글마다 작성자 조회가 붙어 1 더하기 N개의 쿼리가 나가지만, fetch join은 게시글과 작성자를 한 번에 가져와 쿼리 1개로 끝난다.">
@@ -412,13 +418,13 @@ public class ReplyController {
 
 *그림 5-3. 지연 로딩은 작성자를 꺼낼 때마다 쿼리가 붙어 N+1개가 되고, fetch join은 게시글과 작성자를 한 번에 가져와 쿼리 하나로 끝냅니다*
 
-그림의 오른쪽이 해법입니다. 작성자를 나중에 따로 가져오지 말고 게시글을 조회할 때 아예 함께 묶어 가져오면 쿼리는 한 번으로 끝납니다. 이 방법이 다음 절의 fetch join입니다.
+그림 오른쪽의 fetch join이 해법입니다. 다음 절에서 만듭니다.
 
 ## 5.7 fetch join
 
 작성자를 게시글과 함께 묶어 가져오는 조회는 이미 있습니다. 챕터 4에서 `findByIdJoinUser`를 만들어 게시글 상세와 수정, 삭제에 사용했습니다. 그때는 "작성자를 함께 가져오는 조회"라는 이름으로만 사용하고 왜 그렇게 묶어야 하는지는 미뤄 두었는데, `findByIdJoinUser`의 JPQL이 `select b from Board b join fetch b.user where b.id = :boardId`였습니다.
 
-핵심은 `join fetch b.user`입니다. 지연 로딩에서는 게시글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, `join fetch`는 게시글을 조회하는 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 게시글은 작성자가 이미 채워져 있어, `getUser().getUsername()`을 불러도 추가 쿼리가 나가지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 챕터 4에서는 작성자가 즉시 로딩이라 어차피 함께 나왔지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.
+핵심은 `join fetch b.user`입니다. 지연 로딩에서는 게시글을 먼저 가져오고 작성자를 프록시로 미뤄 두지만, `join fetch`는 게시글을 조회하는 select에 작성자 조회를 끼워 넣어 한 번에 가져옵니다. 그래서 이 메서드로 가져온 게시글은 작성자가 이미 채워져 있어, `getUser().getUsername()`을 호출해도 추가 쿼리가 실행되지 않습니다. 앞에서 본 두 번째 select가 사라집니다. 챕터 4에서는 작성자가 즉시 로딩이라 어차피 함께 조회됐지만, 이번 챕터에서 작성자를 지연 로딩으로 바꾼 지금은 이 fetch join이 비로소 N+1을 막는 장치가 됩니다.
 
 댓글까지 함께 가져오는 조회도 같은 방식으로 만듭니다. 게시글 상세에서 이름만 사용하고 넘어갔던 `findByIdJoinUserAndReply`입니다. `board/BoardRepository.java`를 열고 아래 메서드를 작성합니다.
 
@@ -430,9 +436,9 @@ public class ReplyController {
 
 이번에는 `join fetch`가 두 개입니다. `join fetch b.user`로 작성자를, `left join fetch b.replies`로 댓글 목록을 함께 가져옵니다. 댓글 쪽에 `left`를 붙인 것은 댓글이 하나도 없는 게시글도 조회에서 빠지지 않게 하기 위해서입니다.
 
-`left` 없이 사용하는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 게시글은 결과에서 사라집니다. `left`를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 게시글도 함께 나옵니다.
+`left` 없이 사용하는 조인은 양쪽에 짝이 있는 행만 돌려주는 내부 조인(Inner Join)이라, 댓글이 없는 게시글은 결과에서 사라집니다. `left`를 붙이면 짝이 없어도 왼쪽 행을 남기는 외부 조인(Outer Join)이 되어 댓글이 없는 게시글도 결과에 남습니다.
 
-댓글을 묶으면 데이터베이스에서는 게시글 하나가 댓글 수만큼 중복된 행으로 돌아오지만, JPA가 같은 영속성 컨텍스트의 `Board` 하나로 합쳐 주므로 결과는 게시글 한 건입니다. 이 조회 하나로 게시글과 작성자와 댓글 목록이 채워진 채 돌아오므로, 상세 응답에서 `board.getUser()`나 `board.getReplies()`를 꺼내도 추가 쿼리가 나가지 않습니다. 다만 댓글 작성자(`reply.user`)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.
+댓글을 묶으면 데이터베이스에서는 게시글 하나가 댓글 수만큼 중복된 행으로 반환되지만, JPA가 같은 영속성 컨텍스트의 `Board` 하나로 합쳐 주므로 결과는 게시글 한 건입니다. 이 조회 하나로 게시글과 작성자와 댓글 목록이 채워진 채 반환되므로, 상세 응답에서 `board.getUser()`나 `board.getReplies()`를 꺼내도 추가 쿼리가 실행되지 않습니다. 다만 댓글 작성자(`reply.user`)는 이 조회에 묶지 않아, 댓글 작성자 이름을 꺼낼 때는 지연 로딩이 그대로 동작합니다.
 
 이 조회가 실제로 쿼리를 한 번에 끝내는지 테스트로 확인합니다. `test/board/BoardRepositoryTest.java`에 `findByIdJoinUserAndReply_test`를 작성합니다.
 
@@ -443,14 +449,14 @@ public class ReplyController {
         System.out.println("Board ID : " + board.getId());
         System.out.println("username : " + board.getUser().getUsername());        // 추가 쿼리 없음
         System.out.println("Reply : " + board.getReplies().get(1).getComment());  // 추가 쿼리 없음
-        // 여기서 댓글 작성자 조회가 나간다
+        // 여기서 댓글 작성자 조회 쿼리가 실행된다
         System.out.println("Reply author : " + board.getReplies().get(1).getUser().getUsername());
     }
 ```
 
-게시글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 조회 한 번에 게시글·작성자·댓글이 담겨 왔기 때문입니다. 앞의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 나갔지만, 여기서는 두 번째 select가 사라졌습니다.
+게시글 작성자와 댓글 내용을 꺼낼 때는 추가 select가 없습니다. 한 번의 조회로 게시글·작성자·댓글이 함께 조회됐기 때문입니다. 앞의 `findByIdLazyLoading_test`에서는 작성자를 꺼내는 순간 select가 한 번 더 실행됐지만, 여기서는 두 번째 select가 사라졌습니다.
 
-그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 댓글 작성자를 가져오는 select가 한 줄 더 나갑니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다.
+그런데 마지막 줄에서 댓글 작성자 이름을 꺼내면 이야기가 다릅니다. 댓글 작성자는 이 조회에 묶이지 않은 지연 로딩이라, 댓글 작성자를 가져오는 select가 한 줄 더 실행됩니다. 실제 상세 응답의 `DetailDTO`는 댓글을 하나씩 돌며 저마다 작성자 이름을 꺼내므로, 댓글이 N개면 이 select가 N번 붙습니다. N+1이 한 겹 더 안쪽에 남아 있습니다.
 
 댓글 작성자까지 한 번에 묶고 싶다면 이 조회에 `left join fetch`를 한 겹 더 더하면 되지만, 늘 필요한 게 아니라면 지연 로딩으로 두고 꼭 필요한 조회에서만 묶는 편이 낫습니다.
 
@@ -472,21 +478,19 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
   desc: show-sql 로그 두 장면을 위아래로 담은 캡처. (1) findByIdLazyLoading_test 실행 로그. board를 조회하는 select 한 줄이 먼저 나가고, "username :"을 출력하기 직전에 user를 조회하는 select가 한 줄 더 나가 select가 총 두 번 찍힌 화면(지연 로딩의 추가 쿼리). (2) findByIdJoinUserAndReply_test 실행 로그. board와 user, replies를 join으로 함께 가져오는 select 한 줄만 나가고, username과 댓글을 출력할 때 추가 select가 없는 화면(fetch join 한 방). 각 로그에 select 문이 몇 번 나갔는지가 눈에 보이면 좋음. IDE 콘솔 또는 gradle test 출력.
 ] -->
 ![](../assets/CH5/terminal/01_show-sql-nplus1-vs-fetchjoin.png)
-*그림 5-4. 지연 로딩은 작성자를 꺼낼 때 select가 한 번 더 나가지만, fetch join은 조회 한 번으로 작성자와 댓글까지 담아 옵니다*
+*그림 5-4. 지연 로딩은 작성자를 꺼낼 때 select가 한 번 더 실행되지만, fetch join은 조회 한 번으로 작성자와 댓글까지 함께 조회합니다*
 
-게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 앞에서 고쳐 둔 것도 같은 이유입니다. 상세 한 번에 게시글과 작성자와 댓글이 함께 나가야 하는데, 지연 로딩에 맡기면 쿼리가 여러 번 나가기 때문입니다.
+게시글 상세를 `findByIdJoinUserAndReply`로 조회하도록 앞에서 고쳐 둔 것도 같은 이유입니다. 게시글 상세 API 한 번에 게시글과 작성자와 댓글이 함께 응답에 담겨야 하는데, 지연 로딩에 맡기면 쿼리가 여러 번 실행되기 때문입니다.
 
 :::tip
-**fetch 전략에서 생각해 볼 것들**
+**fetch 전략에서 기억할 것**
 
 - **기본값**: `@ManyToOne`은 즉시 로딩, `@OneToMany`는 지연 로딩이 기본입니다. 어느 쪽이든 연관관계가 많아지면 조회 한 번이 쿼리 여러 개로 늘어날 수 있어, 필요한 조회에는 fetch join으로 가져올 것을 함께 정합니다.
-- **지연 로딩을 기본으로**: 연관관계를 모두 즉시 로딩으로 두면, 작성자와 댓글이 필요 없는 조회에서도 매번 함께 조회됩니다. 평소에는 지연 로딩으로 두고, 함께 필요한 조회에서만 fetch join으로 묶는 편이 낫습니다.
-- **left join의 이유**: 댓글이 없는 게시글도 조회에서 빠지지 않게 하려고 `left`를 붙입니다. `left` 없이 묶으면 댓글이 하나도 없는 게시글은 결과에서 사라집니다.
 :::
 
 ## 5.8 상세 응답에 댓글 담기
 
-댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세에 함께 나가야 하는데, 앞에서 게시글에 `replies` 목록을 추가했으니 상세 응답 DTO에 이 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
+댓글은 저장했지만 아직 화면에서 보이지 않습니다. 댓글은 게시글 상세 응답에 함께 담겨야 하는데, 앞에서 게시글에 `replies` 목록을 추가했으니 상세 응답 DTO에 이 목록을 담습니다. `board/BoardResponse.java`의 `DetailDTO`를 아래처럼 고칩니다.
 
 ```java [설명] board/BoardResponse.java. 상세에 댓글 목록과 작성자 여부 추가
     public record DetailDTO(Integer boardId, String title, String content, Integer userId,
@@ -512,7 +516,7 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
     }
 ```
 
-`DetailDTO`에 두 가지가 붙었습니다. 하나는 댓글 목록입니다. `board.getReplies()`로 게시글에 달린 댓글을 꺼내 각각을 안쪽의 `ReplyDTO`로 바꿔 담으므로, 상세를 부르면 게시글과 함께 댓글이 한 덩어리로 나갑니다. 다른 하나는 `isOwner`인데, 로그인한 사람이 이 게시글(또는 이 댓글)의 작성자인지를 참·거짓으로 알려 주는 값입니다. `checkOwner`가 요청을 보낸 사람의 아이디(`sessionUserId`)와 작성자 아이디를 견줘 같으면 `true`를 돌려주고, 비로그인이라 `sessionUserId`가 `null`이면 `false`입니다. 이 값은 화면에서 수정·삭제 버튼을 본인에게만 보여 줄 때 쓰입니다.
+`DetailDTO`에 두 가지가 붙었습니다. 하나는 댓글 목록입니다. `board.getReplies()`로 게시글에 달린 댓글을 꺼내 각각을 안쪽의 `ReplyDTO`로 바꿔 담으므로, 게시글 상세 API를 호출하면 게시글 정보와 댓글 목록이 응답 하나에 함께 담깁니다. 다른 하나는 `isOwner`인데, 로그인한 사람이 이 게시글(또는 이 댓글)의 작성자인지를 참·거짓으로 알려 주는 값입니다. `checkOwner`가 요청을 보낸 사람의 아이디(`sessionUserId`)와 작성자 아이디를 견줘 같으면 `true`를 돌려주고, 비로그인이라 `sessionUserId`가 `null`이면 `false`입니다. 이 값은 화면에서 수정·삭제 버튼을 본인에게만 보여 줄 때 쓰입니다.
 
 `isOwner`를 채우려면 상세 조회가 로그인한 사람이 누구인지 알아야 하므로, 서비스가 `sessionUserId`를 받습니다. `board/BoardService.java`의 상세 메서드를 아래처럼 고칩니다.
 
@@ -524,48 +528,39 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
     }
 ```
 
-조회는 `findByIdJoinUserAndReply`로 합니다. 앞에서 본 fetch join 조회라 게시글과 작성자, 댓글이 한 번에 담겨 옵니다. 가져온 게시글과 `sessionUserId`를 `DetailDTO`에 넘기면 앞의 `isOwner`와 댓글 목록이 채워집니다.
+조회는 `findByIdJoinUserAndReply`로 합니다. 앞에서 본 fetch join 조회라 게시글과 작성자, 댓글을 한 번에 조회합니다. 가져온 게시글과 `sessionUserId`를 `DetailDTO`에 넘기면 앞의 `isOwner`와 댓글 목록이 채워집니다.
 
-마지막으로 컨트롤러가 로그인 유저를 꺼내 서비스로 넘깁니다. 상세는 공개라 로그인하지 않아도 볼 수 있으므로, `board/BoardController.java`의 상세 메서드는 `request.getAttribute("sessionUser")`로 유저를 꺼내되 비로그인이면 `null`을 넘깁니다. `null`이 넘어가도 `checkOwner`가 `false`를 돌려주므로, 로그인하지 않은 사람에게는 모든 `isOwner`가 `false`로 나갑니다.
+마지막으로 컨트롤러가 로그인 유저를 꺼내 서비스로 넘깁니다. 게시글 상세 API는 공개라 로그인하지 않아도 볼 수 있으므로, `board/BoardController.java`의 상세 메서드는 `request.getAttribute("sessionUser")`로 유저를 꺼내되 비로그인이면 `null`을 넘깁니다. `null`이 넘어가도 `checkOwner`가 `false`를 돌려주므로, 로그인하지 않은 사람에게는 모든 `isOwner`가 `false`로 담깁니다.
 
-이제 `ssar`로 로그인해 1번 게시글을 조회하면, 게시글과 함께 거기 달린 댓글이 함께 나옵니다.
+이제 `ssar`로 로그인해 게시글 상세 API를 호출하면 결과를 확인할 수 있습니다.
 
-```json
-{
-  "status": 200,
-  "msg": "성공",
-  "body": {
-    "boardId": 1,
-    "title": "title1",
-    "content": "content1",
-    "userId": 1,
-    "username": "ssar",
-    "isOwner": true,
-    "replies": [
-      { "replyId": 1, "username": "ssar", "comment": "comment1", "isOwner": true },
-      { "replyId": 2, "username": "ssar", "comment": "comment2", "isOwner": true },
-      { "replyId": 3, "username": "cos", "comment": "comment3", "isOwner": false }
-    ]
-  }
-}
+```bash [터미널] 게시글 상세 조회
+GET http://localhost:8080/api/boards/1
 ```
 
-게시글의 `isOwner`가 `true`이고, `ssar`가 쓴 1·2번 댓글도 `true`, `cos`가 쓴 3번 댓글은 `false`입니다. 화면은 이 값만 보고 본인 것에만 삭제 버튼을 붙이면 됩니다.
+<!-- [CAPTURE NEEDED: 02_board-detail-with-replies
+  path: assets/CH5/terminal/02_board-detail-with-replies.png
+  desc: ssar로 로그인해 발급받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. body에 게시글(boardId 1, title1, content1, userId 1, username ssar)과 isOwner true가 담기고, replies 배열에 댓글 세 개(replyId 1·2는 ssar이 써서 isOwner true, replyId 3은 cos이 써서 isOwner false)가 이어지는 화면. Hoppscotch 또는 브라우저 응답.
+] -->
+![](../assets/CH5/terminal/02_board-detail-with-replies.png)
+*그림 5-5. 상세 응답에 게시글과 댓글이 함께 담기고, 본인이 쓴 것에만 isOwner가 true입니다*
 
-댓글까지 붙자, 오픈이는 화면을 붙이던 동료를 불렀습니다. 목록에서 1번 게시글을 눌러 상세를 열자, 게시글 아래로 댓글 세 개가 나란히 나타났습니다. 본인이 쓴 댓글에만 삭제 버튼이 붙어 있었습니다.
+게시글의 `isOwner`가 `true`이고, `ssar`가 쓴 1·2번 댓글도 `true`, `cos`가 쓴 3번 댓글은 `false`입니다.
+
+댓글까지 되자, 오픈이는 화면을 붙이던 동료를 불렀습니다. 목록에서 1번 게시글을 눌러 상세를 열자, 게시글 아래로 댓글 세 개가 나란히 나타났습니다. 본인이 쓴 댓글에만 삭제 버튼이 붙어 있었습니다.
 
 **동료**: "댓글도 되고, 남의 댓글엔 삭제 버튼도 안 뜨네요. 이제 진짜 게시판 같은데요."
 
-게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 로그인한 본인만 자기 게시글과 댓글을 건드리고, 무거운 상세 조회도 fetch join으로 묶어 쿼리를 줄였습니다.
+게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 게시글과 댓글은 작성자만 관리하고, 무거운 상세 조회도 fetch join으로 묶어 쿼리를 줄였습니다.
 
 *처음엔 하나도 설명할 수 없던 것들이었는데.*
 
-오픈이는 챕터 1을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 챕터 2에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 나갔습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 부르는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 사용하는 도구가 됐습니다.
+오픈이는 챕터 1을 떠올렸습니다. 그때는 자바만으로 서버 뼈대를 짜다 학기가 끝날 판이었고, 스프링에 올린 메서드가 요청 한 번에 저절로 실행되는 것이 마법처럼 보였습니다. 챕터 2에서는 저장하는 코드를 한 줄도 쓰지 않았는데 수정이 반영됐고, 방금은 조회 한 번에 쿼리가 여러 개 실행됐습니다. 이제는 각각을 이름으로 부를 수 있습니다. 메서드가 저절로 실행되는 것은 리플렉션이 어노테이션을 읽어 찾아 호출하는 것이고, 저장 없이 수정이 반영되는 것은 더티체킹이며, 조회 한 번에 쿼리가 늘어나는 것은 지연 로딩의 프록시가 뒤늦게 데이터를 가져오기 때문입니다. 프레임워크는 더 이상 열어 볼 수 없는 블랙박스가 아니라, 안에서 무슨 규칙이 도는지 알고 사용하는 도구가 됐습니다.
 
 :::remember
 **이것만은 기억하자**
 
 - **댓글은 외래 키를 든 연관관계 주인이고, 게시글은 `mappedBy`로 관계의 주인을 가리킵니다.** `cascade = REMOVE`로 게시글을 지우면 딸린 댓글도 함께 지워집니다.
-- **지연 로딩은 연관 엔티티를 프록시로 미뤄 두었다가 꺼내는 순간 조회 쿼리를 냅니다.** 이것이 목록 조회에서는 N+1개의 쿼리가 나가는데, `join fetch`로 함께 가져오면 쿼리 하나로 끝납니다. 챕터 4에서 이름만 쓰던 `findByIdJoinUser`가 이 해법입니다.
+- **지연 로딩은 연관 엔티티를 프록시로 미뤄 두었다가 꺼내는 순간 조회 쿼리를 냅니다.** 이것이 목록 조회에서는 N+1개의 쿼리가 실행되는데, `join fetch`로 함께 가져오면 쿼리 하나로 끝납니다. 챕터 4에서 이름만 쓰던 `findByIdJoinUser`가 이 해법입니다.
 - **리플렉션에서 시작해 게시판 하나를 인증과 성능까지 챙겨 완성했습니다.** 스프링이 대신 해 주던 일들의 이름을 이제 하나씩 부를 수 있습니다. 마법처럼 보이던 것은 리플렉션 위에 세운 규칙이었습니다.
 :::

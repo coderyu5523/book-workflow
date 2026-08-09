@@ -1,17 +1,10 @@
 package com.metacoding.spring.board;
 
 import com.metacoding.spring.user.User;
-import jakarta.validation.constraints.*;
 
 public class BoardRequest {
 
-    public record SaveDTO(
-            @NotEmpty(message = "제목을 입력해주세요")
-            @Size(max = 30, message = "제목은 30자 이내로 입력해주세요")
-            String title,
-
-            @NotEmpty(message = "내용을 입력해주세요")
-            String content) {
+    public record SaveDTO(String title, String content) {
 
         // 빌더 패턴으로 엔티티 생성 (작성자 연결)
         public Board toEntity(User user) {
@@ -23,12 +16,6 @@ public class BoardRequest {
         }
     }
 
-    public record UpdateDTO(
-            @NotEmpty(message = "제목을 입력해주세요")
-            @Size(max = 30, message = "제목은 30자 이내로 입력해주세요")
-            String title,
-
-            @NotEmpty(message = "내용을 입력해주세요")
-            String content) {
+    public record UpdateDTO(String title, String content) {
     }
 }

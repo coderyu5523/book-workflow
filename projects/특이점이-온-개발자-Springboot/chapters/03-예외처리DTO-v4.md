@@ -4,13 +4,13 @@
 
 *조회가 이런데, 수정하고 삭제하면?*
 
-없는 999번으로 수정을 걸자 500이 돌아왔고, 삭제도 마찬가지였습니다. 존재하는 1번 게시글을 부르자 엔티티에 적힌 필드가 그대로 JSON이 되어 나왔습니다. 응답에 담을 값도, 이름도 고를 수 없었습니다.
+없는 999번으로 수정을 걸자 500이 돌아왔고, 삭제도 마찬가지였습니다. 존재하는 1번으로 게시글 상세 API를 호출하자 엔티티에 적힌 필드가 그대로 JSON이 되어 나왔습니다. 응답에 담을 값도, 이름도 고를 수 없었습니다.
 
 *없는 게시글 하나에 답이 두 개네. 응답 모양도 내가 정한 게 아니고.*
 
 오픈이는 선배를 찾아가 화면을 보여줬습니다.
 
-**오픈이**: "선배님, 없는 게시글 번호로 요청을 보냈는데 에러가 안 나고 성공으로 떨어집니다. 정상 게시글을 조회하면 엔티티에 있는 필드가 JSON에 그대로 나옵니다."
+**오픈이**: "선배님, 없는 게시글 번호로 요청을 보냈는데 에러가 안 나고 성공으로 떨어집니다."
 
 **선배**: "지금 코드가 게시글을 찾았을 때와 못 찾았을 때를 구분하지 않아서 그래요. 못 찾으면 빈 값이 그대로 나가니까 조회는 성공이 되고, 수정과 삭제는 빈 값을 건드리다 터집니다. 없다는 걸 코드가 그냥 넘기지 못하게 막고, 내보낼 값도 따로 골라 담아야 합니다."
 
@@ -45,7 +45,7 @@
   <text x="707" y="249" text-anchor="middle" font-size="11" fill="#3730a3">못 찾으면 빈 Optional이 돌아온다</text>
 
   <rect x="120" y="274" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="298" text-anchor="middle" font-size="12" fill="#0f172a">없는 게시글 조회는 200으로 나간다</text>
+  <text x="285" y="298" text-anchor="middle" font-size="12" fill="#0f172a">없는 게시글 조회도 200으로 응답한다</text>
   <text x="285" y="317" text-anchor="middle" font-size="11" fill="#6b7280">수정과 삭제는 500이 난다</text>
   <line x1="456" y1="301" x2="536" y2="301" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
   <rect x="542" y="274" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
@@ -60,13 +60,13 @@
 </svg>
 </div>
 
-*그림 3-1. 챕터 2가 남긴 다섯 곳을 이번 챕터에서 차례로 고칩니다*
+*그림 3-1. 챕터 2가 남긴 다섯 곳을 이번 챕터에서 모두 고칩니다*
 
 :::goal
 **이번 챕터가 끝나면**
 
 - 엔티티를 응답에 직접 사용하지 않고 DTO로 감싸는 이유를 설명할 수 있습니다
-- `JpaRepository`로 바꾸면 없는 데이터가 왜 `Optional`로 돌아오는지 이해합니다
+- `JpaRepository`로 바꾸면 없는 데이터가 왜 `Optional`로 반환되는지 이해합니다
 - `Optional`과 `orElseThrow`로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 `RuntimeException`인지 이해합니다
 - `@RestControllerAdvice`로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다
 :::
@@ -82,16 +82,18 @@ cd spring-start/ch03
 
 이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 챕터 2 그대로입니다.
 
-```
-spring-start/ch03  (변경·신규만)
-├── board/BoardResponse.java                 [실습] 응답 DTO(DTO/DetailDTO)
-├── board/Board.java                         [실습] @Builder + 생성자 추가
-├── board/BoardRequest.java                  [실습] toEntity() 추가
-├── board/BoardRepository.java               [실습] JpaRepository 인터페이스로 전환
-├── core/handler/ex/Exception404.java        [실습] 커스텀 예외
-├── board/BoardService.java                  [실습] orElseThrow + DTO 반환
-├── board/BoardController.java               [실습] 응답 타입 DTO로 교체
-└── core/handler/GlobalExceptionHandler.java [실습] 전역 예외 처리
+```text ch03 파일 구조
+spring-start/ch03/src/main/java/com/metacoding/spring/
+├── board/
+│   ├── Board.java                    # [작성] @Builder + 생성자 추가
+│   ├── BoardController.java          # [작성] 응답 타입 DTO로 교체
+│   ├── BoardRepository.java          # [작성] JpaRepository 인터페이스로 전환
+│   ├── BoardRequest.java             # [작성] toEntity() 추가
+│   ├── BoardResponse.java            # [작성] 응답 DTO(DTO/DetailDTO)
+│   └── BoardService.java             # [작성] orElseThrow + DTO 반환
+└── core/handler/
+    ├── ex/Exception400,401,403,404.java   # [작성] 커스텀 예외
+    └── GlobalExceptionHandler.java        # [작성] 전역 예외 처리
 ```
 
 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
@@ -106,7 +108,7 @@ spring-start/ch03  (변경·신규만)
 응답으로 내보낼 값만 담는 클래스를 따로 만들면, 컨트롤러는 엔티티 대신 이 클래스를 돌려줍니다. 챕터 2에서 요청을 받을 때 사용한 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽의 창구에는 'DTO만 통과' 표지가 붙어 있다. 창구를 지나 오른쪽 응답으로 나온 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
+<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽에 'DTO만 통과' 표지가 붙어 있다. 벽을 지나 오른쪽 응답에 담긴 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
   <defs>
     <marker id="c3dto-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
@@ -133,7 +135,7 @@ spring-start/ch03  (변경·신규만)
 </svg>
 </div>
 
-*그림 3-2. 엔티티는 내부에 두고, 응답으로 나갈 값만 DTO에 담아 내보냅니다*
+*그림 3-2. 엔티티는 내부에 두고, 응답할 값만 DTO에 담아 내보냅니다*
 
 ### 3.1.2 응답 DTO 만들기
 
@@ -158,7 +160,7 @@ public class BoardResponse {
 }
 ```
 
-엔티티를 받는 생성자를 두었으므로 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 변환합니다. 응답 필드 이름이 `id`가 아니라 `boardId`인 것처럼, 응답에 나갈 이름은 응답 DTO에서 따로 정합니다.
+엔티티를 받는 생성자를 두었으므로 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 변환합니다. 응답 필드 이름이 `id`가 아니라 `boardId`인 것처럼, 응답에 담길 이름은 응답 DTO에서 따로 정합니다.
 
 ## 3.2 요청 DTO와 엔티티 변환
 
@@ -199,9 +201,9 @@ public class Board {
 
 ## 3.3 JpaRepository 적용
 
-없는 게시글을 조회하면 서버는 정상 응답을 내보냅니다. 조회에 없는 게시글에 대한 예외 처리가 없기 때문입니다.
+없는 게시글을 조회해도 예외가 발생하지 않아 서버는 정상 응답을 내보냅니다.
 
-이런 예외 처리를 쉽게 하기 위해 `JpaRepository`를 사용합니다. `JpaRepository`는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, `Optional` 타입을 통해 예외 처리를 할 수 있습니다.
+이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 `JpaRepository`로 바꿉니다. `JpaRepository`는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, `Optional` 타입을 통해 예외 처리를 할 수 있습니다.
 
 `board/BoardRepository.java`를 열고 아래 코드로 바꿉니다.
 
@@ -210,7 +212,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 }
 ```
 
-리포지토리는 클래스가 아니라 인터페이스로 선언합니다. `JpaRepository<Board, Integer>`의 두 자리에는 다룰 엔티티와 기본 키의 타입을 적습니다.
+리포지토리는 클래스가 아니라 인터페이스로 선언합니다. `JpaRepository<Board, Integer>`의 꺾쇠 안에는 다룰 엔티티와 기본 키의 타입을 차례로 적습니다.
 
 상속만 해 두면 아래 메서드를 그대로 호출할 수 있습니다.
 
@@ -224,7 +226,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 ## 3.4 예외 처리 추가
 
-`Optional`은 값이 있을 수도 있고 없을 수도 있는 객체를 감싸는 클래스입니다. `null`로 인한 에러를 방지하기 위해 사용합니다. `Optional`에서 값을 꺼낼 때는 `orElseThrow`를 사용합니다. 값이 있으면 그대로 돌려주고, 없으면 괄호에 적은 예외를 발생시킵니다.
+`Optional`은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 `null`로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 `orElseThrow` 메서드를 유용하게 사용할 수 있습니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.
 
 ### 3.4.1 커스텀 예외 만들기
 
@@ -241,21 +243,95 @@ public class Exception404 extends RuntimeException {
 
 상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. `RuntimeException`을 상속하면 이 예외를 사용하는 곳마다 `try-catch`를 적지 않아도 됩니다.
 
+같은 폴더의 `Exception400`, `Exception401`, `Exception403`도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.
+
 404는 HTTP 상태 코드입니다. 응답이 어떤 상황인지 세 자리 숫자로 알리는 약속입니다. 이 책에서 사용하는 것은 다음과 같습니다.
 
 | 상태 코드 | 뜻 | 예 |
 |---|---|---|
-| 400 | 요청이 잘못됨 | 제목 없이 게시글 작성 |
+| 400 | 요청이 잘못됨 | 이미 쓰는 유저네임으로 가입 |
 | 401 | 인증되지 않음 | 로그인 없이 접근 |
 | 403 | 권한이 없음 | 남의 게시글 수정 |
 | 404 | 자원이 없음 | 없는 게시글 조회 |
 | 500 | 서버 내부 오류 | 처리하지 못한 예외 |
 
-### 3.4.2 서비스와 컨트롤러에 적용
+### 3.4.2 전역 예외 처리
 
-`board/BoardService.java`를 열고 아래 코드를 작성합니다. 다섯 메서드가 모두 바뀝니다.
+다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. `@RestControllerAdvice` 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.
 
-```java [실습 6] board/BoardService.java. 반환 타입을 DTO로, 없으면 예외
+`core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 6] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // 1. 커스텀 예외는 저마다의 상태 코드로 바꾼다
+    @ExceptionHandler(Exception400.class)
+    public ResponseEntity<?> ex400(Exception400 e) {
+        return Resp.fail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(Exception401.class)
+    public ResponseEntity<?> ex401(Exception401 e) {
+        return Resp.fail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(Exception403.class)
+    public ResponseEntity<?> ex403(Exception403 e) {
+        return Resp.fail(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
+    @ExceptionHandler(Exception404.class)
+    public ResponseEntity<?> ex404(Exception404 e) {
+        return Resp.fail(HttpStatus.NOT_FOUND, e.getMessage());
+    }
+
+    // 2. 나머지 모든 예외는 500으로 처리한다
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<?> exUnknown(Exception e) {
+        return Resp.fail(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다");
+    }
+}
+```
+
+`@ExceptionHandler`는 메서드마다 어떤 예외를 맡을지 지정합니다. 커스텀 예외 넷은 저마다 400·401·403·404 응답이 되고, 그 밖의 예외는 모두 500 응답이 됩니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
+  <defs>
+    <marker id="c3ex-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c3ex-warn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="30" y="150" width="140" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="100" y="176" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="100" y="196" text-anchor="middle" font-size="14" fill="#6b7280">요청을 받는 입구</text>
+  <rect x="230" y="150" width="160" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="310" y="174" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="310" y="194" text-anchor="middle" font-size="14" fill="#c2410c">Exception404 던짐</text>
+  <line x1="170" y1="180" x2="228" y2="180" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ex-ar)"/>
+  <rect x="360" y="40" width="250" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="485" y="68" text-anchor="middle" font-size="16" font-weight="800" fill="#3730a3">@RestControllerAdvice</text>
+  <text x="485" y="90" text-anchor="middle" font-size="14" fill="#3730a3">전파된 예외를 한 곳에서 가로챈다</text>
+  <path d="M330,150 C330,112 372,98 400,90" fill="none" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3ex-warn)"/>
+  <text x="300" y="124" text-anchor="middle" font-size="14" fill="#c2410c">예외 전파</text>
+  <rect x="700" y="140" width="250" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="825" y="166" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">404 JSON 응답</text>
+  <text x="825" y="188" text-anchor="middle" font-size="14" fill="#6b7280">status 404, msg,</text>
+  <text x="825" y="204" text-anchor="middle" font-size="14" fill="#6b7280">body null</text>
+  <path d="M610,90 C670,102 700,120 738,138" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ex-ar)"/>
+  <text x="672" y="96" text-anchor="middle" font-size="14" fill="#4f46e5">Resp.fail</text>
+</svg>
+</div>
+
+*그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
+
+## 3.5 서비스와 컨트롤러에 적용
+
+이제 `BoardService`를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.
+
+`board/BoardService.java`를 열고 아래 코드를 작성합니다.
+
+```java [실습 7] board/BoardService.java. 반환 타입을 DTO로, 없으면 예외
     public List<BoardResponse.DTO> 게시글목록() {
         return boardRepository.findAll().stream()
                 .map(BoardResponse.DTO::new)
@@ -293,11 +369,9 @@ public class Exception404 extends RuntimeException {
     }
 ```
 
-조회가 들어가는 상세·수정·삭제는 `orElseThrow`로 없는 게시글을 걸러 냅니다. 추가는 앞에서 만든 `toEntity()`로 엔티티를 만듭니다. 목록은 여러 건을 각각 `DTO`로 바꿔 리스트로 돌려주고, 나머지는 `BoardResponse.DTO` 한 건을 돌려줍니다.
+컨트롤러는 서비스에서 받는 값의 타입만 DTO로 바뀝니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
 
-컨트롤러는 서비스에서 받는 타입만 바뀝니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 7] board/BoardController.java. 응답 타입을 DTO로
+```java [실습 8] board/BoardController.java. 응답 타입을 DTO로
     // 게시글 목록
     @GetMapping
     public ResponseEntity<?> findAll() {
@@ -335,104 +409,38 @@ public class Exception404 extends RuntimeException {
     }
 ```
 
-주소와 HTTP 메서드는 챕터 2와 같습니다. 상세를 부르면 DTO에 담긴 세 값만 나갑니다.
+주소와 HTTP 메서드는 챕터 2와 같습니다. 게시글 상세 API를 호출하면 응답에는 DTO에 담긴 세 값만 담깁니다.
 
-```json
-{
-  "status": 200,
-  "msg": "성공",
-  "body": {
-    "boardId": 1,
-    "title": "title1",
-    "content": "content1"
-  }
-}
+```bash [터미널] 게시글 상세 조회
+GET http://localhost:8080/api/boards/1
 ```
 
-값을 옮겨 담는 자리가 정해졌습니다. 들어오는 값은 요청 DTO에 담겨 엔티티로 옮겨지고, 나가는 값은 엔티티에서 응답 DTO로 옮겨집니다. 엔티티는 서비스와 리포지토리 사이를 벗어나지 않습니다.
+<!-- [CAPTURE NEEDED: 01_board-detail-dto
+  path: assets/CH3/terminal/01_board-detail-dto.png
+  desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
+] -->
+![](../assets/CH3/terminal/01_board-detail-dto.png)
+*그림 3-4. 상세 조회 응답에는 DTO에 담긴 세 값만 담깁니다*
 
-남은 것은 발생한 예외를 404 응답으로 바꾸는 일입니다.
-
-## 3.5 전역 예외 처리
-
-발생한 `Exception404`는 어딘가에서 받아 404 JSON으로 바꿔야 합니다. 컨트롤러마다 `try-catch`로 잡으면 같은 코드가 모든 컨트롤러에 흩어집니다.
-
-스프링은 컨트롤러 어디에서 예외가 발생하든 한 자리에서 받아 응답으로 바꾸는 기능을 제공합니다. `@RestControllerAdvice`입니다.
-
-`core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
-
-```java [실습 8] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-
-    // 1. Exception404는 404 JSON으로 바꾼다
-    @ExceptionHandler(Exception404.class)
-    public ResponseEntity<?> ex404(Exception404 e) {
-        return Resp.fail(HttpStatus.NOT_FOUND, e.getMessage());
-    }
-
-    // 2. 나머지 모든 예외는 500으로 처리한다
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> exUnknown(Exception e) {
-        return Resp.fail(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다");
-    }
-}
-```
-
-`@RestControllerAdvice`는 이 클래스를 전역 예외 처리기로 등록하고, `@ExceptionHandler`가 어떤 예외를 맡을지 지정합니다. `Exception404`는 404로, 미처 대비하지 못한 나머지 예외는 500으로 바꿔, 어떤 경우에도 정해 둔 형식이 아닌 응답이 나가지 않습니다.
-
-응답을 만드는 `Resp.fail`은 챕터 2에서 `Resp.ok`와 함께 준비해 둔 실패용 메서드로, 오류 응답도 `status`·`msg`·`body` 형식을 그대로 지킵니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
-  <defs>
-    <marker id="c3ex-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c3ex-warn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
-  </defs>
-  <rect x="30" y="150" width="140" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="100" y="176" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="100" y="196" text-anchor="middle" font-size="11" fill="#6b7280">요청을 받는 입구</text>
-  <rect x="230" y="150" width="160" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="310" y="174" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">서비스</text>
-  <text x="310" y="194" text-anchor="middle" font-size="11" fill="#c2410c">Exception404 던짐</text>
-  <line x1="170" y1="180" x2="228" y2="180" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ex-ar)"/>
-  <rect x="360" y="40" width="250" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="485" y="68" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">@RestControllerAdvice</text>
-  <text x="485" y="90" text-anchor="middle" font-size="11" fill="#3730a3">전파된 예외를 한 곳에서 가로챈다</text>
-  <path d="M330,150 C330,112 372,98 400,90" fill="none" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3ex-warn)"/>
-  <text x="300" y="124" text-anchor="middle" font-size="11" fill="#c2410c">예외 전파</text>
-  <rect x="700" y="140" width="250" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="825" y="166" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">404 JSON 응답</text>
-  <text x="825" y="188" text-anchor="middle" font-size="11" fill="#6b7280">status 404, msg,</text>
-  <text x="825" y="204" text-anchor="middle" font-size="11" fill="#6b7280">body null</text>
-  <path d="M610,90 C670,102 700,120 738,138" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ex-ar)"/>
-  <text x="672" y="96" text-anchor="middle" font-size="11" fill="#4f46e5">Resp.fail</text>
-</svg>
-</div>
-
-*그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
-
-이제 없는 999번을 조회해 보겠습니다.
+앞에서 만든 전역 예외 처리기가 실제로 404를 돌려주는지, 없는 999번을 조회해 확인합니다.
 
 ```bash [터미널] 없는 게시글 다시 조회
 GET http://localhost:8080/api/boards/999
 ```
 
-빈 값이 담긴 성공 대신 404 응답이 나갑니다.
+빈 값이 담긴 성공 대신 404 응답을 받습니다.
 
-<!-- [CAPTURE NEEDED: 01_404-response
-  path: assets/CH3/terminal/01_404-response.png
+<!-- [CAPTURE NEEDED: 02_404-response
+  path: assets/CH3/terminal/02_404-response.png
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
-![](../assets/CH3/terminal/01_404-response.png)
-*그림 3-4. 없는 게시글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON이 돌아옵니다*
-
-응답으로 나가는 것도 엔티티가 아니라 DTO에 담긴 값뿐입니다. 챕터 2가 남긴 다섯 곳이 모두 정리됐습니다.
+![](../assets/CH3/terminal/02_404-response.png)
+*그림 3-5. 없는 게시글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON을 응답합니다*
 
 오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.
 
 **오픈이**: "지난번에 없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 없으면 없다고 딱 나와요."<br>
-**동료**: "아, 3번 불러 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."
+**동료**: "아, 3번 호출해 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."
 
 *여기까진 됐다.*
 
@@ -440,11 +448,11 @@ GET http://localhost:8080/api/boards/999
 
 *없는 게시글은 걸렀는데, 문은 여전히 다 열려 있잖아.*
 
-다음 챕터에서는 로그인을 붙이고, 본인만 자기 게시글을 건드리게 합니다.
+다음 챕터에서는 인증 기능을 추가해, 작성자 본인만 자기 게시글을 관리할 수 있게 합니다.
 
 :::remember
 **이것만은 기억하자**
 
-- **엔티티를 응답에 직접 사용하지 않고 DTO에 담아 내보냅니다.** 응답에 나갈 값과 이름을 엔티티가 아니라 응답 DTO에서 정합니다.
+- **엔티티를 응답에 직접 사용하지 않고 DTO에 담아 내보냅니다.** 응답에 담길 값과 이름을 엔티티가 아니라 응답 DTO에서 정합니다.
 - **없는 값은 `Optional`에 담고 `orElseThrow`로 예외를 발생시킵니다.** 커스텀 예외는 `RuntimeException`을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
 :::

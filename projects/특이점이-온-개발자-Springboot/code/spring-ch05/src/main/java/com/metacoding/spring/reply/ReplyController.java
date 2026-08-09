@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import com.metacoding.spring.core.util.Resp;
 import com.metacoding.spring.user.User;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -18,7 +17,7 @@ public class ReplyController {
     // 댓글 쓰기 (로그인 필요)
     @PostMapping
     public ResponseEntity<?> save(HttpServletRequest request,
-            @Valid @RequestBody ReplyRequest.SaveDTO requestDTO) {
+            @RequestBody ReplyRequest.SaveDTO requestDTO) {
         User sessionUser = (User) request.getAttribute("sessionUser");
         ReplyResponse.DTO respDTO = replyService.댓글쓰기(requestDTO, sessionUser);
         return Resp.ok(respDTO);

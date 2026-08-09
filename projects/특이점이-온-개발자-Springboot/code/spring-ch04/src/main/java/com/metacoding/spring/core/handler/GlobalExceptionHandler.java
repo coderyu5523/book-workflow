@@ -1,8 +1,6 @@
 package com.metacoding.spring.core.handler;
 
-import java.util.stream.Collectors;
 import org.springframework.http.*;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import com.metacoding.spring.core.handler.ex.*;
 import com.metacoding.spring.core.util.Resp;
@@ -29,15 +27,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception404.class)
     public ResponseEntity<?> ex404(Exception404 e) {
         return Resp.fail(HttpStatus.NOT_FOUND, e.getMessage());
-    }
-
-    // @Valid 검증 실패 (표준 방식)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> exValid(MethodArgumentNotValidException e) {
-        String msg = e.getBindingResult().getFieldErrors().stream()
-                .map(fieldError -> fieldError.getField() + ":" + fieldError.getDefaultMessage())
-                .collect(Collectors.joining(", "));
-        return Resp.fail(HttpStatus.BAD_REQUEST, msg);
     }
 
     @ExceptionHandler(Exception.class)

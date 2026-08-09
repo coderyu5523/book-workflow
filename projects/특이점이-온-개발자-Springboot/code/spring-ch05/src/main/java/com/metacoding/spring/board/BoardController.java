@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import com.metacoding.spring.core.util.Resp;
 import com.metacoding.spring.user.User;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -36,7 +35,7 @@ public class BoardController {
     // 게시글 쓰기 (로그인 필요)
     @PostMapping
     public ResponseEntity<?> save(HttpServletRequest request,
-            @Valid @RequestBody BoardRequest.SaveDTO requestDTO) {
+            @RequestBody BoardRequest.SaveDTO requestDTO) {
         User sessionUser = (User) request.getAttribute("sessionUser");
         BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO, sessionUser);
         return Resp.ok(respDTO);
@@ -45,7 +44,7 @@ public class BoardController {
     // 게시글 수정 (작성자만)
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(HttpServletRequest request, @PathVariable("boardId") Integer boardId,
-            @Valid @RequestBody BoardRequest.UpdateDTO requestDTO) {
+            @RequestBody BoardRequest.UpdateDTO requestDTO) {
         User sessionUser = (User) request.getAttribute("sessionUser");
         BoardResponse.DTO respDTO = boardService.게시글수정(boardId, requestDTO, sessionUser.getId());
         return Resp.ok(respDTO);

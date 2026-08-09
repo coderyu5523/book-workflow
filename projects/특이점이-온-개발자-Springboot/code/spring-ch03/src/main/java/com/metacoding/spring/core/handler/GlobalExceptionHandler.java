@@ -9,6 +9,21 @@ import com.metacoding.spring.core.util.Resp;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(Exception400.class)
+    public ResponseEntity<?> ex400(Exception400 e) {
+        return Resp.fail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    @ExceptionHandler(Exception401.class)
+    public ResponseEntity<?> ex401(Exception401 e) {
+        return Resp.fail(HttpStatus.UNAUTHORIZED, e.getMessage());
+    }
+
+    @ExceptionHandler(Exception403.class)
+    public ResponseEntity<?> ex403(Exception403 e) {
+        return Resp.fail(HttpStatus.FORBIDDEN, e.getMessage());
+    }
+
     @ExceptionHandler(Exception404.class)
     public ResponseEntity<?> ex404(Exception404 e) {
         return Resp.fail(HttpStatus.NOT_FOUND, e.getMessage());

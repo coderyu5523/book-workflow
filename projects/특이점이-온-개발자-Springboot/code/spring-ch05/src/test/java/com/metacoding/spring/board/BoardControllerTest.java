@@ -78,19 +78,6 @@ public class BoardControllerTest {
                 .andExpect(jsonPath("$.status").value(401));
     }
 
-    @Test
-    public void save_validation_fail_test() throws Exception {
-        // 제목 빈 값 -> 400 (검증 실패)
-        BoardRequest.SaveDTO reqDTO = new BoardRequest.SaveDTO("", "내용");
-        String body = om.writeValueAsString(reqDTO);
-
-        ResultActions actions = mvc.perform(post("/api/boards")
-                .content(body).contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", ssarToken));
-
-        actions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400));
-    }
 
     @Test
     public void update_test() throws Exception {
