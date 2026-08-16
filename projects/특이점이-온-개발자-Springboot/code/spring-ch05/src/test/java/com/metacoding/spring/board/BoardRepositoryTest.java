@@ -146,6 +146,7 @@ public class BoardRepositoryTest {
         System.out.println("Board ID : " + board.getId());
         System.out.println("username : " + board.getUser().getUsername());
         System.out.println("Reply : " + board.getReplies().get(1).getComment());
-        System.out.println("Reply author : " + board.getReplies().get(1).getUser().getUsername());
+        System.out.println("Reply author : "
+                + board.getReplies().get(1).getUser().getUsername());
     }
 }

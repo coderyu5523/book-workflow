@@ -66,9 +66,9 @@
 **이번 챕터가 끝나면**
 
 - 엔티티를 응답에 직접 사용하지 않고 DTO로 감싸는 이유를 설명할 수 있습니다
-- `JpaRepository`로 바꾸면 없는 데이터가 왜 `Optional`로 반환되는지 이해합니다
-- `Optional`과 `orElseThrow`로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 `RuntimeException`인지 이해합니다
-- `@RestControllerAdvice`로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다
+- **JpaRepository**로 바꾸면 없는 데이터가 왜 **Optional**로 반환되는지 이해합니다
+- **Optional**과 `orElseThrow()`로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 **RuntimeException**인지 이해합니다
+- **@RestControllerAdvice**로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다
 :::
 
 ::::prep
@@ -103,7 +103,7 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.1 DTO가 필요한 이유
 
-챕터 2의 컨트롤러는 `Board` 엔티티를 그대로 돌려주고, `@RestController`가 이를 JSON으로 바꿉니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.
+챕터 2의 컨트롤러는 **Board** 엔티티를 그대로 돌려주고, **@RestController**가 이를 JSON으로 바꿉니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.
 
 응답으로 내보낼 값만 담는 클래스를 따로 만들면, 컨트롤러는 엔티티 대신 이 클래스를 돌려줍니다. 챕터 2에서 요청을 받을 때 사용한 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.
 
@@ -146,6 +146,7 @@ public class BoardResponse {
 
     // 1. 목록용 DTO. 엔티티를 받아 보여줄 값만 담는다
     public record DTO(Integer boardId, String title, String content) {
+
         public DTO(Board board) {
             this(board.getId(), board.getTitle(), board.getContent());
         }
@@ -153,6 +154,7 @@ public class BoardResponse {
 
     // 2. 상세용 DTO. 지금은 목록용과 같지만 앞으로 달라진다
     public record DetailDTO(Integer boardId, String title, String content) {
+
         public DetailDTO(Board board) {
             this(board.getId(), board.getTitle(), board.getContent());
         }
@@ -164,9 +166,9 @@ public class BoardResponse {
 
 ## 3.2 요청 DTO와 엔티티 변환
 
-데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 객체, 곧 엔티티여야 합니다. `SaveDTO`는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 `toEntity()`를 둡니다.
+데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 객체, 곧 엔티티여야 합니다. **SaveDTO**는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 `toEntity()`를 둡니다.
 
-변환은 `Board`를 새로 만드는 일이라, 엔티티에 값을 받는 생성자가 먼저 필요합니다. `board/Board.java`에 생성자를 추가하고 `@Builder`를 붙입니다.
+변환은 **Board**를 새로 만드는 일이라, 엔티티에 값을 받는 생성자가 먼저 필요합니다. `board/Board.java`에 생성자를 추가하고 **@Builder**를 붙입니다.
 
 ```java [실습 2] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor
@@ -186,15 +188,19 @@ public class Board {
 }
 ```
 
-명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 `@NoArgsConstructor`도 함께 붙입니다.
+명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 **@NoArgsConstructor**도 함께 붙입니다.
 
-`board/BoardRequest.java`의 `SaveDTO`에 엔티티로 바꾸는 메서드를 추가합니다.
+`board/BoardRequest.java`의 **SaveDTO**에 엔티티로 바꾸는 메서드를 추가합니다.
 
 ```java [실습 3] board/BoardRequest.java. 요청 DTO에 toEntity 추가
     public record SaveDTO(String title, String content) {
+
         // 빌더로 요청 값을 엔티티에 옮겨 담는다
         public Board toEntity() {
-            return Board.builder().title(title()).content(content()).build();
+            return Board.builder()
+                    .title(title())
+                    .content(content())
+                    .build();
         }
     }
 ```
@@ -203,7 +209,7 @@ public class Board {
 
 없는 게시글을 조회해도 예외가 발생하지 않아 서버는 정상 응답을 내보냅니다.
 
-이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 `JpaRepository`로 바꿉니다. `JpaRepository`는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, `Optional` 타입을 통해 예외 처리를 할 수 있습니다.
+이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 **JpaRepository**로 바꿉니다. **JpaRepository**는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, **Optional** 타입을 통해 예외 처리를 할 수 있습니다.
 
 `board/BoardRepository.java`를 열고 아래 코드로 바꿉니다.
 
@@ -219,18 +225,18 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 | 메서드 | 하는 일 |
 |---|---|
 | `save(엔티티)` | 저장하고 저장된 엔티티를 돌려줍니다 |
-| `findById(기본 키)` | 기본 키로 한 건을 찾아 `Optional`에 담아 돌려줍니다 |
-| `findAll()` | 전체를 `List`로 돌려줍니다 |
+| `findById(기본 키)` | 기본 키로 한 건을 찾아 **Optional**에 담아 돌려줍니다 |
+| `findAll()` | 전체를 **List**로 돌려줍니다 |
 | `delete(엔티티)` | 삭제합니다 |
 | `findBy필드명(값)` | 직접 선언합니다. `findBy` 뒤 필드 이름을 보고 select 문이 만들어집니다 |
 
 ## 3.4 예외 처리 추가
 
-`Optional`은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 `null`로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 `orElseThrow` 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.
+**Optional**은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 `orElseThrow()` 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.
 
 ### 3.4.1 커스텀 예외 만들기
 
-예외 처리에 사용할 `Exception404`를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
+예외 처리에 사용할 **Exception404**를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 5] core/handler/ex/Exception404.java. 커스텀 예외
 // 자원을 찾을 수 없을 때 (HTTP 404)
@@ -241,9 +247,9 @@ public class Exception404 extends RuntimeException {
 }
 ```
 
-상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. `RuntimeException`을 상속하면 이 예외를 사용하는 곳마다 `try-catch`를 적지 않아도 됩니다.
+상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. **RuntimeException**을 상속하면 이 예외를 사용하는 곳마다 `try-catch`를 적지 않아도 됩니다.
 
-같은 폴더의 `Exception400`, `Exception401`, `Exception403`도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.
+같은 폴더의 **Exception400**, **Exception401**, **Exception403**도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.
 
 404는 HTTP 상태 코드입니다. 응답이 어떤 상황인지 세 자리 숫자로 알리는 약속입니다. 이 책에서 사용하는 것은 다음과 같습니다.
 
@@ -257,7 +263,7 @@ public class Exception404 extends RuntimeException {
 
 ### 3.4.2 전역 예외 처리
 
-다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. `@RestControllerAdvice` 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.
+다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. **@RestControllerAdvice** 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.
 
 `core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
 
@@ -294,7 +300,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-`@ExceptionHandler`는 메서드마다 어떤 예외를 맡을지 지정합니다. 커스텀 예외 넷은 저마다 400·401·403·404 응답이 되고, 그 밖의 예외는 모두 500 응답이 됩니다.
+**@ExceptionHandler**는 메서드마다 어떤 예외를 맡을지 지정합니다. 커스텀 예외 넷은 저마다 400·401·403·404 응답이 되고, 그 밖의 예외는 모두 500 응답이 됩니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
@@ -323,11 +329,11 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다*
+*그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, **@RestControllerAdvice**가 이를 가로채 JSON으로 바꿔 응답합니다*
 
 ## 3.5 서비스와 컨트롤러에 적용
 
-이제 `BoardService`를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.
+이제 **BoardService**를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.
 
 `board/BoardService.java`를 열고 아래 코드를 작성합니다.
 
@@ -454,5 +460,5 @@ GET http://localhost:8080/api/boards/999
 **이것만은 기억하자**
 
 - **엔티티를 응답에 직접 사용하지 않고 DTO에 담아 내보냅니다.** 응답에 담길 값과 이름을 엔티티가 아니라 응답 DTO에서 정합니다.
-- **없는 값은 `Optional`에 담고 `orElseThrow`로 예외를 발생시킵니다.** 커스텀 예외는 `RuntimeException`을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 `@RestControllerAdvice`가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
+- **없는 값은 `Optional`에 담고 `orElseThrow`로 예외를 발생시킵니다.** 커스텀 예외는 **RuntimeException**을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 **@RestControllerAdvice**가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.
 :::

@@ -7,9 +7,9 @@ public class BoardRequest {
         // 빌더 패턴으로 엔티티 생성
         public Board toEntity() {
             return Board.builder()
-                .title(title())
-                .content(content())
-                .build();
+                    .title(title())
+                    .content(content())
+                    .build();
         }
     }
 

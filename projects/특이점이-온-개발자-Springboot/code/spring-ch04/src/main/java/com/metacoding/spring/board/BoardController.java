@@ -28,8 +28,7 @@ public class BoardController {
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(HttpServletRequest request, @PathVariable("boardId") Integer boardId) {
         User loginUser = (User) request.getAttribute("loginUser"); // 비로그인 시 null
-        Integer loginUserId = (loginUser != null) ? loginUser.getId() : null;
-        BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId, loginUserId);
+        BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId, loginUser);
         return Resp.ok(respDTO);
     }
 

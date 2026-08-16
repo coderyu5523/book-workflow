@@ -27,7 +27,8 @@ public class Board {
     private User user; // 객체를 직접 참조
 
     @Builder
-    public Board(Integer id, String title, String content, Timestamp createdAt, User user) {
+    public Board(Integer id, String title, String content,
+            Timestamp createdAt, User user) {
         this.id = id;
         this.title = title;
         this.content = content;

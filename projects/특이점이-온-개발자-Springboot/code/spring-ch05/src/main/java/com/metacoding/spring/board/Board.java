@@ -45,7 +45,8 @@ public class Board {
     private List<Reply> replies = new ArrayList<>();
 
     @Builder
-    public Board(Integer id, String title, String content, Timestamp createdAt, User user) {
+    public Board(Integer id, String title, String content,
+            Timestamp createdAt, User user) {
         this.id = id;
         this.title = title;
         this.content = content;

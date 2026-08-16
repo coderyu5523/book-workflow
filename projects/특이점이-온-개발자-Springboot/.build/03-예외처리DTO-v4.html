@@ -72,9 +72,9 @@
 <p><strong>이번 챕터가 끝나면</strong></p>
 <ul>
 <li>엔티티를 응답에 직접 사용하지 않고 DTO로 감싸는 이유를 설명할 수 있습니다</li>
-<li><code>JpaRepository</code>로 바꾸면 없는 데이터가 왜 <code>Optional</code>로 반환되는지 이해합니다</li>
-<li><code>Optional</code>과 <code>orElseThrow</code>로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 <code>RuntimeException</code>인지 이해합니다</li>
-<li><code>@RestControllerAdvice</code>로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다</li>
+<li><strong>JpaRepository</strong>로 바꾸면 없는 데이터가 왜 <strong>Optional</strong>로 반환되는지 이해합니다</li>
+<li><strong>Optional</strong>과 <code>orElseThrow()</code>로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 <strong>RuntimeException</strong>인지 이해합니다</li>
+<li><strong>@RestControllerAdvice</strong>로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다</li>
 </ul>
 </div>
 <div class="prep-section-md">
@@ -97,7 +97,7 @@
 </div>
 <h2>3.1 응답 DTO</h2>
 <h3>3.1.1 DTO가 필요한 이유</h3>
-<p>챕터 2의 컨트롤러는 <code>Board</code> 엔티티를 그대로 돌려주고, <code>@RestController</code>가 이를 JSON으로 바꿉니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.</p>
+<p>챕터 2의 컨트롤러는 <strong>Board</strong> 엔티티를 그대로 돌려주고, <strong>@RestController</strong>가 이를 JSON으로 바꿉니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.</p>
 <p>응답으로 내보낼 값만 담는 클래스를 따로 만들면, 컨트롤러는 엔티티 대신 이 클래스를 돌려줍니다. 챕터 2에서 요청을 받을 때 사용한 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽에 'DTO만 통과' 표지가 붙어 있다. 벽을 지나 오른쪽 응답에 담긴 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
@@ -133,6 +133,7 @@
 
 <span class="w">    </span><span class="c1">// 1. 목록용 DTO. 엔티티를 받아 보여줄 값만 담는다</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DTO</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="nf">DTO</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">this</span><span class="p">(</span><span class="n">board</span><span class="p">.</span><span class="na">getId</span><span class="p">(),</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getTitle</span><span class="p">(),</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getContent</span><span class="p">());</span>
 <span class="w">        </span><span class="p">}</span>
@@ -140,6 +141,7 @@
 
 <span class="w">    </span><span class="c1">// 2. 상세용 DTO. 지금은 목록용과 같지만 앞으로 달라진다</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="nf">DetailDTO</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">this</span><span class="p">(</span><span class="n">board</span><span class="p">.</span><span class="na">getId</span><span class="p">(),</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getTitle</span><span class="p">(),</span><span class="w"> </span><span class="n">board</span><span class="p">.</span><span class="na">getContent</span><span class="p">());</span>
 <span class="w">        </span><span class="p">}</span>
@@ -147,8 +149,8 @@
 <span class="p">}</span></div>
 <p>엔티티를 받는 생성자를 두었으므로 서비스에서 <code>new BoardResponse.DTO(board)</code> 한 줄로 변환합니다. 응답 필드 이름이 <code>id</code>가 아니라 <code>boardId</code>인 것처럼, 응답에 담길 이름은 응답 DTO에서 따로 정합니다.</p>
 <h2>3.2 요청 DTO와 엔티티 변환</h2>
-<p>데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 객체, 곧 엔티티여야 합니다. <code>SaveDTO</code>는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 <code>toEntity()</code>를 둡니다.</p>
-<p>변환은 <code>Board</code>를 새로 만드는 일이라, 엔티티에 값을 받는 생성자가 먼저 필요합니다. <code>board/Board.java</code>에 생성자를 추가하고 <code>@Builder</code>를 붙입니다.</p>
+<p>데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 객체, 곧 엔티티여야 합니다. <strong>SaveDTO</strong>는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 <code>toEntity()</code>를 둡니다.</p>
+<p>변환은 <strong>Board</strong>를 새로 만드는 일이라, 엔티티에 값을 받는 생성자가 먼저 필요합니다. <code>board/Board.java</code>에 생성자를 추가하고 <strong>@Builder</strong>를 붙입니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
@@ -164,17 +166,21 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 <code>@NoArgsConstructor</code>도 함께 붙입니다.</p>
-<p><code>board/BoardRequest.java</code>의 <code>SaveDTO</code>에 엔티티로 바꾸는 메서드를 추가합니다.</p>
+<p>명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 <strong>@NoArgsConstructor</strong>도 함께 붙입니다.</p>
+<p><code>board/BoardRequest.java</code>의 <strong>SaveDTO</strong>에 엔티티로 바꾸는 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRequest.java. 요청 DTO에 toEntity 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+
 <span class="w">        </span><span class="c1">// 빌더로 요청 값을 엔티티에 옮겨 담는다</span>
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">()).</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">()).</span><span class="na">build</span><span class="p">();</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h2>3.3 JpaRepository 적용</h2>
 <p>없는 게시글을 조회해도 예외가 발생하지 않아 서버는 정상 응답을 내보냅니다.</p>
-<p>이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 <code>JpaRepository</code>로 바꿉니다. <code>JpaRepository</code>는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, <code>Optional</code> 타입을 통해 예외 처리를 할 수 있습니다.</p>
+<p>이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 <strong>JpaRepository</strong>로 바꿉니다. <strong>JpaRepository</strong>는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, <strong>Optional</strong> 타입을 통해 예외 처리를 할 수 있습니다.</p>
 <p><code>board/BoardRepository.java</code>를 열고 아래 코드로 바꿉니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> board/BoardRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Board</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
@@ -194,11 +200,11 @@
 </tr>
 <tr>
 <td><code>findById(기본 키)</code></td>
-<td>기본 키로 한 건을 찾아 <code>Optional</code>에 담아 돌려줍니다</td>
+<td>기본 키로 한 건을 찾아 <strong>Optional</strong>에 담아 돌려줍니다</td>
 </tr>
 <tr>
 <td><code>findAll()</code></td>
-<td>전체를 <code>List</code>로 돌려줍니다</td>
+<td>전체를 <strong>List</strong>로 돌려줍니다</td>
 </tr>
 <tr>
 <td><code>delete(엔티티)</code></td>
@@ -211,17 +217,17 @@
 </tbody>
 </table>
 <h2>3.4 예외 처리 추가</h2>
-<p><code>Optional</code>은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 <code>null</code>로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow</code> 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.</p>
+<p><strong>Optional</strong>은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow()</code> 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.</p>
 <h3>3.4.1 커스텀 예외 만들기</h3>
-<p>예외 처리에 사용할 <code>Exception404</code>를 만듭니다. <code>core/handler/ex/Exception404.java</code>를 열고 아래 코드를 작성합니다.</p>
+<p>예외 처리에 사용할 <strong>Exception404</strong>를 만듭니다. <code>core/handler/ex/Exception404.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/handler/ex/Exception404.java. 커스텀 예외</div><span class="c1">// 자원을 찾을 수 없을 때 (HTTP 404)</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Exception404</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">RuntimeException</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">Exception404</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. <code>RuntimeException</code>을 상속하면 이 예외를 사용하는 곳마다 <code>try-catch</code>를 적지 않아도 됩니다.</p>
-<p>같은 폴더의 <code>Exception400</code>, <code>Exception401</code>, <code>Exception403</code>도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.</p>
+<p>상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. <strong>RuntimeException</strong>을 상속하면 이 예외를 사용하는 곳마다 <code>try-catch</code>를 적지 않아도 됩니다.</p>
+<p>같은 폴더의 <strong>Exception400</strong>, <strong>Exception401</strong>, <strong>Exception403</strong>도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.</p>
 <p>404는 HTTP 상태 코드입니다. 응답이 어떤 상황인지 세 자리 숫자로 알리는 약속입니다. 이 책에서 사용하는 것은 다음과 같습니다.</p>
 <table>
 <thead>
@@ -260,7 +266,7 @@
 </tbody>
 </table>
 <h3>3.4.2 전역 예외 처리</h3>
-<p>다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. <code>@RestControllerAdvice</code> 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.</p>
+<p>다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. <strong>@RestControllerAdvice</strong> 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.</p>
 <p><code>core/handler/GlobalExceptionHandler.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span><span class="w"> </span><span class="p">{</span>
@@ -292,7 +298,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">fail</span><span class="p">(</span><span class="n">HttpStatus</span><span class="p">.</span><span class="na">INTERNAL_SERVER_ERROR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;서버 오류가 발생했습니다&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>@ExceptionHandler</code>는 메서드마다 어떤 예외를 맡을지 지정합니다. 커스텀 예외 넷은 저마다 400·401·403·404 응답이 되고, 그 밖의 예외는 모두 500 응답이 됩니다.</p>
+<p><strong>@ExceptionHandler</strong>는 메서드마다 어떤 예외를 맡을지 지정합니다. 커스텀 예외 넷은 저마다 400·401·403·404 응답이 되고, 그 밖의 예외는 모두 500 응답이 됩니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 Exception404가 위로 전파되어 RestControllerAdvice가 가로채고, 상태 코드 404를 담은 JSON으로 바뀌어 응답된다.">
   <defs>
@@ -319,9 +325,9 @@
   <text x="672" y="96" text-anchor="middle" font-size="14" fill="#4f46e5">Resp.fail</text>
 </svg>
 </div>
-<div class="caption">그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, @RestControllerAdvice가 이를 가로채 JSON으로 바꿔 응답합니다</div>
+<div class="caption">그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, <strong>@RestControllerAdvice</strong>가 이를 가로채 JSON으로 바꿔 응답합니다</div>
 <h2>3.5 서비스와 컨트롤러에 적용</h2>
-<p>이제 <code>BoardService</code>를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.</p>
+<p>이제 <strong>BoardService</strong>를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.</p>
 <p><code>board/BoardService.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardService.java. 반환 타입을 DTO로, 없으면 예외</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">게시글목록</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findAll</span><span class="p">().</span><span class="na">stream</span><span class="p">()</span>
@@ -420,7 +426,7 @@
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
 <li><strong>엔티티를 응답에 직접 사용하지 않고 DTO에 담아 내보냅니다.</strong> 응답에 담길 값과 이름을 엔티티가 아니라 응답 DTO에서 정합니다.</li>
-<li><strong>없는 값은 <code>Optional</code>에 담고 <code>orElseThrow</code>로 예외를 발생시킵니다.</strong> 커스텀 예외는 <code>RuntimeException</code>을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 <code>@RestControllerAdvice</code>가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
+<li><strong>없는 값은 <code>Optional</code>에 담고 <code>orElseThrow</code>로 예외를 발생시킵니다.</strong> 커스텀 예외는 <strong>RuntimeException</strong>을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 <strong>@RestControllerAdvice</strong>가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
 </ul>
 </div>
 

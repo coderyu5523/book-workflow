@@ -97,12 +97,12 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 
 | 클래스 | 역할 |
 |--------|------|
-| Board | 게시글 한 건을 담는 클래스입니다. 데이터베이스의 게시글 표 한 줄에 대응합니다. |
-| BoardRepository | 게시글을 데이터베이스에 저장하고, 데이터베이스에서 조회하고 삭제합니다. |
+| **Board** | 게시글 한 건을 담는 클래스입니다. 데이터베이스의 게시글 표 한 줄에 대응합니다. |
+| **BoardRepository** | 게시글을 데이터베이스에 저장하고, 데이터베이스에서 조회하고 삭제합니다. |
 | BoardService | 목록, 상세, 작성, 수정, 삭제의 처리 흐름을 맡습니다. |
 | BoardController | REST 요청을 받아 서비스로 넘기는 입구입니다. |
 | BoardRequest | 작성과 수정 요청으로 들어온 데이터를 담습니다. |
-| Resp | 모든 응답을 한 가지 모양으로 통일하는 공통 래퍼입니다. |
+| **Resp** | 모든 응답을 한 가지 모양으로 통일하는 공통 래퍼입니다. |
 ## 2.1 REST API
 
 REST API(Representational State Transfer API)는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트가 주소(URI)로 자원을 가리키고, HTTP 메서드로 자원에 대한 요청과 응답을 처리합니다.
@@ -276,31 +276,31 @@ REST API가 왜 지금의 방식이 됐는지 거슬러 올라가 보겠습니�
 
 실습은 클론한 `ch02`로 진행하지만, 이 프로젝트가 어떻게 만들어졌는지는 알아 두어야 합니다. IDE는 Cursor를 기준으로 설명하며, VS Code도 화면이 같습니다.
 
-먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 `View > Extensions`를 선택합니다.
+먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 View > Extensions를 선택합니다.
 
 ![](../assets/CH2/setup/01_extensions-menu.png)
 
 *그림 2-7. 상단 탭 View에서 Extensions를 선택합니다*
 
-검색창에 `java`를 넣어 Extension Pack for Java를 설치합니다.
+검색창에 java를 넣어 Extension Pack for Java를 설치합니다.
 
 ![](../assets/CH2/setup/02_java-pack.png)
 
 *그림 2-8. 자바 개발에 필요한 확장을 한 번에 묶은 Extension Pack for Java입니다*
 
-이어서 `spring`으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
+이어서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
 
 ![](../assets/CH2/setup/03_spring-pack.png)
 
 *그림 2-9. Spring Boot Extension Pack에는 Spring Initializr Java Support가 함께 들어 있습니다*
 
-설치가 끝나면 `View > Command Palette`를 엽니다.
+설치가 끝나면 View > Command Palette를 엽니다.
 
 ![](../assets/CH2/setup/04_command-palette.png)
 
 *그림 2-10. 상단 탭 View에서 Command Palette를 선택합니다*
 
-`spring`을 입력해 Spring Initializr: Create a Gradle Project를 실행합니다.
+spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니다.
 
 ![](../assets/CH2/setup/05_initializr.png)
 
@@ -355,7 +355,7 @@ public class Board {
 }
 ```
 
-애플리케이션이 실행될 때 하이버네이트가 이 클래스 정의를 바탕으로 `board_tb` 테이블을 만듭니다.
+애플리케이션이 실행될 때 하이버네이트가 이 클래스 정의를 바탕으로 **board_tb** 테이블을 만듭니다.
 
 :::tip
 **필드는 카멜, 컬럼은 스네이크로 만들어집니다**
@@ -535,7 +535,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 
 엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.
 
-리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 `EntityManager`입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 사용합니다.
+리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 사용합니다.
 
 `board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
 
@@ -552,7 +552,7 @@ public class BoardRepository {
 
 ### 2.5.1 게시글 한 건 조회
 
-`EntityManager`의 `find` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 어떤 엔티티를 찾을지 클래스 타입을 넘기고, 두 번째 인자로 찾을 기본 키 값을 넘깁니다. `Board` 엔티티 한 건을 반환합니다.
+**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 어떤 엔티티를 찾을지 클래스 타입을 넘기고, 두 번째 인자로 찾을 기본 키 값을 넘깁니다. **Board** 엔티티 한 건을 반환합니다.
 
 `board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
 
@@ -562,7 +562,7 @@ public class BoardRepository {
     }
 ```
 
-`find` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
+`find()` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
 
 ```sql
 select id, title, content, created_at from board_tb where id = ?
@@ -570,7 +570,7 @@ select id, title, content, created_at from board_tb where id = ?
 
 ### 2.5.2 게시글 전체 조회
 
-`EntityManager`에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 JPQL(Java Persistence Query Language)로 질의를 직접 적어 실행합니다.
+**EntityManager**에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 JPQL(Java Persistence Query Language)로 질의를 직접 적어 실행합니다.
 
 ```java [실습 5] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
@@ -578,7 +578,7 @@ select id, title, content, created_at from board_tb where id = ?
     }
 ```
 
-`createQuery`에 JPQL 문자열과 결과 타입을 넘겨 질의를 만들고, `getResultList`로 실행합니다. 하이버네이트는 이 JPQL을 아래 SQL로 번역합니다.
+`createQuery()`에 JPQL 문자열과 결과 타입을 넘겨 질의를 만들고, `getResultList()`로 실행합니다. 하이버네이트는 이 JPQL을 아래 SQL로 번역합니다.
 
 ```sql
 select id, title, content, created_at from board_tb
@@ -588,7 +588,7 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
 
 ### 2.5.3 게시글 저장
 
-`persist` 메서드는 새로 만든 엔티티를 데이터베이스에 저장합니다.
+`persist()` 메서드는 새로 만든 엔티티를 데이터베이스에 저장합니다.
 
 ```java [실습 6] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
@@ -596,7 +596,7 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
     }
 ```
 
-`persist`가 데이터베이스에 전달하는 질의는 다음과 같습니다.
+`persist()`가 데이터베이스에 전달하는 질의는 다음과 같습니다.
 
 ```sql
 insert into board_tb (title, content, created_at) values (?, ?, ?)
@@ -608,7 +608,7 @@ insert into board_tb (title, content, created_at) values (?, ?, ?)
 
 ### 2.5.5 게시글 삭제
 
-`remove` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다.
+`remove()` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다.
 
 ```java [실습 7] board/BoardRepository.java. 게시글 삭제
     public void delete(Board board) {
@@ -616,7 +616,7 @@ insert into board_tb (title, content, created_at) values (?, ?, ?)
     }
 ```
 
-`remove`가 만드는 질의는 다음과 같습니다.
+`remove()`가 만드는 질의는 다음과 같습니다.
 
 ```sql
 delete from board_tb where id = ?
@@ -624,7 +624,7 @@ delete from board_tb where id = ?
 
 ## 2.6 JPQL
 
-JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 본 `persist`를 사용합니다.
+JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 본 `persist()`를 사용합니다.
 
 기본 형태는 테이블 이름 자리에 엔티티 이름을 넣고, 별칭을 붙여 대상을 가리키는 것입니다. 전체 조회에 사용한 질의가 이 형태입니다.
 
@@ -652,7 +652,7 @@ update Board b set b.title = '제목 수정' where b.id = :id
 delete from Board b where b.id = :id
 ```
 
-작성한 JPQL은 `createQuery`에 넘겨 실행합니다. 파라미터가 있으면 `setParameter`로 값을 채운 뒤, 결과가 여러 건이면 `getResultList`로, 한 건이면 `getSingleResult`로 받습니다.
+작성한 JPQL은 `createQuery()`에 넘겨 실행합니다. 파라미터가 있으면 `setParameter()`로 값을 채운 뒤, 결과가 여러 건이면 `getResultList()`로, 한 건이면 `getSingleResult()`로 받습니다.
 
 ```java
 em.createQuery("select b from Board b where b.id = :id", Board.class)
@@ -662,7 +662,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ## 2.7 영속성 컨텍스트
 
-리포지토리 코드를 보면 `persist`나 `find`를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. `EntityManager`가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. `persist`나 `find`로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
+리포지토리 코드를 보면 `persist()`나 `find()`를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. **EntityManager**가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. `persist()`나 `find()`로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
 
 영속성 컨텍스트가 하는 일은 크게 세 가지입니다.
 
@@ -729,7 +729,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ### 2.7.2 쓰기 지연
 
-쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `persist`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush` 시점에 만들어진 순서대로 한꺼번에 실행됩니다.
+쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `persist()`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush()` 시점에 만들어진 순서대로 한꺼번에 실행됩니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 em.persist로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
@@ -765,12 +765,12 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 :::tip
 **IDENTITY 전략에서는 insert가 즉시 실행됩니다**
 
-일반적으로는 insert도 버퍼에 모였다가 flush 시점에 실행됩니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `persist`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연을 확인할 수 있는 것은 수정과 삭제입니다.
+일반적으로는 insert도 버퍼에 모였다가 flush 시점에 실행됩니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `persist()`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연을 확인할 수 있는 것은 수정과 삭제입니다.
 :::
 
 ### 2.7.3 더티체킹
 
-더티체킹은 조회하던 시점의 상태와 지금 상태를 견주어 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문도 `flush` 시점에 실행됩니다.
+더티체킹은 조회하던 시점의 상태와 지금 상태를 견주어 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find()`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문도 `flush()` 시점에 실행됩니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 em.find로 수정할 게시글을 조회하면 데이터베이스에서 읽어 온 board가 영속화되고, 영속성 컨텍스트는 조회 당시 상태를 스냅샷으로 함께 보관한다.">
@@ -800,7 +800,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-19. 조회한 엔티티가 영속화되면서 조회 당시 상태가 스냅샷으로 함께 보관됩니다*
 
-영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush` 시점에 데이터베이스로 내보냅니다.
+영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush()` 시점에 데이터베이스로 내보냅니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속 엔티티의 제목을 바꾸면 스냅샷과 달라져 변경이 감지되고, update 문이 버퍼에 쌓였다가 em.flush 시점에 데이터베이스로 전송되어 반영된다.">
@@ -835,7 +835,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-20. 값이 바뀌면 스냅샷과 비교해 변경을 감지하고, update 문이 flush 시점에 데이터베이스로 전송됩니다*
 
-쓰기 지연과 더티체킹이 만든 SQL은 `flush` 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 `@Transactional`이 끝날 때 스프링이 `flush`를 호출합니다.
+쓰기 지연과 더티체킹이 만든 SQL은 `flush()` 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush()`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 **@Transactional**이 끝날 때 스프링이 `flush()`를 호출합니다.
 
 리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.
 
@@ -906,7 +906,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 분리해 검증하면 문제가 난 기능만 고치면 됩니다*
 
-리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
+리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 **@DataJpaTest**를 제공합니다. 여기에 우리가 만든 **BoardRepository**를 **@Import**로 함께 올려 검증합니다.
 
 ### 2.8.1 given-when-eye 패턴
 
@@ -960,9 +960,9 @@ public class BoardRepositoryTest {
 }
 ```
 
-`@DataJpaTest`가 JPA 관련 부분만 올리고, `@Import(BoardRepository.class)`로 검증할 리포지토리를 함께 올립니다. `@Autowired`는 스프링이 타입에 맞는 빈을 찾아 필드에 넣어 주는 어노테이션으로, 테스트에서는 이 방식으로 리포지토리와 `EntityManager`를 받습니다. 테스트가 시작될 때 `data.sql`이 실행되어 게시글 두 개가 들어와 있으므로, 조회는 `id=2`인 게시글을 기준으로 확인합니다.
+**@DataJpaTest**가 JPA 관련 부분만 올리고, `@Import(BoardRepository.class)`로 검증할 리포지토리를 함께 올립니다. **@Autowired**는 스프링이 타입에 맞는 빈을 찾아 필드에 넣어 주는 어노테이션으로, 테스트에서는 이 방식으로 리포지토리와 **EntityManager**를 받습니다. 테스트가 시작될 때 `data.sql`이 실행되어 게시글 두 개가 들어와 있으므로, 조회는 id=2인 게시글을 기준으로 확인합니다.
 
-먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById`를 호출하고(when), 돌아온 엔티티의 값을 출력해 봅니다(eye).
+먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById()`를 호출하고(when), 돌아온 엔티티의 값을 출력해 봅니다(eye).
 
 ```java [실습 9] BoardRepositoryTest.java. 한 건 조회
     @Test
@@ -992,7 +992,7 @@ public class BoardRepositoryTest {
     }
 ```
 
-저장은 저장된 결과를 바로 볼 수 없어, `findAll`로 다시 조회해 확인합니다. 두 개였던 게시글이 세 개가 되고, 세 번째 자리에 방금 넣은 게시글이 있으면 저장된 것입니다.
+저장은 저장된 결과를 바로 볼 수 없어, `findAll()`로 다시 조회해 확인합니다. 두 개였던 게시글이 세 개가 되고, 세 번째 자리에 방금 넣은 게시글이 있으면 저장된 것입니다.
 
 ```java [실습 11] BoardRepositoryTest.java. 저장
     @Test
@@ -1010,7 +1010,7 @@ public class BoardRepositoryTest {
     }
 ```
 
-수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
+수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById()`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 제목이 title-update라면 저장 호출 없이 반영됐다는 증거입니다.
 
 ```java [실습 12] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
@@ -1029,7 +1029,7 @@ public class BoardRepositoryTest {
     }
 ```
 
-삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 실행됩니다. 남은 개수가 하나면 지워진 것입니다.
+삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove()`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 실행됩니다. 남은 개수가 하나면 지워진 것입니다.
 
 ```java [실습 13] BoardRepositoryTest.java. 삭제
     @Test
@@ -1137,7 +1137,7 @@ public class BoardService {
 }
 ```
 
-목록 조회 메서드를 채웁니다. 리포지토리의 `findAll`을 그대로 호출해 결과를 돌려줍니다.
+목록 조회 메서드를 채웁니다. 리포지토리의 `findAll()`을 그대로 호출해 결과를 돌려줍니다.
 
 ```java [실습 15] board/BoardService.java. 게시글 목록
     public List<Board> 게시글목록() {
@@ -1147,7 +1147,7 @@ public class BoardService {
 
 이제 요청을 받을 컨트롤러를 만듭니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 16] board/BoardController.java. 컨트롤러 골격과 목록 조회
+```java [실습 16] board/BoardController.java. 컨트롤러 골격
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/boards") // 공통 주소
@@ -1155,16 +1155,22 @@ public class BoardController {
 
     private final BoardService boardService;
 
+    // 아래에서 메서드를 하나씩 채운다
+}
+```
+
+목록 조회 메서드를 채웁니다. 서비스의 `게시글목록()`을 호출해 결과를 돌려줍니다.
+
+```java [실습 17] board/BoardController.java. 게시글 목록
     // 목록 조회 (GET /api/boards)
     @GetMapping
     public ResponseEntity<?> findAll() {
         List<Board> boardList = boardService.게시글목록();
         return Resp.ok(boardList);
     }
-}
 ```
 
-`@RestController`는 반환값을 JSON으로 내보내고, `@RequestMapping`이 공통 주소를 정합니다. 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양이 됩니다.
+**@RestController**는 반환값을 JSON으로 내보내고, **@RequestMapping**이 공통 주소를 정합니다. 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양이 됩니다.
 
 이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.
 
@@ -1172,14 +1178,14 @@ public class BoardController {
 ./gradlew bootRun
 ```
 
-서버가 실행되면 `GET /api/boards`로 목록을 요청합니다. `data.sql`로 들어간 게시글 두 개가 `Resp` 형식에 감싸여 응답에 담깁니다.
+서버가 실행되면 `GET /api/boards`로 목록을 요청합니다. `data.sql`로 들어간 게시글 두 개가 **Resp** 형식에 감싸여 응답에 담깁니다.
 
 목록 조회 같은 GET 요청은 브라우저 주소창에 주소를 넣으면 됩니다. 값을 함께 보내는 POST·PUT은 입력할 화면이 없어, API 테스트 도구인 Hoppscotch(hoppscotch.io)로 요청을 보내고 결과를 확인합니다.
 
 :::tip
 **브라우저 버전은 localhost 요청이 막혀 있습니다**
 
-Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
+Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
 :::
 
 <!-- [CAPTURE NEEDED: 01_api-response
@@ -1187,25 +1193,25 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-26. 목록 조회 요청에 게시글 두 개가 Resp 형식에 감싸여 담긴 응답입니다*
+*그림 2-26. 목록 조회 요청에 게시글 두 개가 **Resp** 형식에 감싸여 담긴 응답입니다*
 
 ## 2.12 게시글 상세
 
-상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById`를 호출합니다.
+상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById()`를 호출합니다.
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 17] board/BoardService.java. 게시글 상세
+```java [실습 18] board/BoardService.java. 게시글 상세
     public Board 게시글상세(Integer boardId) {
         return boardRepository.findById(boardId);
     }
 ```
 
-컨트롤러는 주소에 담긴 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 `@PathVariable`로 꺼냅니다.
+컨트롤러는 주소에 담긴 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 **@PathVariable**로 꺼냅니다.
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 18] board/BoardController.java. 상세 조회
+```java [실습 19] board/BoardController.java. 상세 조회
     // 상세 조회 (GET /api/boards/1)
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
@@ -1220,7 +1226,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 `board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 19] board/BoardRequest.java. 요청 데이터 DTO
+```java [실습 20] board/BoardRequest.java. 요청 데이터 DTO
 public class BoardRequest {
     public record SaveDTO(String title, String content) {
     }
@@ -1234,7 +1240,7 @@ public class BoardRequest {
 
 서비스는 DTO로 받은 값을 새 엔티티에 옮겨 담아 저장합니다.
 
-```java [실습 20] board/BoardService.java. 게시글 쓰기
+```java [실습 21] board/BoardService.java. 게시글 쓰기
     // 1. 새 엔티티를 만들어 값을 채우고 저장한다
     @Transactional
     public Board 게시글추가(BoardRequest.SaveDTO requestDTO) {
@@ -1251,12 +1257,12 @@ public class BoardRequest {
 :::tip
 **트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
 
-트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 `@Transactional`을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
+트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 **@Transactional**을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
 :::
 
-컨트롤러는 요청 바디의 JSON을 `@RequestBody`로 받아 DTO에 담습니다.
+컨트롤러는 요청 바디의 JSON을 **@RequestBody**로 받아 DTO에 담습니다.
 
-```java [실습 21] board/BoardController.java. 게시글 쓰기
+```java [실습 22] board/BoardController.java. 게시글 쓰기
     // 작성 (POST /api/boards)
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
@@ -1273,7 +1279,7 @@ public class BoardRequest {
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 22] board/BoardService.java. 더티체킹으로 수정
+```java [실습 23] board/BoardService.java. 더티체킹으로 수정
     // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
     @Transactional
     public Board 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
@@ -1285,11 +1291,11 @@ public class BoardRequest {
     } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
 ```
 
-값을 바꾸기만 했는데도, `@Transactional`이 끝날 때 `flush`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
+값을 바꾸기만 했는데도, **@Transactional**이 끝날 때 `flush()`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 23] board/BoardController.java. 게시글 수정
+```java [실습 24] board/BoardController.java. 게시글 수정
     // 수정 (PUT /api/boards/1)
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
@@ -1305,7 +1311,7 @@ public class BoardRequest {
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 24] board/BoardService.java. 게시글 삭제
+```java [실습 25] board/BoardService.java. 게시글 삭제
     // 조회한 게시글을 넘겨 삭제한다
     @Transactional
     public void 게시글삭제(Integer boardId) {
@@ -1316,7 +1322,7 @@ public class BoardRequest {
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 25] board/BoardController.java. 게시글 삭제
+```java [실습 26] board/BoardController.java. 게시글 삭제
     // 삭제 (DELETE /api/boards/1)
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
@@ -1336,9 +1342,9 @@ public class BoardRequest {
 
 요청은 스프링 컨테이너로 넘어갑니다. 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
 
-컨트롤러는 요청에서 값을 꺼내 서비스로 넘깁니다. 서비스에서는 `@Transactional`이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush`가 일어나는 지점이 이 순간입니다.
+컨트롤러는 요청에서 값을 꺼내 서비스로 넘깁니다. 서비스에서는 **@Transactional**이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush()`가 일어나는 지점이 이 순간입니다.
 
-서비스는 리포지토리를 호출하고, 리포지토리는 `EntityManager`로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 만들어진 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 커넥션 풀(Connection Pool)에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지라, 요청마다 새로 맺지 않고 미리 만들어 둔 것을 빌려 쓴 뒤 반납합니다.
+서비스는 리포지토리를 호출하고, 리포지토리는 **EntityManager**로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 만들어진 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 커넥션 풀(Connection Pool)에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지라, 요청마다 새로 맺지 않고 미리 만들어 둔 것을 빌려 쓴 뒤 반납합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청이 지나는 전체 경로. 윗줄에서 클라이언트가 톰캣으로 요청을 보내고, 톰캣은 스레드 풀에서 스레드를 꺼내 디스패처 서블릿으로 넘기며, 디스패처 서블릿이 담당 컨트롤러를 호출한다. 컨트롤러는 아랫줄의 서비스를 호출하고, 서비스에서 트랜잭션이 열린 채 리포지토리를 거쳐 영속성 컨텍스트로 전달된다. 영속성 컨텍스트가 만든 SQL은 커넥션 풀에서 빌린 연결로 데이터베이스에 전달된다.">
@@ -1386,7 +1392,7 @@ public class BoardRequest {
 
 *그림 2-27. 요청 하나는 톰캣과 디스패처 서블릿을 지나 세 계층을 거치고, 영속성 컨텍스트와 커넥션 풀을 통해 데이터베이스로 전달됩니다*
 
-응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, `@RestController`가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
+응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, **@RestController**가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
 
 오픈이는 화면을 열어 게시글 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
 
@@ -1394,7 +1400,7 @@ public class BoardRequest {
 
 **동료**: "목록이랑 상세 잘 나와요. 그런데 없는 번호로 게시글 상세 API를 호출하면 어떻게 돼요? 3번 게시글은 아직 없는데."
 
-오픈이는 순간 답이 막혔습니다. `findById`로 없는 게시글을 찾으면 무엇이 돌아오는지, 그다음 어떻게 되는지 확인해 본 적이 없었습니다.
+오픈이는 순간 답이 막혔습니다. `findById()`로 없는 게시글을 찾으면 무엇이 돌아오는지, 그다음 어떻게 되는지 확인해 본 적이 없었습니다.
 
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 

@@ -9,24 +9,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import lombok.RequiredArgsConstructor;
 import java.io.IOException;
 
-// Spring Security 제거 후 인증 필터
 // 토큰이 유효하면 로그인 유저를 request attribute("loginUser")에 담아둔다. (차단하지 않음 - 인가는 컨트롤러·서비스 담당)
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    public static final String LOGIN_USER = "loginUser";
-
     private final JwtProvider jwtProvider;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         String token = jwtProvider.resolveToken(request);
 
         if (token != null) {
             User loginUser = jwtProvider.getUser(token); // 유효하지 않으면 null
             if (loginUser != null) {
-                request.setAttribute(LOGIN_USER, loginUser);
+                request.setAttribute("loginUser", loginUser);
             }
         }
 

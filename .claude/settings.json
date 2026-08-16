@@ -1,5 +1,16 @@
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-chapter-style.sh"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "matcher": "분석(해|좀|부탁|요청|줘|할래|해줄래)|(문장|단락|챕터|절|본문|흐름|H3)\\s*분석|흐름부터",

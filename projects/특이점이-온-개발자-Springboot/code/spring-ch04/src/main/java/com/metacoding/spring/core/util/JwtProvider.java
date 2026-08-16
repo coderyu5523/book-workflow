@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import com.metacoding.spring.user.User;
 import jakarta.servlet.http.HttpServletRequest;
 
-// Spring Security 제거 후: Authentication 대신 User 를 직접 다룬다.
 @Component
 public class JwtProvider {
 
