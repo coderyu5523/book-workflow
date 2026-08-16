@@ -1,5 +1,7 @@
 package com.metacoding.spring.board;
 
+import com.metacoding.spring.user.User;
+
 public class BoardResponse {
 
     public record DTO(Integer boardId, String title, String content) {
@@ -17,15 +19,15 @@ public class BoardResponse {
             String username,
             Boolean isOwner) {
 
-        public DetailDTO(Board board, Integer loginUserId) {
+        public DetailDTO(Board board, User loginUser) {
             this(
                     board.getId(),
                     board.getTitle(),
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    loginUserId != null
-                            && loginUserId.equals(board.getUser().getId()));
+                    loginUser != null && loginUser.getId()
+                            .equals(board.getUser().getId()));
         }
     }
 }

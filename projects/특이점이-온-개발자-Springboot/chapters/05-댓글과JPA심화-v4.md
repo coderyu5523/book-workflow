@@ -561,17 +561,17 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
             Boolean isOwner,
             List<ReplyDTO> replies) {
 
-        public DetailDTO(Board board, Integer loginUserId) {
+        public DetailDTO(Board board, User loginUser) {
             this(
                     board.getId(),
                     board.getTitle(),
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    loginUserId != null
-                            && loginUserId.equals(board.getUser().getId()),
+                    loginUser != null && loginUser.getId()
+                            .equals(board.getUser().getId()),
                     board.getReplies().stream()
-                            .map(r -> new ReplyDTO(r, loginUserId))
+                            .map(r -> new ReplyDTO(r, loginUser))
                             .toList());
         }
 
@@ -581,13 +581,13 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
                 String comment,
                 Boolean isOwner) {
 
-            public ReplyDTO(Reply reply, Integer loginUserId) {
+            public ReplyDTO(Reply reply, User loginUser) {
                 this(
                         reply.getId(),
                         reply.getUser().getUsername(),
                         reply.getComment(),
-                        loginUserId != null && loginUserId.equals(
-                                reply.getUser().getId()));
+                        loginUser != null && loginUser.getId()
+                                .equals(reply.getUser().getId()));
             }
         }
     }
@@ -601,9 +601,7 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReply(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        // 비로그인이면 null
-        Integer loginUserId = (loginUser != null) ? loginUser.getId() : null;
-        return new BoardResponse.DetailDTO(board, loginUserId);
+        return new BoardResponse.DetailDTO(board, loginUser);
     }
 ```
 

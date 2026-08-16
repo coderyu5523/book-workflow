@@ -22,9 +22,7 @@ public class BoardService {
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        // 비로그인이면 null
-        Integer loginUserId = (loginUser != null) ? loginUser.getId() : null;
-        return new BoardResponse.DetailDTO(board, loginUserId);
+        return new BoardResponse.DetailDTO(board, loginUser);
     }
 
     @Transactional

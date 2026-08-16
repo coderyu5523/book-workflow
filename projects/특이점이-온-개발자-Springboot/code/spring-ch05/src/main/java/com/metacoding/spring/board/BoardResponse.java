@@ -2,6 +2,7 @@ package com.metacoding.spring.board;
 
 import java.util.*;
 import com.metacoding.spring.reply.Reply;
+import com.metacoding.spring.user.User;
 
 public class BoardResponse {
 
@@ -21,17 +22,17 @@ public class BoardResponse {
             Boolean isOwner,
             List<ReplyDTO> replies) {
 
-        public DetailDTO(Board board, Integer loginUserId) {
+        public DetailDTO(Board board, User loginUser) {
             this(
                     board.getId(),
                     board.getTitle(),
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    loginUserId != null
-                            && loginUserId.equals(board.getUser().getId()),
+                    loginUser != null && loginUser.getId()
+                            .equals(board.getUser().getId()),
                     board.getReplies().stream()
-                            .map(reply -> new ReplyDTO(reply, loginUserId))
+                            .map(reply -> new ReplyDTO(reply, loginUser))
                             .toList());
         }
 
@@ -41,13 +42,13 @@ public class BoardResponse {
                 String comment,
                 Boolean isOwner) {
 
-            public ReplyDTO(Reply reply, Integer loginUserId) {
+            public ReplyDTO(Reply reply, User loginUser) {
                 this(
                         reply.getId(),
                         reply.getUser().getUsername(),
                         reply.getComment(),
-                        loginUserId != null && loginUserId.equals(
-                                reply.getUser().getId()));
+                        loginUser != null && loginUser.getId()
+                                .equals(reply.getUser().getId()));
             }
         }
     }
