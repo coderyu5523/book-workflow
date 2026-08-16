@@ -211,7 +211,7 @@
 </tbody>
 </table>
 <h2>3.4 예외 처리 추가</h2>
-<p><code>Optional</code>은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 <code>null</code>로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow</code> 메서드를 유용하게 사용할 수 있습니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.</p>
+<p><code>Optional</code>은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 <code>null</code>로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow</code> 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.</p>
 <h3>3.4.1 커스텀 예외 만들기</h3>
 <p>예외 처리에 사용할 <code>Exception404</code>를 만듭니다. <code>core/handler/ex/Exception404.java</code>를 열고 아래 코드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/handler/ex/Exception404.java. 커스텀 예외</div><span class="c1">// 자원을 찾을 수 없을 때 (HTTP 404)</span>
@@ -245,7 +245,7 @@
 <tr>
 <td>403</td>
 <td>권한이 없음</td>
-<td>남의 게시글 수정</td>
+<td>작성자가 아닌 사람의 게시글 수정</td>
 </tr>
 <tr>
 <td>404</td>
@@ -395,14 +395,14 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>주소와 HTTP 메서드는 챕터 2와 같습니다. 게시글 상세 API를 호출하면 응답에는 DTO에 담긴 세 값만 담깁니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 게시글 상세 조회</div>GET<span class="w"> </span>http://localhost:8080/api/boards/1</div>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
 <!-- [CAPTURE NEEDED: 01_board-detail-dto
   path: assets/CH3/terminal/01_board-detail-dto.png
   desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH3\terminal\01_board-detail-dto.png" alt="" /><div class="caption">그림 3-4. 상세 조회 응답에는 DTO에 담긴 세 값만 담깁니다</div></div>
 <p>앞에서 만든 전역 예외 처리기가 실제로 404를 돌려주는지, 없는 999번을 조회해 확인합니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 없는 게시글 다시 조회</div>GET<span class="w"> </span>http://localhost:8080/api/boards/999</div>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 없는 게시글 다시 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/999</span></div>
 <p>빈 값이 담긴 성공 대신 404 응답을 받습니다.</p>
 <!-- [CAPTURE NEEDED: 02_404-response
   path: assets/CH3/terminal/02_404-response.png
@@ -413,7 +413,7 @@
 <div class="dialogue"><span class="speaker">오픈이</span>: "지난번에 없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 없으면 없다고 딱 나와요."<br></div>
 <div class="dialogue"><span class="speaker">동료</span>: "아, 3번 호출해 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."</div>
 <p class="thought">여기까진 됐다.</p>
-<p>다섯 곳을 정리했지만, 오픈이는 화면을 내려다보다 한 가지가 걸렸습니다. 지금은 로그인 화면도, 게시글 주인을 확인하는 절차도 없습니다. 999번 하나 못 찾는 것은 막아 놨는데, 정작 아무나 남의 게시글을 고치고 지울 수 있는 서버였습니다.</p>
+<p>다섯 곳을 정리했지만, 오픈이는 화면을 내려다보다 한 가지가 걸렸습니다. 지금은 로그인 화면도, 게시글 주인을 확인하는 절차도 없습니다. 999번 하나 못 찾는 것은 막아 놨는데, 정작 누구나 게시글을 고치고 지울 수 있는 서버였습니다.</p>
 <p class="thought">없는 게시글은 걸렀는데, 문은 여전히 다 열려 있잖아.</p>
 <p>다음 챕터에서는 인증 기능을 추가해, 작성자 본인만 자기 게시글을 관리할 수 있게 합니다.</p>
 <div class="remember">

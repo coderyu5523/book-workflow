@@ -14,8 +14,8 @@ public class UserController {
     // 회원가입
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody UserRequest.SaveDTO requestDTO) {
-        userService.회원가입(requestDTO);
-        return Resp.ok(null);
+        UserResponse.DTO respDTO = userService.회원가입(requestDTO);
+        return Resp.ok(respDTO);
     }
 
     // 로그인 -> JWT 발급

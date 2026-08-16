@@ -19,24 +19,24 @@ public class BoardService {
                 .toList();
     }
 
-    public BoardResponse.DetailDTO 게시글상세(Integer boardId, Integer sessionUserId) {
+    public BoardResponse.DetailDTO 게시글상세(Integer boardId, Integer loginUserId) {
         Board board = boardRepository.findByIdJoinUserAndReply(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        return new BoardResponse.DetailDTO(board, sessionUserId);
+        return new BoardResponse.DetailDTO(board, loginUserId);
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO, User sessionUser) {
-        Board board = requestDTO.toEntity(sessionUser); // DTO -> 엔티티 (작성자 연결)
+    public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO, User loginUser) {
+        Board board = requestDTO.toEntity(loginUser); // DTO -> 엔티티 (작성자 연결)
         boardRepository.save(board);
         return new BoardResponse.DTO(board);
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO, Integer sessionUserId) {
+    public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO, Integer loginUserId) {
         Board board = boardRepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        if (!board.getUser().getId().equals(sessionUserId)) {
+        if (!board.getUser().getId().equals(loginUserId)) {
             throw new Exception403("게시글을 수정할 권한이 없습니다");
         }
         board.setTitle(requestDTO.title()); // 더티 체킹
@@ -45,10 +45,10 @@ public class BoardService {
     }
 
     @Transactional
-    public void 게시글삭제(Integer boardId, Integer sessionUserId) {
+    public void 게시글삭제(Integer boardId, Integer loginUserId) {
         Board board = boardRepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        if (!board.getUser().getId().equals(sessionUserId)) {
+        if (!board.getUser().getId().equals(loginUserId)) {
             throw new Exception403("게시글을 삭제할 권한이 없습니다");
         }
         boardRepository.delete(board);

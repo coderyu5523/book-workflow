@@ -4,6 +4,7 @@ import java.util.*;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.metacoding.spring.core.handler.ex.Exception401;
 import com.metacoding.spring.core.util.Resp;
 import com.metacoding.spring.user.User;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,9 +27,9 @@ public class BoardController {
     // 게시글 상세 (공개 - 로그인 시 isOwner 계산)
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(HttpServletRequest request, @PathVariable("boardId") Integer boardId) {
-        User sessionUser = (User) request.getAttribute("sessionUser"); // 비로그인 시 null
-        Integer sessionUserId = (sessionUser != null) ? sessionUser.getId() : null;
-        BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId, sessionUserId);
+        User loginUser = (User) request.getAttribute("loginUser"); // 비로그인 시 null
+        Integer loginUserId = (loginUser != null) ? loginUser.getId() : null;
+        BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId, loginUserId);
         return Resp.ok(respDTO);
     }
 
@@ -36,8 +37,11 @@ public class BoardController {
     @PostMapping
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody BoardRequest.SaveDTO requestDTO) {
-        User sessionUser = (User) request.getAttribute("sessionUser");
-        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO, sessionUser);
+        User loginUser = (User) request.getAttribute("loginUser");
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
+        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 
@@ -45,16 +49,22 @@ public class BoardController {
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(HttpServletRequest request, @PathVariable("boardId") Integer boardId,
             @RequestBody BoardRequest.UpdateDTO requestDTO) {
-        User sessionUser = (User) request.getAttribute("sessionUser");
-        BoardResponse.DTO respDTO = boardService.게시글수정(boardId, requestDTO, sessionUser.getId());
+        User loginUser = (User) request.getAttribute("loginUser");
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
+        BoardResponse.DTO respDTO = boardService.게시글수정(boardId, requestDTO, loginUser.getId());
         return Resp.ok(respDTO);
     }
 
     // 게시글 삭제 (작성자만)
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(HttpServletRequest request, @PathVariable("boardId") Integer boardId) {
-        User sessionUser = (User) request.getAttribute("sessionUser");
-        boardService.게시글삭제(boardId, sessionUser.getId());
+        User loginUser = (User) request.getAttribute("loginUser");
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
+        boardService.게시글삭제(boardId, loginUser.getId());
         return Resp.ok(null);
     }
 }

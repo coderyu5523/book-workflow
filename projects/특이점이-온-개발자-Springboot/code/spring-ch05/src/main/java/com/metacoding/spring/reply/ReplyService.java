@@ -15,19 +15,19 @@ public class ReplyService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User sessionUser) {
+    public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User loginUser) {
         Board board = boardRepository.findById(requestDTO.boardId())
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        Reply reply = requestDTO.toEntity(sessionUser, board);
+        Reply reply = requestDTO.toEntity(loginUser, board);
         replyRepository.save(reply);
         return new ReplyResponse.DTO(reply);
     }
 
     @Transactional
-    public void 댓글삭제(Integer replyId, Integer sessionUserId) {
+    public void 댓글삭제(Integer replyId, Integer loginUserId) {
         Reply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new Exception404("댓글을 찾을 수 없습니다"));
-        if (!reply.getUser().getId().equals(sessionUserId)) {
+        if (!reply.getUser().getId().equals(loginUserId)) {
             throw new Exception403("댓글을 삭제할 권한이 없습니다");
         }
         replyRepository.delete(reply);

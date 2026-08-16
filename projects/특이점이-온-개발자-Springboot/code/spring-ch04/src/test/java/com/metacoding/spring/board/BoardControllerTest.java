@@ -46,10 +46,21 @@ public class BoardControllerTest {
 
     @Test
     public void detail_test() throws Exception {
+        // 비로그인 상세 -> isOwner false
         ResultActions actions = mvc.perform(get("/api/boards/1"));
         actions.andExpect(status().isOk())
                 .andExpect(jsonPath("$.body.title").value("title1"))
-                .andExpect(jsonPath("$.body.username").value("ssar"));
+                .andExpect(jsonPath("$.body.username").value("ssar"))
+                .andExpect(jsonPath("$.body.isOwner").value(false));
+    }
+
+    @Test
+    public void detail_owner_test() throws Exception {
+        // 작성자 토큰으로 상세 -> isOwner true
+        ResultActions actions = mvc.perform(get("/api/boards/1")
+                .header("Authorization", ssarToken));
+        actions.andExpect(status().isOk())
+                .andExpect(jsonPath("$.body.isOwner").value(true));
     }
 
     @Test

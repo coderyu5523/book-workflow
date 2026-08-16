@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그림 4-5 후보 — 토큰의 구조</title>
+
+<link rel="stylesheet" href="../styles/fonts.css">
+<link rel="stylesheet" href="../styles/tokens.css">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/base.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/diagrams.css">
+</head>
+<body>
+<div class="container">
+
+<h2>새 안 (토큰 전체를 먼저, 세 조각을 가로로)</h2>
+
+<p>JWT는 점(<code>.</code>)으로 구분된 헤더, 페이로드, 서명 세 부분으로 이루어집니다. 각 부분이 맡은 역할이 다릅니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 940 274" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="로그인에 성공하면 돌아오는 JWT 한 줄을 위에 그대로 보여 주고, 점 두 개로 나뉜 세 조각을 아래에 가로로 나열한다. 헤더 조각과 페이로드 조각은 Base64를 되돌리면 각각 알고리즘 정보와 유저 정보 JSON이 되고, 서명 조각은 헤더와 페이로드와 비밀 문자열을 HMAC512에 넣어 만든 값이다.">
+  <defs>
+    <marker id="c4tok-h" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+    <marker id="c4tok-p" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="c4tok-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+
+  <rect x="40" y="20" width="860" height="76" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="58" y="52" font-size="13.5" style="font-family:var(--font-mono)"><tspan fill="#3730a3">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9</tspan><tspan fill="#0f172a" font-weight="800">.</tspan><tspan fill="#c2410c">eyJzdWIiOiJzc2FyIiwiZXhwIjoxNzY3MjI1NjAwLCJpZCI6MX0</tspan><tspan fill="#0f172a" font-weight="800">.</tspan></text>
+  <text x="58" y="80" font-size="13.5" style="font-family:var(--font-mono)"><tspan fill="#475569">hB3ye4zYc3ZhxJtjMdasfzMtpq3Ubi3iWKWPuZKysBH40NDexXHp2ahpt4e_SjnEOHMSJDUrAWIcn31FY5gq1g</tspan></text>
+
+  <line x1="178" y1="102" x2="178" y2="120" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c4tok-h)"/>
+  <line x1="470" y1="102" x2="470" y2="120" stroke="#ff7849" stroke-width="1.6" marker-end="url(#c4tok-p)"/>
+  <line x1="762" y1="102" x2="762" y2="120" stroke="#475569" stroke-width="1.6" marker-end="url(#c4tok-s)"/>
+
+  <rect x="40" y="126" width="276" height="128" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <path d="M48,126 H308 a8,8 0 0 1 8,8 V160 H40 V134 a8,8 0 0 1 8,-8 z" fill="#eef2ff"/>
+  <line x1="40" y1="160" x2="316" y2="160" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="178" y="149" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">헤더</text>
+  <text x="60" y="190" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)">{"typ":"JWT",</text>
+  <text x="60" y="212" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)"> "alg":"HS512"}</text>
+  <text x="60" y="240" font-size="11" fill="#6b7280">서명에 쓸 알고리즘</text>
+
+  <rect x="332" y="126" width="276" height="128" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
+  <path d="M340,126 H600 a8,8 0 0 1 8,8 V160 H332 V134 a8,8 0 0 1 8,-8 z" fill="#fff7ed"/>
+  <line x1="332" y1="160" x2="608" y2="160" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="470" y="149" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">페이로드</text>
+  <text x="352" y="190" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)">{"sub":"ssar",</text>
+  <text x="352" y="212" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)"> "exp":1767225600,</text>
+  <text x="352" y="234" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)"> "id":1}</text>
+
+  <rect x="624" y="126" width="276" height="128" rx="8" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <path d="M632,126 H892 a8,8 0 0 1 8,8 V160 H624 V134 a8,8 0 0 1 8,-8 z" fill="#f1f5f9"/>
+  <line x1="624" y1="160" x2="900" y2="160" stroke="#475569" stroke-width="1.4"/>
+  <text x="762" y="149" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">서명</text>
+  <text x="644" y="190" font-size="12.5" fill="#0f172a" font-weight="700" style="font-family:var(--font-mono)">HMAC512(</text>
+  <text x="644" y="212" font-size="12.5" style="font-family:var(--font-mono)"><tspan fill="#3730a3" font-weight="700">  헤더</tspan><tspan fill="#0f172a"> + "." + </tspan><tspan fill="#c2410c" font-weight="700">페이로드</tspan><tspan fill="#0f172a">,</tspan></text>
+  <text x="644" y="234" font-size="12.5" style="font-family:var(--font-mono)"><tspan fill="#0f172a" font-weight="700">  SECRET )</tspan></text>
+
+</svg>
+</div>
+
+<div class="caption">그림 4-5. 앞의 두 조각은 되돌려 읽을 수 있고, 마지막 조각은 그 둘과 비밀 문자열로 만들어집니다</div>
+
+<p>세 부분 중 페이로드에 담긴 정보는 누구든 열어 볼 수 있습니다. 그래서 비밀번호처럼 감춰야 할 값은 넣지 않고, 누구인지 알려 줄 정도의 값만 담습니다. 위조를 막는 것은 마지막 서명입니다. 서명은 서버만 아는 비밀 문자열로 만들어지므로, 페이로드를 몰래 고치면 서명이 맞지 않게 되어 검증에서 걸립니다.</p>
+
+<hr>
+
+<h2>직전 안 (세 조각을 세로로)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 940 432" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="세 조각을 세로 행으로 나열한 직전 안.">
+  <defs>
+    <marker id="p2-h" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="p2-p" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="p2-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="40" y="24" font-size="12" fill="#6b7280">로그인에 성공하면 이런 문자열 하나가 돌아옵니다.</text>
+  <rect x="40" y="36" width="860" height="72" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="58" y="66" font-size="11" style="font-family:var(--font-mono)"><tspan fill="#3730a3">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9</tspan><tspan fill="#0f172a" font-weight="800">.</tspan><tspan fill="#c2410c">eyJzdWIiOiJzc2FyIiwiZXhwIjoxNzY3MjI1NjAwLCJpZCI6MX0</tspan><tspan fill="#0f172a" font-weight="800">.</tspan><tspan fill="#475569">hB3ye4zYc3ZhxJtjMdasfzMtpq3Ubi3iWKWPu</tspan></text>
+  <text x="58" y="90" font-size="11" style="font-family:var(--font-mono)"><tspan fill="#475569">ZKysBH40NDexXHp2ahpt4e_SjnEOHMSJDUrAWIcn31FY5gq1g</tspan></text>
+  <text x="40" y="134" font-size="12" fill="#6b7280">점(.) 두 개가 이 문자열을 세 조각으로 나눕니다.</text>
+  <rect x="40" y="156" width="104" height="44" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="92" y="184" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">헤더</text>
+  <line x1="150" y1="178" x2="192" y2="178" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#p2-h)"/>
+  <rect x="200" y="156" width="700" height="44" rx="7" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="218" y="184" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)">{"typ":"JWT", "alg":"HS512"}</text>
+  <rect x="40" y="216" width="104" height="44" rx="7" fill="#fff7ed" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="92" y="244" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">페이로드</text>
+  <line x1="150" y1="238" x2="192" y2="238" stroke="#ff7849" stroke-width="1.7" marker-end="url(#p2-p)"/>
+  <rect x="200" y="216" width="700" height="44" rx="7" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="218" y="244" font-size="12.5" fill="#0f172a" style="font-family:var(--font-mono)">{"sub":"ssar", "exp":1767225600, "id":1}</text>
+  <text x="40" y="286" font-size="11.5" fill="#6b7280">앞의 두 조각은 Base64로 바꾼 값이라 누구나 되돌려 볼 수 있습니다.</text>
+  <rect x="40" y="306" width="104" height="60" rx="7" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <text x="92" y="342" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">서명</text>
+  <line x1="150" y1="336" x2="192" y2="336" stroke="#475569" stroke-width="1.7" marker-end="url(#p2-s)"/>
+  <rect x="200" y="306" width="700" height="60" rx="7" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <text x="218" y="332" font-size="12.5" style="font-family:var(--font-mono)"><tspan fill="#0f172a" font-weight="700">HMAC512(</tspan><tspan fill="#3730a3" font-weight="700"> 헤더 </tspan><tspan fill="#0f172a">+ "." +</tspan><tspan fill="#c2410c" font-weight="700"> 페이로드 </tspan><tspan fill="#0f172a">,</tspan><tspan fill="#0f172a" font-weight="700"> SECRET )</tspan></text>
+  <text x="218" y="354" font-size="11.5" fill="#6b7280">SECRET은 서버만 아는 비밀 문자열이며 토큰에는 들어가지 않습니다.</text>
+  <text x="40" y="404" font-size="12" font-weight="700" fill="#c2410c">페이로드를 몰래 고치면 이 계산의 결과가 달라지므로, 붙어 있는 서명과 맞지 않게 됩니다.</text>
+</svg>
+</div>
+
+</div>
+</body>
+</html>

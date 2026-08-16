@@ -21,16 +21,16 @@ public class BoardResponse {
             Boolean isOwner, // 게시글 작성자 여부
             List<ReplyDTO> replies) {
 
-        public DetailDTO(Board board, Integer sessionUserId) {
+        public DetailDTO(Board board, Integer loginUserId) {
             this(
                     board.getId(),
                     board.getTitle(),
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    checkOwner(sessionUserId, board.getUser().getId()),
+                    checkOwner(loginUserId, board.getUser().getId()),
                     board.getReplies().stream()
-                            .map(reply -> new ReplyDTO(reply, sessionUserId))
+                            .map(reply -> new ReplyDTO(reply, loginUserId))
                             .toList());
         }
 
@@ -41,18 +41,18 @@ public class BoardResponse {
                 String comment,
                 Boolean isOwner) { // 댓글 작성자 여부
 
-            public ReplyDTO(Reply reply, Integer sessionUserId) {
+            public ReplyDTO(Reply reply, Integer loginUserId) {
                 this(
                         reply.getId(),
                         reply.getUser().getUsername(),
                         reply.getComment(),
-                        checkOwner(sessionUserId, reply.getUser().getId()));
+                        checkOwner(loginUserId, reply.getUser().getId()));
             }
         }
 
         // 로그인한 사용자가 작성자인지 (비로그인 시 false)
-        private static boolean checkOwner(Integer sessionUserId, Integer writerId) {
-            return sessionUserId != null && sessionUserId.equals(writerId);
+        private static boolean checkOwner(Integer loginUserId, Integer writerId) {
+            return loginUserId != null && loginUserId.equals(writerId);
         }
     }
 }

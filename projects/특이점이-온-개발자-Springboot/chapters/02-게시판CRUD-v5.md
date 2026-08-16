@@ -317,7 +317,7 @@ REST API가 왜 지금의 방식이 됐는지 거슬러 올라가 보겠습니�
 | Packaging | JAR |
 | 자바 버전 | 21 |
 
-마지막으로 프로젝트에 넣을 의존성을 고릅니다. 챕터 2에서 사용하는 것은 네 가지입니다.
+마지막으로 프로젝트에 넣을 의존성을 고릅니다.
 
 | 의존성 | 역할 |
 |--------|------|
@@ -363,7 +363,14 @@ public class Board {
 엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
 :::
 
-이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다.
+이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다. `resources/db/data.sql`을 열고 아래 코드를 작성합니다.
+
+```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
+insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
+insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
+```
+
+게시글 두 건을 넣어 둡니다. 서버를 실행할 때마다 이 두 건으로 시작하므로, 목록 조회를 만들고 나면 바로 결과를 확인할 수 있습니다.
 
 ## 2.4 하이버네이트
 
@@ -532,7 +539,7 @@ public class Board {
 
 `board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 2] board/BoardRepository.java. 리포지토리 골격
+```java [실습 3] board/BoardRepository.java. 리포지토리 골격
 @RequiredArgsConstructor
 @Repository // 스프링이 빈으로 등록한다
 public class BoardRepository {
@@ -549,7 +556,7 @@ public class BoardRepository {
 
 `board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
 
-```java [실습 3] board/BoardRepository.java. 기본 키로 한 건 조회
+```java [실습 4] board/BoardRepository.java. 기본 키로 한 건 조회
     public Board findById(int boardId) {
         return em.find(Board.class, boardId);
     }
@@ -565,7 +572,7 @@ select id, title, content, created_at from board_tb where id = ?
 
 `EntityManager`에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 JPQL(Java Persistence Query Language)로 질의를 직접 적어 실행합니다.
 
-```java [실습 4] board/BoardRepository.java. JPQL로 전체 조회
+```java [실습 5] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
         return em.createQuery("select b from Board b", Board.class).getResultList();
     }
@@ -583,7 +590,7 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
 
 `persist` 메서드는 새로 만든 엔티티를 데이터베이스에 저장합니다.
 
-```java [실습 5] board/BoardRepository.java. 새 게시글 저장
+```java [실습 6] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
         em.persist(board);
     }
@@ -603,7 +610,7 @@ insert into board_tb (title, content, created_at) values (?, ?, ?)
 
 `remove` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다.
 
-```java [실습 6] board/BoardRepository.java. 게시글 삭제
+```java [실습 7] board/BoardRepository.java. 게시글 삭제
     public void delete(Board board) {
         em.remove(board);
     }
@@ -657,7 +664,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 리포지토리 코드를 보면 `persist`나 `find`를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. `EntityManager`가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. `persist`나 `find`로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
 
-영속성 컨텍스트가 하는 일은 크게 세 가지입니다. 하나씩 그림으로 따라가 보겠습니다.
+영속성 컨텍스트가 하는 일은 크게 세 가지입니다.
 
 ### 2.7.1 캐싱
 
@@ -834,9 +841,9 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ## 2.8 단위 테스트
 
-리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 도는지는 실행해 봐야 알 수 있습니다.
+리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.
 
-커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 떼어 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)입니다.
+커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 분리해 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)입니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 커피콩을 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
@@ -897,13 +904,13 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 떼어 검증하면 문제가 난 기능만 고치면 됩니다*
+*그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 분리해 검증하면 문제가 난 기능만 고치면 됩니다*
 
-리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 떼어 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
+리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 `@DataJpaTest`를 제공합니다. 여기에 우리가 만든 `BoardRepository`를 `@Import`로 함께 올려 검증합니다.
 
 ### 2.8.1 given-when-eye 패턴
 
-테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 찍어 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
+테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 출력해 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 assert로 검증하지만 학습 단계에서는 eye로 대체한다.">
@@ -938,7 +945,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 `test/.../BoardRepositoryTest.java`를 열고 먼저 클래스 골격을 작성합니다.
 
-```java [실습 7] BoardRepositoryTest.java. 테스트 클래스 골격
+```java [실습 8] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class)
 @DataJpaTest
 public class BoardRepositoryTest {
@@ -955,9 +962,9 @@ public class BoardRepositoryTest {
 
 `@DataJpaTest`가 JPA 관련 부분만 올리고, `@Import(BoardRepository.class)`로 검증할 리포지토리를 함께 올립니다. `@Autowired`는 스프링이 타입에 맞는 빈을 찾아 필드에 넣어 주는 어노테이션으로, 테스트에서는 이 방식으로 리포지토리와 `EntityManager`를 받습니다. 테스트가 시작될 때 `data.sql`이 실행되어 게시글 두 개가 들어와 있으므로, 조회는 `id=2`인 게시글을 기준으로 확인합니다.
 
-먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById`를 호출하고(when), 돌아온 엔티티의 값을 찍어 봅니다(eye).
+먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById`를 호출하고(when), 돌아온 엔티티의 값을 출력해 봅니다(eye).
 
-```java [실습 8] BoardRepositoryTest.java. 한 건 조회
+```java [실습 9] BoardRepositoryTest.java. 한 건 조회
     @Test
     public void findById_test() {
         // given
@@ -972,7 +979,7 @@ public class BoardRepositoryTest {
 
 전체 조회는 준비할 값이 없어 given이 비어 있습니다. 결과가 여러 건이므로 개수와 첫 번째 게시글의 제목을 확인합니다.
 
-```java [실습 9] BoardRepositoryTest.java. 전체 조회
+```java [실습 10] BoardRepositoryTest.java. 전체 조회
     @Test
     public void findAll_test() {
         // given
@@ -987,7 +994,7 @@ public class BoardRepositoryTest {
 
 저장은 저장된 결과를 바로 볼 수 없어, `findAll`로 다시 조회해 확인합니다. 두 개였던 게시글이 세 개가 되고, 세 번째 자리에 방금 넣은 게시글이 있으면 저장된 것입니다.
 
-```java [실습 10] BoardRepositoryTest.java. 저장
+```java [실습 11] BoardRepositoryTest.java. 저장
     @Test
     public void save_test() {
         // given
@@ -1005,7 +1012,7 @@ public class BoardRepositoryTest {
 
 수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 제목이 `title-update`라면 저장 호출 없이 반영됐다는 증거입니다.
 
-```java [실습 11] BoardRepositoryTest.java. 수정과 더티체킹
+```java [실습 12] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
     public void update_test() {
         // given
@@ -1024,7 +1031,7 @@ public class BoardRepositoryTest {
 
 삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 실행됩니다. 남은 개수가 하나면 지워진 것입니다.
 
-```java [실습 12] BoardRepositoryTest.java. 삭제
+```java [실습 13] BoardRepositoryTest.java. 삭제
     @Test
     public void delete_test() {
         // given
@@ -1052,11 +1059,11 @@ public class BoardRepositoryTest {
 ![](../assets/CH2/terminal/02_test-pass.png)
 *그림 2-23. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다*
 
-서버를 실행하지 않고 리포지토리만 떼어 놓고도 조회·저장·수정·삭제가 제대로 도는지 확인할 수 있습니다.
+서버를 실행하지 않고 리포지토리만 분리해도 조회·저장·수정·삭제가 제대로 동작하는지 확인할 수 있습니다.
 
 ## 2.10 3계층 아키텍처
 
-리포지토리만 떼어 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.
+리포지토리만 분리해 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="한 클래스 파일 안에 요청을 받는 코드, 흐름을 정하는 코드, 데이터베이스를 다루는 코드가 번갈아 놓여 있다.">
@@ -1119,7 +1126,7 @@ public class BoardRepositoryTest {
 
 `board/BoardService.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 13] board/BoardService.java. 서비스 골격
+```java [실습 14] board/BoardService.java. 서비스 골격
 @RequiredArgsConstructor
 @Service // 스프링이 빈으로 등록한다
 public class BoardService {
@@ -1132,7 +1139,7 @@ public class BoardService {
 
 목록 조회 메서드를 채웁니다. 리포지토리의 `findAll`을 그대로 호출해 결과를 돌려줍니다.
 
-```java [실습 14] board/BoardService.java. 게시글 목록
+```java [실습 15] board/BoardService.java. 게시글 목록
     public List<Board> 게시글목록() {
         return boardRepository.findAll();
     }
@@ -1140,7 +1147,7 @@ public class BoardService {
 
 이제 요청을 받을 컨트롤러를 만듭니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 15] board/BoardController.java. 컨트롤러 골격과 목록 조회
+```java [실습 16] board/BoardController.java. 컨트롤러 골격과 목록 조회
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/boards") // 공통 주소
@@ -1188,17 +1195,17 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 16] board/BoardService.java. 게시글 상세
+```java [실습 17] board/BoardService.java. 게시글 상세
     public Board 게시글상세(Integer boardId) {
         return boardRepository.findById(boardId);
     }
 ```
 
-컨트롤러는 주소에 박힌 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 `@PathVariable`로 꺼냅니다.
+컨트롤러는 주소에 담긴 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 `@PathVariable`로 꺼냅니다.
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 17] board/BoardController.java. 상세 조회
+```java [실습 18] board/BoardController.java. 상세 조회
     // 상세 조회 (GET /api/boards/1)
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
@@ -1213,7 +1220,7 @@ Hoppscotch 브라우저 버전은 `localhost`나 `127.0.0.1` 주소로 직접 �
 
 `board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
 
-```java [실습 18] board/BoardRequest.java. 요청 데이터 DTO
+```java [실습 19] board/BoardRequest.java. 요청 데이터 DTO
 public class BoardRequest {
     public record SaveDTO(String title, String content) {
     }
@@ -1227,7 +1234,7 @@ public class BoardRequest {
 
 서비스는 DTO로 받은 값을 새 엔티티에 옮겨 담아 저장합니다.
 
-```java [실습 19] board/BoardService.java. 게시글 쓰기
+```java [실습 20] board/BoardService.java. 게시글 쓰기
     // 1. 새 엔티티를 만들어 값을 채우고 저장한다
     @Transactional
     public Board 게시글추가(BoardRequest.SaveDTO requestDTO) {
@@ -1249,7 +1256,7 @@ public class BoardRequest {
 
 컨트롤러는 요청 바디의 JSON을 `@RequestBody`로 받아 DTO에 담습니다.
 
-```java [실습 20] board/BoardController.java. 게시글 쓰기
+```java [실습 21] board/BoardController.java. 게시글 쓰기
     // 작성 (POST /api/boards)
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
@@ -1266,7 +1273,7 @@ public class BoardRequest {
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 21] board/BoardService.java. 더티체킹으로 수정
+```java [실습 22] board/BoardService.java. 더티체킹으로 수정
     // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
     @Transactional
     public Board 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
@@ -1282,7 +1289,7 @@ public class BoardRequest {
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 22] board/BoardController.java. 게시글 수정
+```java [실습 23] board/BoardController.java. 게시글 수정
     // 수정 (PUT /api/boards/1)
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
@@ -1298,7 +1305,7 @@ public class BoardRequest {
 
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
-```java [실습 23] board/BoardService.java. 게시글 삭제
+```java [실습 24] board/BoardService.java. 게시글 삭제
     // 조회한 게시글을 넘겨 삭제한다
     @Transactional
     public void 게시글삭제(Integer boardId) {
@@ -1309,7 +1316,7 @@ public class BoardRequest {
 
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
-```java [실습 24] board/BoardController.java. 게시글 삭제
+```java [실습 25] board/BoardController.java. 게시글 삭제
     // 삭제 (DELETE /api/boards/1)
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
@@ -1327,7 +1334,7 @@ public class BoardRequest {
 
 먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 만든 뒤, 미리 만들어 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 만들지 않고 빌려 쓴 다음 반납하는 방식이라, 요청이 몰려도 서버가 감당할 수 있습니다.
 
-요청은 스프링 컨테이너로 넘어갑니다. 챕터 1에서 본 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
+요청은 스프링 컨테이너로 넘어갑니다. 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
 
 컨트롤러는 요청에서 값을 꺼내 서비스로 넘깁니다. 서비스에서는 `@Transactional`이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush`가 일어나는 지점이 이 순간입니다.
 
@@ -1381,7 +1388,7 @@ public class BoardRequest {
 
 응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, `@RestController`가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
 
-오픈이는 화면을 열어 게시글 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 도는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
+오픈이는 화면을 열어 게시글 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
 
 동료가 화면 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.
 

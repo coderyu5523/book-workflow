@@ -13,12 +13,13 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public void 회원가입(UserRequest.SaveDTO requestDTO) {
+    public UserResponse.DTO 회원가입(UserRequest.SaveDTO requestDTO) {
         // 유저네임 중복 체크
         if (userRepository.findByUsername(requestDTO.username()).isPresent()) {
             throw new Exception400("이미 존재하는 유저네임입니다");
         }
-        userRepository.save(requestDTO.toEntity());
+        User user = userRepository.save(requestDTO.toEntity());
+        return new UserResponse.DTO(user);
     }
 
     public String 로그인(UserRequest.LoginDTO requestDTO) {
