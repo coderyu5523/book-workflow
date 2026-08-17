@@ -1162,7 +1162,6 @@ public class BoardController {
 목록 조회 메서드를 채웁니다. 서비스의 `게시글목록()`을 호출해 결과를 돌려줍니다.
 
 ```java [실습 17] board/BoardController.java. 게시글 목록
-    // 목록 조회 (GET /api/boards)
     @GetMapping
     public ResponseEntity<?> findAll() {
         List<Board> boardList = boardService.게시글목록();
@@ -1212,7 +1211,6 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 19] board/BoardController.java. 상세 조회
-    // 상세 조회 (GET /api/boards/1)
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
         Board board = boardService.게시글상세(boardId);
@@ -1263,7 +1261,6 @@ public class BoardRequest {
 컨트롤러는 요청 바디의 JSON을 **@RequestBody**로 받아 DTO에 담습니다.
 
 ```java [실습 22] board/BoardController.java. 게시글 쓰기
-    // 작성 (POST /api/boards)
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
         Board board = boardService.게시글추가(requestDTO);
@@ -1296,7 +1293,6 @@ public class BoardRequest {
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 24] board/BoardController.java. 게시글 수정
-    // 수정 (PUT /api/boards/1)
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
                                     @RequestBody BoardRequest.UpdateDTO requestDTO) {
@@ -1312,7 +1308,6 @@ public class BoardRequest {
 `board/BoardService.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 25] board/BoardService.java. 게시글 삭제
-    // 조회한 게시글을 넘겨 삭제한다
     @Transactional
     public void 게시글삭제(Integer boardId) {
         Board board = boardRepository.findById(boardId);
@@ -1323,7 +1318,6 @@ public class BoardRequest {
 `board/BoardController.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 26] board/BoardController.java. 게시글 삭제
-    // 삭제 (DELETE /api/boards/1)
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
         boardService.게시글삭제(boardId);

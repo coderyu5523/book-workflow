@@ -223,7 +223,6 @@ public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
 
-        // 로그인 유저와 대상 게시글을 받아 엔티티로 만든다
         public Reply toEntity(User user, Board board) {
             return Reply.builder()
                     .comment(comment)
@@ -264,9 +263,13 @@ public class ReplyService {
     private final ReplyRepository replyRepository;
     private final BoardRepository boardRepository;
 
-    // 대상 게시글을 찾아 댓글을 연결해 저장한다
     @Transactional
     public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User loginUser) {
+        // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
+        // 2. 댓글을 달 게시글을 찾아 연결한다
         Board board = boardRepository.findById(requestDTO.boardId())
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         Reply reply = requestDTO.toEntity(loginUser, board);
@@ -276,7 +279,7 @@ public class ReplyService {
 }
 ```
 
-`boardId`로 댓글을 달 게시글을 찾아, 없으면 **Exception404**를 발생시키고, 있으면 `toEntity()`로 로그인 유저와 찾은 게시글을 붙인 댓글을 만들어 저장합니다.
+챕터 4의 게시글 쓰기와 순서가 같습니다. 로그인하지 않은 요청이면 **Exception401**을 발생시키고, `boardId`로 댓글을 달 게시글을 찾아 없으면 **Exception404**를 발생시키며, 있으면 `toEntity()`로 로그인 유저와 찾은 게시글을 붙인 댓글을 만들어 저장합니다.
 
 요청을 받을 컨트롤러를 만듭니다. `reply/ReplyController.java`를 열고 아래 코드를 작성합니다.
 
@@ -288,58 +291,54 @@ public class ReplyController {
 
     private final ReplyService replyService;
 
-    // 댓글 작성 (POST /api/replies)
     @PostMapping
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody ReplyRequest.SaveDTO requestDTO) {
         User loginUser = (User) request.getAttribute("loginUser");
-        if (loginUser == null) {
-            throw new Exception401("로그인이 필요합니다");
-        }
         ReplyResponse.DTO respDTO = replyService.댓글쓰기(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 }
 ```
 
-`request.getAttribute("loginUser")`로 로그인 유저를 꺼내 작성자로 지정합니다. 챕터 4에서 필터가 담아 둔 유저입니다. 게시글 쓰기와 마찬가지로 담긴 유저가 없으면 로그인하지 않은 요청이므로 **Exception401**을 발생시켜 막습니다.
+`request.getAttribute("loginUser")`로 로그인 유저를 꺼내 서비스로 넘깁니다. 챕터 4에서 필터가 담아 둔 유저입니다. 게시글 쓰기와 마찬가지로 꺼낸 유저가 null이어도 그대로 넘기고, 막을지 말지는 서비스가 정합니다.
 
 ## 5.4 댓글 삭제
 
 삭제는 작성자 본인만 할 수 있습니다. `reply/ReplyService.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 9] reply/ReplyService.java. 댓글 삭제
-    // 작성자 본인만 지울 수 있다
     @Transactional
-    public void 댓글삭제(Integer replyId, Integer loginUserId) {
+    public void 댓글삭제(Integer replyId, User loginUser) {
+        // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
         Reply reply = replyRepository.findById(replyId)
                 .orElseThrow(() -> new Exception404("댓글을 찾을 수 없습니다"));
-        if (!reply.getUser().getId().equals(loginUserId)) {
+        // 2. 작성자 본인이 아니면 막는다
+        if (!reply.getUser().getId().equals(loginUser.getId())) {
             throw new Exception403("댓글을 삭제할 권한이 없습니다");
         }
         replyRepository.delete(reply);
     }
 ```
 
-대상이 게시글에서 댓글로 바뀌었을 뿐, 작성자 아이디를 견주는 소유자 검증은 챕터 4와 똑같습니다.
+대상이 게시글에서 댓글로 바뀌었을 뿐, 로그인 확인과 작성자 아이디를 견주는 소유자 검증은 챕터 4와 똑같습니다.
 
 `reply/ReplyController.java`에 아래 메서드를 추가합니다.
 
 ```java [실습 10] reply/ReplyController.java. 댓글 삭제 엔드포인트
-    // 댓글 삭제 (DELETE /api/replies/1)
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
         User loginUser = (User) request.getAttribute("loginUser");
-        if (loginUser == null) {
-            throw new Exception401("로그인이 필요합니다");
-        }
-        replyService.댓글삭제(replyId, loginUser.getId());
+        replyService.댓글삭제(replyId, loginUser);
         return Resp.ok(null);
     }
 ```
 
-삭제는 돌려줄 데이터가 없으므로 `Resp.ok(null)`로 성공만 알립니다. 로그인 확인을 통과하면 로그인 유저의 아이디만 소유자 검증에 넘깁니다. 게시글과 똑같이 댓글도 로그인하지 않으면 401에서, 작성자가 아니면 403에서 막힙니다.
+삭제는 돌려줄 데이터가 없으므로 `Resp.ok(null)`로 성공만 알립니다. 꺼낸 유저는 그대로 서비스에 넘깁니다. 게시글과 똑같이 댓글도 로그인하지 않으면 401에서, 작성자가 아니면 403에서 막힙니다.
 
 ## 5.5 지연 로딩과 프록시
 
@@ -595,7 +594,7 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
 
 **DetailDTO**에 댓글 목록이 더해졌습니다. `board.getReplies()`로 게시글에 달린 댓글을 꺼내 각각을 안쪽의 **ReplyDTO**로 바꿔 담으므로, 게시글 상세 API를 호출하면 게시글 정보와 댓글 목록이 응답 하나에 함께 담깁니다. 댓글에도 작성자 본인인지를 알려 주는 값이 필요하므로, **ReplyDTO**도 같은 방식으로 두 아이디를 견줘 `isOwner`를 채웁니다. 화면은 이 값으로 본인이 쓴 댓글에만 삭제 버튼을 보여 줍니다.
 
-서비스는 챕터 4에서 이미 `loginUserId`를 받고 있으므로 조회 메서드만 바꿉니다. `board/BoardService.java`의 상세 메서드를 아래처럼 고칩니다.
+서비스는 챕터 4에서 이미 `loginUser`를 받고 있으므로 조회 메서드만 바꿉니다. `board/BoardService.java`의 상세 메서드를 아래처럼 고칩니다.
 
 ```java [실습 17] board/BoardService.java. 상세 조회를 fetch join으로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
@@ -605,9 +604,9 @@ select ... from user_tb  where id=?        # 댓글 작성자(reply.user)는 laz
     }
 ```
 
-조회를 `findByIdJoinUserAndReply()`로 바꿉니다. 앞에서 본 fetch join 조회라 게시글과 작성자, 댓글을 한 번에 가져옵니다. 가져온 게시글과 `loginUserId`를 **DetailDTO**에 넘기면 댓글 목록과 `isOwner`가 채워집니다.
+조회를 `findByIdJoinUserAndReply()`로 바꿉니다. 앞에서 본 fetch join 조회라 게시글과 작성자, 댓글을 한 번에 가져옵니다. 가져온 게시글과 `loginUser`를 **DetailDTO**에 넘기면 댓글 목록과 `isOwner`가 채워집니다.
 
-컨트롤러는 챕터 4에서 이미 로그인 유저를 꺼내 `loginUserId`를 넘기도록 고쳤으므로 그대로 둡니다. 로그인하지 않은 요청은 null이 넘어가므로 게시글과 댓글의 `isOwner`가 모두 false로 담깁니다.
+컨트롤러는 챕터 4에서 이미 로그인 유저를 꺼내 넘기도록 고쳤으므로 그대로 둡니다. 로그인하지 않은 요청은 null이 넘어가므로 게시글과 댓글의 `isOwner`가 모두 false로 담깁니다.
 
 이제 ssar로 로그인해 게시글 상세 API를 호출하면 결과를 확인할 수 있습니다.
 

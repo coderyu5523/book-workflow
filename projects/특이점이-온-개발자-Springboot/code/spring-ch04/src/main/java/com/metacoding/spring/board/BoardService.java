@@ -27,17 +27,25 @@ public class BoardService {
 
     @Transactional
     public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO, User loginUser) {
+        // 로그인 확인
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
         Board board = requestDTO.toEntity(loginUser); // DTO -> 엔티티 (작성자 연결)
         boardRepository.save(board);
         return new BoardResponse.DTO(board);
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO, Integer loginUserId) {
+    public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO, User loginUser) {
+        // 로그인 확인
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
         Board board = boardRepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         // 작성자 본인 확인 (Integer 는 equals 로 비교)
-        if (!board.getUser().getId().equals(loginUserId)) {
+        if (!board.getUser().getId().equals(loginUser.getId())) {
             throw new Exception403("게시글을 수정할 권한이 없습니다");
         }
         board.setTitle(requestDTO.title()); // 더티 체킹
@@ -46,10 +54,14 @@ public class BoardService {
     }
 
     @Transactional
-    public void 게시글삭제(Integer boardId, Integer loginUserId) {
+    public void 게시글삭제(Integer boardId, User loginUser) {
+        // 로그인 확인
+        if (loginUser == null) {
+            throw new Exception401("로그인이 필요합니다");
+        }
         Board board = boardRepository.findByIdJoinUser(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        if (!board.getUser().getId().equals(loginUserId)) {
+        if (!board.getUser().getId().equals(loginUser.getId())) {
             throw new Exception403("게시글을 삭제할 권한이 없습니다");
         }
         boardRepository.delete(board);

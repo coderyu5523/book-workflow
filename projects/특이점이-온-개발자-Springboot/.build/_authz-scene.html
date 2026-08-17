@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>인증과 인가 장면 (그림 4-4 교체용)</title>
+<style>
+  body { font-family: "Pretendard","Malgun Gothic",system-ui,sans-serif; color:#0f172a; background:#f1f5f9; margin:0; padding:40px; }
+  h1 { font-size:22px; margin:0 0 8px; }
+  p.lead { color:#475569; margin:0 0 32px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:24px 28px; margin:0 0 28px; }
+  .card h2 { font-size:16px; margin:0 0 4px; color:#3730a3; }
+  .card .desc { color:#64748b; font-size:13px; margin:0 0 16px; }
+  .card .note { text-align:center; color:#334155; font-size:13px; margin-top:12px; font-style:italic; }
+  svg { display:block; width:100%; height:auto; margin:0 auto; }
+  .half svg { max-width:420px; }
+  .full svg { max-width:760px; }
+</style>
+</head>
+<body>
+<h1>인증 패널 후보 (그림 4-4 왼쪽)</h1>
+<p class="lead">오른쪽 인가 패널(맨 아래)은 그대로 두고, 왼쪽 인증 패널만 세 가지로 그렸습니다. 하나 골라 주세요.</p>
+
+<div class="card half">
+<h2>A. 통과한 사람과 막힌 사람</h2>
+<p class="desc">사원증을 목에 건 사람은 게이트 너머에 있고, 빈손인 사람은 차단바 앞에서 멈춰 있다. 오른쪽 인가 패널의 "열린 문 / 잠긴 문"과 같은 문법으로 읽힌다.</p>
+<svg viewBox="0 0 410 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게이트 앞에 빈손인 사람이 차단바에 막혀 서 있고, 머리 위에 물음표가 떠 있다. 게이트 너머에는 사원증을 목에 건 사람이 서 있다.">
+  <rect x="30" y="26" width="350" height="252" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <path d="M38,26 H372 a8,8 0 0 1 8,8 V66 H30 V34 a8,8 0 0 1 8,-8 z" fill="#eef2ff"/>
+  <line x1="30" y1="66" x2="380" y2="66" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="205" y="53" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">인증</text>
+  <line x1="50" y1="262" x2="360" y2="262" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="88" y="128" text-anchor="middle" font-size="28" font-weight="800" fill="#4f46e5">?</text>
+  <circle cx="88" cy="162" r="18" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <path d="M60,262 v-42 a28,28 0 0 1 56,0 v42 z" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <rect x="152" y="198" width="34" height="64" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <rect x="150" y="168" width="38" height="30" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <rect x="160" y="176" width="18" height="14" rx="2" fill="#fff" stroke="#4f46e5" stroke-width="1.2"/>
+  <rect x="252" y="198" width="34" height="64" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <rect x="186" y="214" width="66" height="11" rx="5.5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <circle cx="322" cy="162" r="18" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <path d="M296,262 v-42 a26,26 0 0 1 52,0 v42 z" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <line x1="322" y1="180" x2="322" y2="196" stroke="#94a3b8" stroke-width="1.3"/>
+  <rect x="306" y="196" width="33" height="23" rx="3" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <circle cx="315" cy="206" r="4.5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1"/>
+  <rect x="323" y="202" width="11" height="3" rx="1.5" fill="#cbd5e1"/>
+  <rect x="323" y="209" width="8" height="3" rx="1.5" fill="#cbd5e1"/>
+</svg>
+</div>
+
+<div class="card half">
+<h2>B. 리더에 대자 이름이 뜬다</h2>
+<p class="desc">사원증을 카드 리더에 대면 게이트 화면에 이름이 떠오르고 차단바가 접혀 열린다. "신원이 밝혀졌다"는 결과가 화면 글자로 보인다.</p>
+<svg viewBox="0 0 410 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="사람이 사원증을 게이트의 카드 리더에 대자 게이트 화면에 ssar이라는 이름이 떠오르고, 차단바가 기둥 안으로 접혀 통로가 열려 있다.">
+  <rect x="30" y="26" width="350" height="252" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <path d="M38,26 H372 a8,8 0 0 1 8,8 V66 H30 V34 a8,8 0 0 1 8,-8 z" fill="#eef2ff"/>
+  <line x1="30" y1="66" x2="380" y2="66" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="205" y="53" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">인증</text>
+  <line x1="50" y1="262" x2="360" y2="262" stroke="#cbd5e1" stroke-width="1.6"/>
+  <circle cx="86" cy="158" r="19" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <path d="M56,262 v-44 a30,30 0 0 1 60,0 v44 z" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <line x1="114" y1="200" x2="146" y2="188" stroke="#475569" stroke-width="3" stroke-linecap="round"/>
+  <rect x="140" y="172" width="36" height="25" rx="3" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
+  <circle cx="149" cy="182" r="4.5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1"/>
+  <rect x="157" y="178" width="12" height="3" rx="1.5" fill="#cbd5e1"/>
+  <rect x="157" y="186" width="9" height="3" rx="1.5" fill="#cbd5e1"/>
+  <rect x="186" y="196" width="38" height="66" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <rect x="184" y="164" width="42" height="32" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <rect x="192" y="170" width="26" height="20" rx="2" fill="#fff" stroke="#4f46e5" stroke-width="1.2"/>
+  <text x="205" y="185" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">ssar</text>
+  <rect x="228" y="216" width="16" height="10" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <line x1="248" y1="221" x2="300" y2="221" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <rect x="306" y="196" width="38" height="66" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+</svg>
+</div>
+
+<div class="card half">
+<h2>C. 얼굴과 사원증을 견준다</h2>
+<p class="desc">게이트 앞에서 사원증의 얼굴과 실제 얼굴을 돋보기로 견주는 장면. "누구인가"를 가장 직접적으로 그린다.</p>
+<svg viewBox="0 0 410 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게이트 앞에 선 사람의 얼굴과 크게 그려진 사원증의 얼굴이 점선으로 이어져 있고, 사원증 얼굴 위에 돋보기가 놓여 있다.">
+  <rect x="30" y="26" width="350" height="252" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <path d="M38,26 H372 a8,8 0 0 1 8,8 V66 H30 V34 a8,8 0 0 1 8,-8 z" fill="#eef2ff"/>
+  <line x1="30" y1="66" x2="380" y2="66" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="205" y="53" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">인증</text>
+  <line x1="50" y1="262" x2="360" y2="262" stroke="#cbd5e1" stroke-width="1.6"/>
+  <rect x="300" y="196" width="30" height="66" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <rect x="344" y="196" width="30" height="66" fill="#f1f5f9" stroke="#475569" stroke-width="1.7"/>
+  <rect x="328" y="212" width="18" height="10" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <circle cx="94" cy="140" r="26" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <circle cx="85" cy="135" r="3" fill="#475569"/>
+  <circle cx="103" cy="135" r="3" fill="#475569"/>
+  <path d="M84,150 a12,12 0 0 0 20,0" fill="none" stroke="#475569" stroke-width="1.6"/>
+  <path d="M56,262 v-48 a38,38 0 0 1 76,0 v48 z" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <rect x="182" y="120" width="94" height="112" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
+  <rect x="182" y="120" width="94" height="24" rx="6" fill="#eef2ff"/>
+  <line x1="182" y1="144" x2="276" y2="144" stroke="#4f46e5" stroke-width="1.3"/>
+  <circle cx="229" cy="176" r="20" fill="#fff" stroke="#4f46e5" stroke-width="1.5"/>
+  <circle cx="222" cy="172" r="2.4" fill="#4f46e5"/>
+  <circle cx="236" cy="172" r="2.4" fill="#4f46e5"/>
+  <path d="M221,184 a10,10 0 0 0 16,0" fill="none" stroke="#4f46e5" stroke-width="1.4"/>
+  <rect x="199" y="206" width="60" height="6" rx="3" fill="#cbd5e1"/>
+  <rect x="209" y="218" width="40" height="6" rx="3" fill="#e2e8f0"/>
+  <line x1="122" y1="146" x2="176" y2="164" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <circle cx="252" cy="152" r="21" fill="none" stroke="#475569" stroke-width="2.6"/>
+  <line x1="266" y1="168" x2="284" y2="188" stroke="#475569" stroke-width="4.5" stroke-linecap="round"/>
+</svg>
+</div>
+
+<div class="card full">
+<h2>참고 · 오른쪽 인가 패널 (확정)</h2>
+<p class="desc">고른 인증 패널을 이 오른쪽과 붙여 그림 4-4를 완성합니다.</p>
+<svg viewBox="0 0 410 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="개발팀 사원증을 목에 건 사람 앞에 문이 둘 있고, 개발팀이라 적힌 문은 열려 있으며 인사팀이라 적힌 문에는 자물쇠가 걸려 있다.">
+  <rect x="30" y="26" width="350" height="252" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <path d="M38,26 H372 a8,8 0 0 1 8,8 V66 H30 V34 a8,8 0 0 1 8,-8 z" fill="#fff7ed"/>
+  <line x1="30" y1="66" x2="380" y2="66" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="205" y="53" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">인가</text>
+  <line x1="50" y1="262" x2="360" y2="262" stroke="#cbd5e1" stroke-width="1.6"/>
+  <circle cx="84" cy="150" r="20" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <path d="M54,262 v-46 a30,30 0 0 1 60,0 v46 z" fill="#fff" stroke="#475569" stroke-width="1.7"/>
+  <line x1="84" y1="188" x2="84" y2="204" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="58" y="204" width="52" height="30" rx="4" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="84" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">개발팀</text>
+  <rect x="156" y="118" width="86" height="144" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <path d="M160,122 L182,132 L182,248 L160,258 z" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <rect x="158" y="94" width="82" height="22" rx="3" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="199" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">개발팀</text>
+  <rect x="274" y="118" width="86" height="144" fill="#f1f5f9" stroke="#475569" stroke-width="1.8"/>
+  <line x1="280" y1="124" x2="280" y2="256" stroke="#cbd5e1" stroke-width="1.4"/>
+  <circle cx="350" cy="196" r="3.5" fill="#475569"/>
+  <rect x="274" y="94" width="86" height="22" rx="3" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="317" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">인사팀</text>
+  <rect x="304" y="182" width="30" height="24" rx="3" fill="#e2e8f0" stroke="#475569" stroke-width="1.7"/>
+  <path d="M310,182 v-8 a9,9 0 0 1 18,0 v8" fill="none" stroke="#475569" stroke-width="2.4"/>
+  <circle cx="319" cy="194" r="3" fill="#475569"/>
+</svg>
+</div>
+
+</body>
+</html>

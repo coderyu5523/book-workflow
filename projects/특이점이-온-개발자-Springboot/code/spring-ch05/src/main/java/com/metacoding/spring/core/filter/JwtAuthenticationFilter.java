@@ -9,7 +9,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import lombok.RequiredArgsConstructor;
 import java.io.IOException;
 
-// 토큰이 유효하면 로그인 유저를 request attribute("loginUser")에 담아둔다. (차단하지 않음 - 인가는 컨트롤러·서비스 담당)
+// 토큰이 유효하면 로그인 유저를 request attribute("loginUser")에 담아둔다. (차단하지 않음 - 인가는 서비스 담당)
 @RequiredArgsConstructor
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

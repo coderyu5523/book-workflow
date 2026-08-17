@@ -11,14 +11,12 @@ public class UserController {
 
     private final UserService userService;
 
-    // 회원가입
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody UserRequest.SaveDTO requestDTO) {
         UserResponse.DTO respDTO = userService.회원가입(requestDTO);
         return Resp.ok(respDTO);
     }
 
-    // 로그인 -> JWT 발급
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserRequest.LoginDTO requestDTO) {
         String accessToken = userService.로그인(requestDTO);

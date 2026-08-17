@@ -195,7 +195,6 @@ public class Board {
 ```java [실습 3] board/BoardRequest.java. 요청 DTO에 toEntity 추가
     public record SaveDTO(String title, String content) {
 
-        // 빌더로 요청 값을 엔티티에 옮겨 담는다
         public Board toEntity() {
             return Board.builder()
                     .title(title())
@@ -239,7 +238,6 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 예외 처리에 사용할 **Exception404**를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 5] core/handler/ex/Exception404.java. 커스텀 예외
-// 자원을 찾을 수 없을 때 (HTTP 404)
 public class Exception404 extends RuntimeException {
     public Exception404(String message) {
         super(message);
@@ -378,28 +376,24 @@ public class GlobalExceptionHandler {
 컨트롤러는 서비스에서 받는 값의 타입만 DTO로 바뀝니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
 
 ```java [실습 8] board/BoardController.java. 응답 타입을 DTO로
-    // 게시글 목록
     @GetMapping
     public ResponseEntity<?> findAll() {
         List<BoardResponse.DTO> respDTOList = boardService.게시글목록();
         return Resp.ok(respDTOList);
     }
 
-    // 게시글 상세
     @GetMapping("/{boardId}")
     public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
         BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId);
         return Resp.ok(respDTO);
     }
 
-    // 게시글 쓰기
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
         BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO);
         return Resp.ok(respDTO);
     }
 
-    // 게시글 수정
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
             @RequestBody BoardRequest.UpdateDTO requestDTO) {
@@ -407,7 +401,6 @@ public class GlobalExceptionHandler {
         return Resp.ok(respDTO);
     }
 
-    // 게시글 삭제
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
         boardService.게시글삭제(boardId);
