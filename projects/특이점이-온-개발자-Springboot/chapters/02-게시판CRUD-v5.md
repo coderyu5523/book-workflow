@@ -336,7 +336,7 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 
 가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.
 
-`board/Board.java`를 열고 아래 코드를 작성합니다.
+`board/Board.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 1] board/Board.java. 게시글 엔티티
 @Data // 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다
@@ -355,15 +355,15 @@ public class Board {
 }
 ```
 
-애플리케이션이 실행될 때 하이버네이트가 이 클래스 정의를 바탕으로 **board_tb** 테이블을 만듭니다.
+애플리케이션이 실행될 때 하이버네이트가 이 클래스 정의를 바탕으로 **board_tb** 테이블을 생성합니다.
 
 :::tip
 **필드는 카멜, 컬럼은 스네이크로 만들어집니다**
 
-엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 만들어집니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 바꿔 주므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
+엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 생성됩니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 변환하므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
 :::
 
-이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다. `resources/db/data.sql`을 열고 아래 코드를 작성합니다.
+이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다. 이를 위해 `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
 
 ```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
 insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
@@ -499,7 +499,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 
 ### 2.4.3 ORM과 JPA, 하이버네이트
 
-이 번역을 대신해 주는 기술이 ORM입니다. 개발자는 객체만 다루고, 객체와 표 사이를 오가는 SQL은 ORM이 만듭니다. 자바 진영은 ORM을 JPA라는 표준으로 정리했고, 하이버네이트가 그 구현입니다.
+이 번역을 대신해 주는 기술이 ORM입니다. 개발자는 객체만 다루고, 객체와 표 사이를 오가는 SQL은 ORM이 생성합니다. 자바 진영은 ORM을 JPA라는 표준으로 정리했고, 하이버네이트가 그 구현입니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자바 객체에서 ORM으로, ORM에서 SQL로 바뀌어 데이터베이스에 전달되고, 조회 결과는 다시 객체가 되어 돌아온다.">
@@ -535,9 +535,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 
 엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 맡습니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.
 
-리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 스프링이 빈으로 등록해 두므로 직접 만들지 않고 생성자로 주입받아 사용합니다.
-
-`board/BoardRepository.java`를 열고 아래 코드를 작성합니다.
+리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 스프링이 빈으로 등록해 두므로 직접 생성하지 않고 생성자로 주입받아 사용합니다. 이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 3] board/BoardRepository.java. 리포지토리 골격
 @RequiredArgsConstructor
@@ -552,7 +550,7 @@ public class BoardRepository {
 
 ### 2.5.1 게시글 한 건 조회
 
-**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 어떤 엔티티를 찾을지 클래스 타입을 넘기고, 두 번째 인자로 찾을 기본 키 값을 넘깁니다. **Board** 엔티티 한 건을 반환합니다.
+**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 조회할 엔티티의 클래스 타입을 전달하고, 두 번째 인자로 조회할 기본 키 값을 전달합니다. **Board** 엔티티 한 건을 반환합니다.
 
 `board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
 
@@ -700,7 +698,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-16. 처음 조회는 캐시에 없어 데이터베이스까지 가서 읽어 온 뒤 영속화합니다*
 
-같은 게시글을 한 번 더 조회하면 데이터베이스에 가지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 돌려줍니다.
+같은 게시글을 한 번 더 조회하면 데이터베이스에 접근하지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 반환합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 게시글을 다시 em.find로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려주고 데이터베이스에는 접근하지 않는다.">
@@ -943,7 +941,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 ## 2.9 리포지토리 테스트 작성
 
-`test/.../BoardRepositoryTest.java`를 열고 먼저 클래스 골격을 작성합니다.
+`test/.../BoardRepositoryTest.java`를 열어 먼저 클래스 골격을 아래와 같이 작성합니다.
 
 ```java [실습 8] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class)
@@ -1122,9 +1120,7 @@ public class BoardRepositoryTest {
 
 ## 2.11 게시글 목록
 
-먼저 서비스와 컨트롤러의 골격을 만듭니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.
-
-`board/BoardService.java`를 열고 아래 코드를 작성합니다.
+먼저 서비스와 컨트롤러의 골격을 작성합니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다. 이를 위해 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 14] board/BoardService.java. 서비스 골격
 @RequiredArgsConstructor
@@ -1137,7 +1133,7 @@ public class BoardService {
 }
 ```
 
-목록 조회 메서드를 채웁니다. 리포지토리의 `findAll()`을 그대로 호출해 결과를 돌려줍니다.
+목록 조회 메서드를 채웁니다. 리포지토리의 `findAll()`을 그대로 호출해 결과를 반환합니다.
 
 ```java [실습 15] board/BoardService.java. 게시글 목록
     public List<Board> 게시글목록() {
@@ -1145,7 +1141,7 @@ public class BoardService {
     }
 ```
 
-이제 요청을 받을 컨트롤러를 만듭니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
+이어서 요청을 받을 컨트롤러를 작성합니다. 이를 위해 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 16] board/BoardController.java. 컨트롤러 골격
 @RequiredArgsConstructor
@@ -1159,7 +1155,7 @@ public class BoardController {
 }
 ```
 
-목록 조회 메서드를 채웁니다. 서비스의 `게시글목록()`을 호출해 결과를 돌려줍니다.
+목록 조회 메서드를 채웁니다. 서비스의 `게시글목록()`을 호출해 결과를 반환합니다.
 
 ```java [실습 17] board/BoardController.java. 게시글 목록
     @GetMapping
@@ -1169,7 +1165,7 @@ public class BoardController {
     }
 ```
 
-**@RestController**는 반환값을 JSON으로 내보내고, **@RequestMapping**이 공통 주소를 정합니다. 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양이 됩니다.
+**@RestController**는 반환값을 JSON으로 내보내고, **@RequestMapping**이 공통 주소를 지정합니다. 반환값은 모두 `Resp.ok(...)`로 감쌉니다. `core/util/Resp.java`에 준비된 공통 래퍼로, 어떤 요청이든 응답이 `status`·`msg`·`body` 세 필드를 가진 같은 모양이 됩니다.
 
 이제 애플리케이션을 실행하고 목록을 조회해 보겠습니다.
 
@@ -1196,9 +1192,7 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
 
 ## 2.12 게시글 상세
 
-상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById()`를 호출합니다.
-
-`board/BoardService.java`에 아래 메서드를 추가합니다.
+상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById()`를 호출합니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 18] board/BoardService.java. 게시글 상세
     public Board 게시글상세(Integer boardId) {
@@ -1206,9 +1200,7 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
     }
 ```
 
-컨트롤러는 주소에 담긴 게시글 번호를 받아 서비스로 넘깁니다. 주소의 `{boardId}` 자리에 들어온 값은 **@PathVariable**로 꺼냅니다.
-
-`board/BoardController.java`에 아래 메서드를 추가합니다.
+컨트롤러는 주소에 담긴 게시글 번호를 받아 서비스로 전달합니다. 주소의 `{boardId}` 자리에 들어온 값은 **@PathVariable**로 꺼냅니다. 이를 반영하여 `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 19] board/BoardController.java. 상세 조회
     @GetMapping("/{boardId}")
@@ -1222,7 +1214,7 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
 
 작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 들어온 값을 받을 클래스가 필요합니다. 계층 사이에서 데이터를 전달하는 이 클래스를 DTO(Data Transfer Object)라고 합니다.
 
-`board/BoardRequest.java`를 열고 아래 코드를 작성합니다.
+`board/BoardRequest.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 20] board/BoardRequest.java. 요청 데이터 DTO
 public class BoardRequest {
@@ -1234,9 +1226,9 @@ public class BoardRequest {
 }
 ```
 
-`record`는 값만 담는 클래스를 짧게 정의하는 자바 문법입니다. 저장과 수정은 서로 다른 요청이라, 지금은 필드가 같아도 DTO를 나눠 둡니다.
+`record`는 값만 담는 클래스를 짧게 정의하는 자바 문법입니다. 저장과 수정은 서로 다른 요청이므로, 지금은 필드가 같아도 DTO를 나눠 둡니다.
 
-서비스는 DTO로 받은 값을 새 엔티티에 옮겨 담아 저장합니다.
+서비스는 DTO로 받은 값을 새 엔티티에 옮겨 담아 저장합니다. `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 21] board/BoardService.java. 게시글 쓰기
     // 1. 새 엔티티를 만들어 값을 채우고 저장한다
@@ -1250,7 +1242,7 @@ public class BoardRequest {
     }
 ```
 
-`new Board()`로 만든 엔티티는 비영속 상태이고, `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다.
+`new Board()`로 생성한 엔티티는 비영속 상태이고, `boardRepository.save(board)`를 호출하는 순간 영속 상태가 됩니다.
 
 :::tip
 **트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
@@ -1258,7 +1250,7 @@ public class BoardRequest {
 트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 **@Transactional**을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.
 :::
 
-컨트롤러는 요청 바디의 JSON을 **@RequestBody**로 받아 DTO에 담습니다.
+컨트롤러는 요청 바디의 JSON을 **@RequestBody**로 받아 DTO에 담습니다. `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 22] board/BoardController.java. 게시글 쓰기
     @PostMapping
@@ -1268,13 +1260,11 @@ public class BoardRequest {
     }
 ```
 
-저장한 게시글을 응답 바디에 담아 돌려줍니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
+저장한 게시글을 응답 바디에 담아 반환합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
 
 ## 2.14 게시글 수정
 
-수정할 게시글을 먼저 조회합니다. 영속 상태인 엔티티라야 값을 바꿨을 때 변경이 감지되기 때문입니다.
-
-`board/BoardService.java`에 아래 메서드를 추가합니다.
+수정할 게시글을 먼저 조회합니다. 영속 상태인 엔티티라야 값을 바꿨을 때 변경이 감지되기 때문입니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 23] board/BoardService.java. 더티체킹으로 수정
     // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
@@ -1288,9 +1278,7 @@ public class BoardRequest {
     } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
 ```
 
-값을 바꾸기만 했는데도, **@Transactional**이 끝날 때 `flush()`가 스냅샷과 지금 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
-
-`board/BoardController.java`에 아래 메서드를 추가합니다.
+값을 변경하기만 했는데도, **@Transactional**이 끝날 때 `flush()`가 스냅샷과 현재 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다. 이어서 `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 24] board/BoardController.java. 게시글 수정
     @PutMapping("/{boardId}")
@@ -1303,9 +1291,7 @@ public class BoardRequest {
 
 ## 2.15 게시글 삭제
 
-삭제는 지울 엔티티를 먼저 조회해 리포지토리에 넘깁니다.
-
-`board/BoardService.java`에 아래 메서드를 추가합니다.
+삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 25] board/BoardService.java. 게시글 삭제
     @Transactional
@@ -1315,7 +1301,7 @@ public class BoardRequest {
     }
 ```
 
-`board/BoardController.java`에 아래 메서드를 추가합니다.
+`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 26] board/BoardController.java. 게시글 삭제
     @DeleteMapping("/{boardId}")
@@ -1325,20 +1311,20 @@ public class BoardRequest {
     }
 ```
 
-삭제는 돌려줄 데이터가 없으므로 `Resp.ok(null)`로 성공만 알립니다.
+삭제는 반환할 데이터가 없으므로 `Resp.ok(null)`로 성공만 응답합니다.
 
 
 ## 2.16 요청 처리 흐름
 
 지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 요청을 보낸 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.
 
-먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 만든 뒤, 미리 만들어 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 만들지 않고 빌려 쓴 다음 반납하는 방식이라, 요청이 몰려도 서버가 감당할 수 있습니다.
+먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 생성한 뒤, 미리 준비해 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 생성하지 않고 빌려 쓴 다음 반납하는 방식이므로, 요청이 몰려도 서버가 감당할 수 있습니다.
 
 요청은 스프링 컨테이너로 넘어갑니다. 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
 
-컨트롤러는 요청에서 값을 꺼내 서비스로 넘깁니다. 서비스에서는 **@Transactional**이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush()`가 일어나는 지점이 이 순간입니다.
+컨트롤러는 요청에서 값을 꺼내 서비스로 전달합니다. 서비스에서는 **@Transactional**이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush()`가 일어나는 지점이 이 순간입니다.
 
-서비스는 리포지토리를 호출하고, 리포지토리는 **EntityManager**로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 만들어진 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 커넥션 풀(Connection Pool)에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지라, 요청마다 새로 맺지 않고 미리 만들어 둔 것을 빌려 쓴 뒤 반납합니다.
+서비스는 리포지토리를 호출하고, 리포지토리는 **EntityManager**로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 생성된 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 커넥션 풀(Connection Pool)에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지로, 요청마다 새로 맺지 않고 미리 준비해 둔 것을 빌려 쓴 뒤 반납합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청이 지나는 전체 경로. 윗줄에서 클라이언트가 톰캣으로 요청을 보내고, 톰캣은 스레드 풀에서 스레드를 꺼내 디스패처 서블릿으로 넘기며, 디스패처 서블릿이 담당 컨트롤러를 호출한다. 컨트롤러는 아랫줄의 서비스를 호출하고, 서비스에서 트랜잭션이 열린 채 리포지토리를 거쳐 영속성 컨텍스트로 전달된다. 영속성 컨텍스트가 만든 SQL은 커넥션 풀에서 빌린 연결로 데이터베이스에 전달된다.">
@@ -1398,7 +1384,7 @@ public class BoardRequest {
 
 *없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
 
-없는 게시글을 조회하면 없는데도 성공이라 답하며 빈 값을 돌려줍니다. 다음 챕터에서는 없는 게시글을 404로 바로잡고, 엔티티가 응답에 그대로 실리지 않도록 DTO로 정리합니다.
+없는 게시글을 조회하면 없는데도 성공이라 응답하며 빈 값을 반환합니다. 다음 챕터에서는 없는 게시글을 404로 바로잡고, 엔티티가 응답에 그대로 실리지 않도록 DTO로 정리합니다.
 
 :::remember
 **이것만은 기억하자**

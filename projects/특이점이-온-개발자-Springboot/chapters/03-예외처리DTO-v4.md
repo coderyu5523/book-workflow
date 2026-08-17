@@ -103,9 +103,9 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.1 DTO가 필요한 이유
 
-챕터 2의 컨트롤러는 **Board** 엔티티를 그대로 돌려주고, **@RestController**가 이를 JSON으로 바꿉니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.
+챕터 2의 컨트롤러는 **Board** 엔티티를 그대로 반환하고, **@RestController**가 이를 JSON으로 변환합니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.
 
-응답으로 내보낼 값만 담는 클래스를 따로 만들면, 컨트롤러는 엔티티 대신 이 클래스를 돌려줍니다. 챕터 2에서 요청을 받을 때 사용한 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.
+응답으로 내보낼 값만 담는 클래스를 따로 정의하면, 컨트롤러는 엔티티 대신 이 클래스를 반환합니다. 챕터 2에서 요청을 받을 때 사용한 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽에 'DTO만 통과' 표지가 붙어 있다. 벽을 지나 오른쪽 응답에 담긴 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
@@ -139,7 +139,7 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.2 응답 DTO 만들기
 
-`board/BoardResponse.java`를 열고 아래 코드를 작성합니다.
+`board/BoardResponse.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 1] board/BoardResponse.java. 응답 DTO
 public class BoardResponse {
@@ -162,13 +162,13 @@ public class BoardResponse {
 }
 ```
 
-엔티티를 받는 생성자를 두었으므로 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 변환합니다. 응답 필드 이름이 `id`가 아니라 `boardId`인 것처럼, 응답에 담길 이름은 응답 DTO에서 따로 정합니다.
+엔티티를 받는 생성자를 두었으므로 서비스에서 `new BoardResponse.DTO(board)` 한 줄로 변환합니다. 응답 필드 이름이 `id`가 아니라 `boardId`인 것처럼, 응답에 담길 이름은 응답 DTO에서 따로 지정합니다.
 
 ## 3.2 요청 DTO와 엔티티 변환
 
 데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 객체, 곧 엔티티여야 합니다. **SaveDTO**는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 `toEntity()`를 둡니다.
 
-변환은 **Board**를 새로 만드는 일이라, 엔티티에 값을 받는 생성자가 먼저 필요합니다. `board/Board.java`에 생성자를 추가하고 **@Builder**를 붙입니다.
+변환은 **Board**를 새로 생성하는 작업이므로, 엔티티에 값을 받는 생성자가 먼저 필요합니다. 이를 위해 `board/Board.java`에 아래와 같이 생성자를 추가하고 **@Builder**를 붙입니다.
 
 ```java [실습 2] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor
@@ -188,9 +188,9 @@ public class Board {
 }
 ```
 
-명시 생성자를 만들면 자바가 자동으로 주던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 **@NoArgsConstructor**도 함께 붙입니다.
+명시 생성자를 선언하면 자바가 자동으로 제공하던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 **@NoArgsConstructor**도 함께 붙입니다.
 
-`board/BoardRequest.java`의 **SaveDTO**에 엔티티로 바꾸는 메서드를 추가합니다.
+`board/BoardRequest.java`의 **SaveDTO**에 엔티티로 변환하는 메서드를 아래와 같이 추가합니다.
 
 ```java [실습 3] board/BoardRequest.java. 요청 DTO에 toEntity 추가
     public record SaveDTO(String title, String content) {
@@ -208,9 +208,9 @@ public class Board {
 
 없는 게시글을 조회해도 예외가 발생하지 않아 서버는 정상 응답을 내보냅니다.
 
-이 결과를 예외로 바꾸려면 조회가 무엇을 돌려주는지부터 달라져야 합니다. 그래서 **JpaRepository**로 바꿉니다. **JpaRepository**는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, **Optional** 타입을 통해 예외 처리를 할 수 있습니다.
+이 결과를 예외로 바꾸려면 조회가 무엇을 반환하는지부터 달라져야 합니다. 그래서 **JpaRepository**로 바꿉니다. **JpaRepository**는 Spring Data JPA가 제공하는 리포지토리 인터페이스입니다. 이 인터페이스를 상속하면 기본 조회·저장·삭제 메서드를 그대로 사용할 수 있고, **Optional** 타입을 통해 예외 처리를 할 수 있습니다.
 
-`board/BoardRepository.java`를 열고 아래 코드로 바꿉니다.
+`board/BoardRepository.java`를 열어 아래와 같이 변경합니다.
 
 ```java [실습 4] board/BoardRepository.java. JpaRepository 상속
 public interface BoardRepository extends JpaRepository<Board, Integer> {
@@ -223,11 +223,11 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 | 메서드 | 하는 일 |
 |---|---|
-| `save(엔티티)` | 저장하고 저장된 엔티티를 돌려줍니다 |
-| `findById(기본 키)` | 기본 키로 한 건을 찾아 **Optional**에 담아 돌려줍니다 |
-| `findAll()` | 전체를 **List**로 돌려줍니다 |
+| `save(엔티티)` | 저장하고 저장된 엔티티를 반환합니다 |
+| `findById(기본 키)` | 기본 키로 한 건을 조회해 **Optional**에 담아 반환합니다 |
+| `findAll()` | 전체를 **List**로 반환합니다 |
 | `delete(엔티티)` | 삭제합니다 |
-| `findBy필드명(값)` | 직접 선언합니다. `findBy` 뒤 필드 이름을 보고 select 문이 만들어집니다 |
+| `findBy필드명(값)` | 직접 선언합니다. `findBy` 뒤 필드 이름을 보고 select 문이 생성됩니다 |
 
 ## 3.4 예외 처리 추가
 
@@ -235,7 +235,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 ### 3.4.1 커스텀 예외 만들기
 
-예외 처리에 사용할 **Exception404**를 만듭니다. `core/handler/ex/Exception404.java`를 열고 아래 코드를 작성합니다.
+예외 처리에 사용할 **Exception404**를 정의합니다. 이를 위해 `core/handler/ex/Exception404.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 5] core/handler/ex/Exception404.java. 커스텀 예외
 public class Exception404 extends RuntimeException {
@@ -247,7 +247,7 @@ public class Exception404 extends RuntimeException {
 
 상황에 맞게 직접 정의한 예외를 커스텀 예외라고 합니다. **RuntimeException**을 상속하면 이 예외를 사용하는 곳마다 `try-catch`를 적지 않아도 됩니다.
 
-같은 폴더의 **Exception400**, **Exception401**, **Exception403**도 상태 코드만 다를 뿐 모양이 같습니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 만들어 둡니다.
+같은 폴더의 **Exception400**, **Exception401**, **Exception403**도 상태 코드만 다를 뿐 형태가 동일합니다. 회원가입과 로그인, 권한을 다루는 다음 챕터에서 사용하므로 미리 준비해 둡니다.
 
 404는 HTTP 상태 코드입니다. 응답이 어떤 상황인지 세 자리 숫자로 알리는 약속입니다. 이 책에서 사용하는 것은 다음과 같습니다.
 
@@ -261,9 +261,9 @@ public class Exception404 extends RuntimeException {
 
 ### 3.4.2 전역 예외 처리
 
-다음으로 예외가 발생했을 때 처리할 핸들러를 만들어보겠습니다. **@RestControllerAdvice** 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.
+다음으로 예외가 발생했을 때 처리할 핸들러를 구현해 보겠습니다. **@RestControllerAdvice** 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.
 
-`core/handler/GlobalExceptionHandler.java`를 열고 아래 코드를 작성합니다.
+`core/handler/GlobalExceptionHandler.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 6] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
 @RestControllerAdvice
@@ -331,9 +331,7 @@ public class GlobalExceptionHandler {
 
 ## 3.5 서비스와 컨트롤러에 적용
 
-이제 **BoardService**를 예외 처리와 DTO 응답을 할 수 있게 수정합니다.
-
-`board/BoardService.java`를 열고 아래 코드를 작성합니다.
+이제 **BoardService**가 예외 처리와 DTO 응답을 수행하도록 변경합니다. 이를 반영하여 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 7] board/BoardService.java. 반환 타입을 DTO로, 없으면 예외
     public List<BoardResponse.DTO> 게시글목록() {
@@ -373,7 +371,7 @@ public class GlobalExceptionHandler {
     }
 ```
 
-컨트롤러는 서비스에서 받는 값의 타입만 DTO로 바뀝니다. `board/BoardController.java`를 열고 아래 코드를 작성합니다.
+컨트롤러는 서비스에서 전달받는 값의 타입만 DTO로 바뀝니다. 이를 반영하여 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 8] board/BoardController.java. 응답 타입을 DTO로
     @GetMapping

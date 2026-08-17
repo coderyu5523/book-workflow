@@ -107,6 +107,13 @@
   /* 테이블 셀 안 인라인 코드: 긴 명령어가 셀 폭을 넘어가면 자연스러운 위치에서 줄바꿈 */
   td code, th code { word-break: break-word; overflow-wrap: anywhere; }
 
+  /* 프로그래밍 리거처 해제 — JetBrains Mono가 != 를 ≠ 한 글자로 합쳐 그리는 문제.
+     body의 'liga' off로는 안 꺼진다. != >= -> 등은 calt(문맥 대체) 소관이라 함께 끈다. */
+  pre, pre code, code, kbd, samp, .code-block, .code-block *, .terminal-log, .terminal-log * {
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'calt' 0;
+  }
+
   /* 본문 인라인 코드. 파일 경로·함수명·상수 등 */
   code {
     background: var(--color-surface-alt);
