@@ -264,7 +264,7 @@
 </tbody>
 </table>
 <h3>3.4.2 전역 예외 처리</h3>
-<p>다음으로 예외가 발생했을 때 처리할 핸들러를 구현해 보겠습니다. <strong>@RestControllerAdvice</strong> 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 맡습니다.</p>
+<p>다음으로 예외가 발생했을 때 처리할 핸들러를 구현해 보겠습니다. <strong>@RestControllerAdvice</strong> 어노테이션이 지정된 클래스는 각 컨트롤러에서 요청을 처리하는 도중 발생하는 예외를 전역적(Global)으로 가로채어 한 곳에서 일괄 처리하는 역할을 합니다. 컨트롤러와 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 담당합니다.</p>
 <p><code>core/handler/GlobalExceptionHandler.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span><span class="w"> </span><span class="p">{</span>
