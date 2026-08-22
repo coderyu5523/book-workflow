@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그림 5-1 후보 — 테이블 3개 관계도</title>
+
+<link rel="stylesheet" href="../styles/fonts.css">
+<link rel="stylesheet" href="../styles/tokens.css">
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../styles/base.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/diagrams.css">
+</head>
+<body>
+<div class="container">
+
+<p style="color:#475569">프롤로그 대사 기준 — "두 관계 모두 N쪽이 댓글이라서, 댓글 테이블에 게시글 번호와 회원 번호가 나란히 들어가게 됩니다."</p>
+
+<h2>A안 — 삭제 점선 없음 (대사와 정확히 일치)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="board_tb와 user_tb가 왼쪽에, reply_tb가 오른쪽에 있다. reply_tb의 board_id가 board_tb의 id를, user_id가 user_tb의 id를 가리키며 두 관계 모두 1대N이다.">
+  <defs>
+    <marker id="a-fk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <rect x="40" y="40" width="220" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="40" width="220" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="68" width="220" height="8" fill="#eef2ff"/>
+  <text x="150" y="65" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="64" y="104" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="64" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
+
+  <rect x="40" y="190" width="220" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="190" width="220" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="218" width="220" height="8" fill="#eef2ff"/>
+  <text x="150" y="215" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
+  <text x="64" y="254" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="64" y="280" font-size="13" font-family="monospace" fill="#475569">username</text>
+
+  <rect x="460" y="90" width="220" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="90" width="220" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="460" y="118" width="220" height="8" fill="#fff4ed"/>
+  <text x="570" y="115" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="484" y="154" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="484" y="180" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="484" y="206" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <text x="484" y="232" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
+
+  <line x1="454" y1="202" x2="266" y2="106" stroke="#ff7849" stroke-width="2" marker-end="url(#a-fk)"/>
+  <text x="360" y="140" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">1 : N</text>
+
+  <line x1="454" y1="228" x2="266" y2="256" stroke="#ff7849" stroke-width="2" marker-end="url(#a-fk)"/>
+  <text x="360" y="266" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">1 : N</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 댓글은 board_id로 게시글을, user_id로 회원을 가리킵니다</div>
+
+<h2>B안 — 삭제 점선 유지 (cascade를 미리 보여 줌)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="board_tb와 user_tb가 왼쪽에, reply_tb가 오른쪽에 있다. reply_tb의 board_id가 board_tb의 id를, user_id가 user_tb의 id를 가리킨다. 점선은 게시글 행을 지우면 딸린 댓글 행도 함께 지워진다는 것을 나타낸다.">
+  <defs>
+    <marker id="b-fk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="b-cs" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker>
+  </defs>
+
+  <rect x="40" y="60" width="220" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="60" width="220" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="88" width="220" height="8" fill="#eef2ff"/>
+  <text x="150" y="85" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="64" y="124" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="64" y="150" font-size="13" font-family="monospace" fill="#475569">title</text>
+
+  <rect x="40" y="200" width="220" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="200" width="220" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="228" width="220" height="8" fill="#eef2ff"/>
+  <text x="150" y="225" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
+  <text x="64" y="264" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="64" y="290" font-size="13" font-family="monospace" fill="#475569">username</text>
+
+  <rect x="460" y="105" width="220" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="105" width="220" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="460" y="133" width="220" height="8" fill="#fff4ed"/>
+  <text x="570" y="130" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="484" y="169" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="484" y="195" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="484" y="221" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <text x="484" y="247" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
+
+  <line x1="454" y1="217" x2="266" y2="126" stroke="#ff7849" stroke-width="2" marker-end="url(#b-fk)"/>
+  <text x="360" y="158" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">1 : N</text>
+
+  <line x1="454" y1="243" x2="266" y2="266" stroke="#ff7849" stroke-width="2" marker-end="url(#b-fk)"/>
+  <text x="360" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">1 : N</text>
+
+  <path d="M262,72 C340,26 400,34 468,74" fill="none" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="5,4" marker-end="url(#b-cs)"/>
+  <text x="365" y="30" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">게시글을 지우면 댓글도 지워진다</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 댓글은 board_id로 게시글을, user_id로 회원을 가리킵니다</div>
+
+<h2>C안 — 게시글을 가운데 두고 좌우로 편 배치</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="가운데 reply_tb가 있고 왼쪽에 board_tb, 오른쪽에 user_tb가 있다. reply_tb의 board_id와 user_id가 각각 양옆 테이블의 id를 가리킨다.">
+  <defs>
+    <marker id="c-fk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <rect x="30" y="40" width="190" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="40" width="190" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="68" width="190" height="8" fill="#eef2ff"/>
+  <text x="125" y="65" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="52" y="104" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="52" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
+
+  <rect x="500" y="40" width="190" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="500" y="40" width="190" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="500" y="68" width="190" height="8" fill="#eef2ff"/>
+  <text x="595" y="65" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
+  <text x="522" y="104" font-size="13" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="522" y="130" font-size="13" font-family="monospace" fill="#475569">username</text>
+
+  <rect x="255" y="160" width="210" height="112" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="255" y="160" width="210" height="34" rx="8" fill="#fff4ed"/>
+  <rect x="255" y="186" width="210" height="8" fill="#fff4ed"/>
+  <text x="360" y="184" text-anchor="middle" font-size="14" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="278" y="222" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="278" y="248" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <text x="392" y="248" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
+
+  <line x1="300" y1="238" x2="150" y2="152" stroke="#ff7849" stroke-width="2" marker-end="url(#c-fk)"/>
+  <text x="196" y="206" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">N : 1</text>
+
+  <line x1="428" y1="238" x2="570" y2="152" stroke="#ff7849" stroke-width="2" marker-end="url(#c-fk)"/>
+  <text x="528" y="206" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">N : 1</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 댓글은 board_id로 게시글을, user_id로 회원을 가리킵니다</div>
+
+
+<h2>D안 — 자바 객체 구조 (필드가 무엇을 들고 있는지)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 객체는 replies 목록을 들고 있고, Reply 객체는 board와 user를 필드로 들고 있다. User 객체에는 댓글 목록 필드가 없다.">
+  <defs>
+    <marker id="d-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="d-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="30" y="30" width="240" height="130" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="30" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="58" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="55" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">Board</text>
+  <text x="52" y="94" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="120" font-size="13" font-family="monospace" fill="#475569">String title</text>
+  <text x="52" y="146" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <rect x="30" y="200" width="240" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="200" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="228" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">User</text>
+  <text x="52" y="264" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="290" font-size="13" font-family="monospace" fill="#475569">String username</text>
+
+  <rect x="450" y="70" width="240" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="450" y="70" width="240" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="450" y="98" width="240" height="8" fill="#fff4ed"/>
+  <text x="570" y="95" text-anchor="middle" font-size="15" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="472" y="134" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="472" y="160" font-size="13" font-family="monospace" fill="#475569">String comment</text>
+  <text x="472" y="186" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="472" y="212" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+
+  <line x1="276" y1="140" x2="444" y2="118" stroke="#4f46e5" stroke-width="2" marker-end="url(#d-i)"/>
+  <text x="360" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">댓글 목록을 들고 있다</text>
+
+  <line x1="444" y1="192" x2="276" y2="158" stroke="#ff7849" stroke-width="2" marker-end="url(#d-o)"/>
+  <text x="356" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">어느 게시글인지</text>
+
+  <line x1="444" y1="216" x2="276" y2="254" stroke="#ff7849" stroke-width="2" marker-end="url(#d-o)"/>
+  <text x="362" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">누가 썼는지</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 댓글은 게시글과 회원을 필드로 들고 있고, 댓글 목록을 가지는 쪽은 게시글뿐입니다</div>
+
+<h2>E안 — 테이블과 자바 객체를 나란히</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽은 테이블 구조로 reply_tb에 board_id와 user_id가 들어간다. 오른쪽은 자바 객체 구조로 Reply가 Board와 User를 필드로 들고 있고 Board만 댓글 목록을 가진다.">
+  <defs>
+    <marker id="e-o" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#ff7849"/></marker>
+    <marker id="e-i" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <text x="245" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">테이블</text>
+  <text x="745" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">자바 객체</text>
+  <line x1="497" y1="50" x2="497" y2="310" stroke="#e2e8f0" stroke-width="2"/>
+
+  <rect x="30" y="60" width="170" height="86" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="60" width="170" height="30" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="84" width="170" height="6" fill="#eef2ff"/>
+  <text x="115" y="81" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="48" y="112" font-size="12" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="48" y="134" font-size="12" font-family="monospace" fill="#475569">title</text>
+
+  <rect x="30" y="212" width="170" height="86" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="212" width="170" height="30" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="236" width="170" height="6" fill="#eef2ff"/>
+  <text x="115" y="233" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
+  <text x="48" y="264" font-size="12" font-family="monospace" font-weight="700" fill="#0f172a">id</text>
+  <text x="48" y="286" font-size="12" font-family="monospace" fill="#475569">username</text>
+
+  <rect x="300" y="112" width="170" height="130" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="300" y="112" width="170" height="30" rx="8" fill="#fff4ed"/>
+  <rect x="300" y="136" width="170" height="6" fill="#fff4ed"/>
+  <text x="385" y="133" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="318" y="164" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="318" y="186" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="318" y="208" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <text x="318" y="230" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
+
+  <line x1="296" y1="204" x2="206" y2="118" stroke="#ff7849" stroke-width="1.8" marker-end="url(#e-o)"/>
+  <text x="266" y="158" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">1 : N</text>
+  <line x1="296" y1="226" x2="206" y2="262" stroke="#ff7849" stroke-width="1.8" marker-end="url(#e-o)"/>
+  <text x="254" y="264" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">1 : N</text>
+
+  <rect x="530" y="60" width="180" height="108" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="530" y="60" width="180" height="30" rx="8" fill="#eef2ff"/>
+  <rect x="530" y="84" width="180" height="6" fill="#eef2ff"/>
+  <text x="620" y="81" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">Board</text>
+  <text x="548" y="112" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="548" y="134" font-size="12" font-family="monospace" fill="#475569">title</text>
+  <text x="548" y="156" font-size="12" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <rect x="530" y="212" width="180" height="86" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="530" y="212" width="180" height="30" rx="8" fill="#eef2ff"/>
+  <rect x="530" y="236" width="180" height="6" fill="#eef2ff"/>
+  <text x="620" y="233" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">User</text>
+  <text x="548" y="264" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="548" y="286" font-size="12" font-family="monospace" fill="#475569">username</text>
+
+  <rect x="800" y="112" width="180" height="130" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="800" y="112" width="180" height="30" rx="8" fill="#fff4ed"/>
+  <rect x="800" y="136" width="180" height="6" fill="#fff4ed"/>
+  <text x="890" y="133" text-anchor="middle" font-size="14" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="818" y="164" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="818" y="186" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="818" y="208" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="818" y="230" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+
+  <line x1="714" y1="152" x2="796" y2="132" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#e-i)"/>
+  <line x1="796" y1="204" x2="714" y2="126" stroke="#ff7849" stroke-width="1.8" marker-end="url(#e-o)"/>
+  <line x1="796" y1="226" x2="714" y2="262" stroke="#ff7849" stroke-width="1.8" marker-end="url(#e-o)"/>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 테이블에는 번호가 들어가고, 자바 객체는 상대 객체를 그대로 들고 있습니다</div>
+
+
+<h2>D-1안 — 방향형 라벨</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board에서 Reply로, Reply에서 Board와 User로 향하는 화살표가 그려져 있다.">
+  <defs>
+    <marker id="d1-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="d1-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="30" y="30" width="240" height="130" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="30" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="58" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="55" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">Board</text>
+  <text x="52" y="94" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="120" font-size="13" font-family="monospace" fill="#475569">String title</text>
+  <text x="52" y="146" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <rect x="30" y="200" width="240" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="200" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="228" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">User</text>
+  <text x="52" y="264" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="290" font-size="13" font-family="monospace" fill="#475569">String username</text>
+
+  <rect x="450" y="70" width="240" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="450" y="70" width="240" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="450" y="98" width="240" height="8" fill="#fff4ed"/>
+  <text x="570" y="95" text-anchor="middle" font-size="15" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="472" y="134" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="472" y="160" font-size="13" font-family="monospace" fill="#475569">String comment</text>
+  <text x="472" y="186" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="472" y="212" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+
+  <line x1="276" y1="140" x2="444" y2="118" stroke="#4f46e5" stroke-width="2" marker-end="url(#d1-i)"/>
+  <text x="360" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">게시글에서 댓글 전부로</text>
+
+  <line x1="444" y1="192" x2="276" y2="158" stroke="#ff7849" stroke-width="2" marker-end="url(#d1-o)"/>
+  <text x="356" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">댓글에서 게시글로</text>
+
+  <line x1="444" y1="216" x2="276" y2="254" stroke="#ff7849" stroke-width="2" marker-end="url(#d1-o)"/>
+  <text x="362" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">댓글에서 작성자로</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 게시글에서는 댓글 전부로, 댓글에서는 게시글과 작성자로 이어집니다</div>
+
+<h2>D-2안 — 동작형 라벨</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board에서 댓글 전부를 꺼내고, Reply에서 게시글과 작성자를 꺼내는 화살표가 그려져 있다.">
+  <defs>
+    <marker id="d2-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="d2-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="30" y="30" width="240" height="130" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="30" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="58" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="55" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">Board</text>
+  <text x="52" y="94" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="120" font-size="13" font-family="monospace" fill="#475569">String title</text>
+  <text x="52" y="146" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <rect x="30" y="200" width="240" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="200" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="228" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">User</text>
+  <text x="52" y="264" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="290" font-size="13" font-family="monospace" fill="#475569">String username</text>
+
+  <rect x="450" y="70" width="240" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="450" y="70" width="240" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="450" y="98" width="240" height="8" fill="#fff4ed"/>
+  <text x="570" y="95" text-anchor="middle" font-size="15" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="472" y="134" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="472" y="160" font-size="13" font-family="monospace" fill="#475569">String comment</text>
+  <text x="472" y="186" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="472" y="212" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+
+  <line x1="276" y1="140" x2="444" y2="118" stroke="#4f46e5" stroke-width="2" marker-end="url(#d2-i)"/>
+  <text x="360" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">달린 댓글을 전부 꺼낸다</text>
+
+  <line x1="444" y1="192" x2="276" y2="158" stroke="#ff7849" stroke-width="2" marker-end="url(#d2-o)"/>
+  <text x="356" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">달린 게시글을 꺼낸다</text>
+
+  <line x1="444" y1="216" x2="276" y2="254" stroke="#ff7849" stroke-width="2" marker-end="url(#d2-o)"/>
+  <text x="362" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">쓴 사람을 꺼낸다</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 게시글에서 댓글을 전부 꺼내고, 댓글에서 게시글과 작성자를 꺼냅니다</div>
+
+<h2>D-3안 — 개수까지 드러내는 라벨</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board에서 Reply로 향하는 화살표에 댓글 여러 개, Reply에서 Board와 User로 향하는 화살표에 각각 하나라고 적혀 있다.">
+  <defs>
+    <marker id="d3-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="d3-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="30" y="30" width="240" height="130" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="30" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="58" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="55" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">Board</text>
+  <text x="52" y="94" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="120" font-size="13" font-family="monospace" fill="#475569">String title</text>
+  <text x="52" y="146" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <rect x="30" y="200" width="240" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="200" width="240" height="36" rx="8" fill="#eef2ff"/>
+  <rect x="30" y="228" width="240" height="8" fill="#eef2ff"/>
+  <text x="150" y="225" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">User</text>
+  <text x="52" y="264" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="52" y="290" font-size="13" font-family="monospace" fill="#475569">String username</text>
+
+  <rect x="450" y="70" width="240" height="156" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="450" y="70" width="240" height="36" rx="8" fill="#fff4ed"/>
+  <rect x="450" y="98" width="240" height="8" fill="#fff4ed"/>
+  <text x="570" y="95" text-anchor="middle" font-size="15" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="472" y="134" font-size="13" font-family="monospace" fill="#475569">Integer id</text>
+  <text x="472" y="160" font-size="13" font-family="monospace" fill="#475569">String comment</text>
+  <text x="472" y="186" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="472" y="212" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+
+  <line x1="276" y1="140" x2="444" y2="118" stroke="#4f46e5" stroke-width="2" marker-end="url(#d3-i)"/>
+  <text x="360" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">댓글 여러 개</text>
+
+  <line x1="444" y1="192" x2="276" y2="158" stroke="#ff7849" stroke-width="2" marker-end="url(#d3-o)"/>
+  <text x="356" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">게시글 하나</text>
+
+  <line x1="444" y1="216" x2="276" y2="254" stroke="#ff7849" stroke-width="2" marker-end="url(#d3-o)"/>
+  <text x="362" y="270" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">작성자 하나</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 게시글에는 댓글이 여러 개 이어지고, 댓글에는 게시글과 작성자가 하나씩 이어집니다</div>
+
+
+<h2>F안 — 객체를 개수대로 그린다 (게시글 하나 · 댓글 셋 · 회원 둘)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 Board 객체 하나에서 가운데 Reply 객체 세 개로 화살표가 뻗어 나가고, 세 Reply 객체에서 오른쪽 User 객체 두 개로 화살표가 모인다.">
+  <defs>
+    <marker id="f-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+    <marker id="f-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <rect x="24" y="140" width="176" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="112" y="168" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">Board</text>
+  <text x="112" y="194" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">title1</text>
+
+  <rect x="300" y="20" width="190" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="395" y="46" text-anchor="middle" font-size="13" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="395" y="70" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">comment1</text>
+
+  <rect x="300" y="142" width="190" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="395" y="168" text-anchor="middle" font-size="13" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="395" y="192" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">comment2</text>
+
+  <rect x="300" y="264" width="190" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="395" y="290" text-anchor="middle" font-size="13" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="395" y="314" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">comment3</text>
+
+  <rect x="590" y="66" width="150" height="66" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="665" y="92" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">User</text>
+  <text x="665" y="115" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">ssar</text>
+
+  <rect x="590" y="240" width="150" height="66" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="665" y="266" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">User</text>
+  <text x="665" y="289" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">cos</text>
+
+  <line x1="204" y1="164" x2="294" y2="60" stroke="#4f46e5" stroke-width="2" marker-end="url(#f-i)"/>
+  <line x1="204" y1="178" x2="294" y2="178" stroke="#4f46e5" stroke-width="2" marker-end="url(#f-i)"/>
+  <line x1="204" y1="192" x2="294" y2="296" stroke="#4f46e5" stroke-width="2" marker-end="url(#f-i)"/>
+
+  <line x1="494" y1="56" x2="584" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f-o)"/>
+  <line x1="494" y1="172" x2="584" y2="112" stroke="#ff7849" stroke-width="2" marker-end="url(#f-o)"/>
+  <line x1="494" y1="300" x2="584" y2="278" stroke="#ff7849" stroke-width="2" marker-end="url(#f-o)"/>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 게시글 하나에 댓글이 여럿 이어지고, 댓글 하나는 회원 한 명으로 이어집니다</div>
+
+<h2>G안 — 겹친 카드로 여럿을 표현</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 Board 객체 하나에서 겹쳐 쌓인 Reply 카드 더미로 화살표가 뻗고, Reply 더미에서 오른쪽 User 객체로 화살표가 이어진다.">
+  <defs>
+    <marker id="g-i" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+    <marker id="g-o" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <rect x="24" y="110" width="176" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="112" y="140" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">Board</text>
+  <text x="112" y="166" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">title1</text>
+
+  <rect x="326" y="52" width="180" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="316" y="72" width="180" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="306" y="92" width="180" height="72" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="396" y="120" text-anchor="middle" font-size="15" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="396" y="144" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">comment1</text>
+
+  <rect x="580" y="110" width="160" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="660" y="140" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">User</text>
+  <text x="660" y="166" text-anchor="middle" font-size="12" font-family="monospace" fill="#475569">ssar</text>
+
+  <line x1="204" y1="132" x2="320" y2="86" stroke="#4f46e5" stroke-width="2" marker-end="url(#g-i)"/>
+  <line x1="204" y1="146" x2="310" y2="112" stroke="#4f46e5" stroke-width="2" marker-end="url(#g-i)"/>
+  <line x1="204" y1="160" x2="300" y2="140" stroke="#4f46e5" stroke-width="2" marker-end="url(#g-i)"/>
+
+  <line x1="510" y1="88" x2="574" y2="126" stroke="#ff7849" stroke-width="2" marker-end="url(#g-o)"/>
+  <line x1="500" y1="108" x2="574" y2="142" stroke="#ff7849" stroke-width="2" marker-end="url(#g-o)"/>
+  <line x1="490" y1="128" x2="574" y2="158" stroke="#ff7849" stroke-width="2" marker-end="url(#g-o)"/>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 게시글 하나에 댓글이 여럿 달리고, 그 댓글들은 회원 한 명을 가리킵니다</div>
+
+
+<h2>H안 — 관계 표기로 그린 테이블 대 자바 객체</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블 구조에서는 board_tb와 user_tb가 각각 reply_tb와 1대N으로 이어지고 외래 키는 reply_tb에만 있다. 오른쪽 자바 객체 구조에서는 Board에 replies 목록 필드가 더 생겨 Board와 Reply가 양쪽 필드로 이어지고, User 쪽에는 목록 필드가 없다.">
+  <defs>
+    <style>
+      .tb { fill:#fff; stroke:#4f46e5; stroke-width:2 }
+      .tbh { fill:#eef2ff }
+      .rp { fill:#fff; stroke:#ff7849; stroke-width:2 }
+      .rph { fill:#fff4ed }
+      .nm { font-family:monospace; font-size:12px; fill:#475569 }
+      .nmk { font-family:monospace; font-size:12px; font-weight:800; fill:#c2410c }
+      .nmi { font-family:monospace; font-size:12px; font-weight:800; fill:#3730a3 }
+      .ttl { font-family:monospace; font-size:13px; font-weight:800 }
+      .rel { stroke:#334155; stroke-width:1.8; fill:none }
+      .card { font-size:12px; font-weight:800; fill:#334155 }
+      .panel { font-size:14px; font-weight:800; fill:#0f172a }
+    </style>
+  </defs>
+
+  <text x="245" y="32" text-anchor="middle" class="panel">테이블</text>
+  <text x="755" y="32" text-anchor="middle" class="panel">자바 객체</text>
+  <line x1="500" y1="50" x2="500" y2="380" stroke="#e2e8f0" stroke-width="2"/>
+
+  <rect x="40" y="60" width="150" height="76" rx="8" class="tb"/>
+  <rect x="40" y="60" width="150" height="28" rx="8" class="tbh"/>
+  <rect x="40" y="80" width="150" height="8" class="tbh"/>
+  <text x="115" y="79" text-anchor="middle" class="ttl" fill="#3730a3">board_tb</text>
+  <text x="56" y="108" class="nm">id</text>
+  <text x="56" y="128" class="nm">title</text>
+
+  <rect x="40" y="290" width="150" height="76" rx="8" class="tb"/>
+  <rect x="40" y="290" width="150" height="28" rx="8" class="tbh"/>
+  <rect x="40" y="310" width="150" height="8" class="tbh"/>
+  <text x="115" y="309" text-anchor="middle" class="ttl" fill="#3730a3">user_tb</text>
+  <text x="56" y="338" class="nm">id</text>
+  <text x="56" y="358" class="nm">username</text>
+
+  <rect x="290" y="150" width="160" height="124" rx="8" class="rp"/>
+  <rect x="290" y="150" width="160" height="28" rx="8" class="rph"/>
+  <rect x="290" y="170" width="160" height="8" class="rph"/>
+  <text x="370" y="169" text-anchor="middle" class="ttl" fill="#7b341e">reply_tb</text>
+  <text x="306" y="200" class="nm">id</text>
+  <text x="306" y="222" class="nm">comment</text>
+  <text x="306" y="244" class="nmk">board_id</text>
+  <text x="306" y="266" class="nmk">user_id</text>
+
+  <path d="M190,110 H240 V210 H290" class="rel"/>
+  <line x1="215" y1="100" x2="215" y2="120" class="rel"/>
+  <text x="215" y="94" text-anchor="middle" class="card">1</text>
+  <path d="M278,200 L290,210 L278,220 M278,210 L290,210" class="rel"/>
+  <text x="272" y="196" text-anchor="middle" class="card">N</text>
+
+  <path d="M190,326 H240 V236 H290" class="rel"/>
+  <line x1="215" y1="316" x2="215" y2="336" class="rel"/>
+  <text x="215" y="352" text-anchor="middle" class="card">1</text>
+  <path d="M278,226 L290,236 L278,246 M278,236 L290,236" class="rel"/>
+  <text x="272" y="262" text-anchor="middle" class="card">N</text>
+
+  <rect x="550" y="60" width="180" height="104" rx="8" class="tb"/>
+  <rect x="550" y="60" width="180" height="28" rx="8" class="tbh"/>
+  <rect x="550" y="80" width="180" height="8" class="tbh"/>
+  <text x="640" y="79" text-anchor="middle" class="ttl" fill="#3730a3">Board</text>
+  <text x="566" y="108" class="nm">id</text>
+  <text x="566" y="130" class="nm">title</text>
+  <rect x="556" y="138" width="168" height="20" rx="4" fill="#eef2ff"/>
+  <text x="566" y="153" class="nmi">List&lt;Reply&gt; replies</text>
+
+  <rect x="550" y="290" width="180" height="76" rx="8" class="tb"/>
+  <rect x="550" y="290" width="180" height="28" rx="8" class="tbh"/>
+  <rect x="550" y="310" width="180" height="8" class="tbh"/>
+  <text x="640" y="309" text-anchor="middle" class="ttl" fill="#3730a3">User</text>
+  <text x="566" y="338" class="nm">id</text>
+  <text x="566" y="358" class="nm">username</text>
+
+  <rect x="800" y="150" width="180" height="124" rx="8" class="rp"/>
+  <rect x="800" y="150" width="180" height="28" rx="8" class="rph"/>
+  <rect x="800" y="170" width="180" height="8" class="rph"/>
+  <text x="890" y="169" text-anchor="middle" class="ttl" fill="#7b341e">Reply</text>
+  <text x="816" y="200" class="nm">id</text>
+  <text x="816" y="222" class="nm">comment</text>
+  <text x="816" y="244" class="nmk">Board board</text>
+  <text x="816" y="266" class="nmk">User user</text>
+
+  <path d="M730,148 H762 V244 H800" class="rel"/>
+  <circle cx="730" cy="148" r="4" fill="#3730a3"/>
+  <line x1="746" y1="138" x2="746" y2="158" class="rel"/>
+  <text x="746" y="132" text-anchor="middle" class="card">1</text>
+  <circle cx="800" cy="244" r="4" fill="#c2410c"/>
+  <path d="M788,234 L800,244 L788,254 M788,244 L800,244" class="rel"/>
+  <text x="782" y="230" text-anchor="middle" class="card">N</text>
+
+  <path d="M800,266 H772 V326 H730" class="rel"/>
+  <circle cx="800" cy="266" r="4" fill="#c2410c"/>
+  <path d="M812,256 L800,266 L812,276 M800,266 L812,266" class="rel"/>
+  <text x="818" y="288" text-anchor="middle" class="card">N</text>
+  <line x1="750" y1="316" x2="750" y2="336" class="rel"/>
+  <text x="750" y="352" text-anchor="middle" class="card">1</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 테이블에서는 댓글에만 번호가 들어가지만, 자바에서는 게시글에 댓글 목록이 하나 더 생깁니다</div>
+
+<h2>I안 — H안에 늘어난 필드를 짚어 주는 표시 추가</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="H안과 같은 구조에 board_tb에는 없던 replies 필드가 Board에만 생겼다는 표시가 더해져 있다.">
+  <defs>
+    <style>
+      .i-tb { fill:#fff; stroke:#4f46e5; stroke-width:2 }
+      .i-tbh { fill:#eef2ff }
+      .i-rp { fill:#fff; stroke:#ff7849; stroke-width:2 }
+      .i-rph { fill:#fff4ed }
+      .i-nm { font-family:monospace; font-size:12px; fill:#475569 }
+      .i-nmk { font-family:monospace; font-size:12px; font-weight:800; fill:#c2410c }
+      .i-nmi { font-family:monospace; font-size:12px; font-weight:800; fill:#3730a3 }
+      .i-ttl { font-family:monospace; font-size:13px; font-weight:800 }
+      .i-rel { stroke:#334155; stroke-width:1.8; fill:none }
+      .i-card { font-size:12px; font-weight:800; fill:#334155 }
+      .i-panel { font-size:14px; font-weight:800; fill:#0f172a }
+    </style>
+  </defs>
+
+  <text x="245" y="32" text-anchor="middle" class="i-panel">테이블</text>
+  <text x="755" y="32" text-anchor="middle" class="i-panel">자바 객체</text>
+  <line x1="500" y1="50" x2="500" y2="380" stroke="#e2e8f0" stroke-width="2"/>
+
+  <rect x="40" y="60" width="150" height="76" rx="8" class="i-tb"/>
+  <rect x="40" y="60" width="150" height="28" rx="8" class="i-tbh"/>
+  <rect x="40" y="80" width="150" height="8" class="i-tbh"/>
+  <text x="115" y="79" text-anchor="middle" class="i-ttl" fill="#3730a3">board_tb</text>
+  <text x="56" y="108" class="i-nm">id</text>
+  <text x="56" y="128" class="i-nm">title</text>
+
+  <rect x="40" y="290" width="150" height="76" rx="8" class="i-tb"/>
+  <rect x="40" y="290" width="150" height="28" rx="8" class="i-tbh"/>
+  <rect x="40" y="310" width="150" height="8" class="i-tbh"/>
+  <text x="115" y="309" text-anchor="middle" class="i-ttl" fill="#3730a3">user_tb</text>
+  <text x="56" y="338" class="i-nm">id</text>
+  <text x="56" y="358" class="i-nm">username</text>
+
+  <rect x="290" y="150" width="160" height="124" rx="8" class="i-rp"/>
+  <rect x="290" y="150" width="160" height="28" rx="8" class="i-rph"/>
+  <rect x="290" y="170" width="160" height="8" class="i-rph"/>
+  <text x="370" y="169" text-anchor="middle" class="i-ttl" fill="#7b341e">reply_tb</text>
+  <text x="306" y="200" class="i-nm">id</text>
+  <text x="306" y="222" class="i-nm">comment</text>
+  <text x="306" y="244" class="i-nmk">board_id</text>
+  <text x="306" y="266" class="i-nmk">user_id</text>
+
+  <path d="M190,110 H240 V210 H290" class="i-rel"/>
+  <line x1="215" y1="100" x2="215" y2="120" class="i-rel"/>
+  <text x="215" y="94" text-anchor="middle" class="i-card">1</text>
+  <path d="M278,200 L290,210 L278,220 M278,210 L290,210" class="i-rel"/>
+  <text x="272" y="196" text-anchor="middle" class="i-card">N</text>
+
+  <path d="M190,326 H240 V236 H290" class="i-rel"/>
+  <line x1="215" y1="316" x2="215" y2="336" class="i-rel"/>
+  <text x="215" y="352" text-anchor="middle" class="i-card">1</text>
+  <path d="M278,226 L290,236 L278,246 M278,236 L290,236" class="i-rel"/>
+  <text x="272" y="262" text-anchor="middle" class="i-card">N</text>
+
+  <rect x="550" y="60" width="180" height="104" rx="8" class="i-tb"/>
+  <rect x="550" y="60" width="180" height="28" rx="8" class="i-tbh"/>
+  <rect x="550" y="80" width="180" height="8" class="i-tbh"/>
+  <text x="640" y="79" text-anchor="middle" class="i-ttl" fill="#3730a3">Board</text>
+  <text x="566" y="108" class="i-nm">id</text>
+  <text x="566" y="130" class="i-nm">title</text>
+  <rect x="554" y="136" width="172" height="24" rx="4" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <text x="566" y="153" class="i-nmi">List&lt;Reply&gt; replies</text>
+  <text x="640" y="182" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">테이블에는 없던 필드</text>
+
+  <rect x="550" y="290" width="180" height="76" rx="8" class="i-tb"/>
+  <rect x="550" y="290" width="180" height="28" rx="8" class="i-tbh"/>
+  <rect x="550" y="310" width="180" height="8" class="i-tbh"/>
+  <text x="640" y="309" text-anchor="middle" class="i-ttl" fill="#3730a3">User</text>
+  <text x="566" y="338" class="i-nm">id</text>
+  <text x="566" y="358" class="i-nm">username</text>
+
+  <rect x="800" y="150" width="180" height="124" rx="8" class="i-rp"/>
+  <rect x="800" y="150" width="180" height="28" rx="8" class="i-rph"/>
+  <rect x="800" y="170" width="180" height="8" class="i-rph"/>
+  <text x="890" y="169" text-anchor="middle" class="i-ttl" fill="#7b341e">Reply</text>
+  <text x="816" y="200" class="i-nm">id</text>
+  <text x="816" y="222" class="i-nm">comment</text>
+  <text x="816" y="244" class="i-nmk">Board board</text>
+  <text x="816" y="266" class="i-nmk">User user</text>
+
+  <path d="M726,148 H762 V244 H800" class="i-rel"/>
+  <circle cx="726" cy="148" r="4" fill="#3730a3"/>
+  <line x1="746" y1="138" x2="746" y2="158" class="i-rel"/>
+  <text x="746" y="132" text-anchor="middle" class="i-card">1</text>
+  <circle cx="800" cy="244" r="4" fill="#c2410c"/>
+  <path d="M788,234 L800,244 L788,254 M788,244 L800,244" class="i-rel"/>
+  <text x="782" y="230" text-anchor="middle" class="i-card">N</text>
+
+  <path d="M800,266 H772 V326 H730" class="i-rel"/>
+  <circle cx="800" cy="266" r="4" fill="#c2410c"/>
+  <path d="M812,256 L800,266 L812,276 M800,266 L812,266" class="i-rel"/>
+  <text x="820" y="288" text-anchor="middle" class="i-card">N</text>
+  <line x1="750" y1="316" x2="750" y2="336" class="i-rel"/>
+  <text x="750" y="352" text-anchor="middle" class="i-card">1</text>
+</svg>
+</div>
+
+<div class="caption">그림 5-1. 관계는 양쪽 모두 1대N이지만, 자바에서는 게시글 쪽에 댓글 목록이 하나 더 생깁니다</div>
+
+</div>
+</body>
+</html>
