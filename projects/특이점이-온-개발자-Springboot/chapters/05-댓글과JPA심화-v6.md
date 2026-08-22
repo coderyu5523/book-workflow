@@ -124,7 +124,7 @@ cd spring-start/ch05
 spring-start/ch05/src/main/java/com/metacoding/spring/
 ├── board/
 │   ├── Board.java                        # [작성] @OneToMany replies, user EAGER→LAZY
-│   ├── BoardRepository.java              # [작성] findByIdJoinUserAndReply
+│   ├── BoardRepository.java              # [작성] findByIdJoinUserAndReplies
 │   ├── BoardResponse.java                # [작성] DetailDTO에 replies
 │   └── BoardService.java                 # [작성] 상세 조회를 fetch join으로 교체
 └── reply/
@@ -240,7 +240,7 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 ```
 ## 5.2 즉시 로딩과 지연 로딩
 
-**Board** 엔티티에는 작성자와 댓글이 연관관계 필드로 매핑되어 있습니다. JPA에서는 게시글을 조회할 때 연관된 데이터까지 한 번에 가져올지, 아니면 해당 데이터를 실제 사용하는 시점에 가져올지 결정해야 합니다. 이 동작 방식은 연관관계 어노테이션의 `fetch` 속성으로 설정합니다. 앞서 **Reply** 엔티티와 `replies` 필드에 지정한 `FetchType.LAZY`가 이 설정입니다.
+**Board** 엔티티에는 작성자와 댓글이 연관관계 필드로 매핑되어 있습니다. JPA에서는 게시글을 조회할 때 연관된 데이터까지 한 번에 가져올지, 아니면 해당 데이터를 실제 사용하는 시점에 가져올지 결정해야 합니다. 이 동작 방식은 연관관계 어노테이션의 `fetch` 속성으로 설정합니다.
 
 **즉시 로딩(Eager Loading)** 은 게시글을 조회할 때 연관된 **User** 엔티티까지 함께 조회하는 전략입니다. **@ManyToOne**의 기본 전략은 즉시 로딩이며, 현재는 EAGER로 설정이 명시되어 있습니다.
 
@@ -258,7 +258,7 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
     }
 ```
 
-`findById()`로 게시글 하나를 조회했을 뿐인데 **board_tb**와 **user_tb**를 조인하는 SELECT 쿼리가 실행됩니다. select 목록에도 `u1_0.username`을 비롯한 회원 컬럼이 그대로 들어갑니다. 조회 시점에 **User** 엔티티를 완성해 두어야 하므로 `user_id`만 읽고 끝내지 않습니다.
+EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 조회하면 **board_tb**와 **user_tb**를 조인하는 SELECT 쿼리가 실행됩니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -281,35 +281,16 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 
 출력한 값은 게시글 번호뿐인데도 회원 데이터를 읽었습니다. 게시글 목록처럼 제목과 내용만 사용하는 화면에서는 이 조회가 그대로 낭비됩니다. 이럴 때는 반대 전략인 지연 로딩을 선택합니다.
 
-**지연 로딩(Lazy Loading)** 은 게시글 데이터만 먼저 조회하고, 회원 데이터는 실제로 접근하는 순간에 쿼리를 실행해 가져오는 방식입니다. `board/Board.java`의 작성자 필드 `fetch` 속성을 아래와 같이 변경해 봅니다.
+**지연 로딩(Lazy Loading)** 은 게시글 데이터만 먼저 조회하고, 회원 데이터는 실제로 접근하는 순간에 쿼리를 실행해 가져오는 방식입니다. `board/Board.java`의 작성자 필드 `fetch` 속성을 아래와 같이 변경합니다.
 
 ```java [실습 5] board/Board.java. 작성자 조회를 지연 로딩으로
-    // 챕터 4의 EAGER에서 LAZY로 바꾼다
+    // EAGER에서 LAZY로 바꾼다
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
 ```
 
-테스트 코드는 수정하지 않고, 앞서 작성한 `findByIdEager_test()`를 다시 실행합니다. 조인이 사라지고 **board_tb**만 조회하는 SELECT 쿼리가 실행됩니다. select 목록에 남은 `b1_0.user_id`는 외래 키 컬럼이며, **User** 엔티티는 이 값만 가진 상태로 자리만 잡아 둡니다.
-
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div><span class="tl-label">Hibernate:</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title, <span class="tl-hl">b1_0.user_id</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;where b1_0.id=?</div>
-    <div><span class="tl-val">Board ID : 1</span></div>
-  </div>
-</div>
-
-*그림 5-4. 지연 로딩은 회원 데이터를 사용하지 않으면 회원 테이블을 읽지 않습니다*
-
-이번에는 회원 데이터를 사용하는 경우를 확인합니다. `test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
+회원 데이터를 사용하면 어떻게 되는지 확인합니다. `test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
 
 ```java [실습 6] test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인
     @Test
@@ -324,7 +305,7 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
     }
 ```
 
-SELECT 쿼리가 두 번 실행됩니다. 먼저 **board_tb**를 조회하는 쿼리가 실행되어 `Board ID : 1`이 출력됩니다. 이후 `username : ssar`을 출력하기 위해 **User** 엔티티에 접근하는 순간, **user_tb**를 조회하는 두 번째 쿼리가 실행됩니다.
+LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 **board_tb**만 조회하는 SELECT 쿼리가 실행됩니다. 이후 `getUsername()`으로 작성자 이름에 접근하는 순간, **user_tb**를 조회하는 쿼리가 추가로 실행됩니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -346,45 +327,30 @@ SELECT 쿼리가 두 번 실행됩니다. 먼저 **board_tb**를 조회하는 �
   </div>
 </div>
 
-*그림 5-5. 지연 로딩은 작성자 이름을 사용하는 순간 회원 테이블을 한 번 더 읽습니다*
+*그림 5-4. 지연 로딩은 작성자 이름을 사용하는 순간 회원 테이블을 한 번 더 읽습니다*
+
+:::tip
+**실무에서는 어떤 로딩 전략을 쓰는가**
+
+연관된 데이터를 가져오느라 추가 쿼리가 계속 늘어나는 상황을 막기 위해, 실무에서는 모든 연관관계를 지연 로딩으로 설정합니다. 두 엔티티를 항상 함께 사용하는 경우에만 즉시 로딩을 고려하되, 지연 로딩을 유지한 채 필요한 조회에서만 쿼리로 묶어 한 번에 가져오는 편이 안전합니다. **@ManyToOne**은 기본값이 즉시 로딩이라 `fetch = FetchType.LAZY`를 직접 적어야 하고, **@OneToMany**는 기본값이 지연 로딩입니다.
+:::
 
 ## 5.3 댓글 목록
 
-게시글 상세를 조회할 때는 작성자와 댓글이 모두 필요합니다. 지연 로딩에 맡기면 꺼낼 때마다 조회가 따로 실행되므로, JOIN으로 함께 가져오는 조회를 구현합니다. JPQL의 JOIN은 연관관계 필드를 통해서만 사용합니다.
+댓글 목록은 게시글 상세 화면에서 게시글과 함께 가져와야 합니다. 이때 지연 로딩을 사용하면 조회 쿼리가 여러 번 발생하므로, FETCH JOIN으로 한 번에 조회합니다.
 
-```sql [JPQL] 기본 JOIN
-select b from Board b join b.user u where u.username = :username
-```
-
-일치하는 값이 없어도 기준 테이블을 조회하고 싶다면 LEFT OUTER JOIN을 사용합니다.
-
-```sql [JPQL] LEFT OUTER JOIN
-select b from Board b left join b.replies r where b.id = :boardId
-```
-
-일반 JOIN은 지연 로딩을 그대로 사용합니다. 조회할 때 연관 엔티티를 한 번에 가져오고 싶다면 FETCH JOIN을 사용해야 합니다.
-
-```sql [JPQL] FETCH JOIN
-select b from Board b join fetch b.user where b.id = :boardId
-```
-
-챕터 4에서 만든 `findByIdJoinUser()`가 이 형태입니다. 여기에 댓글을 더한 조회를 구현합니다. INNER JOIN은 매칭되는 행만 반환하므로 댓글이 없는 게시글은 결과에서 제외됩니다. 그런 게시글까지 조회하려면 댓글 쪽에 LEFT OUTER JOIN을 써야 합니다. 이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
+이때 작성자는 반드시 있으므로 JOIN으로 가져오고, 댓글은 없을 수도 있으므로 댓글과 댓글 작성자에는 LEFT OUTER JOIN을 적용합니다. 이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
 ```java [실습 7] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
-            + "left join fetch b.replies where b.id = :boardId")
-    Optional<Board> findByIdJoinUserAndReply(@Param("boardId") Integer boardId);
+            + "left join fetch b.replies r left join fetch r.user "
+            + "where b.id = :boardId")
+    Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);
 ```
 
-`join fetch b.user`로 작성자를, `left join fetch b.replies`로 댓글 목록을 함께 가져옵니다. 데이터베이스에서는 게시글 하나가 댓글 수만큼 중복된 행으로 반환되지만, JPA가 같은 **Board** 하나로 합쳐 주므로 결과는 게시글 한 건입니다.
+작성자와 댓글 목록, 그리고 댓글 작성자까지 함께 가져오기 위해 JOIN을 세 번 사용합니다. 데이터베이스에서는 게시글 하나가 댓글 수만큼 중복된 행으로 반환되지만, JPA가 같은 **Board** 하나로 합치므로 결과는 게시글 한 건입니다.
 
-:::tip
-**언제 FETCH JOIN을 쓰는가**
-
-연관 데이터는 기본 속성을 `LAZY`로 두어 실제 접근할 때만 로딩합니다. 다만 화면별 시나리오에 따라 지연 로딩이 불필요한 추가 조회를 유발할 수 있으므로, 필요한 조회에서만 FETCH JOIN으로 묶어 쿼리 수와 전송량을 줄입니다.
-:::
-
-조회한 댓글을 응답에 담습니다. **List** 타입 필드는 **DTO** 안에서 또 다른 **DTO** 객체를 생성해, 엔티티를 하나씩 변환하여 담습니다. 이를 반영하여 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
+하나의 게시글에는 여러 댓글이 달릴 수 있으므로, 댓글 필드를 **List** 타입으로 추가합니다. 이를 반영하여 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
 ```java [실습 8] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
@@ -429,19 +395,17 @@ select b from Board b join fetch b.user where b.id = :boardId
     }
 ```
 
-`board.getReplies()`로 게시글에 달린 댓글을 꺼내 각각을 안쪽의 **ReplyDTO**로 바꿔 담습니다. 댓글에도 작성자 본인인지 알려 주는 값이 필요하므로 **ReplyDTO**도 챕터 4와 같은 방식으로 두 아이디를 비교해 `isOwner`를 채웁니다. 화면은 이 값으로 본인이 쓴 댓글에만 삭제 버튼을 보여 줍니다.
+함께 조회된 댓글 엔티티는 **DetailDTO** 내부에 별도의 **DTO**를 추가하여 담습니다.
 
-**BoardService**의 상세 메서드에서 기존 `findByIdJoinUser()` 호출을 `findByIdJoinUserAndReply()`로 대체합니다. 이를 반영하여 `board/BoardService.java`를 아래와 같이 변경합니다.
+**BoardService**의 상세 메서드에서 기존 `findByIdJoinUser()` 호출을 `findByIdJoinUserAndReplies()`로 대체합니다. 이를 반영하여 `board/BoardService.java`를 아래와 같이 변경합니다.
 
 ```java [실습 9] board/BoardService.java. 상세 조회를 fetch join으로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
-        Board board = boardRepository.findByIdJoinUserAndReply(boardId)
+        Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         return new BoardResponse.DetailDTO(board, loginUser);
     }
 ```
-
-게시글이 없다면 **Exception404**로 처리합니다. 컨트롤러는 챕터 4에서 이미 로그인 유저를 꺼내 넘기도록 고쳤으므로 그대로 둡니다.
 
 ssar로 로그인해 게시글 상세 API를 호출하면 결과를 확인할 수 있습니다.
 
@@ -455,15 +419,22 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar로 로그인해 발급받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. body에 게시글(boardId 1, title1, content1, userId 1, username ssar)과 isOwner true가 담기고, replies 배열에 댓글 세 개(replyId 1·2는 ssar이 써서 isOwner true, replyId 3은 cos이 써서 isOwner false)가 이어지는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
-*그림 5-6. 상세 응답에 게시글과 댓글이 함께 담기고, 본인이 쓴 것에만 isOwner가 true입니다*
+*그림 5-5. 상세 응답에 게시글과 댓글이 함께 담기고, 본인이 쓴 것에만 isOwner가 true입니다*
 
 게시글의 `isOwner`가 true이고, ssar가 쓴 1·2번 댓글도 true, cos가 쓴 3번 댓글은 false입니다.
 
 ## 5.4 댓글 쓰기
 
-읽는 쪽이 끝났으니 쓰는 쪽을 구현합니다. **SaveDTO**는 댓글 내용과 대상 게시글의 번호(`boardId`)를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다. 이를 위해 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
+댓글을 저장하고 조회하는 리포지토리를 구현합니다. 이를 위해 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 10] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 10] reply/ReplyRepository.java. JpaRepository 상속
+public interface ReplyRepository extends JpaRepository<Reply, Integer> {
+}
+```
+
+**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다. 이를 위해 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
+
+```java [실습 11] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -479,11 +450,9 @@ public class ReplyRequest {
 }
 ```
 
-`toEntity()`는 챕터 4에서 게시글을 만들 때처럼 로그인 유저와 대상 게시글을 넘겨받아 댓글 엔티티로 옮겨 담습니다.
-
 응답으로 반환할 댓글 하나를 담을 **DTO**도 정의합니다. 이를 위해 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 11] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 12] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -497,15 +466,6 @@ public class ReplyResponse {
     }
 }
 ```
-
-댓글을 저장하고 조회하는 리포지토리를 구현합니다. 이를 위해 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
-
-```java [실습 12] reply/ReplyRepository.java. JpaRepository 상속
-public interface ReplyRepository extends JpaRepository<Reply, Integer> {
-}
-```
-
-챕터 3에서 바꾼 **BoardRepository**와 같은 모양입니다. 저장할 `save()`, 권한 확인에 쓸 `findById()`, 삭제할 `delete()`가 모두 상속으로 들어오므로 안이 비어 있습니다.
 
 서비스는 전달받은 게시글 아이디와 로그인 유저로 **Reply** 엔티티를 생성하고 `save()`를 호출합니다. 이를 위해 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
@@ -533,9 +493,7 @@ public class ReplyService {
 }
 ```
 
-챕터 4의 게시글 쓰기와 순서가 같습니다. 로그인하지 않은 요청이면 **Exception401**을 발생시키고, `boardId`로 댓글을 달 게시글을 찾아 없으면 **Exception404**를 발생시킵니다.
-
-댓글을 저장하려면 그 댓글이 어느 게시글에 속하는지 알아야 하므로, 클라이언트는 요청 본문에 `boardId`를 함께 담아 전달합니다. 이를 위해 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
+댓글 작성 엔드포인트를 구현합니다. 이를 위해 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 14] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
@@ -555,8 +513,6 @@ public class ReplyController {
 }
 ```
 
-`request.getAttribute("loginUser")`로 로그인 유저를 꺼내 서비스로 전달합니다. 챕터 4에서 필터가 담아 둔 유저입니다. 꺼낸 유저가 null이어도 그대로 전달하고, 막을지 말지는 서비스가 정합니다.
-
 ssar로 로그인해 1번 게시글에 댓글을 답니다.
 
 ```json [Hoppscotch] 댓글 작성
@@ -571,11 +527,9 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar 토큰을 Authorization 헤더에 담고 보낸 POST /api/replies 요청에 대한 200 응답. body에 replyId 5, comment "comment5", username ssar이 담긴 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/04_reply-save.png)
-*그림 5-7. 댓글을 저장하면 저장된 댓글이 응답에 담겨 돌아옵니다*
+*그림 5-6. 댓글을 저장하면 저장된 댓글이 응답에 담겨 돌아옵니다*
 
 ## 5.5 댓글 삭제
-
-삭제도 저장과 같은 순서로 구현합니다.
 
 서비스는 댓글 작성자의 아이디와 로그인 유저의 아이디를 비교해 권한을 검증한 후, 조건을 만족하면 댓글을 삭제합니다. 이를 위해 `reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -596,8 +550,6 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
     }
 ```
 
-대상이 게시글에서 댓글로 바뀌었을 뿐, 로그인 확인과 작성자 아이디를 비교하는 소유자 검증은 챕터 4와 똑같습니다. 댓글 작성자가 아니라면 **Exception403**이 발생합니다.
-
 `reply/ReplyController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 16] reply/ReplyController.java. 댓글 삭제 엔드포인트
@@ -609,8 +561,6 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
         return Resp.ok(null);
     }
 ```
-
-삭제는 반환할 데이터가 없으므로 `Resp.ok(null)`로 성공만 응답합니다. 게시글과 똑같이 댓글도 로그인하지 않으면 401에서, 작성자가 아니면 403에서 막힙니다.
 
 ssar로 로그인해 cos가 쓴 3번 댓글에 삭제를 요청합니다.
 
@@ -624,7 +574,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: 두 장면을 위아래로 담은 캡처. (1) ssar 토큰으로 cos가 쓴 3번 댓글에 보낸 DELETE /api/replies/3 요청에 { "status": 403, "msg": "댓글을 삭제할 권한이 없습니다", "body": null }가 돌아오는 화면. (2) ssar이 쓴 1번 댓글에 보낸 DELETE /api/replies/1 요청이 200으로 성공하는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/05_reply-delete-403.png)
-*그림 5-8. 다른 사람이 쓴 댓글은 403으로 막히고, 본인이 쓴 댓글만 지워집니다*
+*그림 5-7. 다른 사람이 쓴 댓글은 403으로 막히고, 본인이 쓴 댓글만 지워집니다*
 
 댓글까지 되자 게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 게시글과 댓글은 작성자만 관리합니다.
 

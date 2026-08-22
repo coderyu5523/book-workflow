@@ -100,17 +100,6 @@ public class BoardRepositoryTest {
     }
 
     @Test
-    public void findByIdLazy_test() {
-        // given
-        int id = 1;
-        // when
-        Board board = boardRepository.findById(id).get();
-        // eye
-        System.out.println("=======================");
-        System.out.println("Board ID : " + board.getId());
-    }
-
-    @Test
     public void findByIdLazyLoading_test() {
         // given
         int id = 1;
@@ -136,11 +125,11 @@ public class BoardRepositoryTest {
     }
 
     @Test
-    public void findByIdJoinUserAndReply_test() {
+    public void findByIdJoinUserAndReplies_test() {
         // given
         int id = 1;
         // when
-        Board board = boardRepository.findByIdJoinUserAndReply(id).get();
+        Board board = boardRepository.findByIdJoinUserAndReplies(id).get();
         // eye
         System.out.println("=======================");
         System.out.println("Board ID : " + board.getId());

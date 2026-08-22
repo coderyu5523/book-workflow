@@ -12,6 +12,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     Optional<Board> findByIdJoinUser(@Param("boardId") Integer boardId);
 
     @Query("select b from Board b join fetch b.user "
-            + "left join fetch b.replies where b.id = :boardId")
-    Optional<Board> findByIdJoinUserAndReply(@Param("boardId") Integer boardId);
+            + "left join fetch b.replies r left join fetch r.user "
+            + "where b.id = :boardId")
+    Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);
 }
