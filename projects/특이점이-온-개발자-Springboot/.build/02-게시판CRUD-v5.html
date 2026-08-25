@@ -20,8 +20,8 @@
 <body>
 <div class="container">
 <h1>챕터 2. 게시판 CRUD</h1>
-<p>스프링이 내 코드를 어떻게 찾아 실행하는지 이해한 오픈이는, 이제 본격적으로 스프링을 다뤄 보기로 했습니다. 첫 목표는 가장 기본이 되는 게시판입니다. 새 게시글을 쓰고, 목록을 조회하고, 게시글을 수정하거나 삭제하는 핵심 기능을 직접 구현해 볼 계획입니다.</p>
-<p>이 게시판의 핵심은 게시글을 데이터베이스에 저장하고 다시 조회하는 일입니다. 사용자가 쓴 게시글을 데이터베이스에 남겨 두고, 목록이나 게시글 하나를 요청하면 저장해 둔 게시글을 꺼내 정해진 형식으로 돌려줍니다.</p>
+<p>스프링이 내 코드를 어떻게 찾아 실행하는지 원리를 깨친 오픈이는 이제 본격적으로 스프링을 활용해 보기로 합니다. 첫 번째 목표는 웹 서비스의 가장 기본이 되는 '게시판' 만들기입니다. 새 글을 작성하고, 전체 목록을 조회하며, 작성한 글을 수정하거나 삭제하는 필수 기능들을 직접 구현해 볼 계획입니다.</p>
+<p>게시판을 만드는 작업 중 중요한 것은 데이터베이스(DB)와의 통신입니다. 사용자가 작성한 글을 데이터베이스에 안전하게 저장해 두고, 누군가 목록이나 특정 글을 요청하면 보관해 둔 데이터를 꺼내 약속된 형식으로 돌려주는 것이 핵심입니다. 이제 오픈이와 함께 이 일련의 흐름을 코드로 완성해 보겠습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2 한눈에 보기. 클라이언트가 게시글에 대한 다섯 가지 요청(목록·상세·작성·수정·삭제)을 컨트롤러로 보내면, 컨트롤러가 서비스로, 서비스가 리포지토리로 넘기고, 리포지토리가 H2 데이터베이스의 board_tb 테이블을 다룬 뒤 결과가 JSON으로 되돌아온다.">
   <defs>
@@ -65,12 +65,11 @@
   <text x="560" y="300" text-anchor="middle" font-size="11" fill="#94a3b8">회색 화살표: 결과를 JSON(Resp)으로 응답</text>
 </svg>
 </div>
-<div class="caption">그림 2-1. 게시글 요청 하나가 컨트롤러, 서비스, 리포지토리를 거쳐 H2까지 전달되고, 결과를 JSON으로 응답합니다</div>
-<p>이 그림의 왼쪽 다섯 줄이 이번 챕터에서 만들 게시판 API 전부입니다. 오른쪽 세 층은 요청이 차례로 지나는 계층으로, 하나씩 직접 만들며 채워 나갑니다.</p>
+<div class="caption">그림 2-1. 챕터 2의 실습 흐름</div>
 <div class="goal-box">
 <p><strong>이번 챕터가 끝나면</strong></p>
 <ul>
-<li>REST API가 무엇이고, 게시판을 왜 자원으로 다루는지 이해합니다</li>
+<li>REST API가 무엇이고, 게시글을 주소로 가리키고 메서드로 다루는 방식을 이해합니다</li>
 <li>객체와 테이블의 생김새 차이를 JPA가 어떻게 메우는지, JPQL은 어떻게 사용하는지, 영속성 컨텍스트의 캐싱·쓰기 지연·더티체킹이 무엇인지 설명할 수 있습니다</li>
 <li>엔티티, 리포지토리, 서비스, 컨트롤러를 직접 만들어 게시글을 저장하고 조회하는 API를 완성하고, 단위 테스트로 검증합니다</li>
 <li>요청 하나가 톰캣에서 데이터베이스까지 어떤 계층을 지나는지 그릴 수 있습니다</li>
@@ -98,7 +97,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 └── BoardRepositoryTest.java      # [작성] 단위 테스트</div>
 <p>핵심 로직 자리는 비어 있습니다. 챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
-<p>이 파일들이 앞의 한눈에 보기 그림에서 본 세 층을 이룹니다. 각 클래스가 담당하는 역할은 다음과 같습니다.</p>
+<p>이 파일들이 앞의 그림 2-1에서 본 세 층을 이룹니다. 각 클래스가 담당하는 역할은 다음과 같습니다.</p>
 <table>
 <thead>
 <tr>
@@ -134,9 +133,11 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </tbody>
 </table>
 <h2>2.1 REST API</h2>
-<p>REST API(Representational State Transfer API)는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트가 주소(URI)로 자원을 가리키고, HTTP 메서드로 자원에 대한 요청과 응답을 처리합니다.</p>
+<p><strong>REST API(Representational State Transfer API)</strong> 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 주소(URI)로 무엇을 원하는지 가리키고, HTTP 메서드로 그것에 무엇을 할지 나타냅니다.</p>
+<p>이때 주소가 가리키는 것을 <strong>자원(Resource)</strong> 이라고 합니다. 예를 들어 게시판 서버라면 게시글 목록과 1번 게시글이 각각 자원이고, <code>/boards</code>와 <code>/boards/1</code>이 그 주소가 됩니다.</p>
 <h3>2.1.1 REST API 탄생 배경</h3>
-<p>REST API가 왜 지금의 방식이 됐는지 거슬러 올라가 보겠습니다. 초창기 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 일만 했습니다. 브라우저가 주소를 요청하면 서버는 주소가 가리키는 파일을 찾아 그대로 보냈습니다.</p>
+<p>REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 단계로 거슬러 올라가 보겠습니다.</p>
+<p>초창기의 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 역할만 했습니다. 브라우저가 특정 주소를 요청하면, 서버는 그 주소에 있는 파일을 찾아 있는 그대로 보내주었습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="브라우저와 서버가 마주 보고 있다. 브라우저가 서버로 요청을 보내면, 서버는 문서나 이미지 같은 정적 자원을 그대로 돌려준다.">
   <defs>
@@ -152,8 +153,8 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 정적 자원</text>
 </svg>
 </div>
-<div class="caption">그림 2-2. 초창기 서버는 요청을 받으면 미리 만들어 둔 정적 자원을 그대로 돌려줍니다</div>
-<p>이후 인터넷이 커지면서 서버는 WAS(Web Application Server)로 발전했습니다. 돌려주는 것이 미리 만들어 둔 파일에서 요청마다 새로 만든 HTML 화면으로 바뀌었습니다. 다만 HTML 화면을 해석하는 것은 여전히 브라우저뿐이었습니다.</p>
+<div class="caption">그림 2-2. 초창기 서버의 정적 응답</div>
+<p>이후 인터넷이 발전하면서 서버는 단순한 파일 전달을 넘어 WAS(웹 애플리케이션 서버) 형태로 진화했습니다. 요청이 들어올 때마다 서버가 상황에 맞는 HTML 화면을 새로 만들어 응답하기 시작한 것입니다. 하지만 이때까지만 해도 서버가 만든 HTML 화면을 받아보는 대상은 오직 '웹 브라우저'뿐이었습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 자리의 브라우저와 서버. 브라우저가 요청을 보내면 서버가 HTML 화면을 만들어 동적 자원으로 돌려준다.">
   <defs>
@@ -170,8 +171,8 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 동적 자원</text>
 </svg>
 </div>
-<div class="caption">그림 2-3. WAS는 요청을 받을 때마다 화면을 만들어 돌려줍니다</div>
-<p>문제는 서버에 요청을 보내는 것이 브라우저만이 아니게 됐다는 점입니다. 스마트폰 앱, TV, 다른 서버까지 같은 데이터를 요청하기 시작했습니다. 이들에게 HTML 화면을 통째로 넘기는 것은 맞지 않습니다.</p>
+<div class="caption">그림 2-3. WAS의 동적 화면 생성</div>
+<p>문제는 스마트폰 앱, 스마트 TV, 심지어 다른 서버들까지 등장하면서 시작됐습니다. 다양한 기기들이 서버에 동일한 데이터를 요청하기 시작했는데, 브라우저 전용인 'HTML 화면'을 통째로 넘겨주는 것은 이들에게 전혀 맞지 않았습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 640 320" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에 브라우저, 스마트폰, TV, 다른 서버 네 개가 세로로 놓여 있고 오른쪽에 서버가 있다. 네 기기가 저마다 서버와 양방향 화살표로 이어져 같은 데이터를 주고받는다.">
   <defs>
@@ -194,63 +195,20 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <line x1="208" y1="273" x2="422" y2="200" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
 </svg>
 </div>
-<div class="caption">그림 2-4. 브라우저뿐 아니라 여러 기기가 같은 서버에 요청을 보내고 같은 데이터를 받아 갑니다</div>
-<p>그래서 서버는 화면 대신 데이터만, 그것도 어떤 기기든 해석할 수 있는 형식으로 넘기는 방향으로 바뀌었습니다. 여기에 사용하는 형식이 JSON입니다.</p>
-<h3>2.1.2 JSON과 자원</h3>
-<p>우리가 만들 서버도 화면을 돌려주지 않고 게시글 데이터를 JSON 형식으로 주고받습니다. JSON(JavaScript Object Notation)은 데이터를 키와 값의 쌍으로 표현하는, 사람이 읽기 쉬운 텍스트 형식입니다. 게시글 하나는 이런 모습입니다.</p>
+<div class="caption">그림 2-4. REST API로 자원에 접근하는 여러 기기</div>
+<p>결국 서버는 무거운 화면(HTML) 대신 '데이터' 그 자체만 전달하는 방향으로 변화했습니다. 서버가 HTML이 아닌 JSON이나 XML 같은 데이터를 반환하고, 클라이언트가 이를 받아 화면 구성이나 로직을 처리하는 방식이 REST API입니다.</p>
+<p>REST API 방식을 활용하면 브라우저뿐 아니라 스마트폰, TV, IoT 기기, 다른 서버에서도 자원에 접근할 수 있어, 다양한 플랫폼에서 활용 가능한 서버로 확장할 수 있습니다.</p>
+<h3>2.1.2 JSON</h3>
+<p>그렇다면 서버는 어떤 형식으로 데이터를 넘겨줄까요? 이때 가장 널리 쓰이는 표준 형식이 바로 JSON입니다.</p>
+<p><strong>JSON(JavaScript Object Notation)</strong> 은 데이터를 '키(Key)'와 '값(Value)'의 쌍으로 묶어 표현하는 텍스트 형식입니다. 구조가 단순해서 기계뿐만 아니라 사람도 직관적으로 읽고 이해하기 쉽다는 장점이 있습니다. 게시글 한 건을 JSON으로 표현하면 이런 모습입니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;첫 번째 게시글&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;안녕하세요&quot;</span>
 <span class="p">}</span></div>
-<p>위 JSON에 담긴 게시글처럼, REST에서 다루려는 대상을 자원(Resource)이라고 부르고, 각 자원을 주소로 가리킵니다.</p>
-<h3>2.1.3 요청과 응답</h3>
-<p>브라우저와 서버가 주고받는 요청과 응답에는 정해진 형식이 있습니다. 요청은 요청 라인(Request Line), 헤더(Header), 바디(Body) 세 부분으로 이루어집니다. 요청 라인에는 HTTP 메서드와 주소가 들어갑니다. 헤더에는 데이터 형식 같은 부가 정보가 담깁니다. 바디에는 서버로 보낼 데이터가 담깁니다.</p>
-<div class="svg-figure">
-<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 요청 라인에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
-  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="84" y="68" font-size="16" font-weight="800" fill="#3730a3">POST /api/boards</text>
-  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
-  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="13" fill="#334155">{ "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
-  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">요청 라인</text>
-  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
-  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
-</svg>
-</div>
-<div class="caption">그림 2-5. 요청은 메서드와 주소를 담은 요청 라인, 헤더, 바디로 이루어집니다</div>
-<p>응답도 응답 라인(Status Line), 헤더, 바디 세 부분으로 이루어집니다. 응답 라인에는 요청이 어떻게 처리됐는지 알리는 상태 코드가 들어갑니다. 게시글 목록을 요청하면 앞에서 본 JSON이 바디에 담겨 응답됩니다.</p>
-<div class="svg-figure">
-<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
-  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="84" y="68" font-size="16" font-weight="800" fill="#c2410c">200 OK</text>
-  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
-  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="13" fill="#334155">{ "id": 1, "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
-  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">응답 라인</text>
-  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
-  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
-</svg>
-</div>
-<div class="caption">그림 2-6. 응답은 상태 코드를 담은 응답 라인, 헤더, 바디로 이루어집니다</div>
-<h3>2.1.4 메서드와 주소</h3>
-<p>주소는 어떤 자원인지를 가리키고, 자원에 무엇을 할지는 HTTP 메서드로 나타냅니다. 게시판에서 사용하는 메서드는 네 가지입니다.</p>
+<h3>2.1.3 메서드와 주소</h3>
+<p>REST API의 핵심은 <strong>무엇을(주소)</strong>, <strong>어떻게(메서드)</strong> 할 것인가를 명확하게 나누는 데 있습니다. 주소(URI)가 조작할 대상(자원)을 가리킨다면, 그 대상에 어떤 작업을 할지는 HTTP 메서드가 결정합니다.</p>
+<p>게시판을 예로 들면, 게시글이라는 자원을 다룰 때 주로 다음 네 가지 메서드를 사용합니다.</p>
 <table>
 <thead>
 <tr>
@@ -282,7 +240,8 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </tr>
 </tbody>
 </table>
-<p>주소를 짓는 데도 몇 가지 약속이 있습니다.</p>
+<p>이처럼 HTTP 메서드를 통해 <strong>행위(어떻게)</strong> 를 명확히 분리하고 나면, 주소에는 온전히 <strong>자원(무엇을)</strong> 만 남게 됩니다.</p>
+<p>REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다루는지 직관적으로 예측할 수 있도록, 자원의 이름을 지을 때 지켜야 할 몇 가지 권장 규칙을 두고 있습니다.</p>
 <table>
 <thead>
 <tr>
@@ -293,47 +252,101 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </thead>
 <tbody>
 <tr>
-<td>소문자로 쓴다</td>
+<td>주소의 영어는 소문자로 쓴다</td>
 <td><code>/boards</code></td>
 <td><code>/Boards</code></td>
 </tr>
 <tr>
-<td>행위는 메서드로 표현한다</td>
+<td>주소에 행위를 넣지 않고 메서드로 표현한다</td>
 <td><code>PUT /boards/1</code></td>
 <td><code>/boards/1/put</code></td>
 </tr>
 <tr>
-<td>자원은 복수형으로 쓴다</td>
+<td>자원은 단수형이 아닌 복수형으로 쓴다</td>
 <td><code>/boards/1</code></td>
 <td><code>/board/1</code></td>
 </tr>
 <tr>
-<td>긴 단어는 하이픈으로 연결한다</td>
+<td>긴 단어는 하이픈으로 구분한다</td>
 <td><code>/check-username</code></td>
 <td><code>/check_username</code></td>
 </tr>
 <tr>
-<td>확장자를 붙이지 않는다</td>
-<td><code>/users</code></td>
+<td>확장자를 붙이지 않고 헤더에 타입을 담는다</td>
+<td><code>/users</code> + 헤더 <code>application/json</code></td>
 <td><code>/users.json</code></td>
 </tr>
 </tbody>
 </table>
-<p>확장자 대신 헤더에 타입을 담습니다.</p>
+<h3>2.1.4 요청과 응답</h3>
+<p>클라이언트와 서버가 통신할 때는 미리 정해진 규격에 맞춰 메시지를 주고받습니다. 이 메시지는 클라이언트가 보내는 <strong>요청(Request)</strong> 과 서버가 돌려주는 <strong>응답(Response)</strong> 으로 나뉘며, 둘 다 세 부분으로 이루어집니다.</p>
+<p>먼저 HTTP 요청의 세 부분은 <strong>요청 라인(Request Line)</strong>, <strong>헤더(Header)</strong>, <strong>바디(Body)</strong> 입니다.</p>
+<ul>
+<li><strong>요청 라인</strong>: HTTP 메서드와 주소가 들어갑니다.</li>
+<li><strong>헤더</strong>: 바디에 담긴 데이터의 형식(<code>Content-Type</code>) 등 서버가 참고할 부가 정보가 담깁니다.</li>
+<li><strong>바디</strong>: 서버로 보낼 실제 데이터가 담깁니다.</li>
+</ul>
+<div class="svg-figure">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 요청 라인에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
+  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="84" y="68" font-size="16" font-weight="800" fill="#3730a3">POST /api/boards</text>
+  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="216" font-size="13" fill="#334155">{ "title": "첫 번째 게시글",</text>
+  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">요청 라인</text>
+  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+</svg>
+</div>
+<div class="caption">그림 2-5. HTTP 요청의 구조</div>
+<p>요청을 받아 처리한 서버는 마찬가지로 세 부분으로 나뉜 HTTP 응답을 돌려줍니다. 다만 첫 줄은 요청 라인이 아니라 <strong>응답 라인(Status Line)</strong> 입니다.</p>
+<ul>
+<li><strong>응답 라인</strong>: 요청이 성공했는지(200 OK), 아니면 문제가 생겼는지를 나타내는 <strong>상태 코드(Status Code)</strong> 가 들어갑니다.</li>
+<li><strong>헤더</strong>: 클라이언트에게 돌려주는 데이터의 형식 등 부가 정보가 담깁니다.</li>
+<li><strong>바디</strong>: 클라이언트가 요청한 실제 데이터가 담깁니다. 게시글 하나를 요청했다면 앞에서 본 JSON이 이 바디에 담겨 옵니다.</li>
+</ul>
+<div class="svg-figure">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
+  <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="84" y="68" font-size="16" font-weight="800" fill="#c2410c">200 OK</text>
+  <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="84" y="216" font-size="13" fill="#334155">{ "id": 1, "title": "첫 번째 게시글",</text>
+  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">응답 라인</text>
+  <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
+  <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+</svg>
+</div>
+<div class="caption">그림 2-6. HTTP 응답의 구조</div>
 <h2>2.2 프로젝트 생성과 구조</h2>
-<p>앞에서 옮겨 온 <code>ch02</code>는 스프링 부트 프로젝트입니다. 스프링 부트는 스프링을 사용하는 데 필요한 것들을 미리 묶어 둔 도구로, 내장 서버를 갖추고 설정을 맞추는 일을 대신 해 줍니다. 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.</p>
+<p>스프링 부트는 스프링을 사용하는 데 필요한 것들을 미리 묶어 둔 도구로, 내장 서버를 갖추고 설정을 맞추는 일을 대신 해 줍니다. 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.</p>
 <h3>2.2.1 프로젝트 생성</h3>
-<p>실습은 클론한 <code>ch02</code>로 진행하지만, 이 프로젝트가 어떻게 만들어졌는지는 알아 두어야 합니다. IDE는 Cursor를 기준으로 설명하며, VS Code도 화면이 같습니다.</p>
 <p>먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 View &gt; Extensions를 선택합니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\01_extensions-menu.png" alt="" /><div class="caption">그림 2-7. 상단 탭 View에서 Extensions를 선택합니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\01_extensions-menu.png" alt="" /><div class="caption">그림 2-7. Extensions 메뉴 선택</div></div>
 <p>검색창에 java를 넣어 Extension Pack for Java를 설치합니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\02_java-pack.png" alt="" /><div class="caption">그림 2-8. 자바 개발에 필요한 확장을 한 번에 묶은 Extension Pack for Java입니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\02_java-pack.png" alt="" /><div class="caption">그림 2-8. Extension Pack for Java</div></div>
 <p>이어서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\03_spring-pack.png" alt="" /><div class="caption">그림 2-9. Spring Boot Extension Pack에는 Spring Initializr Java Support가 함께 들어 있습니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\03_spring-pack.png" alt="" /><div class="caption">그림 2-9. Spring Boot Extension Pack</div></div>
 <p>설치가 끝나면 View &gt; Command Palette를 엽니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\04_command-palette.png" alt="" /><div class="caption">그림 2-10. 상단 탭 View에서 Command Palette를 선택합니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\04_command-palette.png" alt="" /><div class="caption">그림 2-10. Command Palette 선택</div></div>
 <p>spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\05_initializr.png" alt="" /><div class="caption">그림 2-11. Gradle 프로젝트를 만드는 명령을 고릅니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\05_initializr.png" alt="" /><div class="caption">그림 2-11. Gradle 프로젝트 생성 명령</div></div>
 <p>이후 묻는 항목에 이 값들을 넣습니다.</p>
 <table>
 <thead>
@@ -397,9 +410,9 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </tbody>
 </table>
 <p>생성이 끝나면 이런 구조가 만들어집니다. <code>build.gradle</code>에 방금 고른 의존성이 적혀 있고, 코드는 <code>src</code> 아래에 들어갑니다.</p>
-<div class="chapter-image"><img src="..\assets\CH2\setup\06_project-tree.png" alt="" /><div class="caption">그림 2-12. 생성된 스프링 부트 프로젝트의 구조입니다</div></div>
+<div class="chapter-image"><img src="..\assets\CH2\setup\06_project-tree.png" alt="" /><div class="caption">그림 2-12. 스프링 부트 프로젝트 구조</div></div>
 <h2>2.3 데이터베이스 설정과 엔티티</h2>
-<p>가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 엔티티(Entity)라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.</p>
+<p>가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 <strong>엔티티(Entity)</strong> 라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.</p>
 <p><code>board/Board.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/Board.java. 게시글 엔티티</div><span class="nd">@Data</span><span class="w"> </span><span class="c1">// 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다</span>
 <span class="nd">@Entity</span>
@@ -425,10 +438,10 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span></div>
 <p>게시글 두 건을 넣어 둡니다. 서버를 실행할 때마다 이 두 건으로 시작하므로, 목록 조회를 만들고 나면 바로 결과를 확인할 수 있습니다.</p>
 <h2>2.4 하이버네이트</h2>
-<p>앞에서 고른 의존성 가운데 Spring Data JPA는 객체와 테이블을 이어 주는 기술입니다. 자바의 객체(Object)와 데이터베이스의 테이블(Table)은 데이터를 담는 방식이 처음부터 다릅니다.</p>
+<p>앞에서 고른 의존성 가운데 Spring Data JPA는 객체와 테이블을 이어 주는 기술입니다. 자바의 <strong>객체(Object)</strong> 와 데이터베이스의 <strong>테이블(Table)</strong> 은 데이터를 담는 방식이 처음부터 다릅니다.</p>
 <h3>2.4.1 데이터를 담는 방식의 차이</h3>
-<p>데이터베이스는 데이터를 정확하게 보관하고 빠르게 찾기 위해 만들어졌습니다. 모든 데이터를 행(Row)과 열(Column)로 이루어진 표에 값으로만 담고, 한 칸에는 값 하나만 넣습니다. 다른 표를 가리켜야 할 때도 표 안에 표를 넣지 않고 외래 키(Foreign Key)라는 값을 공유합니다.</p>
-<p>반면 자바는 값을 공유하는 대신 객체를 직접 필드로 가집니다. 현실의 사물을 객체로 옮겨 다루기 위해 만들어졌기 때문입니다. 객체는 필드(상태)와 메서드(행위)를 함께 가지고, 다른 객체를 필드로 가지는 참조(Reference) 방식으로 서로를 연결합니다.</p>
+<p>데이터베이스는 데이터를 정확하게 보관하고 빠르게 찾기 위해 만들어졌습니다. 모든 데이터를 <strong>행(Row)</strong> 과 <strong>열(Column)</strong> 로 이루어진 표에 값으로만 담고, 한 칸에는 값 하나만 넣습니다. 다른 표를 가리켜야 할 때도 표 안에 표를 넣지 않고 <strong>외래 키(Foreign Key)</strong> 라는 값을 공유합니다.</p>
+<p>반면 자바는 값을 공유하는 대신 객체를 직접 필드로 가집니다. 현실의 사물을 객체로 옮겨 다루기 위해 만들어졌기 때문입니다. 객체는 필드(상태)와 메서드(행위)를 함께 가지고, 다른 객체를 필드로 가지는 <strong>참조(Reference)</strong> 방식으로 서로를 연결합니다.</p>
 <p>담는 방식이 다르니 표현할 수 있는 것도 어긋납니다. 어긋나는 지점은 크게 세 군데입니다.</p>
 <table>
 <thead>
@@ -497,7 +510,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="645" y="232" text-anchor="middle" font-size="11" fill="#475569">필드로 가집니다</text>
 </svg>
 </div>
-<div class="caption">그림 2-13. 데이터베이스는 한 칸에 값 하나만 담지만, 자바 객체는 다른 객체와 컬렉션도 필드로 가집니다</div>
+<div class="caption">그림 2-13. 데이터베이스와 자바 객체의 차이</div>
 <p>이 차이를 가장 잘 보여 주는 예가 햄버거 세트입니다. 자바에서는 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 가집니다. 세트 하나만 들고 다니면 그 안의 내용물을 바로 꺼내 씁니다. 데이터베이스는 세트라는 상자 안에 다른 음식을 집어넣지 못합니다. 햄버거, 콜라, 감자 표를 각각 만들고 외래 키로 &quot;우리는 같은 세트&quot;라고 연결해 둘 뿐입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 자바 객체 세상에서는 햄버거 세트 객체가 햄버거와 콜라와 감자를 필드로 가진다. 오른쪽 데이터베이스 테이블 세상에서는 햄버거 표와 콜라 표와 감자 표가 따로 있고 햄버거 세트 표를 외래 키로 참조한다. 가운데 하이버네이트가 두 세상을 일치시킨다.">
@@ -543,7 +556,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <text x="728" y="252" text-anchor="middle" font-size="11" fill="#64748b">외래 키로 연결만 해 둡니다</text>
 </svg></p>
 </div>
-<div class="caption">그림 2-14. 자바는 세트 객체가 내용물을 가지지만, 데이터베이스는 표를 따로 두고 외래 키로 연결합니다</div>
+<div class="caption">그림 2-14. 세트를 담는 방식의 차이</div>
 <p>이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.</p>
 <h3>2.4.2 직접 SQL을 쓰던 방식</h3>
 <p>쪼개고 모으는 일을 대신해 주는 기술이 없을 때는 개발자가 직접 했습니다. 데이터를 저장하거나 조회할 때마다 SQL을 작성하고, 돌아온 결과를 한 칸씩 꺼내 객체에 채워 넣었습니다.</p>
@@ -574,7 +587,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="405" y="204" text-anchor="middle" font-size="13" fill="#475569">조회 결과는 다시 객체로 반환됩니다</text>
 </svg>
 </div>
-<div class="caption">그림 2-15. 개발자가 객체로 짠 코드를 ORM이 SQL로 바꿔 전하고, 결과를 다시 객체로 돌려줍니다</div>
+<div class="caption">그림 2-15. ORM의 변환 과정</div>
 <p>우리가 프로젝트에 추가한 Spring Data JPA 의존성에는 하이버네이트가 포함되어 있어, 복잡한 설정이나 반복적인 SQL 작성 없이도 객체와 데이터베이스를 연결할 수 있습니다.</p>
 <table>
 <thead>
@@ -599,8 +612,9 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </tbody>
 </table>
 <h2>2.5 리포지토리의 다섯 기능</h2>
-<p>엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 리포지토리(Repository)가 담당합니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.</p>
-<p>리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 <strong>EntityManager</strong>입니다. 스프링이 빈으로 등록해 두므로 직접 생성하지 않고 생성자로 주입받아 사용합니다. 이를 위해 <code>board/BoardRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p>엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 <strong>리포지토리(Repository)</strong> 가 담당합니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.</p>
+<p>리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 <strong>EntityManager</strong>입니다. 스프링이 빈으로 등록해 두므로 직접 생성하지 않고 생성자로 주입받아 사용합니다.</p>
+<p>이를 위해 <code>board/BoardRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRepository.java. 리포지토리 골격</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Repository</span><span class="w"> </span><span class="c1">// 스프링이 빈으로 등록한다</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="p">{</span>
@@ -618,7 +632,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p><code>find()</code> 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.</p>
 <div class="code-block highlight" data-lang="sql"><span class="k">select</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">?</span></div>
 <h3>2.5.2 게시글 전체 조회</h3>
-<p><strong>EntityManager</strong>에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 JPQL(Java Persistence Query Language)로 질의를 직접 적어 실행합니다.</p>
+<p><strong>EntityManager</strong>에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 <strong>JPQL(Java Persistence Query Language)</strong> 로 질의를 직접 적어 실행합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardRepository.java. JPQL로 전체 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">em</span><span class="p">.</span><span class="na">createQuery</span><span class="p">(</span><span class="s">&quot;select b from Board b&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">class</span><span class="p">).</span><span class="na">getResultList</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
@@ -658,7 +672,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <span class="w">  </span><span class="p">.</span><span class="na">setParameter</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span>
 <span class="w">  </span><span class="p">.</span><span class="na">getResultList</span><span class="p">();</span></div>
 <h2>2.7 영속성 컨텍스트</h2>
-<p>리포지토리 코드를 보면 <code>persist()</code>나 <code>find()</code>를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. <strong>EntityManager</strong>가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 영속성 컨텍스트(Persistence Context)라고 합니다. <code>persist()</code>나 <code>find()</code>로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.</p>
+<p>리포지토리 코드를 보면 <code>persist()</code>나 <code>find()</code>를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. <strong>EntityManager</strong>가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 <strong>영속성 컨텍스트(Persistence Context)</strong> 라고 합니다. <code>persist()</code>나 <code>find()</code>로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.</p>
 <p>영속성 컨텍스트가 하는 일은 크게 세 가지입니다.</p>
 <h3>2.7.1 캐싱</h3>
 <p>캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 담아 두고, 같은 엔티티를 다시 찾으면 데이터베이스까지 가지 않고 영속성 컨텍스트에서 바로 돌려주는 동작입니다. 그래서 같은 게시글을 두 번 조회해도 select 문은 한 번만 실행됩니다.</p>
@@ -689,7 +703,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">4. 엔티티 반환</text>
 </svg>
 </div>
-<div class="caption">그림 2-16. 처음 조회는 캐시에 없어 데이터베이스까지 가서 읽어 온 뒤 영속화합니다</div>
+<div class="caption">그림 2-16. 첫 조회와 영속화</div>
 <p>같은 게시글을 한 번 더 조회하면 데이터베이스에 접근하지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 반환합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 게시글을 다시 em.find로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려주고 데이터베이스에는 접근하지 않는다.">
@@ -713,7 +727,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">2. 캐싱</text>
 </svg>
 </div>
-<div class="caption">그림 2-17. 같은 게시글을 다시 조회하면 캐시에서 바로 돌려주어 select 문이 다시 실행되지 않습니다</div>
+<div class="caption">그림 2-17. 캐시 조회</div>
 <h3>2.7.2 쓰기 지연</h3>
 <p>쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. <code>persist()</code>로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, <code>flush()</code> 시점에 만들어진 순서대로 한꺼번에 실행됩니다.</p>
 <div class="svg-figure">
@@ -744,7 +758,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="669" y="216" text-anchor="middle" font-size="10" fill="#6b7280">insert 문 전송</text>
 </svg>
 </div>
-<div class="caption">그림 2-18. 저장 명령은 곧바로 나가지 않고 버퍼에 쌓였다가, flush 시점에 INSERT 문으로 한꺼번에 데이터베이스에 전송됩니다</div>
+<div class="caption">그림 2-18. 쓰기 지연</div>
 <div class="tip">
 <p><strong>IDENTITY 전략에서는 insert가 즉시 실행됩니다</strong></p>
 <p>일반적으로는 insert도 버퍼에 모였다가 flush 시점에 실행됩니다. 다만 이 책의 엔티티는 기본 키를 <code>@GeneratedValue(IDENTITY)</code>로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 <code>persist()</code>를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연을 확인할 수 있는 것은 수정과 삭제입니다.</p>
@@ -776,7 +790,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="470" y="122" text-anchor="middle" font-size="10" fill="#64748b">2. 영속화</text>
 </svg>
 </div>
-<div class="caption">그림 2-19. 조회한 엔티티가 영속화되면서 조회 당시 상태가 스냅샷으로 함께 보관됩니다</div>
+<div class="caption">그림 2-19. 스냅샷 보관</div>
 <p>영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, <code>flush()</code> 시점에 데이터베이스로 내보냅니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속 엔티티의 제목을 바꾸면 스냅샷과 달라져 변경이 감지되고, update 문이 버퍼에 쌓였다가 em.flush 시점에 데이터베이스로 전송되어 반영된다.">
@@ -808,12 +822,12 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="462" y="192" text-anchor="middle" font-size="10" fill="#475569">5. em.flush()</text>
 </svg>
 </div>
-<div class="caption">그림 2-20. 값이 바뀌면 스냅샷과 비교해 변경을 감지하고, update 문이 flush 시점에 데이터베이스로 전송됩니다</div>
+<div class="caption">그림 2-20. 더티체킹</div>
 <p>쓰기 지연과 더티체킹이 만든 SQL은 <code>flush()</code> 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 <code>flush()</code>를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 <strong>@Transactional</strong>이 끝날 때 스프링이 <code>flush()</code>를 호출합니다.</p>
 <p>리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.</p>
 <h2>2.8 단위 테스트</h2>
 <p>리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.</p>
-<p>커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 분리해 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 단위 테스트(Unit Test)입니다.</p>
+<p>커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 분리해 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 <strong>단위 테스트(Unit Test)</strong> 입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 커피콩을 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
   <defs>
@@ -872,7 +886,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="706" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
 </svg>
 </div>
-<div class="caption">그림 2-21. 두 기능을 한 번에 돌리면 원인을 찾기 어렵지만, 따로 분리해 검증하면 문제가 난 기능만 고치면 됩니다</div>
+<div class="caption">그림 2-21. 단위 테스트가 필요한 이유</div>
 <p>리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 <strong>@DataJpaTest</strong>를 제공합니다. 여기에 우리가 만든 <strong>BoardRepository</strong>를 <strong>@Import</strong>로 함께 올려 검증합니다.</p>
 <h3>2.8.1 given-when-eye 패턴</h3>
 <p>테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 출력해 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.</p>
@@ -902,7 +916,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="740" y="200" text-anchor="middle" font-size="10" fill="#6b7280">원래 then(assert) 자리를 학습 단계에선 eye로 대체합니다</text>
 </svg>
 </div>
-<div class="caption">그림 2-22. 테스트는 준비(given), 실행(when), 확인(eye) 세 단계로 작성합니다</div>
+<div class="caption">그림 2-22. given-when-eye 세 단계</div>
 <h2>2.9 리포지토리 테스트 작성</h2>
 <p><code>test/.../BoardRepositoryTest.java</code>를 열어 먼저 클래스 골격을 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> BoardRepositoryTest.java. 테스트 클래스 골격</div><span class="nd">@Import</span><span class="p">(</span><span class="n">BoardRepository</span><span class="p">.</span><span class="na">class</span><span class="p">)</span>
@@ -988,7 +1002,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   path: assets/CH2/terminal/02_test-pass.png
   desc: BoardRepositoryTest 실행 결과. findById_test, findAll_test, save_test, update_test, delete_test 다섯 개가 모두 초록색으로 통과한 화면. IDE의 테스트 러너 창 또는 gradle 콘솔 BUILD SUCCESSFUL. update_test의 콘솔 출력에 "Board title : title-update"가 보이면 더욱 좋음.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_test-pass.png" alt="" /><div class="caption">그림 2-23. 리포지토리 테스트가 모두 통과했습니다. update_test는 save 호출 없이도 수정이 반영됐음을 보여 줍니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_test-pass.png" alt="" /><div class="caption">그림 2-23. 리포지토리 테스트 실행 결과</div></div>
 <p>서버를 실행하지 않고 리포지토리만 분리해도 조회·저장·수정·삭제가 제대로 동작하는지 확인할 수 있습니다.</p>
 <h2>2.10 3계층 아키텍처</h2>
 <p>리포지토리만 분리해 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.</p>
@@ -1018,7 +1032,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="425" y="247" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
-<div class="caption">그림 2-24. 한 클래스에 다 넣으면 성격이 다른 코드가 한곳에 섞입니다</div>
+<div class="caption">그림 2-24. 한 클래스에 섞인 코드</div>
 <p>성격이 같은 코드끼리 나눠 두면 클래스 하나가 담당하는 일이 하나로 줄어듭니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 고치면 됩니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="파일 세 개가 위아래로 놓여 있다. 컨트롤러 파일은 요청 받기, 서비스 파일은 흐름 정하기, 리포지토리 파일은 데이터베이스 다루기만 담고 있다.">
@@ -1039,10 +1053,11 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <text x="425" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
 </svg>
 </div>
-<div class="caption">그림 2-25. 층을 나누면 같은 성격의 코드끼리 한곳에 모입니다</div>
-<p>이렇게 일의 성격대로 층을 나누는 구조를 계층형 아키텍처(Layered Architecture)라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다.</p>
+<div class="caption">그림 2-25. 계층으로 나눈 코드</div>
+<p>이렇게 일의 성격대로 층을 나누는 구조를 <strong>계층형 아키텍처(Layered Architecture)</strong> 라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다.</p>
 <h2>2.11 게시글 목록</h2>
-<p>먼저 서비스와 컨트롤러의 골격을 작성합니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다. 이를 위해 <code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p>먼저 서비스와 컨트롤러의 골격을 작성합니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.</p>
+<p>이를 위해 <code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardService.java. 서비스 골격</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span><span class="w"> </span><span class="c1">// 스프링이 빈으로 등록한다</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardService</span><span class="w"> </span><span class="p">{</span>
@@ -1055,7 +1070,8 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardService.java. 게시글 목록</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">게시글목록</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findAll</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>이어서 요청을 받을 컨트롤러를 작성합니다. 이를 위해 <code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p>이어서 요청을 받을 컨트롤러를 작성합니다.</p>
+<p>이를 위해 <code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardController.java. 컨트롤러 골격</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
 <span class="nd">@RequestMapping</span><span class="p">(</span><span class="s">&quot;/api/boards&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// 공통 주소</span>
@@ -1084,7 +1100,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   path: assets/CH2/terminal/01_api-response.png
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\01_api-response.png" alt="" /><div class="caption">그림 2-26. 목록 조회 요청에 게시글 두 개가 <strong>Resp</strong> 형식에 감싸여 담긴 응답입니다</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\01_api-response.png" alt="" /><div class="caption">그림 2-26. 게시글 목록 응답</div></div>
 <h2>2.12 게시글 상세</h2>
 <p>상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 <code>findById()</code>를 호출합니다. 이를 반영하여 <code>board/BoardService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardService.java. 게시글 상세</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1097,7 +1113,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h2>2.13 게시글 쓰기</h2>
-<p>작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 들어온 값을 받을 클래스가 필요합니다. 계층 사이에서 데이터를 전달하는 이 클래스를 DTO(Data Transfer Object)라고 합니다.</p>
+<p>작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 들어온 값을 받을 클래스가 필요합니다. 계층 사이에서 데이터를 전달하는 이 클래스를 <strong>DTO(Data Transfer Object)</strong> 라고 합니다.</p>
 <p><code>board/BoardRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 20</span> board/BoardRequest.java. 요청 데이터 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1120,7 +1136,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p><code>new Board()</code>로 생성한 엔티티는 비영속 상태이고, <code>boardRepository.save(board)</code>를 호출하는 순간 영속 상태가 됩니다.</p>
 <div class="tip">
 <p><strong>트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다</strong></p>
-<p>트랜잭션(Transaction)은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 <strong>@Transactional</strong>을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.</p>
+<p><strong>트랜잭션(Transaction)</strong> 은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로 쓰기 메서드에만 <strong>@Transactional</strong>을 붙이고, 읽기만 하는 목록·상세에는 붙이지 않습니다.</p>
 </div>
 <p>컨트롤러는 요청 바디의 JSON을 <strong>@RequestBody</strong>로 받아 DTO에 담습니다. <code>board/BoardController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 22</span> board/BoardController.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@PostMapping</span>
@@ -1163,10 +1179,10 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>삭제는 반환할 데이터가 없으므로 <code>Resp.ok(null)</code>로 성공만 응답합니다.</p>
 <h2>2.16 요청 처리 흐름</h2>
 <p>지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 요청을 보낸 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.</p>
-<p>먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 생성한 뒤, 미리 준비해 둔 스레드 풀(Thread Pool)에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 생성하지 않고 빌려 쓴 다음 반납하는 방식이므로, 요청이 몰려도 서버가 감당할 수 있습니다.</p>
+<p>먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 생성한 뒤, 미리 준비해 둔 <strong>스레드 풀(Thread Pool)</strong> 에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 생성하지 않고 빌려 쓴 다음 반납하는 방식이므로, 요청이 몰려도 서버가 감당할 수 있습니다.</p>
 <p>요청은 스프링 컨테이너로 넘어갑니다. 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.</p>
 <p>컨트롤러는 요청에서 값을 꺼내 서비스로 전달합니다. 서비스에서는 <strong>@Transactional</strong>이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 <code>flush()</code>가 일어나는 지점이 이 순간입니다.</p>
-<p>서비스는 리포지토리를 호출하고, 리포지토리는 <strong>EntityManager</strong>로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 생성된 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 커넥션 풀(Connection Pool)에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지로, 요청마다 새로 맺지 않고 미리 준비해 둔 것을 빌려 쓴 뒤 반납합니다.</p>
+<p>서비스는 리포지토리를 호출하고, 리포지토리는 <strong>EntityManager</strong>로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 생성된 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 <strong>커넥션 풀(Connection Pool)</strong> 에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지로, 요청마다 새로 맺지 않고 미리 준비해 둔 것을 빌려 쓴 뒤 반납합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청이 지나는 전체 경로. 윗줄에서 클라이언트가 톰캣으로 요청을 보내고, 톰캣은 스레드 풀에서 스레드를 꺼내 디스패처 서블릿으로 넘기며, 디스패처 서블릿이 담당 컨트롤러를 호출한다. 컨트롤러는 아랫줄의 서비스를 호출하고, 서비스에서 트랜잭션이 열린 채 리포지토리를 거쳐 영속성 컨텍스트로 전달된다. 영속성 컨텍스트가 만든 SQL은 커넥션 풀에서 빌린 연결로 데이터베이스에 전달된다.">
   <defs>
@@ -1210,7 +1226,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   <line x1="822" y1="262" x2="866" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
 </svg>
 </div>
-<div class="caption">그림 2-27. 요청 하나는 톰캣과 디스패처 서블릿을 지나 세 계층을 거치고, 영속성 컨텍스트와 커넥션 풀을 통해 데이터베이스로 전달됩니다</div>
+<div class="caption">그림 2-27. 요청 처리 흐름</div>
 <p>응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, <strong>@RestController</strong>가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.</p>
 <p>오픈이는 화면을 열어 게시글 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.</p>
 <p>동료가 화면 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.</p>

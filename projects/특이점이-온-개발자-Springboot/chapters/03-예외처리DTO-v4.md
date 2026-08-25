@@ -60,7 +60,7 @@
 </svg>
 </div>
 
-*그림 3-1. 챕터 2가 남긴 다섯 곳을 이번 챕터에서 모두 고칩니다*
+*그림 3-1. 챕터 3에서 고칠 다섯 곳*
 
 :::goal
 **이번 챕터가 끝나면**
@@ -135,7 +135,7 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 </svg>
 </div>
 
-*그림 3-2. 엔티티는 내부에 두고, 응답할 값만 DTO에 담아 내보냅니다*
+*그림 3-2. 엔티티와 DTO의 역할*
 
 ### 3.1.2 응답 DTO 만들기
 
@@ -231,11 +231,13 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 ## 3.4 예외 처리 추가
 
-**Optional**은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 래퍼(Wrapper) 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 `orElseThrow()` 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.
+**Optional**은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 **래퍼(Wrapper)** 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 `orElseThrow()` 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.
 
 ### 3.4.1 커스텀 예외 만들기
 
-예외 처리에 사용할 **Exception404**를 정의합니다. 이를 위해 `core/handler/ex/Exception404.java`를 열어 아래와 같이 작성합니다.
+예외 처리에 사용할 **Exception404**를 정의합니다.
+
+이를 위해 `core/handler/ex/Exception404.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 5] core/handler/ex/Exception404.java. 커스텀 예외
 public class Exception404 extends RuntimeException {
@@ -327,11 +329,13 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-3. 서비스에서 발생한 예외는 위로 전파되고, **@RestControllerAdvice**가 이를 가로채 JSON으로 바꿔 응답합니다*
+*그림 3-3. 전역 예외 처리 흐름*
 
 ## 3.5 서비스와 컨트롤러에 적용
 
-이제 **BoardService**가 예외 처리와 DTO 응답을 수행하도록 변경합니다. 이를 반영하여 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
+이제 **BoardService**가 예외 처리와 DTO 응답을 수행하도록 변경합니다.
+
+이를 반영하여 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 7] board/BoardService.java. 반환 타입을 DTO로, 없으면 예외
     public List<BoardResponse.DTO> 게시글목록() {
@@ -371,7 +375,9 @@ public class GlobalExceptionHandler {
     }
 ```
 
-컨트롤러는 서비스에서 전달받는 값의 타입만 DTO로 바뀝니다. 이를 반영하여 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
+컨트롤러는 서비스에서 전달받는 값의 타입만 DTO로 바뀝니다.
+
+이를 반영하여 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 8] board/BoardController.java. 응답 타입을 DTO로
     @GetMapping
@@ -417,7 +423,7 @@ GET http://localhost:8080/api/boards/1
   desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH3/terminal/01_board-detail-dto.png)
-*그림 3-4. 상세 조회 응답에는 DTO에 담긴 세 값만 담깁니다*
+*그림 3-4. 상세 조회 응답*
 
 앞에서 만든 전역 예외 처리기가 실제로 404를 돌려주는지, 없는 999번을 조회해 확인합니다.
 
@@ -432,7 +438,7 @@ GET http://localhost:8080/api/boards/999
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 ![](../assets/CH3/terminal/02_404-response.png)
-*그림 3-5. 없는 게시글을 조회하면 빈 값이 아니라 상태 코드 404를 담은 JSON을 응답합니다*
+*그림 3-5. 404 응답*
 
 오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.
 

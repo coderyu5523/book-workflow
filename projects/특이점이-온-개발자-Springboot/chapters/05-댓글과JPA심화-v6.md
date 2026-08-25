@@ -99,7 +99,7 @@
 </svg>
 </div>
 
-*그림 5-1. 테이블에서는 댓글에만 번호가 들어가지만, 자바에서는 게시글에 댓글 목록이 하나 더 생깁니다*
+*그림 5-1. 테이블과 자바 객체의 차이*
 
 :::goal
 **이번 챕터가 끝나면**
@@ -174,9 +174,11 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 </svg>
 </div>
 
-*그림 5-2. 게시글은 @OneToMany로 댓글 목록을, 댓글은 @ManyToOne으로 게시글을 참조합니다*
+*그림 5-2. 양방향 매핑*
 
-먼저 댓글 엔티티부터 정의합니다. **User** 엔티티와 **Board** 엔티티를 참조하는 필드를 포함하면, 각 댓글이 어떤 회원이 어떤 게시글에 작성했는지를 알 수 있습니다. 이를 위해 `reply/Reply.java`를 열어 아래와 같이 작성합니다.
+먼저 댓글 엔티티부터 정의합니다. **User** 엔티티와 **Board** 엔티티를 참조하는 필드를 포함하면, 각 댓글이 어떤 회원이 어떤 게시글에 작성했는지를 알 수 있습니다.
+
+이를 위해 `reply/Reply.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 1] reply/Reply.java. 댓글 엔티티
 @NoArgsConstructor
@@ -214,7 +216,9 @@ public class Reply {
 }
 ```
 
-양방향 매핑을 위해 **Board** 엔티티에 **Reply** 컬렉션을 필드로 추가합니다. 게시글에 달린 댓글을 한 번에 조회할 수 있도록 **List** 타입으로 선언하고, `mappedBy`에는 **Reply**에서 **Board**를 참조하는 필드 이름을 지정합니다. 이를 위해 `board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
+양방향 매핑을 위해 **Board** 엔티티에 **Reply** 컬렉션을 필드로 추가합니다. 게시글에 달린 댓글을 한 번에 조회할 수 있도록 **List** 타입으로 선언하고, `mappedBy`에는 **Reply**에서 **Board**를 참조하는 필드 이름을 지정합니다.
+
+이를 위해 `board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
 
 ```java [실습 2] board/Board.java. 댓글 목록 연관관계 추가
     // 이 관계의 주인은 Reply의 board 필드다
@@ -277,7 +281,7 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
   </div>
 </div>
 
-*그림 5-3. 즉시 로딩은 게시글을 조회하는 시점에 회원 테이블까지 조인해 함께 읽습니다*
+*그림 5-3. 즉시 로딩*
 
 출력한 값은 게시글 번호뿐인데도 회원 데이터를 읽었습니다. 게시글 목록처럼 제목과 내용만 사용하는 화면에서는 이 조회가 그대로 낭비됩니다. 이럴 때는 반대 전략인 지연 로딩을 선택합니다.
 
@@ -327,7 +331,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
   </div>
 </div>
 
-*그림 5-4. 지연 로딩은 작성자 이름을 사용하는 순간 회원 테이블을 한 번 더 읽습니다*
+*그림 5-4. 지연 로딩*
 
 :::tip
 **실무에서는 어떤 로딩 전략을 쓰는가**
@@ -339,7 +343,9 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 댓글 목록은 게시글 상세 화면에서 게시글과 함께 가져와야 합니다. 이때 지연 로딩을 사용하면 조회 쿼리가 여러 번 발생하므로, FETCH JOIN으로 한 번에 조회합니다.
 
-이때 작성자는 반드시 있으므로 JOIN으로 가져오고, 댓글은 없을 수도 있으므로 댓글과 댓글 작성자에는 LEFT OUTER JOIN을 적용합니다. 이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
+이때 작성자는 반드시 있으므로 JOIN으로 가져오고, 댓글은 없을 수도 있으므로 댓글과 댓글 작성자에는 LEFT OUTER JOIN을 적용합니다.
+
+이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
 ```java [실습 7] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
@@ -419,20 +425,24 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar로 로그인해 발급받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. body에 게시글(boardId 1, title1, content1, userId 1, username ssar)과 isOwner true가 담기고, replies 배열에 댓글 세 개(replyId 1·2는 ssar이 써서 isOwner true, replyId 3은 cos이 써서 isOwner false)가 이어지는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
-*그림 5-5. 상세 응답에 게시글과 댓글이 함께 담기고, 본인이 쓴 것에만 isOwner가 true입니다*
+*그림 5-5. 댓글이 담긴 상세 응답*
 
 게시글의 `isOwner`가 true이고, ssar가 쓴 1·2번 댓글도 true, cos가 쓴 3번 댓글은 false입니다.
 
 ## 5.4 댓글 쓰기
 
-댓글을 저장하고 조회하는 리포지토리를 구현합니다. 이를 위해 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
+댓글을 저장하고 조회하는 리포지토리를 구현합니다.
+
+이를 위해 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 10] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
 
-**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다. 이를 위해 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
+**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다.
+
+이를 위해 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 11] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
@@ -450,7 +460,9 @@ public class ReplyRequest {
 }
 ```
 
-응답으로 반환할 댓글 하나를 담을 **DTO**도 정의합니다. 이를 위해 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
+응답으로 반환할 댓글 하나를 담을 **DTO**도 정의합니다.
+
+이를 위해 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 12] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
@@ -467,7 +479,9 @@ public class ReplyResponse {
 }
 ```
 
-서비스는 전달받은 게시글 아이디와 로그인 유저로 **Reply** 엔티티를 생성하고 `save()`를 호출합니다. 이를 위해 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
+서비스는 전달받은 게시글 아이디와 로그인 유저로 **Reply** 엔티티를 생성하고 `save()`를 호출합니다.
+
+이를 위해 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 13] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
@@ -493,7 +507,9 @@ public class ReplyService {
 }
 ```
 
-댓글 작성 엔드포인트를 구현합니다. 이를 위해 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
+댓글 작성 엔드포인트를 구현합니다.
+
+이를 위해 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 14] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
@@ -527,7 +543,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar 토큰을 Authorization 헤더에 담고 보낸 POST /api/replies 요청에 대한 200 응답. body에 replyId 5, comment "comment5", username ssar이 담긴 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/04_reply-save.png)
-*그림 5-6. 댓글을 저장하면 저장된 댓글이 응답에 담겨 돌아옵니다*
+*그림 5-6. 댓글 쓰기 응답*
 
 ## 5.5 댓글 삭제
 
@@ -574,7 +590,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: 두 장면을 위아래로 담은 캡처. (1) ssar 토큰으로 cos가 쓴 3번 댓글에 보낸 DELETE /api/replies/3 요청에 { "status": 403, "msg": "댓글을 삭제할 권한이 없습니다", "body": null }가 돌아오는 화면. (2) ssar이 쓴 1번 댓글에 보낸 DELETE /api/replies/1 요청이 200으로 성공하는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/05_reply-delete-403.png)
-*그림 5-7. 다른 사람이 쓴 댓글은 403으로 막히고, 본인이 쓴 댓글만 지워집니다*
+*그림 5-7. 댓글 삭제 응답*
 
 댓글까지 되자 게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 게시글과 댓글은 작성자만 관리합니다.
 
