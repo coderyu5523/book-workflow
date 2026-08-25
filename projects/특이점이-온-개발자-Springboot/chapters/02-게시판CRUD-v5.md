@@ -348,7 +348,29 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 
 ## 2.3 데이터베이스 설정과 엔티티
 
-가장 먼저 만들 것은 게시글을 표현하는 엔티티입니다. 자바에서 관리되는 데이터 하나하나를 **엔티티(Entity)** 라고 부르며, 엔티티 클래스 하나가 자바에서는 객체가 되고 데이터베이스에서는 테이블의 한 행이 됩니다.
+먼저 데이터베이스 설정부터 확인합니다. `resources/application.properties`에는 아래 설정이 채워져 있습니다.
+
+```properties [참고] resources/application.properties. H2와 JPA 설정
+spring.datasource.url=jdbc:h2:mem:test
+spring.h2.console.enabled=true
+
+spring.jpa.hibernate.ddl-auto=create
+spring.jpa.show-sql=true
+
+spring.sql.init.data-locations=classpath:db/data.sql
+spring.jpa.defer-datasource-initialization=true
+```
+
+| 설정 | 역할 |
+|------|------|
+| `spring.datasource.url` | 메모리에서 동작하는 H2에 접속합니다 |
+| `spring.h2.console.enabled` | 브라우저에서 H2 콘솔로 테이블을 확인할 수 있게 합니다 |
+| `spring.jpa.hibernate.ddl-auto` | 서버가 시작될 때 엔티티를 읽어 테이블을 새로 생성합니다 |
+| `spring.jpa.show-sql` | 하이버네이트가 실행한 SQL을 콘솔에 출력합니다 |
+| `spring.sql.init.data-locations` | 시작 시점에 실행할 SQL 파일의 위치를 지정합니다 |
+| `spring.jpa.defer-datasource-initialization` | 테이블이 만들어진 뒤에 그 SQL 파일이 실행되도록 순서를 미룹니다 |
+
+이어서 게시글을 표현하는 **엔티티(Entity)** 를 만들어 보겠습니다. JPA에서 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
 
 `board/Board.java`를 열어 아래와 같이 작성합니다.
 
@@ -369,22 +391,24 @@ public class Board {
 }
 ```
 
-애플리케이션이 실행될 때 하이버네이트가 이 클래스 정의를 바탕으로 **board_tb** 테이블을 생성합니다.
+애플리케이션을 실행하면, JPA의 구현체인 **하이버네이트(Hibernate)** 가 이 클래스에 작성된 설정을 읽어 데이터베이스에 **board_tb** 테이블을 자동으로 생성합니다.
 
 :::tip
-**필드는 카멜, 컬럼은 스네이크로 만들어집니다**
+**자바의 카멜 케이스와 DB의 스네이크 케이스**
 
-엔티티 필드 `createdAt`은 카멜 표기지만, 테이블에는 `created_at`처럼 밑줄로 나뉜 스네이크 표기 컬럼이 생성됩니다. 하이버네이트가 대문자 앞에 밑줄을 넣어 자동으로 변환하므로, 개발자는 자바 표기만 신경 쓰면 됩니다.
+자바는 단어의 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 잇는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 하이버네이트는 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
 :::
 
-이 책은 설치 없이 바로 쓸 수 있는 H2 데이터베이스를 사용합니다. 메모리에서만 동작하는 데이터베이스라 애플리케이션을 내리면 데이터가 사라지기 때문에, 스프링이 시작할 때마다 `data.sql`의 insert 문을 실행합니다. 이를 위해 `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
+이 책의 실습에서는 별도의 설치 없이 가볍게 동작하는 H2 데이터베이스를 사용합니다. H2는 메모리 기반으로 동작하기 때문에 애플리케이션을 종료하면 저장된 데이터가 모두 사라집니다.
+
+테스트에 사용할 더미 데이터를 추가해 보겠습니다. 이를 위해 `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
 
 ```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
 insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
 insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
 ```
 
-게시글 두 건을 넣어 둡니다. 서버를 실행할 때마다 이 두 건으로 시작하므로, 목록 조회를 만들고 나면 바로 결과를 확인할 수 있습니다.
+이렇게 더미 데이터 두 건을 미리 준비해 두었습니다. 앞서 확인한 설정에 따라 서버를 실행할 때마다 테이블이 만들어진 직후 이 파일이 실행되므로, 추후 게시글 목록 조회 기능을 구현했을 때 곧바로 결과를 화면에서 확인할 수 있습니다.
 
 ## 2.4 하이버네이트
 
