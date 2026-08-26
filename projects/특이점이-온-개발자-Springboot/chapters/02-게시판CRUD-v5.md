@@ -346,31 +346,49 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 
 *그림 2-12. 스프링 부트 프로젝트 구조*
 
-## 2.3 데이터베이스 설정과 엔티티
+## 2.3 데이터베이스와 엔티티
 
-먼저 데이터베이스 설정부터 확인합니다. `resources/application.properties`에는 아래 설정이 채워져 있습니다.
+### 2.3.1 데이터베이스 설정
 
-```properties [참고] resources/application.properties. H2와 JPA 설정
+프로젝트의 환경 설정은 `resources/application.properties` 파일에서 관리합니다. 서버 포트나 데이터베이스 연결 정보, JPA 동작 방식 등을 이곳에 지정합니다.
+
+```properties [참고] resources/application.properties. 프로젝트 환경 설정
+# 8080 포트로 실행하고, 요청과 응답의 문자를 UTF-8로 처리해 한글이 깨지지 않게 한다
+server.port=8080
+spring.servlet.encoding.charset=UTF-8
+spring.servlet.encoding.enabled=true
+spring.servlet.encoding.force=true
+
+# 메모리에서 동작하는 H2에 sa 계정으로 접속한다
+spring.datasource.driver-class-name=org.h2.Driver
 spring.datasource.url=jdbc:h2:mem:test
+spring.datasource.username=sa
+spring.datasource.password=
+
+# 브라우저에서 H2 콘솔로 테이블을 확인할 수 있게 한다
 spring.h2.console.enabled=true
 
-spring.jpa.hibernate.ddl-auto=create
-spring.jpa.show-sql=true
-
+# 시작 시점에 실행할 SQL 파일의 위치
 spring.sql.init.data-locations=classpath:db/data.sql
+
+# 테이블이 만들어진 뒤에 위 파일을 실행한다
 spring.jpa.defer-datasource-initialization=true
+
+# 스프링 실행 시 @Entity가 붙은 클래스를 테이블로 자동 생성한다
+spring.jpa.hibernate.ddl-auto=create
 ```
 
-| 설정 | 역할 |
-|------|------|
-| `spring.datasource.url` | 메모리에서 동작하는 H2에 접속합니다 |
-| `spring.h2.console.enabled` | 브라우저에서 H2 콘솔로 테이블을 확인할 수 있게 합니다 |
-| `spring.jpa.hibernate.ddl-auto` | 서버가 시작될 때 엔티티를 읽어 테이블을 새로 생성합니다 |
-| `spring.jpa.show-sql` | 하이버네이트가 실행한 SQL을 콘솔에 출력합니다 |
-| `spring.sql.init.data-locations` | 시작 시점에 실행할 SQL 파일의 위치를 지정합니다 |
-| `spring.jpa.defer-datasource-initialization` | 테이블이 만들어진 뒤에 그 SQL 파일이 실행되도록 순서를 미룹니다 |
+실습에 사용할 데이터베이스는 **H2**입니다. 자바로 만들어진 가벼운 관계형 데이터베이스로, 별도의 설치 과정이 필요 없습니다. 다만 메모리 기반으로 동작하기 때문에 서버를 종료하면 저장된 데이터는 모두 사라집니다.
 
-이어서 게시글을 표현하는 **엔티티(Entity)** 를 만들어 보겠습니다. JPA에서 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
+:::tip
+**ddl-auto=create는 개발 단계에서만**
+
+**ddl-auto=create** 는 스프링을 실행할 때마다 테이블을 새로 생성하는 설정입니다. 운영 중인 데이터베이스에 두면 재시작 한 번으로 데이터가 사라지므로, 개발 단계에서만 사용합니다.
+:::
+
+### 2.3.2 엔티티
+
+이어서 게시글을 표현하는 **엔티티(Entity)** 를 만들어 보겠습니다. 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
 
 `board/Board.java`를 열어 아래와 같이 작성합니다.
 
@@ -391,7 +409,31 @@ public class Board {
 }
 ```
 
-애플리케이션을 실행하면, JPA의 구현체인 **하이버네이트(Hibernate)** 가 이 클래스에 작성된 설정을 읽어 데이터베이스에 **board_tb** 테이블을 자동으로 생성합니다.
+애플리케이션을 실행하면 **하이버네이트(Hibernate)** 가 이 클래스를 읽어 **board_tb** 테이블을 생성합니다.
+
+### 2.3.3 더미 데이터
+
+기능을 확인하려고 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다. `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
+
+```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
+insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
+insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
+```
+
+스프링을 실행합니다. 브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 User Name과 Password는 `application.properties`에서 설정한 값입니다.
+
+![](../assets/CH2/terminal/03_h2-login.png)
+*그림 2-13. H2 콘솔 로그인 화면*
+
+H2 콘솔에서 **board_tb** 테이블을 확인할 수 있습니다.
+
+![](../assets/CH2/terminal/04_h2-board-tb.png)
+*그림 2-14. H2 콘솔의 board_tb 테이블*
+
+H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이블을 조회하면 `data.sql`에 넣어 둔 데이터가 들어와 있는 것을 확인할 수 있습니다.
+
+![](../assets/CH2/terminal/05_h2-select.png)
+*그림 2-15. board_tb 조회 결과*
 
 :::tip
 **자바의 카멜 케이스와 DB의 스네이크 케이스**
@@ -399,37 +441,16 @@ public class Board {
 자바는 단어의 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 잇는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 하이버네이트는 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
 :::
 
-이 책의 실습에서는 별도의 설치 없이 가볍게 동작하는 H2 데이터베이스를 사용합니다. H2는 메모리 기반으로 동작하기 때문에 애플리케이션을 종료하면 저장된 데이터가 모두 사라집니다.
-
-테스트에 사용할 더미 데이터를 추가해 보겠습니다. 이를 위해 `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
-
-```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
-insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
-insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
-```
-
-이렇게 더미 데이터 두 건을 미리 준비해 두었습니다. 앞서 확인한 설정에 따라 서버를 실행할 때마다 테이블이 만들어진 직후 이 파일이 실행되므로, 추후 게시글 목록 조회 기능을 구현했을 때 곧바로 결과를 화면에서 확인할 수 있습니다.
-
 ## 2.4 하이버네이트
 
-앞에서 고른 의존성 가운데 Spring Data JPA는 객체와 테이블을 이어 주는 기술입니다. 자바의 **객체(Object)** 와 데이터베이스의 **테이블(Table)** 은 데이터를 담는 방식이 처음부터 다릅니다.
+앞서 추가한 Spring Data JPA는 자바의 **객체(Object)** 와 데이터베이스의 **테이블(Table)** 을 연결하는 기술입니다. 객체와 테이블은 데이터를 다루는 방식이 다릅니다.
 
 ### 2.4.1 데이터를 담는 방식의 차이
 
-데이터베이스는 데이터를 정확하게 보관하고 빠르게 찾기 위해 만들어졌습니다. 모든 데이터를 **행(Row)** 과 **열(Column)** 로 이루어진 표에 값으로만 담고, 한 칸에는 값 하나만 넣습니다. 다른 표를 가리켜야 할 때도 표 안에 표를 넣지 않고 **외래 키(Foreign Key)** 라는 값을 공유합니다.
+데이터베이스는 데이터를 정확히 보관하고 빠르게 검색하도록 설계되었습니다. 데이터를 **행(Row)** 과 **열(Column)** 로 구성된 표 형태로 저장하며, 각 칸에는 단일 값만 들어갑니다. 다른 테이블과 관계를 맺을 때는 **외래 키(Foreign Key)** 를 사용합니다.
 
-반면 자바는 값을 공유하는 대신 객체를 직접 필드로 가집니다. 현실의 사물을 객체로 옮겨 다루기 위해 만들어졌기 때문입니다. 객체는 필드(상태)와 메서드(행위)를 함께 가지고, 다른 객체를 필드로 가지는 **참조(Reference)** 방식으로 서로를 연결합니다.
-
-담는 방식이 다르니 표현할 수 있는 것도 어긋납니다. 어긋나는 지점은 크게 세 군데입니다.
-
-| 구분 | 데이터베이스 | 자바 |
-|------|-------------|------|
-| 구조 | 행과 열로 이루어진 평면적인 표입니다. 값만 담습니다 | 상태와 행위를 함께 가진 입체적인 객체입니다 |
-| 상속 | 상속이라는 개념이 없습니다 | 부모의 특징을 물려받는 상속이 있습니다 |
-| 자료형 | 숫자·문자는 비슷하지만, 객체나 컬렉션을 한 칸에 담을 수 없습니다 | 객체 안에 다른 객체도, List·Map 같은 컬렉션도 담습니다 |
-
-<div class="svg-figure">
-<svg viewBox="0 0 860 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽은 데이터베이스의 평면적인 표로, 아이디와 제목과 내용 열에 값만 채워져 있고 다른 표는 외래 키 값으로만 가리킨다. 오른쪽은 자바의 입체적인 객체로, 하나의 Board 객체가 필드와 메서드를 함께 가지고 다른 객체와 목록도 필드로 가진다.">
+<div class="svg-figure svg-figure--half">
+<svg viewBox="0 0 430 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="데이터베이스는 아이디와 제목과 내용 열에 값만 채워진 평면적인 표이고, 한 칸에는 값 하나만 들어가며 다른 표는 외래 키 값으로만 가리킨다.">
   <text x="215" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">데이터베이스 - 평면적인 표</text>
   <rect x="30" y="46" width="370" height="252" rx="10" fill="#fff" stroke="#475569" stroke-width="1.7"/>
   <rect x="52" y="72" width="70" height="32" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
@@ -454,23 +475,42 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
   <rect x="90" y="218" width="250" height="52" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
   <text x="215" y="240" text-anchor="middle" font-size="11" fill="#475569">다른 표를 가리킬 때는</text>
   <text x="215" y="258" text-anchor="middle" font-size="11" fill="#475569">외래 키 값만 공유합니다</text>
-  <text x="645" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">자바 - 입체적인 객체</text>
-  <rect x="460" y="46" width="370" height="252" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
-  <rect x="486" y="72" width="318" height="198" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="645" y="96" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">Board 객체</text>
-  <rect x="506" y="110" width="132" height="60" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="572" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">필드</text>
-  <text x="572" y="152" text-anchor="middle" font-size="10" fill="#3730a3">상태를 담습니다</text>
-  <rect x="652" y="110" width="132" height="60" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="718" y="132" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">메서드</text>
-  <text x="718" y="152" text-anchor="middle" font-size="10" fill="#3730a3">행위를 담습니다</text>
-  <rect x="506" y="188" width="278" height="62" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="645" y="212" text-anchor="middle" font-size="11" fill="#475569">다른 객체도, List 같은 컬렉션도</text>
-  <text x="645" y="232" text-anchor="middle" font-size="11" fill="#475569">필드로 가집니다</text>
 </svg>
 </div>
 
-*그림 2-13. 데이터베이스와 자바 객체의 차이*
+*그림 2-16. 데이터베이스의 표 구조*
+
+반면 자바는 데이터(필드)와 행위(메서드)를 하나의 객체로 묶어 관리합니다. 다른 객체와 관계를 맺을 때는 외래 키 같은 값을 공유하는 대신, 객체 자체를 **참조(Reference)** 합니다.
+
+<div class="svg-figure svg-figure--half">
+<svg viewBox="0 0 430 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 객체 하나가 제목과 내용 같은 필드와 수정 같은 메서드를 함께 가지고, 화살표로 다른 객체를 직접 가리킨다.">
+  <defs>
+    <marker id="c2ref-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
+  </defs>
+  <rect x="20" y="30" width="210" height="160" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="125" y="54" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 객체</text>
+  <rect x="40" y="68" width="170" height="46" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="125" y="87" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">필드</text>
+  <text x="125" y="105" text-anchor="middle" font-size="10" fill="#3730a3">title, content</text>
+  <rect x="40" y="124" width="170" height="46" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="125" y="143" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">메서드</text>
+  <text x="125" y="161" text-anchor="middle" font-size="10" fill="#3730a3">update()</text>
+  <line x1="232" y1="110" x2="296" y2="110" stroke="#475569" stroke-width="1.8" marker-end="url(#c2ref-a)"/>
+  <text x="264" y="100" text-anchor="middle" font-size="10" fill="#64748b">직접 참조</text>
+  <rect x="300" y="82" width="110" height="56" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="355" y="115" text-anchor="middle" font-size="12" fill="#475569">다른 객체</text>
+</svg>
+</div>
+
+*그림 2-17. 자바의 객체 구조*
+
+이처럼 데이터를 다루는 구조가 다르기 때문에 객체를 테이블에 저장할 때 구조적 불일치가 발생합니다. 주요 차이점은 크게 세 가지입니다.
+
+| 구분 | 데이터베이스 | 자바 |
+|------|-------------|------|
+| 구조 | 행과 열로 이루어진 평면적인 표입니다. 값만 담습니다 | 상태와 행위를 함께 가진 입체적인 객체입니다 |
+| 상속 | 상속이라는 개념이 없습니다 | 부모의 특징을 물려받는 상속이 있습니다 |
+| 자료형 | 숫자·문자는 비슷하지만, 객체나 컬렉션을 한 칸에 담을 수 없습니다 | 객체 안에 다른 객체도, List·Map 같은 컬렉션도 담습니다 |
 
 이 차이를 가장 잘 보여 주는 예가 햄버거 세트입니다. 자바에서는 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 가집니다. 세트 하나만 들고 다니면 그 안의 내용물을 바로 꺼내 씁니다. 데이터베이스는 세트라는 상자 안에 다른 음식을 집어넣지 못합니다. 햄버거, 콜라, 감자 표를 각각 만들고 외래 키로 "우리는 같은 세트"라고 연결해 둘 뿐입니다.
 
@@ -493,13 +533,11 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
   <text x="258" y="177" text-anchor="middle" font-size="11" fill="#475569">감자</text>
   <text x="170" y="234" text-anchor="middle" font-size="11" fill="#64748b">세트 하나만 들면</text>
   <text x="170" y="252" text-anchor="middle" font-size="11" fill="#64748b">안의 내용물을 바로 꺼내 씁니다</text>
-
   <rect x="356" y="128" width="168" height="66" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.7"/>
   <text x="440" y="155" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">하이버네이트</text>
   <text x="440" y="176" text-anchor="middle" font-size="11" fill="#475569">중간에서 일치시킵니다</text>
   <line x1="322" y1="161" x2="354" y2="161" stroke="#475569" stroke-width="1.6"/>
   <line x1="526" y1="161" x2="558" y2="161" stroke="#475569" stroke-width="1.6"/>
-
   <text x="730" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">데이터베이스 - 테이블 세상</text>
   <rect x="560" y="42" width="320" height="240" rx="10" fill="#fff" stroke="#475569" stroke-width="1.7"/>
   <rect x="582" y="64" width="86" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
@@ -521,7 +559,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 </svg>
 </div>
 
-*그림 2-14. 세트를 담는 방식의 차이*
+*그림 2-18. 세트를 담는 방식의 차이*
 
 이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.
 
@@ -559,7 +597,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 </svg>
 </div>
 
-*그림 2-15. ORM의 변환 과정*
+*그림 2-19. ORM의 변환 과정*
 
 우리가 프로젝트에 추가한 Spring Data JPA 의존성에는 하이버네이트가 포함되어 있어, 복잡한 설정이나 반복적인 SQL 작성 없이도 객체와 데이터베이스를 연결할 수 있습니다.
 
@@ -736,7 +774,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-16. 첫 조회와 영속화*
+*그림 2-20. 첫 조회와 영속화*
 
 같은 게시글을 한 번 더 조회하면 데이터베이스에 접근하지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 반환합니다.
 
@@ -763,7 +801,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-17. 캐시 조회*
+*그림 2-21. 캐시 조회*
 
 ### 2.7.2 쓰기 지연
 
@@ -798,7 +836,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-18. 쓰기 지연*
+*그림 2-22. 쓰기 지연*
 
 :::tip
 **IDENTITY 전략에서는 insert가 즉시 실행됩니다**
@@ -836,7 +874,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-19. 스냅샷 보관*
+*그림 2-23. 스냅샷 보관*
 
 영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush()` 시점에 데이터베이스로 내보냅니다.
 
@@ -871,7 +909,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-20. 더티체킹*
+*그림 2-24. 더티체킹*
 
 쓰기 지연과 더티체킹이 만든 SQL은 `flush()` 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush()`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 **@Transactional**이 끝날 때 스프링이 `flush()`를 호출합니다.
 
@@ -942,7 +980,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-21. 단위 테스트가 필요한 이유*
+*그림 2-25. 단위 테스트가 필요한 이유*
 
 리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 **@DataJpaTest**를 제공합니다. 여기에 우리가 만든 **BoardRepository**를 **@Import**로 함께 올려 검증합니다.
 
@@ -977,7 +1015,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 </svg>
 </div>
 
-*그림 2-22. given-when-eye 세 단계*
+*그림 2-26. given-when-eye 세 단계*
 
 ## 2.9 리포지토리 테스트 작성
 
@@ -1095,7 +1133,7 @@ public class BoardRepositoryTest {
   desc: BoardRepositoryTest 실행 결과. findById_test, findAll_test, save_test, update_test, delete_test 다섯 개가 모두 초록색으로 통과한 화면. IDE의 테스트 러너 창 또는 gradle 콘솔 BUILD SUCCESSFUL. update_test의 콘솔 출력에 "Board title : title-update"가 보이면 더욱 좋음.
 ] -->
 ![](../assets/CH2/terminal/02_test-pass.png)
-*그림 2-23. 리포지토리 테스트 실행 결과*
+*그림 2-27. 리포지토리 테스트 실행 결과*
 
 서버를 실행하지 않고 리포지토리만 분리해도 조회·저장·수정·삭제가 제대로 동작하는지 확인할 수 있습니다.
 
@@ -1130,7 +1168,7 @@ public class BoardRepositoryTest {
 </svg>
 </div>
 
-*그림 2-24. 한 클래스에 섞인 코드*
+*그림 2-28. 한 클래스에 섞인 코드*
 
 성격이 같은 코드끼리 나눠 두면 클래스 하나가 담당하는 일이 하나로 줄어듭니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 고치면 됩니다.
 
@@ -1154,7 +1192,7 @@ public class BoardRepositoryTest {
 </svg>
 </div>
 
-*그림 2-25. 계층으로 나눈 코드*
+*그림 2-29. 계층으로 나눈 코드*
 
 이렇게 일의 성격대로 층을 나누는 구조를 **계층형 아키텍처(Layered Architecture)** 라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다.
 
@@ -1232,7 +1270,7 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-26. 게시글 목록 응답*
+*그림 2-30. 게시글 목록 응답*
 
 ## 2.12 게시글 상세
 
@@ -1414,7 +1452,7 @@ public class BoardRequest {
 </svg>
 </div>
 
-*그림 2-27. 요청 처리 흐름*
+*그림 2-31. 요청 처리 흐름*
 
 응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, **@RestController**가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
 
