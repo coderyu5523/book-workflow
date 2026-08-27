@@ -346,9 +346,52 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 
 *그림 2-12. 스프링 부트 프로젝트 구조*
 
-## 2.3 데이터베이스와 엔티티
+## 2.3 하이버네이트
 
-### 2.3.1 데이터베이스 설정
+220V 플러그는 110V 콘센트에 그대로 꽂히지 않습니다. 규격이 다르기 때문에 사이에 어댑터가 필요합니다. 자바와 데이터베이스도 데이터를 담는 구조가 서로 달라서, 객체를 표에 그대로 넣을 수 없습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 플러그는 자바가 쓰는 Board 객체, 오른쪽 콘센트는 데이터베이스가 쓰는 board_tb의 한 행이고, 가운데 어댑터가 하이버네이트로서 두 모양 사이를 오간다.">
+  <defs>
+    <marker id="c2ad-l" markerWidth="9" markerHeight="9" refX="1" refY="3" orient="auto"><path d="M9,0 L9,6 L1,3 z" fill="#94a3b8"/></marker>
+    <marker id="c2ad-r" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <path d="M26,111 C48,111 54,111 70,111" fill="none" stroke="#94a3b8" stroke-width="2.4"/>
+  <rect x="70" y="76" width="84" height="70" rx="14" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="154" y="92" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
+  <rect x="154" y="120" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
+  <text x="112" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">Board 객체</text>
+  <text x="112" y="216" text-anchor="middle" font-size="11" fill="#64748b">자바가 쓰는 모양</text>
+  <line x1="202" y1="111" x2="256" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
+  <rect x="264" y="62" width="170" height="98" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="349" y="117" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">하이버네이트</text>
+  <rect x="434" y="88" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
+  <rect x="434" y="126" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
+  <text x="349" y="196" text-anchor="middle" font-size="11" fill="#64748b">두 모양 사이를 오갑니다</text>
+  <line x1="472" y1="111" x2="526" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
+  <rect x="534" y="58" width="130" height="106" rx="10" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="578" y="88" width="11" height="34" rx="2" fill="#334155"/>
+  <rect x="610" y="88" width="11" height="34" rx="2" fill="#334155"/>
+  <text x="599" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">board_tb의 한 행</text>
+  <text x="599" y="216" text-anchor="middle" font-size="11" fill="#64748b">데이터베이스가 쓰는 모양</text>
+</svg>
+</div>
+
+*그림 2-13. 어댑터를 끼운 플러그와 콘센트*
+
+앞으로 만들 게시글 하나는 자바에서 **Board** 객체이고, 데이터베이스에서는 **board_tb** 테이블의 한 행입니다. 두 구조의 차이는 이렇습니다.
+
+| 구분 | 데이터베이스 (RDB) | 자바 (Java) |
+|------|-------------------|-------------|
+| 구조 | 행과 열로 이루어진 2차원의 평면적인 표입니다. 각 칸에는 숫자나 문자 같은 단순한 '값'만 들어갑니다. | 상태(필드)와 행위(메서드)를 함께 가지는 입체적인 구조입니다. |
+| 연관관계 | 데이터 간의 관계를 '외래키(Foreign Key)'를 통해 맺습니다. 한 칸에 표나 배열을 통째로 넣을 수 없습니다. | 객체 안에 다른 객체를 품거나, List나 Map 같은 컬렉션을 담아 훨씬 복잡한 관계를 표현할 수 있습니다. |
+| 상속 | 부모와 자식이라는 상속의 개념 자체가 없습니다. | 부모 클래스의 특징을 물려받는 '상속'과 '다형성'이 핵심입니다. |
+
+이러한 구조적 차이 때문에, 객체를 저장하거나 꺼낼 때는 매번 값을 일일이 옮겨 담는 변환 작업이 필요합니다. 마치 어댑터처럼 이 간극을 메워주는 기술을 **ORM(Object-Relational Mapping)** 이라고 합니다. 자바에서는 이 ORM이 갖춰야 할 기능을 **JPA(Java Persistence API)** 라는 규칙으로 정해두었고, 이 규칙대로 만든 대표적인 엔진이 바로 **하이버네이트(Hibernate)** 입니다. 우리가 앞서 추가한 Spring Data JPA 의존성에는 이 하이버네이트가 기본적으로 포함되어 있습니다.
+
+## 2.4 데이터베이스와 엔티티
+
+### 2.4.1 데이터베이스 설정
 
 프로젝트의 환경 설정은 `resources/application.properties` 파일에서 관리합니다. 서버 포트나 데이터베이스 연결 정보, JPA 동작 방식 등을 이곳에 지정합니다.
 
@@ -386,7 +429,7 @@ spring.jpa.hibernate.ddl-auto=create
 **ddl-auto=create** 는 스프링을 실행할 때마다 테이블을 새로 생성하는 설정입니다. 운영 중인 데이터베이스에 두면 재시작 한 번으로 데이터가 사라지므로, 개발 단계에서만 사용합니다.
 :::
 
-### 2.3.2 엔티티
+### 2.4.2 엔티티
 
 이어서 게시글을 표현하는 **엔티티(Entity)** 를 만들어 보겠습니다. 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
 
@@ -409,31 +452,36 @@ public class Board {
 }
 ```
 
-애플리케이션을 실행하면 **하이버네이트(Hibernate)** 가 이 클래스를 읽어 **board_tb** 테이블을 생성합니다.
+애플리케이션을 실행하면 하이버네이트가 이 클래스를 읽어 **board_tb** 테이블을 생성합니다. 앞으로 게시글을 저장하고 조회할 때 필요한 SQL도 하이버네이트가 생성합니다.
 
-### 2.3.3 더미 데이터
+### 2.4.3 더미 데이터
 
-기능을 확인하려고 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다. `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
+실습을 위해 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다. `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
 
 ```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
 insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
 insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
 ```
 
-스프링을 실행합니다. 브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 User Name과 Password는 `application.properties`에서 설정한 값입니다.
+터미널에 `./gradlew bootRun`을 입력해 스프링을 실행합니다.
+
+![](../assets/CH2/terminal/06_bootrun.png)
+*그림 2-14. 스프링 실행 결과*
+
+브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 User Name과 Password는 `application.properties`에서 설정한 값입니다.
 
 ![](../assets/CH2/terminal/03_h2-login.png)
-*그림 2-13. H2 콘솔 로그인 화면*
+*그림 2-15. H2 콘솔 로그인 화면*
 
 H2 콘솔에서 **board_tb** 테이블을 확인할 수 있습니다.
 
 ![](../assets/CH2/terminal/04_h2-board-tb.png)
-*그림 2-14. H2 콘솔의 board_tb 테이블*
+*그림 2-16. H2 콘솔의 board_tb 테이블*
 
 H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이블을 조회하면 `data.sql`에 넣어 둔 데이터가 들어와 있는 것을 확인할 수 있습니다.
 
 ![](../assets/CH2/terminal/05_h2-select.png)
-*그림 2-15. board_tb 조회 결과*
+*그림 2-17. board_tb 조회 결과*
 
 :::tip
 **자바의 카멜 케이스와 DB의 스네이크 케이스**
@@ -441,177 +489,81 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 자바는 단어의 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 잇는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 하이버네이트는 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
 :::
 
-## 2.4 하이버네이트
+## 2.5 3계층 아키텍처
 
-앞서 추가한 Spring Data JPA는 자바의 **객체(Object)** 와 데이터베이스의 **테이블(Table)** 을 연결하는 기술입니다. 객체와 테이블은 데이터를 다루는 방식이 다릅니다.
-
-### 2.4.1 데이터를 담는 방식의 차이
-
-데이터베이스는 데이터를 정확히 보관하고 빠르게 검색하도록 설계되었습니다. 데이터를 **행(Row)** 과 **열(Column)** 로 구성된 표 형태로 저장하며, 각 칸에는 단일 값만 들어갑니다. 다른 테이블과 관계를 맺을 때는 **외래 키(Foreign Key)** 를 사용합니다.
-
-<div class="svg-figure svg-figure--half">
-<svg viewBox="0 0 430 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="데이터베이스는 아이디와 제목과 내용 열에 값만 채워진 평면적인 표이고, 한 칸에는 값 하나만 들어가며 다른 표는 외래 키 값으로만 가리킨다.">
-  <text x="215" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">데이터베이스 - 평면적인 표</text>
-  <rect x="30" y="46" width="370" height="252" rx="10" fill="#fff" stroke="#475569" stroke-width="1.7"/>
-  <rect x="52" y="72" width="70" height="32" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <rect x="122" y="72" width="128" height="32" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <rect x="250" y="72" width="128" height="32" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="87" y="93" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">id</text>
-  <text x="186" y="93" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">title</text>
-  <text x="314" y="93" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">content</text>
-  <rect x="52" y="104" width="70" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <rect x="122" y="104" width="128" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <rect x="250" y="104" width="128" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="87" y="125" text-anchor="middle" font-size="11" fill="#475569">1</text>
-  <text x="186" y="125" text-anchor="middle" font-size="11" fill="#475569">title1</text>
-  <text x="314" y="125" text-anchor="middle" font-size="11" fill="#475569">content1</text>
-  <rect x="52" y="136" width="70" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <rect x="122" y="136" width="128" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <rect x="250" y="136" width="128" height="32" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="87" y="157" text-anchor="middle" font-size="11" fill="#475569">2</text>
-  <text x="186" y="157" text-anchor="middle" font-size="11" fill="#475569">title2</text>
-  <text x="314" y="157" text-anchor="middle" font-size="11" fill="#475569">content2</text>
-  <text x="215" y="200" text-anchor="middle" font-size="11" fill="#6b7280">한 칸에는 값 하나만 들어갑니다</text>
-  <rect x="90" y="218" width="250" height="52" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="215" y="240" text-anchor="middle" font-size="11" fill="#475569">다른 표를 가리킬 때는</text>
-  <text x="215" y="258" text-anchor="middle" font-size="11" fill="#475569">외래 키 값만 공유합니다</text>
-</svg>
-</div>
-
-*그림 2-16. 데이터베이스의 표 구조*
-
-반면 자바는 데이터(필드)와 행위(메서드)를 하나의 객체로 묶어 관리합니다. 다른 객체와 관계를 맺을 때는 외래 키 같은 값을 공유하는 대신, 객체 자체를 **참조(Reference)** 합니다.
-
-<div class="svg-figure svg-figure--half">
-<svg viewBox="0 0 430 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 객체 하나가 제목과 내용 같은 필드와 수정 같은 메서드를 함께 가지고, 화살표로 다른 객체를 직접 가리킨다.">
-  <defs>
-    <marker id="c2ref-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
-  </defs>
-  <rect x="20" y="30" width="210" height="160" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="125" y="54" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 객체</text>
-  <rect x="40" y="68" width="170" height="46" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="125" y="87" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">필드</text>
-  <text x="125" y="105" text-anchor="middle" font-size="10" fill="#3730a3">title, content</text>
-  <rect x="40" y="124" width="170" height="46" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="125" y="143" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">메서드</text>
-  <text x="125" y="161" text-anchor="middle" font-size="10" fill="#3730a3">update()</text>
-  <line x1="232" y1="110" x2="296" y2="110" stroke="#475569" stroke-width="1.8" marker-end="url(#c2ref-a)"/>
-  <text x="264" y="100" text-anchor="middle" font-size="10" fill="#64748b">직접 참조</text>
-  <rect x="300" y="82" width="110" height="56" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
-  <text x="355" y="115" text-anchor="middle" font-size="12" fill="#475569">다른 객체</text>
-</svg>
-</div>
-
-*그림 2-17. 자바의 객체 구조*
-
-이처럼 데이터를 다루는 구조가 다르기 때문에 객체를 테이블에 저장할 때 구조적 불일치가 발생합니다. 주요 차이점은 크게 세 가지입니다.
-
-| 구분 | 데이터베이스 | 자바 |
-|------|-------------|------|
-| 구조 | 행과 열로 이루어진 평면적인 표입니다. 값만 담습니다 | 상태와 행위를 함께 가진 입체적인 객체입니다 |
-| 상속 | 상속이라는 개념이 없습니다 | 부모의 특징을 물려받는 상속이 있습니다 |
-| 자료형 | 숫자·문자는 비슷하지만, 객체나 컬렉션을 한 칸에 담을 수 없습니다 | 객체 안에 다른 객체도, List·Map 같은 컬렉션도 담습니다 |
-
-이 차이를 가장 잘 보여 주는 예가 햄버거 세트입니다. 자바에서는 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 가집니다. 세트 하나만 들고 다니면 그 안의 내용물을 바로 꺼내 씁니다. 데이터베이스는 세트라는 상자 안에 다른 음식을 집어넣지 못합니다. 햄버거, 콜라, 감자 표를 각각 만들고 외래 키로 "우리는 같은 세트"라고 연결해 둘 뿐입니다.
+게시판에 필요한 모든 코드를 하나의 클래스에 작성해도 프로그램은 정상적으로 돌아갑니다. 하지만 요청 주소를 확인하는 코드, 데이터를 검증하는 코드, 데이터베이스에 접근하는 코드가 한 곳에 있으면 어디서 에러가 났는지 찾기도 힘든 복잡한 코드가 됩니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 자바 객체 세상에서는 햄버거 세트 객체가 햄버거와 콜라와 감자를 필드로 가진다. 오른쪽 데이터베이스 테이블 세상에서는 햄버거 표와 콜라 표와 감자 표가 따로 있고 햄버거 세트 표를 외래 키로 참조한다. 가운데 하이버네이트가 두 세상을 일치시킨다.">
-  <defs>
-    <marker id="c2hb-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
-  </defs>
-  <text x="170" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">자바 - 객체 세상</text>
-  <rect x="20" y="42" width="300" height="240" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.7"/>
-  <rect x="70" y="64" width="200" height="40" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="170" y="89" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">햄버거 세트 객체</text>
-  <line x1="170" y1="104" x2="170" y2="136" stroke="#475569" stroke-width="1.6" marker-end="url(#c2hb-a)"/>
-  <text x="170" y="128" text-anchor="middle" font-size="10" fill="#64748b">필드로 가진다</text>
-  <rect x="44" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="82" y="177" text-anchor="middle" font-size="11" fill="#475569">햄버거</text>
-  <rect x="132" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="170" y="177" text-anchor="middle" font-size="11" fill="#475569">콜라</text>
-  <rect x="220" y="152" width="76" height="40" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="258" y="177" text-anchor="middle" font-size="11" fill="#475569">감자</text>
-  <text x="170" y="234" text-anchor="middle" font-size="11" fill="#64748b">세트 하나만 들면</text>
-  <text x="170" y="252" text-anchor="middle" font-size="11" fill="#64748b">안의 내용물을 바로 꺼내 씁니다</text>
-  <rect x="356" y="128" width="168" height="66" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.7"/>
-  <text x="440" y="155" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">하이버네이트</text>
-  <text x="440" y="176" text-anchor="middle" font-size="11" fill="#475569">중간에서 일치시킵니다</text>
-  <line x1="322" y1="161" x2="354" y2="161" stroke="#475569" stroke-width="1.6"/>
-  <line x1="526" y1="161" x2="558" y2="161" stroke="#475569" stroke-width="1.6"/>
-  <text x="730" y="28" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">데이터베이스 - 테이블 세상</text>
-  <rect x="560" y="42" width="320" height="240" rx="10" fill="#fff" stroke="#475569" stroke-width="1.7"/>
-  <rect x="582" y="64" width="86" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="625" y="89" text-anchor="middle" font-size="11" fill="#334155">햄버거 표</text>
-  <rect x="688" y="64" width="86" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="731" y="89" text-anchor="middle" font-size="11" fill="#334155">콜라 표</text>
-  <rect x="794" y="64" width="66" height="40" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="827" y="89" text-anchor="middle" font-size="11" fill="#334155">감자 표</text>
-  <path d="M625,104 L625,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <path d="M731,104 L731,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <path d="M827,104 L827,150" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="600" y="128" font-size="10" fill="#64748b">외래 키</text>
-  <text x="706" y="128" font-size="10" fill="#64748b">외래 키</text>
-  <text x="802" y="128" font-size="10" fill="#64748b">외래 키</text>
-  <rect x="596" y="150" width="264" height="44" rx="6" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="728" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">햄버거 세트 표</text>
-  <text x="728" y="234" text-anchor="middle" font-size="11" fill="#64748b">표 안에 표를 넣지 못하므로</text>
-  <text x="728" y="252" text-anchor="middle" font-size="11" fill="#64748b">외래 키로 연결만 해 둡니다</text>
+<svg viewBox="0 0 320 210" style="max-width:330px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BoardAll.java 파일 상자 하나 안에 요청과 응답, 데이터베이스 접근, 비즈니스 로직이 순서 없이 섞여 있다.">
+  <text x="30" y="26" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
+  <rect x="30" y="36" width="260" height="156" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="50" y="50" width="220" height="28" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.3"/>
+  <text x="160" y="69" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청과 응답</text>
+  <rect x="50" y="86" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
+  <text x="160" y="105" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
+  <rect x="50" y="122" width="220" height="28" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="160" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">비즈니스 로직</text>
+  <rect x="50" y="158" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
+  <text x="160" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
 </svg>
 </div>
 
-*그림 2-18. 세트를 담는 방식의 차이*
+*그림 2-18. 한 클래스에 섞인 코드*
 
-이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.
-
-### 2.4.2 직접 SQL을 쓰던 방식
-
-쪼개고 모으는 일을 대신해 주는 기술이 없을 때는 개발자가 직접 했습니다. 데이터를 저장하거나 조회할 때마다 SQL을 작성하고, 돌아온 결과를 한 칸씩 꺼내 객체에 채워 넣었습니다.
-
-이 방식에는 세 가지 문제가 따릅니다.
-
-- 표가 하나 늘어날 때마다 비슷하게 생긴 SQL과 매핑 코드를 수십 줄씩 다시 썼습니다.
-- 실제 기능을 짜는 시간보다 조회 결과를 객체에 옮겨 담는 시간이 더 길었습니다.
-- 컬럼 하나만 바뀌어도 관련된 SQL을 전부 찾아 고쳐야 했습니다.
-
-### 2.4.3 ORM과 JPA, 하이버네이트
-
-이 번역을 대신해 주는 기술이 ORM입니다. 개발자는 객체만 다루고, 객체와 표 사이를 오가는 SQL은 ORM이 생성합니다. 자바 진영은 ORM을 JPA라는 표준으로 정리했고, 하이버네이트가 그 구현입니다.
+이런 문제를 막기 위해, 성격이 같은 코드끼리 층을 나누어 역할을 분리합니다. 이렇게 하면 각 클래스가 맡은 책임이 하나로 뚜렷해져 시스템에 변화가 생겼을 때 다른 코드에 미치는 영향을 최소화할 수 있습니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="자바 객체에서 ORM으로, ORM에서 SQL로 바뀌어 데이터베이스에 전달되고, 조회 결과는 다시 객체가 되어 돌아온다.">
+<svg viewBox="0 0 900 200" style="max-width:680px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에서 요청이 들어와 컨트롤러, 서비스, 리포지토리를 차례로 지나 오른쪽 데이터베이스에 닿는다. 응답은 같은 길을 거꾸로 되짚어 데이터베이스에서 리포지토리, 서비스, 컨트롤러 순서로 돌아온다.">
   <defs>
-    <marker id="c2orm-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c2orm-back" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="rt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+    <marker id="bk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <rect x="30" y="46" width="180" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="120" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">자바 객체</text>
-  <line x1="218" y1="82" x2="288" y2="82" stroke="#4f46e5" stroke-width="2" marker-end="url(#c2orm-ar)"/>
-  <rect x="300" y="46" width="180" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="390" y="90" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">ORM</text>
-  <line x1="488" y1="82" x2="578" y2="82" stroke="#4f46e5" stroke-width="2" marker-end="url(#c2orm-ar)"/>
-  <text x="533" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">SQL</text>
-  <rect x="590" y="46" width="200" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="690" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">데이터베이스</text>
-  <path d="M690,126 L690,182 L120,182 L120,128" fill="none" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#c2orm-back)"/>
-  <text x="405" y="204" text-anchor="middle" font-size="13" fill="#475569">조회 결과는 다시 객체로 반환됩니다</text>
+  <text x="46" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">요청</text>
+  <line x1="14" y1="88" x2="82" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="82" y1="124" x2="14" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <text x="46" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#94a3b8">응답</text>
+  <rect x="90" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="185" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">컨트롤러</text>
+  <text x="185" y="122" text-anchor="middle" font-size="12" fill="#64748b">요청과 응답</text>
+  <line x1="284" y1="88" x2="312" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="312" y1="124" x2="284" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <rect x="316" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <text x="411" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">서비스</text>
+  <text x="411" y="122" text-anchor="middle" font-size="12" fill="#64748b">비즈니스 로직</text>
+  <line x1="510" y1="88" x2="538" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="538" y1="124" x2="510" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <rect x="542" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.9"/>
+  <text x="637" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">리포지토리</text>
+  <text x="637" y="122" text-anchor="middle" font-size="12" fill="#64748b">데이터베이스 접근</text>
+  <line x1="736" y1="88" x2="766" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="766" y1="124" x2="736" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <ellipse cx="830" cy="70" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <path d="M774,70 L774,136" fill="none" stroke="#475569" stroke-width="1.8"/>
+  <path d="M886,70 L886,136" fill="none" stroke="#475569" stroke-width="1.8"/>
+  <ellipse cx="830" cy="136" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="830" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">데이터베이스</text>
 </svg>
 </div>
 
-*그림 2-19. ORM의 변환 과정*
+*그림 2-19. 계층으로 나눈 코드*
 
-우리가 프로젝트에 추가한 Spring Data JPA 의존성에는 하이버네이트가 포함되어 있어, 복잡한 설정이나 반복적인 SQL 작성 없이도 객체와 데이터베이스를 연결할 수 있습니다.
+스프링 웹 개발에서는 이렇게 역할에 따라 코드를 3개의 층으로 나누는 **3계층 아키텍처(3-Layer Architecture)** 를 주로 사용합니다.
 
-| 기술 | 정체 |
-|------|------|
-| ORM(Object-Relational Mapping) | 개발자가 자바 객체 중심으로 코드를 작성하면, 적절한 SQL로 번역해 데이터베이스와 통신하고 결과를 다시 객체로 변환해 주는 기술입니다 |
-| JPA(Java Persistence API) | 자바 진영에서 정한 ORM 기술의 표준 규칙(인터페이스)입니다 |
-| 하이버네이트(Hibernate) | JPA라는 규칙을 실제 코드로 구현해 작동하게 만든 대표적인 엔진입니다 |
+| 층 | 하는 일 |
+|----|---------|
+| 컨트롤러(Controller) | HTTP 요청 주소를 받아 서비스를 호출하고, 돌려받은 결과를 JSON 응답으로 반환합니다 |
+| 서비스(Service) | 값이 올바른지 검사하고 필요한 형태로 가공하는 **비즈니스 로직**을 처리합니다 |
+| 리포지토리(Repository) | 엔티티를 데이터베이스에서 조회하고 저장·수정·삭제합니다 |
 
-## 2.5 리포지토리의 다섯 기능
+:::tip
+**Spring MVC와 JSON 응답**
 
-엔티티와 데이터베이스 사이에서 실제로 저장하고 꺼내는 일은 **리포지토리(Repository)** 가 담당합니다. 데이터베이스에 접근하는 코드를 한곳에 모아 둔 클래스입니다.
+스프링에서 웹 요청을 다루는 기술을 'Spring MVC'라고 부릅니다. 본래는 화면(View), 요청 처리(Controller), 데이터(Model)를 나누는 전통적인 웹 개발 방식에서 유래한 이름입니다. 하지만 이 책에서는 별도의 화면을 만들지 않고 순수하게 데이터만 제공하는 API 서버를 만듭니다. 따라서 View 계층 없이, 컨트롤러가 반환한 자바 객체가 그대로 JSON 문자로 변환되어 응답 본문(Body)에 실리게 됩니다.
+:::
 
-리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 스프링이 빈으로 등록해 두므로 직접 생성하지 않고 생성자로 주입받아 사용합니다.
+## 2.6 리포지토리(Repository)
+
+먼저 데이터베이스에 접근하는 리포지토리를 만들어 보겠습니다. 리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 이 객체는 스프링이 미리 빈(Bean)으로 등록해 두므로, 직접 만들 필요 없이 생성자로 주입받아 사용하면 됩니다.
 
 이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 작성합니다.
 
@@ -626,9 +578,9 @@ public class BoardRepository {
 }
 ```
 
-### 2.5.1 게시글 한 건 조회
+### 2.6.1 게시글 한 건 조회
 
-**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회합니다. 첫 번째 인자로 조회할 엔티티의 클래스 타입을 전달하고, 두 번째 인자로 조회할 기본 키 값을 전달합니다. **Board** 엔티티 한 건을 반환합니다.
+**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회할 때 사용합니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 조건에 맞는 **Board** 엔티티 한 건을 반환합니다.
 
 `board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
 
@@ -641,12 +593,12 @@ public class BoardRepository {
 `find()` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
 
 ```sql
-select id, title, content, created_at from board_tb where id = ?
+select id, content, created_at, title from board_tb where id = 1;
 ```
 
-### 2.5.2 게시글 전체 조회
+### 2.6.2 게시글 전체 조회
 
-**EntityManager**에는 전체 조회 메서드가 없습니다. 그래서 전체 조회는 **JPQL(Java Persistence Query Language)** 로 질의를 직접 적어 실행합니다.
+**EntityManager**에는 전체 목록을 한 번에 조회하는 전용 메서드가 없습니다. 따라서 전체 데이터를 가져오려면 **JPQL(Java Persistence Query Language)** 을 사용해 직접 쿼리를 작성해서 실행해야 합니다.
 
 ```java [실습 5] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
@@ -654,17 +606,19 @@ select id, title, content, created_at from board_tb where id = ?
     }
 ```
 
-`createQuery()`에 JPQL 문자열과 결과 타입을 넘겨 질의를 만들고, `getResultList()`로 실행합니다. 하이버네이트는 이 JPQL을 아래 SQL로 번역합니다.
+`createQuery()`에 JPQL 문자열과 반환 타입을 넘겨 쿼리를 생성한 뒤, `getResultList()`를 호출해 실행합니다. 그러면 하이버네이트가 이 JPQL을 아래와 같은 실제 SQL로 번역해 줍니다.
 
 ```sql
-select id, title, content, created_at from board_tb
+select id, content, created_at, title from board_tb;
 ```
 
-JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따로 정리합니다.
+JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 
-### 2.5.3 게시글 저장
+### 2.6.3 게시글 저장
 
-`persist()` 메서드는 새로 만든 엔티티를 데이터베이스에 저장합니다.
+데이터를 조회할 때 `find()`를 사용했다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다.
+
+새로 만든 엔티티 객체를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
 
 ```java [실습 6] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
@@ -675,14 +629,14 @@ JPQL은 이 챕터에서 계속 쓰게 되므로 다음 절에서 문법을 따�
 `persist()`가 데이터베이스에 전달하는 질의는 다음과 같습니다.
 
 ```sql
-insert into board_tb (title, content, created_at) values (?, ?, ?)
+insert into board_tb (content, created_at, title) values ('content3', now(), 'title3');
 ```
 
-### 2.5.4 게시글 수정
+### 2.6.4 게시글 수정
 
 게시글 수정은 메서드를 만들지 않습니다. JPA는 값을 바꿔 저장하라고 지시하는 메서드를 따로 두지 않기 때문입니다. 조회해 온 엔티티의 값을 바꾸는 것만으로 수정이 이뤄지는데, 어떻게 그렇게 되는지는 영속성 컨텍스트를 다루며 확인합니다.
 
-### 2.5.5 게시글 삭제
+### 2.6.5 게시글 삭제
 
 `remove()` 메서드는 넘긴 엔티티를 삭제 대상으로 표시합니다.
 
@@ -695,10 +649,10 @@ insert into board_tb (title, content, created_at) values (?, ?, ?)
 `remove()`가 만드는 질의는 다음과 같습니다.
 
 ```sql
-delete from board_tb where id = ?
+delete from board_tb where id = 2;
 ```
 
-## 2.6 JPQL
+## 2.7 JPQL
 
 JPQL은 테이블이 아니라 엔티티와 필드 이름을 기준으로 작성하는 JPA의 질의 언어입니다. 실행 시점에 JPA가 SQL로 번역해 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE를 지원하고 INSERT는 지원하지 않습니다. 새 데이터를 넣을 때는 앞에서 본 `persist()`를 사용합니다.
 
@@ -736,13 +690,13 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
   .getResultList();
 ```
 
-## 2.7 영속성 컨텍스트
+## 2.8 영속성 컨텍스트
 
 리포지토리 코드를 보면 `persist()`나 `find()`를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. **EntityManager**가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 합니다. `persist()`나 `find()`로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
 
 영속성 컨텍스트가 하는 일은 크게 세 가지입니다.
 
-### 2.7.1 캐싱
+### 2.8.1 캐싱
 
 캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 담아 두고, 같은 엔티티를 다시 찾으면 데이터베이스까지 가지 않고 영속성 컨텍스트에서 바로 돌려주는 동작입니다. 그래서 같은 게시글을 두 번 조회해도 select 문은 한 번만 실행됩니다.
 
@@ -803,7 +757,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-21. 캐시 조회*
 
-### 2.7.2 쓰기 지연
+### 2.8.2 쓰기 지연
 
 쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `persist()`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush()` 시점에 만들어진 순서대로 한꺼번에 실행됩니다.
 
@@ -844,7 +798,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 일반적으로는 insert도 버퍼에 모였다가 flush 시점에 실행됩니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `persist()`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연을 확인할 수 있는 것은 수정과 삭제입니다.
 :::
 
-### 2.7.3 더티체킹
+### 2.8.3 더티체킹
 
 더티체킹은 조회하던 시점의 상태와 지금 상태를 비교해 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find()`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문도 `flush()` 시점에 실행됩니다.
 
@@ -915,7 +869,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.
 
-## 2.8 단위 테스트
+## 2.9 단위 테스트
 
 리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.
 
@@ -984,7 +938,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 **@DataJpaTest**를 제공합니다. 여기에 우리가 만든 **BoardRepository**를 **@Import**로 함께 올려 검증합니다.
 
-### 2.8.1 given-when-eye 패턴
+### 2.9.1 given-when-eye 패턴
 
 테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 출력해 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
 
@@ -1017,7 +971,7 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 *그림 2-26. given-when-eye 세 단계*
 
-## 2.9 리포지토리 테스트 작성
+## 2.10 리포지토리 테스트 작성
 
 `test/.../BoardRepositoryTest.java`를 열어 먼저 클래스 골격을 아래와 같이 작성합니다.
 
@@ -1137,65 +1091,6 @@ public class BoardRepositoryTest {
 
 서버를 실행하지 않고 리포지토리만 분리해도 조회·저장·수정·삭제가 제대로 동작하는지 확인할 수 있습니다.
 
-## 2.10 3계층 아키텍처
-
-리포지토리만 분리해 검증할 수 있는 것은 데이터베이스를 다루는 코드가 그 클래스 하나에 모여 있기 때문입니다. 게시판에 필요한 코드를 한 클래스에 모두 담아도 동작은 합니다. 다만 그렇게 하면 요청 주소를 다루는 코드와 데이터베이스를 다루는 코드가 한 클래스 안에 함께 놓입니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="한 클래스 파일 안에 요청을 받는 코드, 흐름을 정하는 코드, 데이터베이스를 다루는 코드가 번갈아 놓여 있다.">
-  <text x="52" y="30" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
-  <text x="168" y="30" font-size="11" fill="#94a3b8">전부 한 클래스에 넣었다면</text>
-  <rect x="44" y="44" width="472" height="220" rx="6" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <line x1="44" y1="88" x2="516" y2="88" stroke="#e2e8f0" stroke-width="1"/>
-  <line x1="44" y1="132" x2="516" y2="132" stroke="#e2e8f0" stroke-width="1"/>
-  <line x1="44" y1="176" x2="516" y2="176" stroke="#e2e8f0" stroke-width="1"/>
-  <line x1="44" y1="220" x2="516" y2="220" stroke="#e2e8f0" stroke-width="1"/>
-  <text x="68" y="71" font-size="12" font-family="monospace" fill="#334155">@GetMapping("/api/boards")</text>
-  <rect x="358" y="53" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="425" y="71" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
-  <text x="68" y="115" font-size="12" font-family="monospace" fill="#334155">em.createQuery("select b …")</text>
-  <rect x="358" y="97" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
-  <text x="425" y="115" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
-  <text x="68" y="159" font-size="12" font-family="monospace" fill="#334155">new Board(); setTitle(…)</text>
-  <rect x="358" y="141" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="425" y="159" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
-  <text x="68" y="203" font-size="12" font-family="monospace" fill="#334155">@PostMapping("/api/boards")</text>
-  <rect x="358" y="185" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="425" y="203" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
-  <text x="68" y="247" font-size="12" font-family="monospace" fill="#334155">em.persist(board)</text>
-  <rect x="358" y="229" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
-  <text x="425" y="247" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
-</svg>
-</div>
-
-*그림 2-28. 한 클래스에 섞인 코드*
-
-성격이 같은 코드끼리 나눠 두면 클래스 하나가 담당하는 일이 하나로 줄어듭니다. 저장 방식이 바뀌면 리포지토리만, 주소가 바뀌면 컨트롤러만 고치면 됩니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="파일 세 개가 위아래로 놓여 있다. 컨트롤러 파일은 요청 받기, 서비스 파일은 흐름 정하기, 리포지토리 파일은 데이터베이스 다루기만 담고 있다.">
-  <rect x="44" y="20" width="472" height="76" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="68" y="50" font-size="13" font-weight="800" fill="#0f172a">BoardController.java</text>
-  <text x="68" y="76" font-size="12" font-family="monospace" fill="#334155">@GetMapping   @PostMapping</text>
-  <rect x="358" y="34" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
-  <text x="425" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
-  <rect x="44" y="106" width="472" height="76" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.8"/>
-  <text x="68" y="136" font-size="13" font-weight="800" fill="#0f172a">BoardService.java</text>
-  <text x="68" y="162" font-size="12" font-family="monospace" fill="#334155">게시글목록()   게시글추가()</text>
-  <rect x="358" y="120" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="425" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
-  <rect x="44" y="192" width="472" height="76" rx="6" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="68" y="222" font-size="13" font-weight="800" fill="#0f172a">BoardRepository.java</text>
-  <text x="68" y="248" font-size="12" font-family="monospace" fill="#334155">em.find   em.persist</text>
-  <rect x="358" y="206" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
-  <text x="425" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
-</svg>
-</div>
-
-*그림 2-29. 계층으로 나눈 코드*
-
-이렇게 일의 성격대로 층을 나누는 구조를 **계층형 아키텍처(Layered Architecture)** 라고 합니다. 층이 셋이라 3계층 아키텍처라고 부릅니다.
-
 ## 2.11 게시글 목록
 
 먼저 서비스와 컨트롤러의 골격을 작성합니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.
@@ -1270,7 +1165,7 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-30. 게시글 목록 응답*
+*그림 2-28. 게시글 목록 응답*
 
 ## 2.12 게시글 상세
 
@@ -1452,7 +1347,7 @@ public class BoardRequest {
 </svg>
 </div>
 
-*그림 2-31. 요청 처리 흐름*
+*그림 2-29. 요청 처리 흐름*
 
 응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, **@RestController**가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
 
