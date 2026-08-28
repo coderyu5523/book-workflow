@@ -88,6 +88,8 @@ public class BoardRepositoryTest {
         System.out.println("Board count : " + boards.size());
     }
 
+    // 즉시 로딩 확인용. 완성 코드의 Board.user는 이미 LAZY이므로
+    // 즉시 로딩을 눈으로 보려면 fetch 속성을 지우고 실행한다
     @Test
     public void findByIdEager_test() {
         // given

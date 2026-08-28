@@ -1,6 +1,6 @@
 package com.metacoding.spring.board;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -20,15 +20,15 @@ public class Board {
     private String content;
 
     @CreationTimestamp // 자동으로 현재 시간 저장
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.EAGER) // 다대일 관계 설정
+    @ManyToOne // 다대일 관계 설정 (기본 전략은 즉시 로딩)
     @JoinColumn(name = "user_id") // 외래 키지정
     private User user; // 객체를 직접 참조
 
     @Builder
     public Board(Integer id, String title, String content,
-            Timestamp createdAt, User user) {
+            LocalDateTime createdAt, User user) {
         this.id = id;
         this.title = title;
         this.content = content;

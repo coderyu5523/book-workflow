@@ -1,6 +1,6 @@
 package com.metacoding.spring.board;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -19,10 +19,10 @@ public class Board {
     private String content;
 
     @CreationTimestamp // 자동으로 현재 시간 저장
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Builder // 객체 생성 용도
-    public Board(Integer id, String title, String content, Timestamp createdAt) {
+    public Board(Integer id, String title, String content, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.content = content;

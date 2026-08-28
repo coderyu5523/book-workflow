@@ -4,38 +4,38 @@
 
 게시판을 만드는 작업 중 중요한 것은 데이터베이스(DB)와의 통신입니다. 사용자가 작성한 글을 데이터베이스에 안전하게 저장해 두고, 누군가 목록이나 특정 글을 요청하면 보관해 둔 데이터를 꺼내 약속된 형식으로 돌려주는 것이 핵심입니다. 이제 오픈이와 함께 이 일련의 흐름을 코드로 완성해 보겠습니다.
 
-<div class="svg-figure">
+<div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2 한눈에 보기. 클라이언트가 게시글에 대한 다섯 가지 요청(목록·상세·작성·수정·삭제)을 컨트롤러로 보내면, 컨트롤러가 서비스로, 서비스가 리포지토리로 넘기고, 리포지토리가 H2 데이터베이스의 board_tb 테이블을 다룬 뒤 결과가 JSON으로 되돌아온다.">
   <defs>
     <marker id="c2ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c2ov-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 2 한눈에 보기 - 요청 하나가 게시글이 되기까지</text>
+  <text x="500" y="30" text-anchor="middle" font-size="19.2" font-weight="700" fill="#0f172a">챕터 2 한눈에 보기 - 요청 하나가 게시글이 되기까지</text>
   <rect x="30" y="70" width="210" height="250" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="135" y="98" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">클라이언트</text>
-  <text x="135" y="117" text-anchor="middle" font-size="11" fill="#6b7280">게시글 요청 5가지</text>
+  <text x="135" y="98" text-anchor="middle" font-size="15.8" font-weight="800" fill="#0f172a">클라이언트</text>
+  <text x="135" y="117" text-anchor="middle" font-size="12.4" fill="#6b7280">게시글 요청 5가지</text>
   <rect x="48" y="130" width="174" height="30" rx="5" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="135" y="149" text-anchor="middle" font-size="11" fill="#334155">GET /api/boards · 목록</text>
+  <text x="135" y="149" text-anchor="middle" font-size="12.4" fill="#334155">GET /api/boards · 목록</text>
   <rect x="48" y="166" width="174" height="30" rx="5" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="135" y="185" text-anchor="middle" font-size="11" fill="#334155">GET /api/boards/{id} · 상세</text>
+  <text x="135" y="185" text-anchor="middle" font-size="12.4" fill="#334155">GET /api/boards/{id} · 상세</text>
   <rect x="48" y="202" width="174" height="30" rx="5" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="135" y="221" text-anchor="middle" font-size="11" fill="#334155">POST /api/boards · 작성</text>
+  <text x="135" y="221" text-anchor="middle" font-size="12.4" fill="#334155">POST /api/boards · 작성</text>
   <rect x="48" y="238" width="174" height="30" rx="5" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="135" y="257" text-anchor="middle" font-size="11" fill="#334155">PUT /api/boards/{id} · 수정</text>
+  <text x="135" y="257" text-anchor="middle" font-size="12.4" fill="#334155">PUT /api/boards/{id} · 수정</text>
   <rect x="48" y="274" width="174" height="30" rx="5" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
-  <text x="135" y="293" text-anchor="middle" font-size="11" fill="#334155">DELETE /api/boards/{id} · 삭제</text>
+  <text x="135" y="293" text-anchor="middle" font-size="12.4" fill="#334155">DELETE /api/boards/{id} · 삭제</text>
   <rect x="300" y="150" width="150" height="90" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="375" y="188" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">컨트롤러</text>
-  <text x="375" y="210" text-anchor="middle" font-size="11" fill="#3730a3">@RestController</text>
+  <text x="375" y="188" text-anchor="middle" font-size="14.6" font-weight="800" fill="#3730a3">컨트롤러</text>
+  <text x="375" y="210" text-anchor="middle" font-size="12.4" fill="#3730a3">@RestController</text>
   <rect x="490" y="150" width="140" height="90" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="560" y="188" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">서비스</text>
-  <text x="560" y="210" text-anchor="middle" font-size="11" fill="#6b7280">@Service</text>
+  <text x="560" y="188" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="560" y="210" text-anchor="middle" font-size="12.4" fill="#6b7280">@Service</text>
   <rect x="670" y="150" width="150" height="90" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="745" y="188" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">리포지토리</text>
-  <text x="745" y="210" text-anchor="middle" font-size="11" fill="#6b7280">@Repository</text>
+  <text x="745" y="188" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">리포지토리</text>
+  <text x="745" y="210" text-anchor="middle" font-size="12.4" fill="#6b7280">@Repository</text>
   <rect x="860" y="160" width="120" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="920" y="190" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">H2</text>
-  <text x="920" y="210" text-anchor="middle" font-size="11" fill="#6b7280">board_tb</text>
+  <text x="920" y="190" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">H2</text>
+  <text x="920" y="210" text-anchor="middle" font-size="12.4" fill="#6b7280">board_tb</text>
   <line x1="240" y1="185" x2="298" y2="185" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2ov-i)"/>
   <line x1="450" y1="185" x2="488" y2="185" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2ov-i)"/>
   <line x1="630" y1="185" x2="668" y2="185" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2ov-i)"/>
@@ -44,7 +44,7 @@
   <line x1="668" y1="212" x2="632" y2="212" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2ov-b)"/>
   <line x1="488" y1="212" x2="452" y2="212" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2ov-b)"/>
   <line x1="298" y1="212" x2="242" y2="212" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c2ov-b)"/>
-  <text x="560" y="300" text-anchor="middle" font-size="11" fill="#94a3b8">회색 화살표: 결과를 JSON(Resp)으로 응답</text>
+  <text x="560" y="300" text-anchor="middle" font-size="12.4" fill="#94a3b8">회색 화살표: 결과를 JSON(Resp)으로 응답</text>
 </svg>
 </div>
 
@@ -97,9 +97,9 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 |--------|------|
 | **Board** | 게시글 한 건을 담는 클래스입니다. 데이터베이스의 게시글 표 한 줄에 대응합니다. |
 | **BoardRepository** | 게시글을 데이터베이스에 저장하고, 데이터베이스에서 조회하고 삭제합니다. |
-| BoardService | 목록, 상세, 작성, 수정, 삭제의 처리 흐름을 담당합니다. |
-| BoardController | REST 요청을 받아 서비스로 넘기는 입구입니다. |
-| BoardRequest | 작성과 수정 요청으로 들어온 데이터를 담습니다. |
+| **BoardService** | 목록, 상세, 작성, 수정, 삭제의 처리 흐름을 담당합니다. |
+| **BoardController** | REST 요청을 받아 서비스로 넘기는 입구입니다. |
+| **BoardRequest** | 작성과 수정 요청으로 들어온 데이터를 담습니다. |
 | **Resp** | 모든 응답을 한 가지 모양으로 통일하는 공통 래퍼입니다. |
 ## 2.1 REST API
 
@@ -119,13 +119,13 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
     <marker id="c2st-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
   <rect x="60" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
-  <text x="160" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">브라우저</text>
+  <text x="160" y="125" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">브라우저</text>
   <rect x="500" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
-  <text x="600" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">서버</text>
+  <text x="600" y="125" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">서버</text>
   <line x1="268" y1="100" x2="492" y2="100" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2st-a)"/>
-  <text x="380" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">1. 요청</text>
+  <text x="380" y="86" text-anchor="middle" font-size="14.2" font-weight="700" fill="#3730a3">1. 요청</text>
   <line x1="492" y1="140" x2="268" y2="140" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2st-a)"/>
-  <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 정적 자원</text>
+  <text x="380" y="168" text-anchor="middle" font-size="14.2" font-weight="700" fill="#3730a3">2. 정적 자원</text>
 </svg>
 </div>
 
@@ -139,14 +139,14 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
     <marker id="c2dy-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
   <rect x="60" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
-  <text x="160" y="125" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">브라우저</text>
+  <text x="160" y="125" text-anchor="middle" font-size="21.7" font-weight="700" fill="#0f172a">브라우저</text>
   <rect x="500" y="66" width="200" height="100" rx="10" fill="#fff" stroke="#475569" stroke-width="2.4"/>
-  <text x="600" y="112" text-anchor="middle" font-size="21" font-weight="700" fill="#0f172a">서버</text>
-  <text x="600" y="140" text-anchor="middle" font-size="15" fill="#6b7280">HTML 생성</text>
+  <text x="600" y="112" text-anchor="middle" font-size="21.7" font-weight="700" fill="#0f172a">서버</text>
+  <text x="600" y="140" text-anchor="middle" font-size="15.5" fill="#6b7280">HTML 생성</text>
   <line x1="268" y1="100" x2="492" y2="100" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2dy-a)"/>
-  <text x="380" y="86" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">1. 요청</text>
+  <text x="380" y="86" text-anchor="middle" font-size="17.5" font-weight="700" fill="#3730a3">1. 요청</text>
   <line x1="492" y1="140" x2="268" y2="140" stroke="#4f46e5" stroke-width="2.4" marker-end="url(#c2dy-a)"/>
-  <text x="380" y="168" text-anchor="middle" font-size="17" font-weight="700" fill="#3730a3">2. 동적 자원</text>
+  <text x="380" y="168" text-anchor="middle" font-size="17.5" font-weight="700" fill="#3730a3">2. 동적 자원</text>
 </svg>
 </div>
 
@@ -161,15 +161,15 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
     <marker id="c2mul-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
   <rect x="30" y="18" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
-  <text x="115" y="52" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">브라우저</text>
+  <text x="115" y="52" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">브라우저</text>
   <rect x="30" y="94" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
-  <text x="115" y="128" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">스마트폰</text>
+  <text x="115" y="128" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">스마트폰</text>
   <rect x="30" y="170" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
-  <text x="115" y="204" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">TV</text>
+  <text x="115" y="204" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">TV</text>
   <rect x="30" y="246" width="170" height="54" rx="9" fill="#fff" stroke="#475569" stroke-width="2.2"/>
-  <text x="115" y="280" text-anchor="middle" font-size="20" font-weight="700" fill="#0f172a">다른 서버</text>
+  <text x="115" y="280" text-anchor="middle" font-size="17.5" font-weight="700" fill="#0f172a">다른 서버</text>
   <rect x="430" y="125" width="180" height="90" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="2.4"/>
-  <text x="520" y="178" text-anchor="middle" font-size="21" font-weight="800" fill="#3730a3">서버</text>
+  <text x="520" y="178" text-anchor="middle" font-size="18.3" font-weight="800" fill="#3730a3">서버</text>
   <line x1="208" y1="45" x2="422" y2="140" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
   <line x1="208" y1="121" x2="422" y2="158" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
   <line x1="208" y1="197" x2="422" y2="182" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
@@ -235,21 +235,21 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 <div class="svg-figure">
 <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 작성 요청 메시지. 맨 위 요청 라인에 POST 슬래시 api 슬래시 boards가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 제목과 내용을 담은 JSON이 들어 있다.">
   <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="84" y="68" font-size="16" font-weight="800" fill="#3730a3">POST /api/boards</text>
+  <text x="84" y="68" font-size="13.3" font-weight="800" fill="#3730a3">POST /api/boards</text>
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <text x="84" y="140" font-size="10.8" fill="#334155">Content-Type: application/json</text>
   <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="13" fill="#334155">{ "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <text x="84" y="216" font-size="10.8" fill="#334155">{ "title": "첫 번째 게시글",</text>
+  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "안녕하세요" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">요청 라인</text>
+  <text x="530" y="66" font-size="11.7" font-weight="700" fill="#0f172a">요청 라인</text>
   <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <text x="530" y="141" font-size="11.7" font-weight="700" fill="#0f172a">헤더</text>
   <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+  <text x="530" y="230" font-size="11.7" font-weight="700" fill="#0f172a">바디</text>
 </svg>
 </div>
 
@@ -264,21 +264,21 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 <div class="svg-figure">
 <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
   <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="84" y="68" font-size="16" font-weight="800" fill="#c2410c">200 OK</text>
+  <text x="84" y="68" font-size="13.3" font-weight="800" fill="#c2410c">200 OK</text>
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="140" font-size="13" fill="#334155">Content-Type: application/json</text>
+  <text x="84" y="140" font-size="10.8" fill="#334155">Content-Type: application/json</text>
   <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="13" fill="#334155">{ "id": 1, "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="13" fill="#334155">  "content": "안녕하세요" }</text>
+  <text x="84" y="216" font-size="10.8" fill="#334155">{ "id": 1, "title": "첫 번째 게시글",</text>
+  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "안녕하세요" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="66" font-size="14" font-weight="700" fill="#0f172a">응답 라인</text>
+  <text x="530" y="66" font-size="11.7" font-weight="700" fill="#0f172a">응답 라인</text>
   <path d="M496,102 L508,102 L508,170 L496,170" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="136" x2="520" y2="136" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="141" font-size="14" font-weight="700" fill="#0f172a">헤더</text>
+  <text x="530" y="141" font-size="11.7" font-weight="700" fill="#0f172a">헤더</text>
   <path d="M496,182 L508,182 L508,268 L496,268" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="225" x2="520" y2="225" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="530" y="230" font-size="14" font-weight="700" fill="#0f172a">바디</text>
+  <text x="530" y="230" font-size="11.7" font-weight="700" fill="#0f172a">바디</text>
 </svg>
 </div>
 
@@ -324,7 +324,7 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 
 | 항목 | 값 |
 |------|-----|
-| 스프링 부트 버전 | 4.0.3 |
+| 스프링 부트 버전 | 4.0.7 |
 | 언어 | Java |
 | Group Id | com.metacoding |
 | Artifact Id | spring-ch02 |
@@ -360,20 +360,20 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
   <rect x="70" y="76" width="84" height="70" rx="14" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <rect x="154" y="92" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
   <rect x="154" y="120" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
-  <text x="112" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">Board 객체</text>
-  <text x="112" y="216" text-anchor="middle" font-size="11" fill="#64748b">자바가 쓰는 모양</text>
+  <text x="112" y="196" text-anchor="middle" font-size="12.7" font-weight="700" fill="#3730a3">Board 객체</text>
+  <text x="112" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">자바가 쓰는 모양</text>
   <line x1="202" y1="111" x2="256" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
   <rect x="264" y="62" width="170" height="98" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="349" y="117" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">하이버네이트</text>
+  <text x="349" y="117" text-anchor="middle" font-size="13.6" font-weight="800" fill="#3730a3">하이버네이트</text>
   <rect x="434" y="88" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
   <rect x="434" y="126" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
-  <text x="349" y="196" text-anchor="middle" font-size="11" fill="#64748b">두 모양 사이를 오갑니다</text>
+  <text x="349" y="196" text-anchor="middle" font-size="10.7" fill="#64748b">두 모양 사이를 오갑니다</text>
   <line x1="472" y1="111" x2="526" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
   <rect x="534" y="58" width="130" height="106" rx="10" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <rect x="578" y="88" width="11" height="34" rx="2" fill="#334155"/>
   <rect x="610" y="88" width="11" height="34" rx="2" fill="#334155"/>
-  <text x="599" y="196" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">board_tb의 한 행</text>
-  <text x="599" y="216" text-anchor="middle" font-size="11" fill="#64748b">데이터베이스가 쓰는 모양</text>
+  <text x="599" y="196" text-anchor="middle" font-size="12.7" font-weight="700" fill="#0f172a">board_tb의 한 행</text>
+  <text x="599" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">데이터베이스가 쓰는 모양</text>
 </svg>
 </div>
 
@@ -419,6 +419,13 @@ spring.jpa.defer-datasource-initialization=true
 
 # 스프링 실행 시 @Entity가 붙은 클래스를 테이블로 자동 생성한다
 spring.jpa.hibernate.ddl-auto=create
+
+# JPA가 만든 SQL을 콘솔에 보기 좋게 출력한다
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# 응답을 보내기 전에 데이터베이스 연결을 반납한다
+spring.jpa.open-in-view=false
 ```
 
 실습에 사용할 데이터베이스는 **H2**입니다. 자바로 만들어진 가벼운 관계형 데이터베이스로, 별도의 설치 과정이 필요 없습니다. 다만 메모리 기반으로 동작하기 때문에 서버를 종료하면 저장된 데이터는 모두 사라집니다.
@@ -448,7 +455,7 @@ public class Board {
     private String content;
 
     @CreationTimestamp // 저장 시점의 현재 시간을 자동으로 기록한다
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 }
 ```
 
@@ -495,16 +502,16 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 
 <div class="svg-figure">
 <svg viewBox="0 0 320 210" style="max-width:330px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BoardAll.java 파일 상자 하나 안에 요청과 응답, 데이터베이스 접근, 비즈니스 로직이 순서 없이 섞여 있다.">
-  <text x="30" y="26" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
+  <text x="30" y="26" font-size="12.6" font-weight="800" fill="#0f172a">BoardAll.java</text>
   <rect x="30" y="36" width="260" height="156" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <rect x="50" y="50" width="220" height="28" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.3"/>
-  <text x="160" y="69" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청과 응답</text>
+  <text x="160" y="69" text-anchor="middle" font-size="11.6" font-weight="700" fill="#3730a3">요청과 응답</text>
   <rect x="50" y="86" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
-  <text x="160" y="105" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
+  <text x="160" y="105" text-anchor="middle" font-size="11.6" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
   <rect x="50" y="122" width="220" height="28" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
-  <text x="160" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">비즈니스 로직</text>
+  <text x="160" y="141" text-anchor="middle" font-size="11.6" font-weight="700" fill="#334155">비즈니스 로직</text>
   <rect x="50" y="158" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
-  <text x="160" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
+  <text x="160" y="177" text-anchor="middle" font-size="11.6" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
 </svg>
 </div>
 
@@ -512,36 +519,36 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 
 이런 문제를 막기 위해, 성격이 같은 코드끼리 층을 나누어 역할을 분리합니다. 이렇게 하면 각 클래스가 맡은 책임이 하나로 뚜렷해져 시스템에 변화가 생겼을 때 다른 코드에 미치는 영향을 최소화할 수 있습니다.
 
-<div class="svg-figure">
-<svg viewBox="0 0 900 200" style="max-width:680px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에서 요청이 들어와 컨트롤러, 서비스, 리포지토리를 차례로 지나 오른쪽 데이터베이스에 닿는다. 응답은 같은 길을 거꾸로 되짚어 데이터베이스에서 리포지토리, 서비스, 컨트롤러 순서로 돌아온다.">
+<div class="svg-figure svg-figure--wide">
+<svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에서 요청이 들어와 컨트롤러, 서비스, 리포지토리를 차례로 지나 오른쪽 데이터베이스에 닿는다. 응답은 같은 길을 거꾸로 되짚어 데이터베이스에서 리포지토리, 서비스, 컨트롤러 순서로 돌아온다.">
   <defs>
     <marker id="rt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
     <marker id="bk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <text x="46" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">요청</text>
+  <text x="46" y="78" text-anchor="middle" font-size="13.8" font-weight="700" fill="#475569">요청</text>
   <line x1="14" y1="88" x2="82" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
   <line x1="82" y1="124" x2="14" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
-  <text x="46" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#94a3b8">응답</text>
+  <text x="46" y="146" text-anchor="middle" font-size="13.8" font-weight="700" fill="#94a3b8">응답</text>
   <rect x="90" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="185" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">컨트롤러</text>
-  <text x="185" y="122" text-anchor="middle" font-size="12" fill="#64748b">요청과 응답</text>
+  <text x="185" y="98" text-anchor="middle" font-size="17.3" font-weight="800" fill="#3730a3">컨트롤러</text>
+  <text x="185" y="122" text-anchor="middle" font-size="13.8" fill="#64748b">요청과 응답</text>
   <line x1="284" y1="88" x2="312" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
   <line x1="312" y1="124" x2="284" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
   <rect x="316" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#475569" stroke-width="1.9"/>
-  <text x="411" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">서비스</text>
-  <text x="411" y="122" text-anchor="middle" font-size="12" fill="#64748b">비즈니스 로직</text>
+  <text x="411" y="98" text-anchor="middle" font-size="17.3" font-weight="800" fill="#0f172a">서비스</text>
+  <text x="411" y="122" text-anchor="middle" font-size="13.8" fill="#64748b">비즈니스 로직</text>
   <line x1="510" y1="88" x2="538" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
   <line x1="538" y1="124" x2="510" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
   <rect x="542" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.9"/>
-  <text x="637" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">리포지토리</text>
-  <text x="637" y="122" text-anchor="middle" font-size="12" fill="#64748b">데이터베이스 접근</text>
+  <text x="637" y="98" text-anchor="middle" font-size="17.3" font-weight="800" fill="#c2410c">리포지토리</text>
+  <text x="637" y="122" text-anchor="middle" font-size="13.8" fill="#64748b">데이터베이스 접근</text>
   <line x1="736" y1="88" x2="766" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
   <line x1="766" y1="124" x2="736" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
   <ellipse cx="830" cy="70" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <path d="M774,70 L774,136" fill="none" stroke="#475569" stroke-width="1.8"/>
   <path d="M886,70 L886,136" fill="none" stroke="#475569" stroke-width="1.8"/>
   <ellipse cx="830" cy="136" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
-  <text x="830" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">데이터베이스</text>
+  <text x="830" y="110" text-anchor="middle" font-size="13.8" font-weight="700" fill="#0f172a">데이터베이스</text>
 </svg>
 </div>
 
@@ -590,11 +597,15 @@ public class BoardRepository {
     }
 ```
 
-`find()` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
+`find()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다. 앞에서 `show-sql`을 켜 두었으므로 콘솔에도 같은 문장이 출력됩니다.
 
 ```sql
-select id, content, created_at, title from board_tb where id = 1;
+select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title
+from board_tb b1_0
+where b1_0.id=?
 ```
+
+`b1_0`은 하이버네이트가 테이블에 붙이는 별칭이고, `?`는 실행 시점에 채워지는 자리입니다.
 
 ### 2.6.2 게시글 전체 조회
 
@@ -609,7 +620,8 @@ select id, content, created_at, title from board_tb where id = 1;
 `createQuery()`에 JPQL 문자열과 반환 타입을 넘겨 쿼리를 생성한 뒤, `getResultList()`를 호출해 실행합니다. 그러면 하이버네이트가 이 JPQL을 아래와 같은 실제 SQL로 번역해 줍니다.
 
 ```sql
-select id, content, created_at, title from board_tb;
+select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title
+from board_tb b1_0
 ```
 
 JPQL의 문법은 다음 절에서 따로 다루겠습니다.
@@ -624,10 +636,11 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
     }
 ```
 
-`persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다.
+`persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다. `created_at`은 **@CreationTimestamp**가 채운 값이 그대로 들어갑니다.
 
 ```sql
-insert into board_tb (content, created_at, title) values ('content3', now(), 'title3');
+insert into board_tb (content, created_at, title)
+values (?, ?, ?)
 ```
 
 ### 2.6.4 게시글 수정
@@ -647,7 +660,8 @@ JPA에는 데이터를 수정하는 메서드없이, 조회해 온 엔티티 객
 `remove()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다.
 
 ```sql
-delete from board_tb where id = 2;
+delete from board_tb
+where id=?
 ```
 
 ## 2.7 JPQL
@@ -680,120 +694,124 @@ update Board b set b.title = '제목 수정' where b.id = :id
 delete from Board b where b.id = :id
 ```
 
-작성한 JPQL은 `createQuery()`에 넘겨 실행합니다. 파라미터가 있으면 `setParameter()`로 값을 채운 뒤, 결과가 여러 건이면 `getResultList()`로, 한 건이면 `getSingleResult()`로 받습니다.
-
-```java
-em.createQuery("select b from Board b where b.id = :id", Board.class)
-  .setParameter("id", boardId)
-  .getResultList();
-```
-
 ## 2.8 영속성 컨텍스트
 
-리포지토리 코드를 보면 `persist()`나 `find()`를 호출할 뿐, 데이터베이스에 직접 SQL을 보내는 부분이 없습니다. **EntityManager**가 데이터베이스로 가기 전에 엔티티를 올려 두고 관리하는 공간을 하나 두기 때문입니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 합니다. `persist()`나 `find()`로 엔티티가 등록되거나 조회되는 순간, 엔티티는 영속 상태가 되어 이 공간에 들어갑니다.
+스프링의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영합니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 등록되거나 조회되면, **엔티티는 영속 상태가 되어 이 공간 안에서 관리됩니다**.
 
-영속성 컨텍스트가 하는 일은 크게 세 가지입니다.
+영속성 컨텍스트의 특징은 크게 세 가지입니다.
 
 ### 2.8.1 캐싱
 
-캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 담아 두고, 같은 엔티티를 다시 찾으면 데이터베이스까지 가지 않고 영속성 컨텍스트에서 바로 돌려주는 동작입니다. 그래서 같은 게시글을 두 번 조회해도 select 문은 한 번만 실행됩니다.
+캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 보관해 두었다가, **똑같은 엔티티를 다시 요청할 때 데이터베이스를 거치지 않고 바로 반환하는 기능입니다**.
+
+처음 조회하는 게시글은 아직 영속성 컨텍스트에 없습니다. 따라서 데이터베이스에 SELECT 쿼리를 보내 데이터를 직접 조회해 온 뒤, 이를 영속성 컨텍스트에 보관하고 반환합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 없는 첫 조회. 리포지토리가 em.find를 호출하면 영속성 컨텍스트는 캐시 miss 상태라 select SQL로 데이터베이스에서 읽어 오고, 읽어 온 board를 영속화한 뒤 리포지토리에 엔티티를 돌려준다.">
   <defs>
     <marker id="c2c1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="330" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">캐시 miss</text>
+  <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="330" y="107" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="136" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
-  <text x="580" y="98" text-anchor="middle" font-size="10.5" fill="#334155">board(제목1, 내용1)</text>
-  <text x="580" y="118" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2, 내용2)</text>
+  <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
   <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
-  <text x="469" y="62" text-anchor="middle" font-size="10" fill="#475569">2. select SQL</text>
+  <text x="469" y="62" text-anchor="middle" font-size="10.5" fill="#475569">2. select SQL</text>
   <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c1-a)"/>
-  <text x="470" y="122" text-anchor="middle" font-size="10" fill="#64748b">3. 영속화</text>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">3. 영속화</text>
   <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c1-a)"/>
-  <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">4. 엔티티 반환</text>
+  <text x="190" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">4. 엔티티 반환</text>
 </svg>
 </div>
 
 *그림 2-20. 첫 조회와 영속화*
 
-같은 게시글을 한 번 더 조회하면 데이터베이스에 접근하지 않습니다. 영속성 컨텍스트에 이미 올라가 있는 엔티티를 그대로 반환합니다.
+반면 같은 게시글을 다시 조회할 때는 데이터베이스를 거치지 않습니다. 영속성 컨텍스트에 보관된 엔티티를 바로 반환하기 때문에, **한 트랜잭션 안에서** 여러 번 조회하더라도 SELECT 쿼리는 최초 한 번만 실행됩니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 게시글을 다시 em.find로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려주고 데이터베이스에는 접근하지 않는다.">
   <defs>
     <marker id="c2c2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="520" y="36" width="120" height="146" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5,4"/>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="330" y="107" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="136" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
-  <text x="580" y="100" text-anchor="middle" font-size="10.5" fill="#94a3b8">접근하지 않음</text>
-  <text x="580" y="120" text-anchor="middle" font-size="10" fill="#94a3b8">SQL 실행 없음</text>
+  <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="100" text-anchor="middle" font-size="11" fill="#94a3b8">접근하지 않음</text>
+  <text x="580" y="120" text-anchor="middle" font-size="10.5" fill="#94a3b8">SQL 실행 없음</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c2-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
   <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c2-a)"/>
-  <text x="190" y="170" text-anchor="middle" font-size="10" fill="#64748b">2. 캐싱</text>
+  <text x="190" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">2. 캐싱</text>
 </svg>
 </div>
 
 *그림 2-21. 캐시 조회*
 
+:::tip
+**트랜잭션이란?**
+
+**트랜잭션(Transaction)** 은 여러 작업을 하나로 묶어 전부 반영하거나 전부 취소하는 작업 단위입니다. 스프링에서는 보통 서비스 계층의 메서드 하나가 한 트랜잭션 단위가 됩니다.
+
+영속성 컨텍스트도 이 트랜잭션이 실행되는 동안에만 유지됩니다. 메서드가 정상적으로 끝나 트랜잭션이 종료되면 컨텍스트도 닫히고, 안에 있던 엔티티는 더 이상 관리되지 않습니다.
+:::
+
 ### 2.8.2 쓰기 지연
 
-쓰기 지연은 등록·수정·삭제로 만들어진 SQL을 곧바로 데이터베이스에 보내지 않고, 영속성 컨텍스트 안의 버퍼에 모아 두는 동작입니다. `persist()`로 저장하라고 해도 INSERT 문은 버퍼에 쌓이고, `flush()` 시점에 만들어진 순서대로 한꺼번에 실행됩니다.
+우리는 마트에서 물건을 고를 때마다 계산하지 않고, 장바구니에 담은 후 한 번에 결제합니다. 이와 같이 영속성 컨텍스트는 **데이터를 변경하는 SQL(INSERT, UPDATE, DELETE)이 발생할 때 내부의 임시 공간(버퍼)에 모은 뒤 한 번에 데이터베이스로 전송합니다**. 이런 방식을 쓰기 지연이라고 합니다.
 
-<div class="svg-figure">
+`persist()`나 `remove()` 같은 메서드가 실행되면 JPA는 쿼리문을 버퍼에 저장한 후 트랜잭션이 성공하는 시점에 데이터베이스로 전달합니다.
+
+<div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 em.persist로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
   <defs>
     <marker id="c2wb-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <text x="120" y="34" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="480" y="34" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="840" y="34" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <text x="120" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="480" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="840" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="40" y="54" width="160" height="200" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="340" y="54" width="280" height="200" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="380" y="74" width="200" height="44" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="480" y="101" text-anchor="middle" font-size="11" fill="#3730a3">board(제목3) 영속 객체</text>
+  <text x="480" y="101" text-anchor="middle" font-size="14.8" fill="#3730a3">board(제목3) 영속 객체</text>
   <rect x="380" y="176" width="200" height="46" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="480" y="198" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">insert SQL</text>
-  <text x="480" y="214" text-anchor="middle" font-size="10" fill="#6b7280">버퍼</text>
+  <text x="480" y="198" text-anchor="middle" font-size="14.8" font-weight="700" fill="#475569">insert SQL</text>
+  <text x="480" y="214" text-anchor="middle" font-size="13.4" fill="#6b7280">버퍼</text>
   <line x1="480" y1="118" x2="480" y2="174" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2wb-a)"/>
-  <text x="600" y="150" text-anchor="middle" font-size="10" fill="#4f46e5">2. 버퍼에 저장</text>
+  <text x="600" y="150" text-anchor="middle" font-size="13.4" fill="#4f46e5">2. 버퍼에 저장</text>
   <rect x="760" y="54" width="160" height="200" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="840" y="140" text-anchor="middle" font-size="11" fill="#334155">board(제목1)</text>
-  <text x="840" y="162" text-anchor="middle" font-size="11" fill="#334155">board(제목2)</text>
-  <text x="840" y="184" text-anchor="middle" font-size="11" fill="#3730a3">board(제목3)</text>
+  <text x="840" y="140" text-anchor="middle" font-size="14.8" fill="#334155">board(제목1)</text>
+  <text x="840" y="162" text-anchor="middle" font-size="14.8" fill="#334155">board(제목2)</text>
+  <text x="840" y="184" text-anchor="middle" font-size="14.8" fill="#3730a3">board(제목3)</text>
   <line x1="200" y1="96" x2="338" y2="96" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="269" y="88" text-anchor="middle" font-size="10" fill="#4f46e5">1. em.persist()</text>
+  <text x="269" y="88" text-anchor="middle" font-size="13.4" fill="#4f46e5">1. em.persist()</text>
   <line x1="580" y1="199" x2="758" y2="199" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="669" y="191" text-anchor="middle" font-size="10" fill="#4f46e5">3. em.flush()</text>
-  <text x="669" y="216" text-anchor="middle" font-size="10" fill="#6b7280">insert 문 전송</text>
+  <text x="669" y="191" text-anchor="middle" font-size="13.4" fill="#4f46e5">3. em.flush()</text>
+  <text x="669" y="216" text-anchor="middle" font-size="13.4" fill="#6b7280">insert 문 전송</text>
 </svg>
 </div>
 
 *그림 2-22. 쓰기 지연*
 
 :::tip
-**IDENTITY 전략에서는 insert가 즉시 실행됩니다**
+**flush()란?**
 
-일반적으로는 insert도 버퍼에 모였다가 flush 시점에 실행됩니다. 다만 이 책의 엔티티는 기본 키를 `@GeneratedValue(IDENTITY)`로 데이터베이스에 맡깁니다. 이때는 JPA가 데이터베이스가 매긴 키를 받아 와야 엔티티를 관리할 수 있어서, insert만은 `persist()`를 호출하는 순간 곧바로 실행합니다. 그래서 이 프로젝트에서 쓰기 지연을 확인할 수 있는 것은 수정과 삭제입니다.
+flush()는 버퍼에 쌓여 있는 SQL을 실제 데이터베이스로 전송하는 명령어입니다. 메모리의 변경 사항을 데이터베이스에 반영하기 위해 반드시 거쳐야 하는 과정입니다. 다만 따로 호출하지 않더라도 트랜잭션이 성공적으로 끝날 때 스프링이 자동으로 실행합니다.
 :::
 
 ### 2.8.3 더티체킹
@@ -805,24 +823,24 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
   <defs>
     <marker id="c2d1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="80" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="256" y="58" width="148" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="330" y="79" text-anchor="middle" font-size="10.5" fill="#475569">board(제목1, 내용1)</text>
-  <text x="330" y="104" text-anchor="middle" font-size="10" fill="#64748b">스냅샷</text>
+  <text x="330" y="79" text-anchor="middle" font-size="11" fill="#475569">board(제목1, 내용1)</text>
+  <text x="330" y="104" text-anchor="middle" font-size="10.5" fill="#64748b">스냅샷</text>
   <rect x="256" y="116" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="330" y="137" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="166" text-anchor="middle" font-size="10" fill="#64748b">영속화된 객체</text>
-  <text x="580" y="98" text-anchor="middle" font-size="10.5" fill="#334155">board(제목1, 내용1)</text>
-  <text x="580" y="118" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2, 내용2)</text>
+  <text x="330" y="137" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
   <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2d1-a)"/>
-  <text x="470" y="122" text-anchor="middle" font-size="10" fill="#64748b">2. 영속화</text>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">2. 영속화</text>
 </svg>
 </div>
 
@@ -835,29 +853,29 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
   <defs>
     <marker id="c2d2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="330" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="580" y="22" text-anchor="middle" font-size="12" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="40" y="36" width="380" height="176" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="60" y="56" width="150" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="135" y="77" text-anchor="middle" font-size="10.5" fill="#475569">board(제목1, 내용1)</text>
-  <text x="135" y="102" text-anchor="middle" font-size="10" fill="#64748b">스냅샷</text>
+  <text x="135" y="77" text-anchor="middle" font-size="11" fill="#475569">board(제목1, 내용1)</text>
+  <text x="135" y="102" text-anchor="middle" font-size="10.5" fill="#64748b">스냅샷</text>
   <rect x="60" y="118" width="150" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="135" y="139" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목수정1, 내용1)</text>
-  <text x="135" y="164" text-anchor="middle" font-size="10" fill="#64748b">3. 데이터 수정</text>
+  <text x="135" y="139" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1, 내용1)</text>
+  <text x="135" y="164" text-anchor="middle" font-size="10.5" fill="#64748b">3. 데이터 수정</text>
   <line x1="228" y1="110" x2="268" y2="110" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="248" y="100" text-anchor="middle" font-size="10" fill="#475569">비교</text>
+  <text x="248" y="100" text-anchor="middle" font-size="10.5" fill="#475569">비교</text>
   <rect x="276" y="88" width="126" height="44" rx="7" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="339" y="115" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">변경 감지</text>
+  <text x="339" y="115" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">변경 감지</text>
   <rect x="276" y="152" width="126" height="40" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="339" y="171" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">update SQL</text>
-  <text x="339" y="186" text-anchor="middle" font-size="10" fill="#64748b">버퍼</text>
+  <text x="339" y="171" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
+  <text x="339" y="186" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
   <line x1="339" y1="132" x2="339" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="410" y="146" text-anchor="middle" font-size="10" fill="#475569">4. 버퍼에 저장</text>
+  <text x="410" y="146" text-anchor="middle" font-size="10.5" fill="#475569">4. 버퍼에 저장</text>
   <rect x="520" y="60" width="120" height="120" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="580" y="112" text-anchor="middle" font-size="10.5" fill="#3730a3">board(제목수정1)</text>
-  <text x="580" y="134" text-anchor="middle" font-size="10.5" fill="#334155">board(제목2)</text>
+  <text x="580" y="112" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1)</text>
+  <text x="580" y="134" text-anchor="middle" font-size="11" fill="#334155">board(제목2)</text>
   <line x1="402" y1="172" x2="518" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="462" y="192" text-anchor="middle" font-size="10" fill="#475569">5. em.flush()</text>
+  <text x="462" y="192" text-anchor="middle" font-size="10.5" fill="#475569">5. em.flush()</text>
 </svg>
 </div>
 
@@ -865,76 +883,70 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 쓰기 지연과 더티체킹이 만든 SQL은 `flush()` 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush()`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 **@Transactional**이 끝날 때 스프링이 `flush()`를 호출합니다.
 
-:::tip
-**트랜잭션은 전부 성공하거나 전부 되돌리는 단위입니다**
-
-**트랜잭션(Transaction)** 은 여러 작업을 하나로 묶어, 전부 성공하거나 전부 없던 일로 되돌리는 단위입니다. 계좌 이체에서 출금과 입금이 한 묶음으로 처리되어 하나라도 실패하면 통째로 취소되는 것과 같습니다. 데이터를 바꾸는 작업은 이 단위 안에서 이뤄져야 하므로, 서비스의 쓰기 메서드에 **@Transactional**을 붙입니다.
-:::
-
 리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.
 
 ## 2.9 단위 테스트
 
-리포지토리에 다섯 기능을 모두 담았습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.
+리포지토리에 조회·저장·삭제 메서드를 모두 작성했습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.
 
 커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 분리해 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 **단위 테스트(Unit Test)** 입니다.
 
-<div class="svg-figure">
+<div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 커피콩을 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
   <defs>
     <marker id="c2coffee-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
     <g id="c2bean"><ellipse rx="6.2" ry="4.4" fill="#92400e" transform="rotate(-20)"/><path d="M-4.2,-1.4 Q0,0 4.2,1.4" fill="none" stroke="#fde68a" stroke-width="1" transform="rotate(-20)"/></g>
   </defs>
   <rect x="24" y="40" width="420" height="300" rx="12" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
-  <text x="234" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">한 번에 돌리기</text>
+  <text x="234" y="68" text-anchor="middle" font-size="18.4" font-weight="800" fill="#0f172a">한 번에 돌리기</text>
   <use href="#c2bean" x="196" y="90"/>
   <use href="#c2bean" x="210" y="86"/>
   <use href="#c2bean" x="224" y="90"/>
-  <text x="238" y="94" font-size="11" fill="#475569">커피콩</text>
+  <text x="238" y="94" font-size="14.5" fill="#475569">커피콩</text>
   <polygon points="182,102 286,102 264,128 204,128" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6" stroke-linejoin="round"/>
   <rect x="164" y="128" width="140" height="104" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="234" y="164" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">분쇄기</text>
+  <text x="234" y="164" text-anchor="middle" font-size="15.8" font-weight="700" fill="#3730a3">분쇄기</text>
   <line x1="184" y1="180" x2="284" y2="180" stroke="#a5b4fc" stroke-width="1.2" stroke-dasharray="4 4"/>
-  <text x="234" y="208" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">추출기</text>
+  <text x="234" y="208" text-anchor="middle" font-size="15.8" font-weight="700" fill="#3730a3">추출기</text>
   <rect x="226" y="232" width="16" height="12" rx="2" fill="#4f46e5"/>
   <line x1="234" y1="246" x2="234" y2="256" stroke="#475569" stroke-width="1.4" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
   <path d="M208,258 L260,258 L252,286 L216,286 Z" fill="#fff" stroke="#475569" stroke-width="1.6" stroke-linejoin="round"/>
   <path d="M260,264 Q273,272 259,281" fill="none" stroke="#475569" stroke-width="1.6"/>
-  <text x="234" y="280" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">?</text>
-  <text x="234" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">안 나오면 어디가 문제인지</text>
-  <text x="234" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">알기 어렵다</text>
+  <text x="234" y="280" text-anchor="middle" font-size="18.4" font-weight="800" fill="#c2410c">?</text>
+  <text x="234" y="306" text-anchor="middle" font-size="14.5" font-weight="700" fill="#c2410c">안 나오면 어디가 문제인지</text>
+  <text x="234" y="322" text-anchor="middle" font-size="14.5" font-weight="700" fill="#c2410c">알기 어렵다</text>
   <rect x="496" y="40" width="420" height="300" rx="12" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="706" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">따로 돌리기 (단위)</text>
+  <text x="706" y="68" text-anchor="middle" font-size="18.4" font-weight="800" fill="#3730a3">따로 돌리기 (단위)</text>
   <rect x="522" y="86" width="176" height="196" rx="10" fill="#fcfdff" stroke="#c7d2fe" stroke-width="1.3" stroke-dasharray="5 4"/>
-  <text x="610" y="108" text-anchor="middle" font-size="10" fill="#6b7280">테스트 1</text>
+  <text x="610" y="108" text-anchor="middle" font-size="13.1" fill="#6b7280">테스트 1</text>
   <use href="#c2bean" x="580" y="126"/>
   <use href="#c2bean" x="592" y="126"/>
-  <text x="602" y="130" font-size="10" fill="#475569">커피콩</text>
+  <text x="602" y="130" font-size="13.1" fill="#475569">커피콩</text>
   <polygon points="576,138 644,138 630,156 590,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
   <rect x="562" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="610" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">분쇄기</text>
+  <text x="610" y="192" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">분쇄기</text>
   <rect x="604" y="218" width="12" height="10" rx="2" fill="#4f46e5"/>
   <line x1="610" y1="230" x2="610" y2="240" stroke="#4f46e5" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
   <circle cx="601" cy="252" r="2.2" fill="#92400e"/>
   <circle cx="610" cy="252" r="2.2" fill="#92400e"/>
   <circle cx="619" cy="252" r="2.2" fill="#92400e"/>
-  <text x="610" y="274" text-anchor="middle" font-size="10" fill="#475569">1cm 커피콩</text>
+  <text x="610" y="274" text-anchor="middle" font-size="13.1" fill="#475569">1cm 커피콩</text>
   <rect x="712" y="86" width="176" height="196" rx="10" fill="#fcfdff" stroke="#c7d2fe" stroke-width="1.3" stroke-dasharray="5 4"/>
-  <text x="800" y="108" text-anchor="middle" font-size="10" fill="#6b7280">테스트 2</text>
+  <text x="800" y="108" text-anchor="middle" font-size="13.1" fill="#6b7280">테스트 2</text>
   <circle cx="762" cy="126" r="2.2" fill="#92400e"/>
   <circle cx="770" cy="126" r="2.2" fill="#92400e"/>
   <circle cx="778" cy="126" r="2.2" fill="#92400e"/>
-  <text x="786" y="130" font-size="10" fill="#475569">1cm 커피콩</text>
+  <text x="786" y="130" font-size="13.1" fill="#475569">1cm 커피콩</text>
   <polygon points="766,138 834,138 820,156 780,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
   <rect x="752" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="800" y="192" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">추출기</text>
+  <text x="800" y="192" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">추출기</text>
   <rect x="794" y="218" width="12" height="10" rx="2" fill="#4f46e5"/>
   <line x1="800" y1="230" x2="800" y2="240" stroke="#4f46e5" stroke-width="1.3" stroke-dasharray="3 3" marker-end="url(#c2coffee-a)"/>
   <path d="M787,244 L813,244 L809,262 L791,262 Z" fill="#fff" stroke="#475569" stroke-width="1.4" stroke-linejoin="round"/>
   <path d="M813,248 Q822,254 812,259" fill="none" stroke="#475569" stroke-width="1.4"/>
-  <text x="800" y="274" text-anchor="middle" font-size="10" fill="#475569">커피</text>
-  <text x="706" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">문제가 나면 그 기능만</text>
-  <text x="706" y="322" text-anchor="middle" font-size="11" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
+  <text x="800" y="274" text-anchor="middle" font-size="13.1" fill="#475569">커피</text>
+  <text x="706" y="306" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">문제가 나면 그 기능만</text>
+  <text x="706" y="322" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">떼어 고치면 된다</text>
 </svg>
 </div>
 
@@ -946,30 +958,30 @@ em.createQuery("select b from Board b where b.id = :id", Board.class)
 
 테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 출력해 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
 
-<div class="svg-figure">
+<div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 assert로 검증하지만 학습 단계에서는 eye로 대체한다.">
   <defs>
     <marker id="c2gwt-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <text x="450" y="34" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">given → when → eye</text>
+  <text x="450" y="34" text-anchor="middle" font-size="18.9" font-weight="800" fill="#0f172a">given → when → eye</text>
   <rect x="40" y="66" width="240" height="110" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
-  <text x="160" y="98" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">given</text>
-  <text x="160" y="124" text-anchor="middle" font-size="11" fill="#334155">준비</text>
-  <text x="160" y="146" text-anchor="middle" font-size="11" fill="#475569">환경과 데이터를</text>
-  <text x="160" y="162" text-anchor="middle" font-size="11" fill="#475569">갖춘다</text>
+  <text x="160" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#3730a3">given</text>
+  <text x="160" y="124" text-anchor="middle" font-size="13.8" fill="#334155">준비</text>
+  <text x="160" y="146" text-anchor="middle" font-size="13.8" fill="#475569">환경과 데이터를</text>
+  <text x="160" y="162" text-anchor="middle" font-size="13.8" fill="#475569">갖춘다</text>
   <rect x="330" y="66" width="240" height="110" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
-  <text x="450" y="98" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">when</text>
-  <text x="450" y="124" text-anchor="middle" font-size="11" fill="#334155">실행</text>
-  <text x="450" y="146" text-anchor="middle" font-size="11" fill="#475569">검증 대상 기능을</text>
-  <text x="450" y="162" text-anchor="middle" font-size="11" fill="#475569">호출한다</text>
+  <text x="450" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#3730a3">when</text>
+  <text x="450" y="124" text-anchor="middle" font-size="13.8" fill="#334155">실행</text>
+  <text x="450" y="146" text-anchor="middle" font-size="13.8" fill="#475569">검증 대상 기능을</text>
+  <text x="450" y="162" text-anchor="middle" font-size="13.8" fill="#475569">호출한다</text>
   <rect x="620" y="66" width="240" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="740" y="98" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">eye</text>
-  <text x="740" y="124" text-anchor="middle" font-size="11" fill="#334155">확인</text>
-  <text x="740" y="146" text-anchor="middle" font-size="11" fill="#475569">결과를 찍어</text>
-  <text x="740" y="162" text-anchor="middle" font-size="11" fill="#475569">눈으로 본다</text>
+  <text x="740" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#c2410c">eye</text>
+  <text x="740" y="124" text-anchor="middle" font-size="13.8" fill="#334155">확인</text>
+  <text x="740" y="146" text-anchor="middle" font-size="13.8" fill="#475569">결과를 찍어</text>
+  <text x="740" y="162" text-anchor="middle" font-size="13.8" fill="#475569">눈으로 본다</text>
   <line x1="280" y1="121" x2="328" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
   <line x1="570" y1="121" x2="618" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
-  <text x="740" y="200" text-anchor="middle" font-size="10" fill="#6b7280">원래 then(assert) 자리를 학습 단계에선 eye로 대체합니다</text>
+  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">원래 then(assert) 자리를 학습 단계에선 eye로 대체합니다</text>
 </svg>
 </div>
 
@@ -1023,6 +1035,7 @@ public class BoardRepositoryTest {
         // eye
         System.out.println("Board Count : " + boards.size());
         System.out.println("Board 1 title : " + boards.get(0).getTitle());
+        System.out.println("Board 2 content : " + boards.get(1).getContent());
     }
 ```
 
@@ -1040,7 +1053,9 @@ public class BoardRepositoryTest {
         // eye
         List<Board> boards = boardRepository.findAll();
         System.out.println("Board Count : " + boards.size());
+        System.out.println("Board ID : " + boards.get(2).getId());
         System.out.println("Board Title : " + boards.get(2).getTitle());
+        System.out.println("Board Content : " + boards.get(2).getContent());
     }
 ```
 
@@ -1060,6 +1075,7 @@ public class BoardRepositoryTest {
         // eye
         Board result = boardRepository.findById(id);
         System.out.println("Board title : " + result.getTitle());
+        System.out.println("Board content : " + result.getContent());
     }
 ```
 
@@ -1301,43 +1317,43 @@ public class BoardRequest {
 
 서비스는 리포지토리를 호출하고, 리포지토리는 **EntityManager**로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 생성된 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 **커넥션 풀(Connection Pool)** 에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지로, 요청마다 새로 맺지 않고 미리 준비해 둔 것을 빌려 쓴 뒤 반납합니다.
 
-<div class="svg-figure">
+<div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청이 지나는 전체 경로. 윗줄에서 클라이언트가 톰캣으로 요청을 보내고, 톰캣은 스레드 풀에서 스레드를 꺼내 디스패처 서블릿으로 넘기며, 디스패처 서블릿이 담당 컨트롤러를 호출한다. 컨트롤러는 아랫줄의 서비스를 호출하고, 서비스에서 트랜잭션이 열린 채 리포지토리를 거쳐 영속성 컨텍스트로 전달된다. 영속성 컨텍스트가 만든 SQL은 커넥션 풀에서 빌린 연결로 데이터베이스에 전달된다.">
   <defs>
     <marker id="c2flow-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
   <rect x="30" y="70" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="105" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
-  <text x="105" y="122" text-anchor="middle" font-size="10" fill="#6b7280">요청을 보냅니다</text>
+  <text x="105" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">클라이언트</text>
+  <text x="105" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">요청을 보냅니다</text>
   <rect x="230" y="70" width="170" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="315" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">톰캣</text>
-  <text x="315" y="122" text-anchor="middle" font-size="10" fill="#6b7280">스레드 풀에서 꺼내 배정</text>
+  <text x="315" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">톰캣</text>
+  <text x="315" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">스레드 풀에서 꺼내 배정</text>
   <rect x="450" y="70" width="190" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="545" y="100" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">디스패처 서블릿</text>
-  <text x="545" y="122" text-anchor="middle" font-size="10" fill="#3730a3">담당 메서드를 찾습니다</text>
+  <text x="545" y="100" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">디스패처 서블릿</text>
+  <text x="545" y="122" text-anchor="middle" font-size="12.4" fill="#3730a3">담당 메서드를 찾습니다</text>
   <rect x="690" y="70" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="765" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="765" y="122" text-anchor="middle" font-size="10" fill="#6b7280">값을 꺼냅니다</text>
+  <text x="765" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="765" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">값을 꺼냅니다</text>
   <line x1="182" y1="106" x2="226" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
   <line x1="402" y1="106" x2="446" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
   <line x1="642" y1="106" x2="686" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
   <path d="M765,144 L765,182 L105,182 L105,222" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2flow-a)"/>
-  <text x="435" y="174" text-anchor="middle" font-size="10" fill="#4f46e5">컨트롤러가 서비스를 호출합니다</text>
+  <text x="435" y="174" text-anchor="middle" font-size="12.4" fill="#4f46e5">컨트롤러가 서비스를 호출합니다</text>
   <rect x="30" y="226" width="170" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="115" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">서비스</text>
-  <text x="115" y="278" text-anchor="middle" font-size="10" fill="#c2410c">트랜잭션이 열리고 닫힙니다</text>
+  <text x="115" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="115" y="278" text-anchor="middle" font-size="12.4" fill="#c2410c">트랜잭션이 열리고 닫힙니다</text>
   <rect x="250" y="226" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="325" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">리포지토리</text>
-  <text x="325" y="278" text-anchor="middle" font-size="10" fill="#6b7280">EntityManager 사용</text>
+  <text x="325" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">리포지토리</text>
+  <text x="325" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">EntityManager 사용</text>
   <rect x="450" y="226" width="190" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="545" y="256" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="545" y="278" text-anchor="middle" font-size="10" fill="#3730a3">엔티티와 SQL 버퍼</text>
+  <text x="545" y="256" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="545" y="278" text-anchor="middle" font-size="12.4" fill="#3730a3">엔티티와 SQL 버퍼</text>
   <rect x="690" y="226" width="130" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="755" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">커넥션 풀</text>
-  <text x="755" y="278" text-anchor="middle" font-size="10" fill="#6b7280">연결을 빌려 줍니다</text>
+  <text x="755" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">커넥션 풀</text>
+  <text x="755" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">연결을 빌려 줍니다</text>
   <rect x="870" y="226" width="110" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="925" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">H2</text>
-  <text x="925" y="278" text-anchor="middle" font-size="10" fill="#6b7280">board_tb</text>
+  <text x="925" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">H2</text>
+  <text x="925" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">board_tb</text>
   <line x1="202" y1="262" x2="246" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
   <line x1="402" y1="262" x2="446" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
   <line x1="642" y1="262" x2="686" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>

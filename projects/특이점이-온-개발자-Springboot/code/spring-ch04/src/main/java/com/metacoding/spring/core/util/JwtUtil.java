@@ -1,6 +1,7 @@
 package com.metacoding.spring.core.util;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
@@ -12,13 +13,13 @@ public class JwtUtil {
     public static final String TOKEN_PREFIX = "Bearer ";
     // 실제 서비스에서는 외부 설정으로 분리한다
     public static final String SECRET = "메타코딩시크릿키";
-    public static final Long EXPIRATION_TIME = 1000L * 60 * 60 * 24 * 7; // 7일
+    public static final Duration EXPIRATION_TIME = Duration.ofDays(7);
 
     // 토큰 생성
     public static String create(User user) {
         String jwt = JWT.create()
                 .withSubject(user.getUsername())
-                .withExpiresAt(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .withExpiresAt(Instant.now().plus(EXPIRATION_TIME))
                 .withClaim("id", user.getId())
                 .sign(Algorithm.HMAC512(SECRET));
         return TOKEN_PREFIX + jwt;

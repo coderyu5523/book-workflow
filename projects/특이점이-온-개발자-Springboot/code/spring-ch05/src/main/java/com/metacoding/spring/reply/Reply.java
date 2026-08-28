@@ -1,6 +1,6 @@
 package com.metacoding.spring.reply;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -29,11 +29,11 @@ public class Reply {
     private Board board;
 
     @CreationTimestamp
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Builder
     public Reply(Integer id, String comment, User user, Board board,
-            Timestamp createdAt) {
+            LocalDateTime createdAt) {
         this.id = id;
         this.comment = comment;
         this.user = user;

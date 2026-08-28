@@ -1,6 +1,6 @@
 package com.metacoding.spring.user;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public class UserResponse {
 
@@ -8,7 +8,7 @@ public class UserResponse {
             Integer userId,
             String username,
             String email,
-            Timestamp createdAt) {
+            LocalDateTime createdAt) {
 
         public DTO(User user) {
             this(

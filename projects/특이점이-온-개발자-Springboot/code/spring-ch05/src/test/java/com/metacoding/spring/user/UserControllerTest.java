@@ -38,7 +38,7 @@ public class UserControllerTest {
 
     @Test
     public void login_test() throws Exception {
-        // 시드 계정 ssar / 1234 (BCrypt 해시로 저장됨)
+        // 시드 계정 ssar / 1234
         UserRequest.LoginDTO reqDTO = new UserRequest.LoginDTO("ssar", "1234");
         String body = om.writeValueAsString(reqDTO);
 

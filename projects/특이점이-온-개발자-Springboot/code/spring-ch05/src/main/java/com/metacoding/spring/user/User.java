@@ -1,6 +1,6 @@
 package com.metacoding.spring.user;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -22,12 +22,12 @@ public class User {
     private String email;
 
     @CreationTimestamp // 자동으로 현재 시간 저장
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     // 객체 생성을 위한 생성자
     @Builder
     public User(Integer id, String username, String password,
-            String email, Timestamp createdAt) {
+            String email, LocalDateTime createdAt) {
         this.id = id;
         this.username = username;
         this.password = password;
