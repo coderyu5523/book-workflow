@@ -597,15 +597,11 @@ public class BoardRepository {
     }
 ```
 
-`find()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다. 앞에서 `show-sql`을 켜 두었으므로 콘솔에도 같은 문장이 출력됩니다.
+`find()` 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.
 
 ```sql
-select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title
-from board_tb b1_0
-where b1_0.id=?
+select id, content, created_at, title from board_tb where id = 1;
 ```
-
-`b1_0`은 하이버네이트가 테이블에 붙이는 별칭이고, `?`는 실행 시점에 채워지는 자리입니다.
 
 ### 2.6.2 게시글 전체 조회
 
@@ -620,8 +616,7 @@ where b1_0.id=?
 `createQuery()`에 JPQL 문자열과 반환 타입을 넘겨 쿼리를 생성한 뒤, `getResultList()`를 호출해 실행합니다. 그러면 하이버네이트가 이 JPQL을 아래와 같은 실제 SQL로 번역해 줍니다.
 
 ```sql
-select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title
-from board_tb b1_0
+select id, content, created_at, title from board_tb;
 ```
 
 JPQL의 문법은 다음 절에서 따로 다루겠습니다.
@@ -639,8 +634,7 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 `persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다. `created_at`은 **@CreationTimestamp**가 채운 값이 그대로 들어갑니다.
 
 ```sql
-insert into board_tb (content, created_at, title)
-values (?, ?, ?)
+insert into board_tb (content, created_at, title) values ('content3', now(), 'title3');
 ```
 
 ### 2.6.4 게시글 수정
@@ -660,8 +654,7 @@ JPA에는 데이터를 수정하는 메서드없이, 조회해 온 엔티티 객
 `remove()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다.
 
 ```sql
-delete from board_tb
-where id=?
+delete from board_tb where id = 2;
 ```
 
 ## 2.7 JPQL
@@ -696,7 +689,7 @@ delete from Board b where b.id = :id
 
 ## 2.8 영속성 컨텍스트
 
-스프링의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영합니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 등록되거나 조회되면, **엔티티는 영속 상태가 되어 이 공간 안에서 관리됩니다**.
+스프링의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영하는데, 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 영속성 컨텍스트에 등록되면, **엔티티는 영속 상태가 됩니다**. 영속성 컨텍스트는 이 객체의 상태 변화를 지켜보고 있다가, 변경된 내용을 데이터베이스에 반영합니다.
 
 영속성 컨텍스트의 특징은 크게 세 가지입니다.
 
@@ -707,7 +700,7 @@ delete from Board b where b.id = :id
 처음 조회하는 게시글은 아직 영속성 컨텍스트에 없습니다. 따라서 데이터베이스에 SELECT 쿼리를 보내 데이터를 직접 조회해 온 뒤, 이를 영속성 컨텍스트에 보관하고 반환합니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 없는 첫 조회. 리포지토리가 em.find를 호출하면 영속성 컨텍스트는 캐시 miss 상태라 select SQL로 데이터베이스에서 읽어 오고, 읽어 온 board를 영속화한 뒤 리포지토리에 엔티티를 돌려준다.">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 없는 첫 조회. 리포지토리가 find()를 호출하면 영속성 컨텍스트는 캐시 miss 상태라 select SQL로 데이터베이스에서 읽어 오고, 읽어 온 board를 영속화한 뒤 리포지토리에 엔티티를 돌려준다.">
   <defs>
     <marker id="c2c1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
@@ -724,7 +717,7 @@ delete from Board b where b.id = :id
   <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
   <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
   <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
   <text x="469" y="62" text-anchor="middle" font-size="10.5" fill="#475569">2. select SQL</text>
   <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c1-a)"/>
@@ -739,7 +732,7 @@ delete from Board b where b.id = :id
 반면 같은 게시글을 다시 조회할 때는 데이터베이스를 거치지 않습니다. 영속성 컨텍스트에 보관된 엔티티를 바로 반환하기 때문에, **한 트랜잭션 안에서** 여러 번 조회하더라도 SELECT 쿼리는 최초 한 번만 실행됩니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 게시글을 다시 em.find로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려주고 데이터베이스에는 접근하지 않는다.">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 있는 두 번째 조회. 리포지토리가 같은 게시글을 다시 find()로 찾으면 영속성 컨텍스트가 이미 가지고 있던 board를 그대로 돌려준다. 데이터베이스로는 select SQL이 나가지 않는다.">
   <defs>
     <marker id="c2c2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
@@ -748,20 +741,26 @@ delete from Board b where b.id = :id
   <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
   <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="520" y="36" width="120" height="146" rx="9" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5,4"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
   <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
-  <text x="580" y="100" text-anchor="middle" font-size="11" fill="#94a3b8">접근하지 않음</text>
-  <text x="580" y="120" text-anchor="middle" font-size="10.5" fill="#94a3b8">SQL 실행 없음</text>
+  <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c2-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
   <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c2-a)"/>
   <text x="190" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">2. 캐싱</text>
 </svg>
 </div>
 
 *그림 2-21. 캐시 조회*
+
+같은 게시글을 두 번 조회해도 데이터베이스에 전달되는 SQL은 한 번뿐입니다.
+
+```sql
+select * from board_tb where id = 1;
+```
 
 :::tip
 **트랜잭션이란?**
@@ -773,12 +772,12 @@ delete from Board b where b.id = :id
 
 ### 2.8.2 쓰기 지연
 
-우리는 마트에서 물건을 고를 때마다 계산하지 않고, 장바구니에 담은 후 한 번에 결제합니다. 이와 같이 영속성 컨텍스트는 **데이터를 변경하는 SQL(INSERT, UPDATE, DELETE)이 발생할 때 내부의 임시 공간(버퍼)에 모은 뒤 한 번에 데이터베이스로 전송합니다**. 이런 방식을 쓰기 지연이라고 합니다.
+우리는 마트에서 물건을 고를 때마다 계산하지 않고, 장바구니에 담은 후 한 번에 결제합니다. 이와 같이 영속성 컨텍스트는 **데이터를 변경하는 SQL을 곧바로 실행하지 않고 내부의 임시 공간(버퍼)에 모은 뒤 한 번에 데이터베이스로 전송합니다**. 이런 방식을 **쓰기 지연(Write Behind)** 이라고 합니다.
 
 `persist()`나 `remove()` 같은 메서드가 실행되면 JPA는 쿼리문을 버퍼에 저장한 후 트랜잭션이 성공하는 시점에 데이터베이스로 전달합니다.
 
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 em.persist로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
+<svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 persist()로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
   <defs>
     <marker id="c2wb-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
@@ -793,33 +792,44 @@ delete from Board b where b.id = :id
   <text x="480" y="198" text-anchor="middle" font-size="14.8" font-weight="700" fill="#475569">insert SQL</text>
   <text x="480" y="214" text-anchor="middle" font-size="13.4" fill="#6b7280">버퍼</text>
   <line x1="480" y1="118" x2="480" y2="174" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2wb-a)"/>
-  <text x="600" y="150" text-anchor="middle" font-size="13.4" fill="#4f46e5">2. 버퍼에 저장</text>
+  <text x="600" y="150" text-anchor="middle" font-size="13.4" fill="#4f46e5">2. 버퍼에 insert문 저장</text>
   <rect x="760" y="54" width="160" height="200" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <text x="840" y="140" text-anchor="middle" font-size="14.8" fill="#334155">board(제목1)</text>
   <text x="840" y="162" text-anchor="middle" font-size="14.8" fill="#334155">board(제목2)</text>
   <text x="840" y="184" text-anchor="middle" font-size="14.8" fill="#3730a3">board(제목3)</text>
   <line x1="200" y1="96" x2="338" y2="96" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="269" y="88" text-anchor="middle" font-size="13.4" fill="#4f46e5">1. em.persist()</text>
+  <text x="269" y="88" text-anchor="middle" font-size="13.4" fill="#4f46e5">1. persist()</text>
+  <text x="269" y="114" text-anchor="middle" font-size="13.4" fill="#6b7280">board(제목3, 내용3)</text>
   <line x1="580" y1="199" x2="758" y2="199" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="669" y="191" text-anchor="middle" font-size="13.4" fill="#4f46e5">3. em.flush()</text>
+  <text x="669" y="191" text-anchor="middle" font-size="13.4" fill="#4f46e5">3. flush()</text>
   <text x="669" y="216" text-anchor="middle" font-size="13.4" fill="#6b7280">insert 문 전송</text>
 </svg>
 </div>
 
 *그림 2-22. 쓰기 지연*
 
+`persist()`로 저장한 게시글은 `flush()` 시점에 다음 SQL로 데이터베이스에 전달됩니다.
+
+```sql
+insert into board_tb (title, content, created_at) values ('제목3', '내용3', now());
+```
+
 :::tip
 **flush()란?**
 
-flush()는 버퍼에 쌓여 있는 SQL을 실제 데이터베이스로 전송하는 명령어입니다. 메모리의 변경 사항을 데이터베이스에 반영하기 위해 반드시 거쳐야 하는 과정입니다. 다만 따로 호출하지 않더라도 트랜잭션이 성공적으로 끝날 때 스프링이 자동으로 실행합니다.
+flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 알아서 실행합니다.
+
+단, 기본 키 생성을 DB에 맡기는 IDENTITY 전략에서는 persist() 호출 즉시 INSERT 쿼리가 날아갑니다. DB가 만들어준 기본 키를 먼저 알아야 영속성 컨텍스트에 엔티티를 등록할 수 있기 때문입니다.
 :::
 
 ### 2.8.3 더티체킹
 
-더티체킹은 조회하던 시점의 상태와 지금 상태를 비교해 달라진 곳을 찾아내는 동작입니다. 영속성 컨텍스트는 `find()`로 조회한 순간의 상태를 스냅샷으로 찍어 둡니다. 이후 엔티티의 값을 바꾸면 스냅샷과 지금 상태가 달라지고, 영속성 컨텍스트는 차이를 감지해 UPDATE 문을 버퍼에 만들어 둡니다. 이 UPDATE 문도 `flush()` 시점에 실행됩니다.
+렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 **영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다**. 이후 엔티티의 값이 변경되면 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 버퍼에 담아 둡니다. 이를 **더티체킹(Dirty Checking)** 이라고 합니다.
+
+수정할 게시글을 `find()`로 조회하면 영속화가 되며 이 상태를 스냅샷으로 남깁니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 em.find로 수정할 게시글을 조회하면 데이터베이스에서 읽어 온 board가 영속화되고, 영속성 컨텍스트는 조회 당시 상태를 스냅샷으로 함께 보관한다.">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 find()로 수정할 게시글을 조회하면 캐시에 없으므로 select SQL이 데이터베이스로 나가고, 읽어 온 board가 영속성 컨텍스트에서 영속화된다.">
   <defs>
     <marker id="c2d1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
@@ -829,61 +839,54 @@ flush()는 버퍼에 쌓여 있는 SQL을 실제 데이터베이스로 전송하
   <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
   <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <rect x="256" y="58" width="148" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="330" y="79" text-anchor="middle" font-size="11" fill="#475569">board(제목1, 내용1)</text>
-  <text x="330" y="104" text-anchor="middle" font-size="10.5" fill="#64748b">스냅샷</text>
-  <rect x="256" y="116" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="330" y="137" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="166" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
+  <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
   <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
   <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
-  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. em.find()</text>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
+  <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
+  <text x="469" y="62" text-anchor="middle" font-size="10.5" fill="#475569">2. select SQL</text>
   <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2d1-a)"/>
-  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">2. 영속화</text>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">3. 영속화</text>
 </svg>
 </div>
 
-*그림 2-23. 스냅샷 보관*
+*그림 2-23. 수정할 게시글 조회와 영속화*
 
 영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush()` 시점에 데이터베이스로 내보냅니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 660 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속 엔티티의 제목을 바꾸면 스냅샷과 달라져 변경이 감지되고, update 문이 버퍼에 쌓였다가 em.flush 시점에 데이터베이스로 전송되어 반영된다.">
+<svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속성 컨텍스트 안에서 영속 엔티티의 제목이 수정되고, 그에 맞는 update 문이 버퍼에 저장된다. 이후 flush 시점에 버퍼의 update 문이 데이터베이스로 전송되어 반영된다.">
   <defs>
     <marker id="c2d2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
-  <rect x="40" y="36" width="380" height="176" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="60" y="56" width="150" height="34" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5,3"/>
-  <text x="135" y="77" text-anchor="middle" font-size="11" fill="#475569">board(제목1, 내용1)</text>
-  <text x="135" y="102" text-anchor="middle" font-size="10.5" fill="#64748b">스냅샷</text>
-  <rect x="60" y="118" width="150" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
-  <text x="135" y="139" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1, 내용1)</text>
-  <text x="135" y="164" text-anchor="middle" font-size="10.5" fill="#64748b">3. 데이터 수정</text>
-  <line x1="228" y1="110" x2="268" y2="110" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="248" y="100" text-anchor="middle" font-size="10.5" fill="#475569">비교</text>
-  <rect x="276" y="88" width="126" height="44" rx="7" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="339" y="115" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f172a">변경 감지</text>
-  <rect x="276" y="152" width="126" height="40" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
-  <text x="339" y="171" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
-  <text x="339" y="186" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
-  <line x1="339" y1="132" x2="339" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="410" y="146" text-anchor="middle" font-size="10.5" fill="#475569">4. 버퍼에 저장</text>
-  <rect x="520" y="60" width="120" height="120" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="580" y="112" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정1)</text>
-  <text x="580" y="134" text-anchor="middle" font-size="11" fill="#334155">board(제목2)</text>
-  <line x1="402" y1="172" x2="518" y2="150" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="462" y="192" text-anchor="middle" font-size="10.5" fill="#475569">5. em.flush()</text>
+  <text x="230" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="575" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="60" y="36" width="340" height="212" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="505" y="36" width="140" height="212" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="145" y="56" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="77" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <line x1="230" y1="92" x2="230" y2="118" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="242" y="109" font-size="10.5" fill="#475569">4. 데이터 수정</text>
+  <rect x="145" y="124" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="145" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <line x1="230" y1="160" x2="230" y2="186" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="242" y="177" font-size="10.5" fill="#475569">5. 버퍼에 update문 저장</text>
+  <rect x="145" y="192" width="170" height="42" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="230" y="211" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
+  <text x="230" y="227" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
+  <line x1="315" y1="213" x2="503" y2="213" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="409" y="205" text-anchor="middle" font-size="10.5" fill="#475569">6. flush()</text>
+  <text x="409" y="229" text-anchor="middle" font-size="10.5" fill="#64748b">update문 전송</text>
+  <text x="575" y="120" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <text x="575" y="142" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
 </svg>
 </div>
 
 *그림 2-24. 더티체킹*
-
-쓰기 지연과 더티체킹이 만든 SQL은 `flush()` 시점에 실행됩니다. 캐싱은 조회를 빠르게 하는 읽기 최적화라 이 시점과는 무관합니다. 개발자가 `flush()`를 직접 호출하지 않아도, 뒤에서 서비스에 붙일 **@Transactional**이 끝날 때 스프링이 `flush()`를 호출합니다.
-
-리포지토리에 수정 메서드를 만들지 않은 것도 더티체킹 때문입니다. 조회해 온 엔티티는 영속 상태라서 값만 바꿔 두면 변경이 감지되므로, 저장하라고 지시하는 메서드가 필요하지 않습니다. 이 동작은 곧 게시글 수정을 만들며 직접 확인합니다.
 
 ## 2.9 단위 테스트
 
