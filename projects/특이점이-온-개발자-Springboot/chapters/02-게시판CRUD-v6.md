@@ -817,7 +817,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 :::tip
 **flush()란?**
 
-flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 알아서 실행합니다.
+`flush()`는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 알아서 실행합니다.
 
 단, 기본 키 생성을 DB에 맡기는 IDENTITY 전략에서는 persist() 호출 즉시 INSERT 쿼리가 날아갑니다. DB가 만들어준 기본 키를 먼저 알아야 영속성 컨텍스트에 엔티티를 등록할 수 있기 때문입니다.
 :::
@@ -890,12 +890,14 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
 
 ## 2.9 단위 테스트
 
-리포지토리에 조회·저장·삭제 메서드를 모두 작성했습니다. 코드가 의도대로 동작하는지는 실행해 봐야 알 수 있습니다.
+리포지토리에 조회, 저장, 삭제 메서드 작성을 마쳤으니 기능이 의도대로 동작하는지 검증할 차례입니다. 이렇게 작성한 코드를 검증할 때는 **단위 테스트(Unit Test)** 를 사용합니다.
 
-커피 머신을 떠올려 보겠습니다. 커피 머신에는 커피콩을 1cm로 갈아 주는 분쇄기와, 갈아 낸 콩으로 커피를 뽑는 추출기라는 두 기능이 들어 있습니다. 둘을 한 통에 넣고 한 번에 돌리면 커피가 안 나올 때 어느 쪽이 문제인지 알기 어렵습니다. 각 기능을 따로 분리해 독립된 환경에서 검증하면, 분쇄기에서 문제가 나면 분쇄기만 고치면 됩니다. 이렇게 가장 작은 단위를 외부 의존 없이 따로 검증하는 것이 **단위 테스트(Unit Test)** 입니다.
+커피 머신을 예로 들어 보겠습니다. 커피 머신은 원두를 가는 분쇄기와 커피를 내리는 추출기로 구성됩니다. 두 기능이 하나로 결합되어 있다면, 커피가 정상적으로 나오지 않을 때 어느 쪽 문제인지 파악하기 어렵습니다.
+
+반면 두 기능을 분리해 독립적으로 작동시키면 원인 파악이 쉬워집니다. 소프트웨어 역시 문제의 원인을 쉽게 찾기 위해 외부 의존성을 배제하고 가장 작은 기능 단위만 분리해 검증합니다. 이 방식이 단위 테스트입니다.
 
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 커피콩을 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 커피콩에서 1cm 커피콩, 1cm 커피콩에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
+<svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 원두를 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 원두에서 분쇄된 원두, 분쇄된 원두에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
   <defs>
     <marker id="c2coffee-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
     <g id="c2bean"><ellipse rx="6.2" ry="4.4" fill="#92400e" transform="rotate(-20)"/><path d="M-4.2,-1.4 Q0,0 4.2,1.4" fill="none" stroke="#fde68a" stroke-width="1" transform="rotate(-20)"/></g>
@@ -905,7 +907,7 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
   <use href="#c2bean" x="196" y="90"/>
   <use href="#c2bean" x="210" y="86"/>
   <use href="#c2bean" x="224" y="90"/>
-  <text x="238" y="94" font-size="14.5" fill="#475569">커피콩</text>
+  <text x="238" y="94" font-size="14.5" fill="#475569">원두</text>
   <polygon points="182,102 286,102 264,128 204,128" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6" stroke-linejoin="round"/>
   <rect x="164" y="128" width="140" height="104" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
   <text x="234" y="164" text-anchor="middle" font-size="15.8" font-weight="700" fill="#3730a3">분쇄기</text>
@@ -924,7 +926,7 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
   <text x="610" y="108" text-anchor="middle" font-size="13.1" fill="#6b7280">테스트 1</text>
   <use href="#c2bean" x="580" y="126"/>
   <use href="#c2bean" x="592" y="126"/>
-  <text x="602" y="130" font-size="13.1" fill="#475569">커피콩</text>
+  <text x="602" y="130" font-size="13.1" fill="#475569">원두</text>
   <polygon points="576,138 644,138 630,156 590,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
   <rect x="562" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="610" y="192" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">분쇄기</text>
@@ -933,13 +935,13 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
   <circle cx="601" cy="252" r="2.2" fill="#92400e"/>
   <circle cx="610" cy="252" r="2.2" fill="#92400e"/>
   <circle cx="619" cy="252" r="2.2" fill="#92400e"/>
-  <text x="610" y="274" text-anchor="middle" font-size="13.1" fill="#475569">1cm 커피콩</text>
+  <text x="610" y="274" text-anchor="middle" font-size="13.1" fill="#475569">분쇄된 원두</text>
   <rect x="712" y="86" width="176" height="196" rx="10" fill="#fcfdff" stroke="#c7d2fe" stroke-width="1.3" stroke-dasharray="5 4"/>
   <text x="800" y="108" text-anchor="middle" font-size="13.1" fill="#6b7280">테스트 2</text>
   <circle cx="762" cy="126" r="2.2" fill="#92400e"/>
   <circle cx="770" cy="126" r="2.2" fill="#92400e"/>
   <circle cx="778" cy="126" r="2.2" fill="#92400e"/>
-  <text x="786" y="130" font-size="13.1" fill="#475569">1cm 커피콩</text>
+  <text x="786" y="130" font-size="13.1" fill="#475569">분쇄된 원두</text>
   <polygon points="766,138 834,138 820,156 780,156" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.4" stroke-linejoin="round"/>
   <rect x="752" y="156" width="96" height="62" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="800" y="192" text-anchor="middle" font-size="14.5" font-weight="700" fill="#3730a3">추출기</text>
@@ -955,14 +957,16 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
 
 *그림 2-25. 단위 테스트가 필요한 이유*
 
-리포지토리도 마찬가지입니다. 애플리케이션 전체가 아니라 리포지토리 하나만 분리해 검증하면 됩니다. 스프링은 리포지토리만 가볍게 올리는 **@DataJpaTest**를 제공합니다. 여기에 우리가 만든 **BoardRepository**를 **@Import**로 함께 올려 검증합니다.
+자바에서는 이러한 단위 테스트 실행을 **JUnit**이 담당합니다. 검증할 메서드 위에 **@Test** 어노테이션만 추가하면 해당 메서드를 개별적으로 실행할 수 있습니다.
 
 ### 2.9.1 given-when-eye 패턴
 
-테스트는 세 단계로 작성합니다. 준비하고(given), 실행하고(when), 결과를 확인하는(then) 순서입니다. 원래 마지막 단계는 결과가 기대값과 맞는지 assert로 검증하는 then이지만, 학습 초기에는 결과를 화면에 출력해 눈으로 확인하는 eye로 대체할 수 있습니다. 우리는 eye 단계로 진행합니다.
+단위 테스트 코드는 일반적으로 **given-when-then**이라는 세 단계로 나누어 작성합니다. 테스트에 필요한 데이터를 준비하는 **given**, 검증할 대상 메서드를 호출하는 **when**, 그리고 실행 결과가 기대한 대로 나왔는지 확인하는 **then** 순서입니다.
+
+본래 마지막 then 단계에서는 테스트 도구를 사용해 예상값과 실제 결괏값을 코드로 비교하고 검증합니다. 하지만 이 책에서는 편의상 복잡한 검증 코드를 작성하는 대신, 실행 결과를 콘솔에 출력하고 눈으로 직접 확인하는 **eye** 단계로 대체하여 진행하겠습니다.
 
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 assert로 검증하지만 학습 단계에서는 eye로 대체한다.">
+<svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 코드로 결과를 검증하지만 학습 단계에서는 eye로 대체한다.">
   <defs>
     <marker id="c2gwt-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
@@ -984,22 +988,32 @@ flush()는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동�
   <text x="740" y="162" text-anchor="middle" font-size="13.8" fill="#475569">눈으로 본다</text>
   <line x1="280" y1="121" x2="328" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
   <line x1="570" y1="121" x2="618" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
-  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">원래 then(assert) 자리를 학습 단계에선 eye로 대체합니다</text>
+  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">원래 then 자리를 학습 단계에선 eye로 대체합니다</text>
 </svg>
 </div>
 
 *그림 2-26. given-when-eye 세 단계*
 
-## 2.10 리포지토리 테스트 작성
+:::tip
+**행위 주도 개발(Behavior Driven Development)**
 
-`test/.../BoardRepositoryTest.java`를 열어 먼저 클래스 골격을 아래와 같이 작성합니다.
+Given-When-Then 패턴은 사용자 관점에서 시스템이 **어떤 행위**를 하는지 시나리오 형태로 작성하는 행위 주도 개발 기법에서 유래했습니다. 테스트 코드가 마치 한 편의 설명서처럼 읽히기 때문에, 개발자뿐만 아니라 다른 협업자들도 요구사항과 테스트의 목적을 직관적으로 파악할 수 있습니다.
+:::
+
+### 2.9.2 리포지토리 테스트 작성
+
+이제 given-when-eye 형식에 맞춰 실제 테스트를 만들어 보겠습니다.
+
+테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 둡니다. `board` 패키지에 `BoardRepositoryTest.java`를 생성합니다.
+
+`BoardRepositoryTest.java` 파일에는 아래와 같이 코드를 작성합니다.
 
 ```java [실습 8] BoardRepositoryTest.java. 테스트 클래스 골격
-@Import(BoardRepository.class)
-@DataJpaTest
+@Import(BoardRepository.class) // 검증할 BoardRepository를 빈으로 등록한다
+@DataJpaTest // 데이터베이스 연결과 EntityManager를 등록한다
 public class BoardRepositoryTest {
 
-    @Autowired
+    @Autowired // 등록된 빈을 주입받는다
     private BoardRepository boardRepository;
 
     @Autowired
@@ -1009,9 +1023,7 @@ public class BoardRepositoryTest {
 }
 ```
 
-**@DataJpaTest**가 JPA 관련 부분만 올리고, `@Import(BoardRepository.class)`로 검증할 리포지토리를 함께 올립니다. **@Autowired**는 스프링이 타입에 맞는 빈을 찾아 필드에 넣어 주는 어노테이션으로, 테스트에서는 이 방식으로 리포지토리와 **EntityManager**를 받습니다. 테스트가 시작될 때 `data.sql`이 실행되어 게시글 두 개가 들어와 있으므로, 조회는 id=2인 게시글을 기준으로 확인합니다.
-
-먼저 한 건 조회입니다. 찾을 기본 키를 준비하고(given), `findById()`를 호출하고(when), 돌아온 엔티티의 값을 출력해 봅니다(eye).
+먼저 게시글 한 건 조회입니다. 테스트 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 9] BoardRepositoryTest.java. 한 건 조회
     @Test
@@ -1026,7 +1038,21 @@ public class BoardRepositoryTest {
     }
 ```
 
-전체 조회는 준비할 값이 없어 given이 비어 있습니다. 결과가 여러 건이므로 개수와 첫 번째 게시글의 제목을 확인합니다.
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div>Board Title : title2</div>
+    <div>Board Content : content2</div>
+  </div>
+</div>
+
+*그림 2-27. 한 건 조회 실행 결과*
+
+전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다.
 
 ```java [실습 10] BoardRepositoryTest.java. 전체 조회
     @Test
@@ -1042,7 +1068,22 @@ public class BoardRepositoryTest {
     }
 ```
 
-저장은 저장된 결과를 바로 볼 수 없어, `findAll()`로 다시 조회해 확인합니다. 두 개였던 게시글이 세 개가 되고, 세 번째 자리에 방금 넣은 게시글이 있으면 저장된 것입니다.
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div>Board Count : 2</div>
+    <div>Board 1 title : title1</div>
+    <div>Board 2 content : content2</div>
+  </div>
+</div>
+
+*그림 2-28. 전체 조회 실행 결과*
+
+게시글 저장은 `save()` 메서드를 실행한 후 저장된 결과를 확인하기 위해 `findAll()`을 한 번 더 사용합니다.
 
 ```java [실습 11] BoardRepositoryTest.java. 저장
     @Test
@@ -1062,7 +1103,25 @@ public class BoardRepositoryTest {
     }
 ```
 
-수정은 더티체킹을 눈으로 보게 해 주는 테스트입니다. 제목과 내용을 바꾸고 저장하라는 호출은 하지 않은 채, `flush()`로 변경을 데이터베이스에 밀어 넣습니다. 이어서 `clear()`로 영속성 컨텍스트를 비웁니다. 컨텍스트가 비었으니 다음 `findById()`는 캐싱된 엔티티가 아니라 데이터베이스에서 새로 읽어 오고, 제목이 title-update라면 저장 호출 없이 반영됐다는 증거입니다.
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div>Board Count : 3</div>
+    <div>Board ID : 3</div>
+    <div>Board Title : title3</div>
+    <div>Board Content : content3</div>
+  </div>
+</div>
+
+*그림 2-29. 저장 실행 결과*
+
+게시글 수정은 update 메서드를 만들지 않고 영속 상태 엔티티의 더티체킹을 사용합니다.
+
+실제 서비스에서는 트랜잭션이 끝날 때 JPA가 `flush()`를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 `flush()`를 직접 호출합니다. 그리고 `clear()`를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다.
 
 ```java [실습 12] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
@@ -1082,7 +1141,23 @@ public class BoardRepositoryTest {
     }
 ```
 
-삭제는 지울 엔티티를 먼저 조회해 준비합니다. `remove()`는 삭제 대상으로 표시만 하므로, `flush()`까지 호출해야 delete 문이 실행됩니다. 남은 개수가 하나면 지워진 것입니다.
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div>Board title : title-update</div>
+    <div>Board content : Update-test</div>
+  </div>
+</div>
+
+*그림 2-30. 수정 실행 결과*
+
+`findById()` 실행 시 조회된 엔티티를 영속성 컨텍스트에 넣습니다. 그리고 영속화된 엔티티의 값을 변경한 후 `flush()`를 실행하면 자동으로 update문이 실행됩니다.
+
+게시글 삭제 테스트를 아래와 같이 작성합니다.
 
 ```java [실습 13] BoardRepositoryTest.java. 삭제
     @Test
@@ -1099,22 +1174,22 @@ public class BoardRepositoryTest {
     }
 ```
 
-다섯 테스트를 모두 채웠으니 한꺼번에 실행해 보겠습니다.
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div>Board count : 1</div>
+  </div>
+</div>
 
-```bash [터미널] 리포지토리 테스트 실행
-./gradlew test
-```
-
-<!-- [CAPTURE NEEDED: 02_test-pass
-  path: assets/CH2/terminal/02_test-pass.png
-  desc: BoardRepositoryTest 실행 결과. findById_test, findAll_test, save_test, update_test, delete_test 다섯 개가 모두 초록색으로 통과한 화면. IDE의 테스트 러너 창 또는 gradle 콘솔 BUILD SUCCESSFUL. update_test의 콘솔 출력에 "Board title : title-update"가 보이면 더욱 좋음.
-] -->
-![](../assets/CH2/terminal/02_test-pass.png)
-*그림 2-27. 리포지토리 테스트 실행 결과*
+*그림 2-31. 삭제 실행 결과*
 
 서버를 실행하지 않고 리포지토리만 분리해도 조회·저장·수정·삭제가 제대로 동작하는지 확인할 수 있습니다.
 
-## 2.11 게시글 목록
+## 2.10 게시글 목록
 
 먼저 서비스와 컨트롤러의 골격을 작성합니다. 서비스는 리포지토리를 주입받고, 컨트롤러는 서비스를 주입받습니다.
 
@@ -1183,14 +1258,18 @@ public class BoardController {
 Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청할 수 없습니다. 로컬 API를 테스트하려면 데스크톱 앱을 쓰거나, 설정의 Interceptor에서 브라우저에 맞는 확장 프로그램을 설치합니다.
 :::
 
+```json [Hoppscotch] 게시글 목록 조회
+GET http://localhost:8080/api/boards
+```
+
 <!-- [CAPTURE NEEDED: 01_api-response
   path: assets/CH2/terminal/01_api-response.png
   desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-28. 게시글 목록 응답*
+*그림 2-32. 게시글 목록 응답*
 
-## 2.12 게시글 상세
+## 2.11 게시글 상세
 
 상세 조회는 기본 키로 한 건만 가져옵니다. 서비스는 리포지토리의 `findById()`를 호출합니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -1210,7 +1289,20 @@ Hoppscotch 브라우저 버전은 localhost나 127.0.0.1 주소로 직접 요청
     }
 ```
 
-## 2.13 게시글 쓰기
+서버를 실행한 뒤 1번 게시글의 상세 조회 API를 호출합니다.
+
+```json [Hoppscotch] 게시글 상세 조회
+GET http://localhost:8080/api/boards/1
+```
+
+<!-- [CAPTURE NEEDED: 02_board-detail
+  path: assets/CH2/terminal/02_board-detail.png
+  desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 1, "title": "title1", "content": "content1", "createdAt": "..." } } 형태로 1번 게시글 한 건이 Resp 래퍼에 감싸여 나온 화면. Hoppscotch 또는 브라우저 응답.
+] -->
+![](../assets/CH2/terminal/02_board-detail.png)
+*그림 2-33. 게시글 상세 응답*
+
+## 2.12 게시글 쓰기
 
 작성은 앞의 두 기능과 다릅니다. 클라이언트가 제목과 내용을 보내오므로, 들어온 값을 받을 클래스가 필요합니다. 계층 사이에서 데이터를 전달하는 이 클래스를 **DTO(Data Transfer Object)** 라고 합니다.
 
@@ -1256,7 +1348,25 @@ public class BoardRequest {
 
 저장한 게시글을 응답 바디에 담아 반환합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
 
-## 2.14 게시글 수정
+제목과 내용을 요청 바디에 담아 게시글 쓰기 API를 호출합니다.
+
+```json [Hoppscotch] 게시글 쓰기
+POST http://localhost:8080/api/boards
+
+{
+  "title": "title3",
+  "content": "content3"
+}
+```
+
+<!-- [CAPTURE NEEDED: 03_board-save
+  path: assets/CH2/terminal/03_board-save.png
+  desc: POST /api/boards 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 3, "title": "title3", "content": "content3", "createdAt": "..." } } 형태로 방금 저장한 게시글이 기본 키 3을 부여받아 나온 화면. Hoppscotch 응답.
+] -->
+![](../assets/CH2/terminal/03_board-save.png)
+*그림 2-34. 게시글 쓰기 응답*
+
+## 2.13 게시글 수정
 
 수정할 게시글을 먼저 조회합니다. 영속 상태인 엔티티라야 값을 바꿨을 때 변경이 감지되기 때문입니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -1283,7 +1393,25 @@ public class BoardRequest {
     }
 ```
 
-## 2.15 게시글 삭제
+바꿀 제목과 내용을 요청 바디에 담아 1번 게시글의 수정 API를 호출합니다.
+
+```json [Hoppscotch] 게시글 수정
+PUT http://localhost:8080/api/boards/1
+
+{
+  "title": "title-update",
+  "content": "content-update"
+}
+```
+
+<!-- [CAPTURE NEEDED: 04_board-update
+  path: assets/CH2/terminal/04_board-update.png
+  desc: PUT /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 1, "title": "title-update", "content": "content-update", "createdAt": "..." } } 형태로 save() 호출 없이 더티체킹만으로 값이 바뀐 게시글이 나온 화면. Hoppscotch 응답.
+] -->
+![](../assets/CH2/terminal/04_board-update.png)
+*그림 2-35. 게시글 수정 응답*
+
+## 2.14 게시글 삭제
 
 삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -1307,8 +1435,21 @@ public class BoardRequest {
 
 삭제는 반환할 데이터가 없으므로 `Resp.ok(null)`로 성공만 응답합니다.
 
+1번 게시글의 삭제 API를 호출합니다.
 
-## 2.16 요청 처리 흐름
+```json [Hoppscotch] 게시글 삭제
+DELETE http://localhost:8080/api/boards/1
+```
+
+<!-- [CAPTURE NEEDED: 05_board-delete
+  path: assets/CH2/terminal/05_board-delete.png
+  desc: DELETE /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": null } 형태로 body가 비어 있는 화면. 이어서 GET /api/boards로 목록을 조회하면 게시글이 한 건만 남아 있음. Hoppscotch 응답.
+] -->
+![](../assets/CH2/terminal/05_board-delete.png)
+*그림 2-36. 게시글 삭제 응답*
+
+
+## 2.15 요청 처리 흐름
 
 지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 요청을 보낸 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.
 
@@ -1364,11 +1505,11 @@ public class BoardRequest {
 </svg>
 </div>
 
-*그림 2-29. 요청 처리 흐름*
+*그림 2-37. 요청 처리 흐름*
 
 응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, **@RestController**가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
 
-오픈이는 화면을 열어 게시글 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
+오픈이는 서버를 실행해 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
 
 동료가 화면 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.
 
