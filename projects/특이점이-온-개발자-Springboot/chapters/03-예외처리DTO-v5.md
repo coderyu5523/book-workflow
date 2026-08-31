@@ -133,6 +133,34 @@ public class Board {
 
 요청으로 받을 값만 담는 클래스를 만듭니다. 계층 사이에서 데이터 전달만을 목적으로 하는 이 객체를 **DTO(Data Transfer Object)** 라고 합니다.
 
+<div class="svg-figure">
+<svg viewBox="0 0 800 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청 데이터와 DTO. 클라이언트가 제목과 내용을 application/json 타입으로 보내면, 그 값이 DTO의 title과 content로 자동 매핑되고, 컨트롤러가 이 DTO를 받는다.">
+  <defs>
+    <marker id="c3dto-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="107" y="26" text-anchor="middle" font-size="15.3" font-weight="800" fill="#0f172a">클라이언트</text>
+  <text x="432" y="26" text-anchor="middle" font-size="15.3" font-weight="800" fill="#3730a3">DTO</text>
+  <text x="703" y="26" text-anchor="middle" font-size="15.3" font-weight="800" fill="#0f172a">컨트롤러</text>
+  <rect x="14" y="40" width="185" height="96" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="339" y="40" width="185" height="96" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="619" y="40" width="167" height="96" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="107" y="80" text-anchor="middle" font-size="13.3" fill="#334155">title : 제목3</text>
+  <text x="107" y="104" text-anchor="middle" font-size="13.3" fill="#334155">content : 내용3</text>
+  <rect x="355" y="62" width="153" height="54" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="432" y="83" text-anchor="middle" font-size="13.3" fill="#3730a3">title : 제목3</text>
+  <text x="432" y="105" text-anchor="middle" font-size="13.3" fill="#3730a3">content : 내용3</text>
+  <text x="703" y="94" text-anchor="middle" font-size="13.3" fill="#334155">POST /api/boards</text>
+  <line x1="199" y1="88" x2="337" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#c3dto-a)"/>
+  <text x="268" y="78" text-anchor="middle" font-size="12.7" fill="#475569">1. 요청</text>
+  <text x="268" y="108" text-anchor="middle" font-size="12.1" fill="#475569">application/json 타입</text>
+  <text x="432" y="158" text-anchor="middle" font-size="12.7" fill="#64748b">2. 자동 매핑</text>
+  <line x1="524" y1="88" x2="617" y2="88" stroke="#475569" stroke-width="1.5" marker-end="url(#c3dto-a)"/>
+  <text x="570" y="78" text-anchor="middle" font-size="12.7" fill="#475569">3. 전달</text>
+</svg>
+</div>
+
+*그림 3-2. 요청 데이터와 DTO*
+
 데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 엔티티여야 합니다. **SaveDTO**는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 `toEntity()`를 둡니다.
 
 `board/BoardRequest.java`를 열어 아래와 같이 작성합니다.
@@ -193,7 +221,7 @@ public class BoardRequest {
 </svg>
 </div>
 
-*그림 3-2. 엔티티와 DTO의 역할*
+*그림 3-3. 엔티티와 DTO의 역할*
 
 ### 3.2.2 응답 DTO 만들기
 
@@ -354,7 +382,7 @@ public class GlobalExceptionHandler {
 </svg>
 </div>
 
-*그림 3-3. 전역 예외 처리 흐름*
+*그림 3-4. 전역 예외 처리 흐름*
 
 ## 3.5 서비스와 컨트롤러에 적용
 
@@ -451,7 +479,7 @@ GET http://localhost:8080/api/boards/1
   desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH3/terminal/01_board-detail-dto.png)
-*그림 3-4. 상세 조회 응답*
+*그림 3-5. 상세 조회 응답*
 
 앞에서 만든 전역 예외 처리기가 실제로 404를 돌려주는지, 없는 999번을 조회해 확인합니다.
 
@@ -466,7 +494,7 @@ GET http://localhost:8080/api/boards/999
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 ![](../assets/CH3/terminal/02_404-response.png)
-*그림 3-5. 404 응답*
+*그림 3-6. 404 응답*
 
 오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.
 
