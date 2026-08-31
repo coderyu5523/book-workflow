@@ -16,26 +16,26 @@ public class BoardController {
 
     @GetMapping
     public ResponseEntity<?> findAll() {
-        List<Board> boardList = boardService.게시글목록();
-        return Resp.ok(boardList);
+        List<Board> responseBoardList = boardService.게시글목록();
+        return Resp.ok(responseBoardList);
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
-        Board board = boardService.게시글상세(boardId);
-        return Resp.ok(board);
+    public ResponseEntity<?> findById(@PathVariable("boardId") Integer boardId) {
+        Board responseBoard = boardService.게시글상세(boardId);
+        return Resp.ok(responseBoard);
     }
 
     @PostMapping
-    public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
-        Board board = boardService.게시글추가(requestDTO);
-        return Resp.ok(board);
+    public ResponseEntity<?> save(@RequestBody Board requestBoard) {
+        Board responseBoard = boardService.게시글쓰기(requestBoard);
+        return Resp.ok(responseBoard);
     }
 
     @PutMapping("/{boardId}")
-    public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId, @RequestBody BoardRequest.UpdateDTO requestDTO) {
-        Board board = boardService.게시글수정(boardId, requestDTO);
-        return Resp.ok(board);
+    public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId, @RequestBody Board requestBoard) {
+        Board responseBoard = boardService.게시글수정(boardId, requestBoard);
+        return Resp.ok(responseBoard);
     }
 
     @DeleteMapping("/{boardId}")

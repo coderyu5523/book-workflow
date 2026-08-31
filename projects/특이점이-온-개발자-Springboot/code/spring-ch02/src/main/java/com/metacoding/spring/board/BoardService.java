@@ -22,12 +22,9 @@ public class BoardService {
     }
 
     @Transactional
-    public Board 게시글추가(BoardRequest.SaveDTO requestDTO) {
-        Board board = new Board();
-        board.setTitle(requestDTO.title());
-        board.setContent(requestDTO.content());
-        boardRepository.save(board);
-        return board; // 저장된 게시글 반환 (REST)
+    public Board 게시글쓰기(Board requestBoard) {
+        boardRepository.save(requestBoard);
+        return requestBoard; // 저장된 게시글 반환 (REST)
     }
 
     @Transactional
@@ -37,11 +34,11 @@ public class BoardService {
     }
 
     @Transactional
-    public Board 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
+    public Board 게시글수정(Integer boardId, Board requestBoard) {
         Board board = boardRepository.findById(boardId);
         // 더티 체킹
-        board.setTitle(requestDTO.title());
-        board.setContent(requestDTO.content());
+        board.setTitle(requestBoard.getTitle());
+        board.setContent(requestBoard.getContent());
         return board; // 수정된 게시글 반환 (REST)
     } // 트랜잭션 종료시 flush()
 }

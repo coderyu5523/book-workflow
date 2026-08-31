@@ -21,14 +21,14 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<?> detail(@PathVariable("boardId") Integer boardId) {
+    public ResponseEntity<?> findById(@PathVariable("boardId") Integer boardId) {
         BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId);
         return Resp.ok(respDTO);
     }
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
-        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO);
+        BoardResponse.DTO respDTO = boardService.게시글쓰기(requestDTO);
         return Resp.ok(respDTO);
     }
 

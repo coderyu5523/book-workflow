@@ -23,7 +23,7 @@ public class BoardController {
     }
 
     @GetMapping("/{boardId}")
-    public ResponseEntity<?> detail(HttpServletRequest request, @PathVariable("boardId") Integer boardId) {
+    public ResponseEntity<?> findById(HttpServletRequest request, @PathVariable("boardId") Integer boardId) {
         User loginUser = (User) request.getAttribute("loginUser"); // 비로그인 시 null
         BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId, loginUser);
         return Resp.ok(respDTO);
@@ -33,7 +33,7 @@ public class BoardController {
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody BoardRequest.SaveDTO requestDTO) {
         User loginUser = (User) request.getAttribute("loginUser");
-        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO, loginUser);
+        BoardResponse.DTO respDTO = boardService.게시글쓰기(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 

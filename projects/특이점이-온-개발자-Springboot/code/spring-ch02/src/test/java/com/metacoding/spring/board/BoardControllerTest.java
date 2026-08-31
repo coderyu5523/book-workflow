@@ -49,8 +49,10 @@ public class BoardControllerTest {
     @Test
     public void save_test() throws Exception {
         // given
-        BoardRequest.SaveDTO reqDTO = new BoardRequest.SaveDTO("새제목", "새내용");
-        String requestBody = om.writeValueAsString(reqDTO);
+        Board reqBoard = new Board();
+        reqBoard.setTitle("새제목");
+        reqBoard.setContent("새내용");
+        String requestBody = om.writeValueAsString(reqBoard);
         // when
         ResultActions actions = mvc.perform(
                 post("/api/boards").content(requestBody).contentType(MediaType.APPLICATION_JSON));
@@ -63,8 +65,10 @@ public class BoardControllerTest {
     @Test
     public void update_test() throws Exception {
         // given
-        BoardRequest.UpdateDTO reqDTO = new BoardRequest.UpdateDTO("수정제목", "수정내용");
-        String requestBody = om.writeValueAsString(reqDTO);
+        Board reqBoard = new Board();
+        reqBoard.setTitle("수정제목");
+        reqBoard.setContent("수정내용");
+        String requestBody = om.writeValueAsString(reqBoard);
         // when
         ResultActions actions = mvc.perform(
                 put("/api/boards/1").content(requestBody).contentType(MediaType.APPLICATION_JSON));

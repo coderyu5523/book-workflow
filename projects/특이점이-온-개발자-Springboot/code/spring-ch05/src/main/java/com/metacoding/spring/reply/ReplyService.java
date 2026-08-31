@@ -22,9 +22,8 @@ public class ReplyService {
         }
         Board board = boardRepository.findById(requestDTO.boardId())
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        Reply reply = requestDTO.toEntity(loginUser, board);
-        replyRepository.save(reply);
-        return new ReplyResponse.DTO(reply);
+        Reply savedReply = replyRepository.save(requestDTO.toEntity(loginUser, board));
+        return new ReplyResponse.DTO(savedReply);
     }
 
     @Transactional

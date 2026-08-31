@@ -25,10 +25,9 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO) {
-        Board board = requestDTO.toEntity(); // DTO -> 엔티티
-        boardRepository.save(board);
-        return new BoardResponse.DTO(board); // 저장된 게시글 반환
+    public BoardResponse.DTO 게시글쓰기(BoardRequest.SaveDTO requestDTO) {
+        Board savedBoard = boardRepository.save(requestDTO.toEntity()); // DTO -> 엔티티
+        return new BoardResponse.DTO(savedBoard); // 저장된 게시글 반환
     }
 
     @Transactional
