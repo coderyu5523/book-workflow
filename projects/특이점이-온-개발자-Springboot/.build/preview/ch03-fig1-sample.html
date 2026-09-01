@@ -1,0 +1,57 @@
+<!doctype html><meta charset="utf-8">
+<title>그림 3-1 시안</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px}
+.wrap{max-width:1040px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin-top:12px}
+svg{width:100%;height:auto;display:block}
+</style>
+<div class="wrap">
+<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러도 잡지 않아 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 붙은 그 처리기 안에서 ">
+  <defs>
+    <marker id="c3f-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
+    <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="c3f-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 예외가 발생하면 어디서 받는가</text>
+
+  <rect x="20" y="62" width="115" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="77" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+
+  <line x1="135" y1="92" x2="198" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+  <text x="166" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">요청</text>
+
+  <rect x="200" y="62" width="165" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="282" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+
+  <line x1="365" y1="92" x2="428" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="430" y="62" width="145" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="502" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
+
+  <line x1="575" y1="92" x2="638" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="640" y="62" width="145" height="60" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
+  <text x="712" y="98" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스</text>
+
+  <line x1="785" y1="92" x2="848" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="850" y="62" width="135" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="917" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">리포지토리</text>
+
+  <path d="M712,122 V168 H300 V126" fill="none" stroke="#ff7849" stroke-width="1.9" marker-end="url(#c3f-s)"/>
+  <text x="724" y="146" font-size="12" font-weight="700" fill="#c2410c">예외 발생</text>
+
+  <line x1="240" y1="122" x2="240" y2="202" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
+  <text x="232" y="168" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">예외 처리를 맡긴다</text>
+
+  <path d="M110,238 H77 V126" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
+  <text x="88" y="186" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+
+  <rect x="110" y="204" width="330" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="275" y="230" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="275" y="251" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11.5" fill="#3730a3">@RestControllerAdvice</text>
+</svg>
+<div class="cap">그림 3-1. 챕터 3의 실습 흐름</div>
+</div>

@@ -1,62 +1,67 @@
 # 챕터 3. 예외 처리와 DTO
 
-게시판의 다섯 기능이 모두 돌아갑니다. 그런데 없는 3번 게시글을 조회하자 빈 값이 성공으로 돌아왔습니다.
+게시판의 기본 기능이 완료되었습니다. 오픈이는 뿌듯한 마음으로 선배에게 화면을 보여줬습니다.
 
-*조회가 이런데, 수정하고 삭제하면?*
+선배는 목록과 상세 조회를 한 번씩 눌러보더니, 주소창 끝에 있는 게시글 번호를 슬쩍 '999'로 바꿨습니다.
 
-없는 999번으로 수정을 걸자 500이 돌아왔고, 삭제도 마찬가지였습니다. 존재하는 1번으로 게시글 상세 API를 호출하자 엔티티에 적힌 필드가 그대로 JSON이 되어 나왔습니다. 받을 값도 내보낼 값도, 그 이름도 **Board**가 정하고 있었습니다.
+**선배**: "없는 번호예요. 이런 예외 상황도 테스트해 봤어요?"
 
-*없는 게시글 하나에 답이 두 개네. 주고받는 모양도 내가 정한 게 아니고.*
+엔터를 치자 응답 창에는 여전히 '200 성공'이 떴습니다. 하지만 응답 바디는 비어 있었습니다.
 
-오픈이는 선배를 찾아가 화면을 보여줬습니다.
+*게시글이 없는 번호인데 왜 응답이 성공으로 나오지?*
 
-**오픈이**: "선배님, 없는 게시글 번호로 요청을 보냈는데 에러가 안 나고 성공으로 떨어집니다."
-
-**선배**: "지금 코드가 게시글을 찾았을 때와 못 찾았을 때를 구분하지 않아서 그래요. 못 찾으면 빈 값이 그대로 나가니까 조회는 성공이 되고, 수정과 삭제는 빈 값을 건드리다 터집니다. 없다는 걸 코드가 그냥 넘기지 못하게 막고, 주고받을 값도 따로 골라 담아야 합니다."
+**선배**: "데이터베이스에서 게시글을 못 찾으면 빈 값으로 응답이 오는데, 이 빈 값을 그대로 응답에 담아버리니 성공으로 응답이 뜨는 거에요. 만약 없는 게시글을 수정이나 삭제하려고 한다면 오류가 발생하겠죠. 서버에서는 이런 예외(Exception)가 발생했을 경우를 위해 미리 예외 처리를 해야 해요. 그래야 어떤 사유로 요청이 실패했는지 클라이언트에게 명확히 알려줄 수 있어요."
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2가 남긴 다섯 곳과 챕터 3에서 바꾸는 모습. 요청 바디를 엔티티로 받던 것은 요청 DTO로 받고, 엔티티를 그대로 응답에 싣던 것은 응답 DTO에 담아 내보내고, 리포지토리 네 메서드를 직접 적고 없으면 null을 돌려주던 것은 JpaRepository를 상속해 빈 Optional을 돌려주고, 없는 게시글 조회가 200이고 수정과 삭제가 500이던 것은 Exception404를 발생시켜 404가 되고, 예외를 받을 곳이 없던 것은 한 곳에서 JSON으로 바뀐다.">
+<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러도 잡지 않아 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 붙은 전역 예외 처리기가 예외를 JSON 응답으로 바꿔 클라이언트에게 돌려준다.">
   <defs>
-    <marker id="c3ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c3f-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
+    <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="c3f-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <text x="500" y="28" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 챕터 2 코드에서 고칠 다섯 곳</text>
-  <text x="285" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">챕터 2가 남긴 것</text>
-  <text x="750" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">챕터 3에서 바꾸는 것</text>
-  <rect x="120" y="70" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="94" text-anchor="middle" font-size="12" fill="#0f172a">요청 바디를 엔티티로 받는다</text>
-  <text x="285" y="113" text-anchor="middle" font-size="11" fill="#6b7280">받을 값을 엔티티가 정한다</text>
-  <line x1="456" y1="97" x2="536" y2="97" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
-  <rect x="542" y="70" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="707" y="102" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">요청 DTO로 받는다</text>
-  <rect x="120" y="138" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="162" text-anchor="middle" font-size="12" fill="#0f172a">엔티티를 그대로 응답에 싣는다</text>
-  <text x="285" y="181" text-anchor="middle" font-size="11" fill="#6b7280">응답 모양을 엔티티가 정한다</text>
-  <line x1="456" y1="165" x2="536" y2="165" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
-  <rect x="542" y="138" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="707" y="170" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">응답 DTO에 담아 내보낸다</text>
-  <rect x="120" y="206" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="230" text-anchor="middle" font-size="12" fill="#0f172a">리포지토리 네 메서드를 직접 적는다</text>
-  <text x="285" y="249" text-anchor="middle" font-size="11" fill="#6b7280">못 찾으면 null이 돌아온다</text>
-  <line x1="456" y1="233" x2="536" y2="233" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
-  <rect x="542" y="206" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="707" y="230" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">JpaRepository를 상속한다</text>
-  <text x="707" y="249" text-anchor="middle" font-size="11" fill="#3730a3">못 찾으면 빈 Optional이 돌아온다</text>
-  <rect x="120" y="274" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="298" text-anchor="middle" font-size="12" fill="#0f172a">없는 게시글 조회도 200으로 응답한다</text>
-  <text x="285" y="317" text-anchor="middle" font-size="11" fill="#6b7280">수정과 삭제는 500이 난다</text>
-  <line x1="456" y1="301" x2="536" y2="301" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
-  <rect x="542" y="274" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="707" y="306" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">Exception404를 발생시킨다</text>
-  <rect x="120" y="342" width="330" height="54" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="285" y="374" text-anchor="middle" font-size="12" fill="#0f172a">발생한 예외를 받을 곳이 없다</text>
-  <line x1="456" y1="369" x2="536" y2="369" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3ov-i)"/>
-  <rect x="542" y="342" width="330" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="707" y="366" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">한 곳에서 404 JSON으로 바꾼다</text>
-  <text x="707" y="385" text-anchor="middle" font-size="11" fill="#3730a3">status · msg · body 형식을 지킨다</text>
+
+  <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 예외가 발생하면 어디서 받는가</text>
+
+  <rect x="20" y="62" width="115" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="77" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+
+  <line x1="135" y1="92" x2="198" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+  <text x="166" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">요청</text>
+
+  <rect x="200" y="62" width="165" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="282" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+
+  <line x1="365" y1="92" x2="428" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="430" y="62" width="145" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="502" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
+
+  <line x1="575" y1="92" x2="638" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="640" y="62" width="145" height="60" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
+  <text x="712" y="98" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스</text>
+
+  <line x1="785" y1="92" x2="848" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
+
+  <rect x="850" y="62" width="135" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="917" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">리포지토리</text>
+
+  <path d="M712,122 V168 H300 V126" fill="none" stroke="#ff7849" stroke-width="1.9" marker-end="url(#c3f-s)"/>
+  <text x="724" y="146" font-size="12" font-weight="700" fill="#c2410c">예외 발생</text>
+
+  <line x1="240" y1="122" x2="240" y2="202" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
+  <text x="232" y="168" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">예외 처리를 맡긴다</text>
+
+  <path d="M110,238 H77 V126" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
+  <text x="88" y="186" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+
+  <rect x="110" y="204" width="330" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="275" y="230" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="275" y="251" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11.5" fill="#3730a3">@RestControllerAdvice</text>
 </svg>
 </div>
 
-*그림 3-1. 챕터 3에서 고칠 다섯 곳*
+*그림 3-1. 챕터 3의 실습 흐름*
 
 :::goal
 **이번 챕터가 끝나면**
@@ -501,7 +506,7 @@ GET http://localhost:8080/api/boards/999
 오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.
 
 **오픈이**: "지난번에 없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 없으면 없다고 딱 나와요."<br>
-**동료**: "아, 3번 호출해 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."
+**동료**: "아, 999번 호출해 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."
 
 *여기까진 됐다.*
 
