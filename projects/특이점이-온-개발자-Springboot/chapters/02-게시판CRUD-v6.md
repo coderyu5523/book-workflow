@@ -56,7 +56,6 @@
 - REST API가 무엇이고, 게시글을 주소로 가리키고 메서드로 다루는 방식을 이해합니다
 - 객체와 테이블의 생김새 차이를 JPA가 어떻게 메우는지, JPQL은 어떻게 사용하는지, 영속성 컨텍스트의 캐싱·쓰기 지연·더티체킹이 무엇인지 설명할 수 있습니다
 - 엔티티, 리포지토리, 서비스, 컨트롤러를 직접 만들어 게시글을 저장하고 조회하는 API를 완성하고, 단위 테스트로 검증합니다
-- 요청 하나가 톰캣에서 데이터베이스까지 어떤 계층을 지나는지 그릴 수 있습니다
 :::
 
 ::::prep
@@ -338,7 +337,9 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 | H2 Database | 메모리에서만 동작하는 실습용 데이터베이스입니다 |
 | Lombok | 게터·세터 같은 반복 코드를 대신 만들어 줍니다 |
 
-생성이 끝나면 이런 구조가 만들어집니다. `build.gradle`에 방금 고른 의존성이 적혀 있고, 코드는 `src` 아래에 들어갑니다.
+생성이 끝나면 이런 구조가 만들어집니다.
+
+`build.gradle`에 방금 고른 의존성이 적혀 있고, 코드는 `src` 아래에 들어갑니다.
 
 ![](../assets/CH2/setup/06_project-tree.png)
 
@@ -458,7 +459,9 @@ public class Board {
 
 ### 2.4.3 더미 데이터
 
-실습을 위해 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다. `resources/db/data.sql`을 열어 아래와 같이 작성합니다.
+실습을 위해 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다.
+
+`resources/db/data.sql`을 열어 아래와 같이 작성합니다.
 
 ```sql [실습 2] resources/db/data.sql. 게시글 더미 데이터
 insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
@@ -586,7 +589,7 @@ public record Resp<T>(Integer status, String msg, T body) {
 
 먼저 데이터베이스에 접근하는 리포지토리를 만들어 보겠습니다. 리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 이 객체는 스프링이 미리 빈(Bean)으로 등록해 두므로, 직접 만들 필요 없이 생성자로 주입받아 사용하면 됩니다.
 
-이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 작성합니다.
+`board/BoardRepository.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 3] board/BoardRepository.java. 리포지토리 골격
 @RequiredArgsConstructor
@@ -1205,14 +1208,16 @@ public class BoardRepositoryTest {
 
 ### 2.11.1 서비스
 
-먼저 서비스를 작성합니다. 서비스는 리포지토리를 주입받고, `게시글목록()`에서 리포지토리의 `findAll()`을 호출해 결과를 반환합니다. 이를 위해 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
+먼저 서비스를 작성합니다. 서비스는 리포지토리를 주입받고, `게시글목록()`에서 리포지토리의 `findAll()`을 호출해 결과를 반환합니다.
+
+`board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 14] board/BoardService.java. 게시글 목록
 @RequiredArgsConstructor
 @Service // 스프링이 빈으로 등록한다
 public class BoardService {
 
-    private final BoardRepository boardRepository;
+    private final BoardRepository boardRepository; // 의존성 주입
 
     public List<Board> 게시글목록() {
         return boardRepository.findAll();
@@ -1222,7 +1227,9 @@ public class BoardService {
 
 ### 2.11.2 컨트롤러
 
-이어서 요청을 받을 컨트롤러를 작성합니다. 컨트롤러는 서비스를 주입받고, 서비스의 `게시글목록()`을 호출해 결과를 반환합니다. 이를 위해 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
+이어서 요청을 받을 컨트롤러를 작성합니다. 컨트롤러는 서비스를 주입받고, 서비스의 `게시글목록()`을 호출해 결과를 반환합니다.
+
+`board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 15] board/BoardController.java. 게시글 목록
 @RequiredArgsConstructor
@@ -1230,7 +1237,7 @@ public class BoardService {
 @RequestMapping("/api/boards") // 공통 주소
 public class BoardController {
 
-    private final BoardService boardService;
+    private final BoardService boardService; // 의존성 주입
 
     @GetMapping
     public ResponseEntity<?> findAll() {
@@ -1285,7 +1292,9 @@ GET http://localhost:8080/api/boards
 
 ### 2.12.2 컨트롤러
 
-컨트롤러는 URL 경로에 포함된 게시글 번호를 추출하여 서비스로 전달합니다. 경로 변수인 `{boardId}` 값은 **@PathVariable**을 사용해 가져옵니다. `board/BoardController.java`에 다음 메서드를 추가해 이를 구현합니다.
+컨트롤러는 URL 경로에 포함된 게시글 번호를 추출하여 서비스로 전달합니다. 경로 변수인 `{boardId}` 값은 **@PathVariable**을 사용해 가져옵니다.
+
+`board/BoardController.java`에 다음 메서드를 추가해 이를 구현합니다.
 
 ```java [실습 17] board/BoardController.java. 게시글 상세
     @GetMapping("/{boardId}")
@@ -1312,7 +1321,9 @@ GET http://localhost:8080/api/boards/1
 
 ### 2.13.1 서비스
 
-서비스는 컨트롤러가 넘긴 게시글을 저장합니다. `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+게시글 쓰기는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.
+
+`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 18] board/BoardService.java. 게시글 쓰기
     @Transactional
@@ -1322,11 +1333,13 @@ GET http://localhost:8080/api/boards/1
     }
 ```
 
-**@Transactional**은 메서드가 실행되는 동안 트랜잭션을 열어 두었다가, 정상으로 끝나면 변경을 반영하고 중간에 예외가 나면 되돌립니다. 데이터를 변경하는 작업에는 트랜잭션이 필요합니다.
+**@Transactional**은 메서드가 실행되는 동안 트랜잭션을 열어 두었다가, 정상으로 끝나면 변경을 반영하고 중간에 예외가 나면 되돌립니다.
 
 ### 2.13.2 컨트롤러
 
-클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 파라미터에 **@RequestBody**가 있다면, 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 매개변수로 전달합니다. 이를 위해 `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
+클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 파라미터에 **@RequestBody**가 있다면, 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 매개변수로 전달합니다.
+
+`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 19] board/BoardController.java. 게시글 쓰기
     @PostMapping
@@ -1360,12 +1373,14 @@ POST http://localhost:8080/api/boards
 
 ### 2.14.1 서비스
 
-수정할 게시글을 먼저 조회합니다. 영속 상태인 엔티티라야 값을 바꿨을 때 변경이 감지되기 때문입니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+`게시글수정()`은 URL에 담긴 게시글 번호와 요청 바디로 들어온 값을 함께 전달받습니다.
+
+`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 20] board/BoardService.java. 더티체킹으로 수정
-    // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
     @Transactional
     public Board 게시글수정(Integer boardId, Board requestBoard) {
+        // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
         Board board = boardRepository.findById(boardId);
         // 2. 값만 바꾼다. save() 호출이 없다
         board.setTitle(requestBoard.getTitle());
@@ -1411,7 +1426,9 @@ PUT http://localhost:8080/api/boards/1
 
 ### 2.15.1 서비스
 
-삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다. 이를 반영하여 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다.
+
+`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 22] board/BoardService.java. 게시글 삭제
     @Transactional
@@ -1449,81 +1466,14 @@ DELETE http://localhost:8080/api/boards/1
 *그림 2-38. 게시글 삭제 응답*
 
 
-## 2.16 요청 처리 흐름
+스프링 프레임워크의 웹 계층 구조를 활용해 게시판의 기본 기능을 완성했습니다. 데이터베이스와 통신하는 리포지토리, 비즈니스 로직을 품은 서비스, 클라이언트의 요청을 받는 컨트롤러까지, 스프링의 구성 요소들이 어떻게 맞물려 하나의 애플리케이션으로 동작하는지 확인해 보았습니다.
 
-지금까지 만든 것을 요청 하나의 관점에서 이어 보겠습니다. 클라이언트가 요청을 보낸 순간부터 데이터베이스의 값이 바뀌기까지, 요청은 여러 계층을 차례로 지납니다.
-
-먼저 톰캣(Tomcat)이 8080 포트로 들어온 요청을 받습니다. 헤더와 바디를 담은 요청 객체를 생성한 뒤, 미리 준비해 둔 **스레드 풀(Thread Pool)** 에서 스레드 하나를 꺼내 요청을 맡깁니다. 요청마다 스레드를 새로 생성하지 않고 빌려 쓴 다음 반납하는 방식이므로, 요청이 몰려도 서버가 감당할 수 있습니다.
-
-요청은 스프링 컨테이너로 넘어갑니다. 디스패처 서블릿(DispatcherServlet)이 첫 관문입니다. 주소와 HTTP 메서드를 보고 어느 컨트롤러의 어느 메서드가 맡을지 찾아 호출합니다.
-
-컨트롤러는 요청에서 값을 꺼내 서비스로 전달합니다. 서비스에서는 **@Transactional**이 붙은 메서드가 시작되며 트랜잭션이 열리고, 메서드가 끝나는 순간 닫힙니다. 앞에서 본 자동 `flush()`가 일어나는 지점이 이 순간입니다.
-
-서비스는 리포지토리를 호출하고, 리포지토리는 **EntityManager**로 영속성 컨텍스트를 다룹니다. 조회한 엔티티가 놓이고 생성된 SQL이 버퍼에 쌓이는 곳입니다. 데이터베이스에서 실행할 SQL은 **커넥션 풀(Connection Pool)** 에서 빌린 연결로 전달됩니다. 연결도 스레드와 마찬가지로, 요청마다 새로 맺지 않고 미리 준비해 둔 것을 빌려 쓴 뒤 반납합니다.
-
-<div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청이 지나는 전체 경로. 윗줄에서 클라이언트가 톰캣으로 요청을 보내고, 톰캣은 스레드 풀에서 스레드를 꺼내 디스패처 서블릿으로 넘기며, 디스패처 서블릿이 담당 컨트롤러를 호출한다. 컨트롤러는 아랫줄의 서비스를 호출하고, 서비스에서 트랜잭션이 열린 채 리포지토리를 거쳐 영속성 컨텍스트로 전달된다. 영속성 컨텍스트가 만든 SQL은 커넥션 풀에서 빌린 연결로 데이터베이스에 전달된다.">
-  <defs>
-    <marker id="c2flow-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-  </defs>
-  <rect x="30" y="70" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="105" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">클라이언트</text>
-  <text x="105" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">요청을 보냅니다</text>
-  <rect x="230" y="70" width="170" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="315" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">톰캣</text>
-  <text x="315" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">스레드 풀에서 꺼내 배정</text>
-  <rect x="450" y="70" width="190" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="545" y="100" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">디스패처 서블릿</text>
-  <text x="545" y="122" text-anchor="middle" font-size="12.4" fill="#3730a3">담당 메서드를 찾습니다</text>
-  <rect x="690" y="70" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="765" y="100" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="765" y="122" text-anchor="middle" font-size="12.4" fill="#6b7280">값을 꺼냅니다</text>
-  <line x1="182" y1="106" x2="226" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <line x1="402" y1="106" x2="446" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <line x1="642" y1="106" x2="686" y2="106" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <path d="M765,144 L765,182 L105,182 L105,222" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2flow-a)"/>
-  <text x="435" y="174" text-anchor="middle" font-size="12.4" fill="#4f46e5">컨트롤러가 서비스를 호출합니다</text>
-  <rect x="30" y="226" width="170" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="115" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">서비스</text>
-  <text x="115" y="278" text-anchor="middle" font-size="12.4" fill="#c2410c">트랜잭션이 열리고 닫힙니다</text>
-  <rect x="250" y="226" width="150" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="325" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">리포지토리</text>
-  <text x="325" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">EntityManager 사용</text>
-  <rect x="450" y="226" width="190" height="72" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="545" y="256" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="545" y="278" text-anchor="middle" font-size="12.4" fill="#3730a3">엔티티와 SQL 버퍼</text>
-  <rect x="690" y="226" width="130" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="755" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">커넥션 풀</text>
-  <text x="755" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">연결을 빌려 줍니다</text>
-  <rect x="870" y="226" width="110" height="72" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="925" y="256" text-anchor="middle" font-size="16.1" font-weight="700" fill="#0f172a">H2</text>
-  <text x="925" y="278" text-anchor="middle" font-size="12.4" fill="#6b7280">board_tb</text>
-  <line x1="202" y1="262" x2="246" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <line x1="402" y1="262" x2="446" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <line x1="642" y1="262" x2="686" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-  <line x1="822" y1="262" x2="866" y2="262" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2flow-a)"/>
-</svg>
-</div>
-
-*그림 2-39. 요청 처리 흐름*
-
-응답은 같은 계층을 거꾸로 거칩니다. 리포지토리가 돌려준 엔티티가 서비스를 거쳐 컨트롤러로 돌아오고, **@RestController**가 그것을 JSON으로 바꿔 톰캣을 거쳐 클라이언트에 전달합니다.
-
-오픈이는 서버를 실행해 목록 API를 호출하는 대신, 테스트 하나로 리포지토리가 제대로 동작하는지 확인했습니다. 키보드에서 손을 떼고 잠깐 화면을 바라봤습니다.
-
-동료가 화면 작업을 붙여 보려고 목록 API를 받아 갔습니다. 잠시 뒤 자리로 왔습니다.
-
-**동료**: "목록이랑 상세 잘 나와요. 그런데 없는 번호로 게시글 상세 API를 호출하면 어떻게 돼요? 3번 게시글은 아직 없는데."
-
-오픈이는 순간 답이 막혔습니다. `findById()`로 없는 게시글을 찾으면 무엇이 돌아오는지, 그다음 어떻게 되는지 확인해 본 적이 없었습니다.
-
-*없는 번호를 넣으면. 그대로 터지는 거 아닌가?*
-
-없는 게시글을 조회하면 없는데도 성공이라 응답하며 빈 값을 반환합니다. 다음 챕터에서는 없는 게시글을 404로 바로잡고, 엔티티를 요청과 응답에 그대로 쓰지 않도록 DTO로 정리합니다.
+다음 챕터에서는 클라이언트와 주고받을 데이터를 DTO로 분리하여 구조를 개선하고, 잘못된 조회 요청에 대비한 예외 처리를 다룹니다.
 
 :::remember
 **이것만은 기억하자**
 
-- **JPA는 객체와 테이블 사이를 변환합니다.** 조회한 엔티티는 영속성 컨텍스트에서 관리되고, 값을 바꾸면 트랜잭션이 끝날 때 더티체킹으로 변경이 반영됩니다. 그래서 수정에는 `save()`가 없습니다.
-- **컨트롤러·서비스·리포지토리 세 층으로 나눕니다.** 요청을 받고, 처리하고, 데이터베이스를 다루는 일이 각각의 층에 놓입니다. 이 흐름으로 게시글의 작성, 조회, 수정, 삭제 API를 완성하고 단위 테스트로 검증했습니다.
+- **JPA는 객체와 테이블 사이를 변환합니다.** 테이블이 아니라 엔티티와 필드 이름으로 JPQL을 작성하면 JPA가 이를 SQL로 번역해 데이터베이스에 전달합니다.
+- **영속성 컨텍스트는 조회한 엔티티를 트랜잭션 동안 관리합니다.** 같은 엔티티를 다시 조회하면 캐시에 있는 것을 반환하고, 쿼리는 버퍼에 모았다가 `flush()` 시점에 내보내며, 값이 바뀌면 더티체킹으로 UPDATE를 만듭니다.
+- **컨트롤러·서비스·리포지토리 세 층으로 나눕니다.** 요청을 받고, 처리하고, 데이터베이스를 다루는 일이 각각의 층에 놓입니다. 리포지토리는 서버를 실행하지 않고 단위 테스트만으로 검증할 수 있습니다.
 :::

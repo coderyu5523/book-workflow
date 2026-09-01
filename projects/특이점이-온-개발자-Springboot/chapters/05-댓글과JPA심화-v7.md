@@ -180,7 +180,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 
 먼저 댓글 엔티티부터 정의합니다. **User** 엔티티와 **Board** 엔티티를 참조하는 필드를 포함하면, 각 댓글이 어떤 회원이 어떤 게시글에 작성했는지를 알 수 있습니다.
 
-이를 위해 `reply/Reply.java`를 열어 아래와 같이 작성합니다.
+`reply/Reply.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 1] reply/Reply.java. 댓글 엔티티
 @NoArgsConstructor
@@ -224,19 +224,14 @@ public class Reply {
 
 두 엔티티가 서로를 참조하게 되면 어느 쪽을 기준으로 외래 키를 바꿀지 정해야 합니다. 외래 키 `board_id`를 실제로 가진 쪽은 댓글이므로, 값을 바꾸는 권한도 댓글이 갖습니다. 이렇게 외래 키를 관리하는 쪽을 **연관관계 주인**이라고 하며, 주인이 아닌 게시글 쪽은 `mappedBy`로 주인의 필드 이름을 가리키기만 합니다. 게시글의 `replies`에 댓글을 넣어도 데이터베이스는 바뀌지 않고, 댓글의 `board`를 바꿔야 반영됩니다.
 
-이를 위해 `board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
+`board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
 
 ```java [실습 2] board/Board.java. 댓글 목록 연관관계 추가
-    // 게시글을 출력할 때 댓글까지 따라가지 않게 막는다
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Reply> replies = new ArrayList<>();
 ```
 
 `cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다. 또한 필드를 `new ArrayList<>()`로 초기화하면 댓글이 없는 경우에도 null 대신 빈 목록을 가지므로, 에러 없이 댓글 개수(0)를 확인할 수 있습니다.
-
-**@ToString.Exclude**와 **@EqualsAndHashCode.Exclude**는 게시글과 댓글이 서로를 참조하기 때문에 필요합니다. **@Data**가 만들어 주는 `toString()`은 필드를 모두 출력하는데, 게시글이 댓글을 출력하면 그 댓글이 다시 게시글을 출력해 끝나지 않습니다. 한쪽을 제외하면 순환이 끊깁니다.
 
 :::note
 **@OneToMany 필드는 테이블 컬럼이 아닙니다**
@@ -246,7 +241,9 @@ public class Reply {
 
 ### 5.1.3 더미 데이터
 
-댓글 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터에도 댓글을 더합니다. 이를 위해 `resources/db/data.sql`을 열어 회원·게시글 아래에 아래와 같이 작성합니다.
+댓글 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터에도 댓글을 더합니다.
+
+`resources/db/data.sql`을 열어 회원·게시글 아래에 아래와 같이 작성합니다.
 
 ```sql [실습 3] resources/db/data.sql. 댓글 더미 데이터
 insert into reply_tb(comment,board_id,user_id,created_at) values('comment1',1,1,now());
@@ -301,7 +298,9 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
 
 ### 5.2.2 지연 로딩
 
-**지연 로딩(Lazy Loading)** 은 게시글 데이터만 먼저 조회하고, 회원 데이터는 실제로 접근하는 순간에 쿼리를 실행해 가져오는 방식입니다. 이를 위해 `board/Board.java`의 작성자 필드에 `fetch` 속성을 아래와 같이 추가합니다.
+**지연 로딩(Lazy Loading)** 은 게시글 데이터만 먼저 조회하고, 회원 데이터는 실제로 접근하는 순간에 쿼리를 실행해 가져오는 방식입니다.
+
+`board/Board.java`의 작성자 필드에 `fetch` 속성을 아래와 같이 추가합니다.
 
 ```java [실습 5] board/Board.java. 작성자 조회를 지연 로딩으로
     // 지연 로딩을 직접 지정한다
@@ -310,7 +309,9 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
     private User user;
 ```
 
-회원 데이터를 사용하면 어떻게 되는지 확인합니다. `test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
+회원 데이터를 사용하면 어떻게 되는지 확인합니다.
+
+`test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
 
 ```java [실습 6] test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인
     @Test
@@ -363,7 +364,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 ### 5.3.1 리포지토리
 
-이를 위해 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
+`board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
 ```java [실습 7] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
@@ -376,7 +377,9 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 ### 5.3.2 응답 DTO
 
-하나의 게시글에는 여러 댓글이 달릴 수 있으므로, 댓글 필드를 **List** 타입으로 추가합니다. 이를 반영하여 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
+하나의 게시글에는 여러 댓글이 달릴 수 있으므로 댓글 필드를 **List** 타입으로 담습니다.
+
+`board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
 ```java [실습 8] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
@@ -425,7 +428,9 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 ### 5.3.3 서비스
 
-**BoardService**의 상세 메서드에서 기존 `findByIdJoinUser()` 호출을 `findByIdJoinUserAndReplies()`로 대체합니다. 이를 반영하여 `board/BoardService.java`를 아래와 같이 변경합니다.
+**BoardService**의 상세 메서드는 `findByIdJoinUser()` 대신 `findByIdJoinUserAndReplies()`를 호출합니다.
+
+`board/BoardService.java`를 아래와 같이 변경합니다.
 
 ```java [실습 9] board/BoardService.java. 상세 조회를 fetch join으로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
@@ -457,7 +462,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 댓글을 저장하고 조회하는 리포지토리를 구현합니다.
 
-이를 위해 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 10] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
@@ -468,7 +473,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 **SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다.
 
-이를 위해 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 11] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
@@ -490,7 +495,7 @@ public class ReplyRequest {
 
 응답으로 반환할 댓글 하나를 담을 **DTO**도 정의합니다.
 
-이를 위해 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 12] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
@@ -511,7 +516,7 @@ public class ReplyResponse {
 
 서비스는 전달받은 게시글 아이디와 로그인 유저로 **Reply** 엔티티를 생성하고 `save()`를 호출합니다.
 
-이를 위해 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 13] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
@@ -540,7 +545,7 @@ public class ReplyService {
 
 댓글 작성 엔드포인트를 구현합니다.
 
-이를 위해 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 14] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
@@ -580,7 +585,9 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 ### 5.5.1 서비스
 
-게시글 수정·삭제와 마찬가지로 먼저 로그인 여부를 확인하고, 이어서 댓글 작성자와 로그인 유저가 같은지 검증한 뒤 삭제합니다. 이를 위해 `reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
+게시글 수정·삭제와 마찬가지로 먼저 로그인 여부를 확인하고, 이어서 댓글 작성자와 로그인 유저가 같은지 검증한 뒤 삭제합니다.
+
+`reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 15] reply/ReplyService.java. 댓글 삭제
     @Transactional

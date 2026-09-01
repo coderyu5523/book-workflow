@@ -1,6 +1,6 @@
 # 챕터 3. 예외 처리와 DTO
 
-게시판의 다섯 기능이 모두 돌아갑니다. 그런데 동료가 화면을 붙이다 물어본 질문에는 아직 답하지 못했습니다. 없는 3번 게시글을 조회하면 빈 값이 성공으로 돌아온다는 것까지는 확인했습니다.
+게시판의 다섯 기능이 모두 돌아갑니다. 그런데 없는 3번 게시글을 조회하자 빈 값이 성공으로 돌아왔습니다.
 
 *조회가 이런데, 수정하고 삭제하면?*
 
@@ -101,7 +101,9 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.1 엔티티 생성자
 
-DTO가 담은 값으로 **Board**를 만들려면 값을 받는 생성자가 필요합니다. 이를 위해 `board/Board.java`에 아래와 같이 생성자를 추가하고 **@Builder**를 붙입니다.
+DTO가 담은 값으로 **Board**를 만들려면 값을 받는 생성자가 필요합니다.
+
+`board/Board.java`에 아래와 같이 생성자를 추가하고 **@Builder**를 붙입니다.
 
 ```java [실습 1] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor
@@ -285,7 +287,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 예외 처리에 사용할 **Exception404**를 정의합니다.
 
-이를 위해 `core/handler/ex/Exception404.java`를 열어 아래와 같이 작성합니다.
+`core/handler/ex/Exception404.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 5] core/handler/ex/Exception404.java. 커스텀 예외
 public class Exception404 extends RuntimeException {
@@ -388,9 +390,9 @@ public class GlobalExceptionHandler {
 
 ### 3.5.1 서비스
 
-이제 **BoardService**가 DTO로 값을 주고받고 예외 처리까지 수행하도록 변경합니다.
+**BoardService**가 DTO로 값을 주고받고 예외 처리까지 수행하도록 변경합니다.
 
-이를 반영하여 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
+`board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 7] board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외
     public List<BoardResponse.DTO> 게시글목록() {
@@ -433,7 +435,7 @@ public class GlobalExceptionHandler {
 
 컨트롤러는 요청으로 받는 값과 서비스에서 전달받는 값이 모두 DTO 타입으로 바뀝니다.
 
-이를 반영하여 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
+`board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 8] board/BoardController.java. 요청·응답 타입을 DTO로
     @GetMapping

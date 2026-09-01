@@ -232,7 +232,7 @@
 <p>리플렉션이 실제로 어떻게 동작하는지 자바 코드로 직접 구현해 보겠습니다. 가장 단순한 형태의 코드부터 시작해 한 단계씩 기능을 확장해 나갑니다.</p>
 <h3>1.2.1 if-else 라우팅</h3>
 <p>가장 기본적인 요청 처리 방식은 들어온 요청 주소를 if 문으로 비교하여 알맞은 메서드를 직접 호출하는 것입니다. 이를 확인하기 위해 먼저 게시글을 다루는 <strong>BoardController</strong>에 등록(insert), 수정(update), 삭제(delete) 메서드를 작성하겠습니다. 각 메서드는 호출될 때 콘솔에 자신의 이름을 출력합니다.</p>
-<p>이를 위해 <code>ex01/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>ex01/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> ex01/BoardController.java. 요청을 처리할 컨트롤러</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardController</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">insert</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -374,7 +374,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>이어서 <code>main()</code> 메서드에서 어노테이션을 읽을 수 있도록 수정합니다.</p>
-<p>이를 위해 <code>ex02/App.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>ex02/App.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> ex02/App.java. 어노테이션을 읽어 맞는 메서드를 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 
@@ -387,8 +387,8 @@
 <span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Method</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="c1">// 2. 그 메서드에 붙은 @RequestMapping 어노테이션을 읽는다</span>
 <span class="w">            </span><span class="n">RequestMapping</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">getDeclaredAnnotation</span><span class="p">(</span><span class="n">RequestMapping</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
-<span class="w">            </span><span class="c1">// 3. 어노테이션이 붙어 있고 uri가 요청 주소와 같으면 그 메서드를 실행한다</span>
-<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rm</span><span class="p">.</span><span class="na">uri</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// 3. 어노테이션의 uri가 요청 주소와 같으면 그 메서드를 실행한다</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="p">.</span><span class="na">uri</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                    </span><span class="n">method</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">boardController</span><span class="p">);</span>
 <span class="w">                    </span><span class="k">break</span><span class="p">;</span>
@@ -399,7 +399,6 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>getDeclaredMethods()</code>는 컨트롤러의 모든 메서드를 가져오므로 <strong>@RequestMapping</strong>이 붙지 않은 메서드도 함께 들어옵니다. 그런 메서드에서는 <code>getDeclaredAnnotation()</code>이 null을 반환하니, <code>rm</code>이 null인지 먼저 확인한 뒤 주소를 비교합니다.</p>
 <p>이제 <code>main()</code> 메서드에서는 컨트롤러에 어떤 메서드가 있는지 알지 못해도, 리플렉션이 실행 중에 어노테이션을 읽어 요청 주소와 맞는 메서드를 호출합니다.</p>
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -447,7 +446,7 @@
 </div>
 <div class="caption">그림 1-9. 컴포넌트 스캔의 객체 생성</div>
 <p>이번에는 메서드가 아니라 클래스에 붙일 어노테이션이 필요합니다. 컨트롤러 역할을 하는 클래스임을 나타내는 <strong>@Controller</strong>를 정의합니다.</p>
-<p>이를 위해 <code>ex03/Controller.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>ex03/Controller.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> ex03/Controller.java. 컨트롤러임을 나타내는 어노테이션</div><span class="c1">// 1. 컴파일한 뒤에도 정보를 남겨, 실행 중에 리플렉션이 이 어노테이션을 읽을 수 있게 한다</span>
 <span class="nd">@Retention</span><span class="p">(</span><span class="n">RetentionPolicy</span><span class="p">.</span><span class="na">RUNTIME</span><span class="p">)</span>
 <span class="c1">// 2. 붙일 수 있는 대상을 클래스와 인터페이스로 제한한다</span>
@@ -474,7 +473,7 @@
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">create</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;create 호출됨&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>이제 핵심이 되는 <code>main()</code> 메서드를 살펴보겠습니다. 코드를 보면 직접 객체를 생성하는 구문은 어디에도 없습니다. 대신 <code>ex03</code> 폴더의 실제 경로를 읽고 그 안의 클래스 파일을 하나씩 확인하여, <strong>@Controller</strong> 어노테이션이 붙은 클래스만 찾아 객체로 생성합니다.</p>
-<p>이를 위해 <code>ex03/App.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>ex03/App.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> ex03/App.java. 폴더를 뒤져 @Controller 클래스를 등록하고 주소로 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
 <span class="w">            </span><span class="kd">throws</span><span class="w"> </span><span class="n">URISyntaxException</span><span class="p">,</span><span class="w"> </span><span class="n">ReflectiveOperationException</span><span class="w"> </span><span class="p">{</span>
@@ -514,7 +513,7 @@
 <span class="w">            </span><span class="n">Method</span><span class="o">[]</span><span class="w"> </span><span class="n">methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">instance</span><span class="p">.</span><span class="na">getClass</span><span class="p">().</span><span class="na">getDeclaredMethods</span><span class="p">();</span>
 <span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Method</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                </span><span class="n">RequestMapping</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">getDeclaredAnnotation</span><span class="p">(</span><span class="n">RequestMapping</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
-<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rm</span><span class="p">.</span><span class="na">uri</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="p">.</span><span class="na">uri</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                        </span><span class="n">method</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">instance</span><span class="p">);</span>
 <span class="w">                        </span><span class="k">break</span><span class="p">;</span>

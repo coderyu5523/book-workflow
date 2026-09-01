@@ -20,7 +20,7 @@
 <body>
 <div class="container">
 <h1>챕터 3. 예외 처리와 DTO</h1>
-<p>게시판의 다섯 기능이 모두 돌아갑니다. 그런데 동료가 화면을 붙이다 물어본 질문에는 아직 답하지 못했습니다. 없는 3번 게시글을 조회하면 빈 값이 성공으로 돌아온다는 것까지는 확인했습니다.</p>
+<p>게시판의 다섯 기능이 모두 돌아갑니다. 그런데 없는 3번 게시글을 조회하자 빈 값이 성공으로 돌아왔습니다.</p>
 <p class="thought">조회가 이런데, 수정하고 삭제하면?</p>
 <p>없는 999번으로 수정을 걸자 500이 돌아왔고, 삭제도 마찬가지였습니다. 존재하는 1번으로 게시글 상세 API를 호출하자 엔티티에 적힌 필드가 그대로 JSON이 되어 나왔습니다. 받을 값도 내보낼 값도, 그 이름도 <strong>Board</strong>가 정하고 있었습니다.</p>
 <p class="thought">없는 게시글 하나에 답이 두 개네. 주고받는 모양도 내가 정한 게 아니고.</p>
@@ -99,7 +99,8 @@
 <h2>3.1 요청 DTO</h2>
 <p>챕터 2의 컨트롤러는 요청 바디를 <strong>Board</strong> 엔티티로 직접 받습니다. 클라이언트가 보낼 수 있는 값도, 그 이름도 엔티티가 정하는 상태입니다. 받을 값만 담는 클래스를 따로 두면 컨트롤러는 엔티티 대신 이 클래스로 요청을 받습니다.</p>
 <h3>3.1.1 엔티티 생성자</h3>
-<p>DTO가 담은 값으로 <strong>Board</strong>를 만들려면 값을 받는 생성자가 필요합니다. 이를 위해 <code>board/Board.java</code>에 아래와 같이 생성자를 추가하고 <strong>@Builder</strong>를 붙입니다.</p>
+<p>DTO가 담은 값으로 <strong>Board</strong>를 만들려면 값을 받는 생성자가 필요합니다.</p>
+<p><code>board/Board.java</code>에 아래와 같이 생성자를 추가하고 <strong>@Builder</strong>를 붙입니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
@@ -262,7 +263,7 @@
 <p><strong>Optional</strong>은 값이 존재할 수도, 존재하지 않을 수도 있는 상태를 감싸는 <strong>래퍼(Wrapper)</strong> 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow()</code> 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어있을 경우 인자로 전달한 지정된 예외를 발생시킵니다.</p>
 <h3>3.4.1 커스텀 예외 만들기</h3>
 <p>예외 처리에 사용할 <strong>Exception404</strong>를 정의합니다.</p>
-<p>이를 위해 <code>core/handler/ex/Exception404.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>core/handler/ex/Exception404.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/handler/ex/Exception404.java. 커스텀 예외</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">Exception404</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">RuntimeException</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="nf">Exception404</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="kd">super</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
@@ -375,8 +376,8 @@
 <div class="caption">그림 3-4. 전역 예외 처리 흐름</div>
 <h2>3.5 서비스와 컨트롤러에 적용</h2>
 <h3>3.5.1 서비스</h3>
-<p>이제 <strong>BoardService</strong>가 DTO로 값을 주고받고 예외 처리까지 수행하도록 변경합니다.</p>
-<p>이를 반영하여 <code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><strong>BoardService</strong>가 DTO로 값을 주고받고 예외 처리까지 수행하도록 변경합니다.</p>
+<p><code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">게시글목록</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findAll</span><span class="p">().</span><span class="na">stream</span><span class="p">()</span>
 <span class="w">                </span><span class="p">.</span><span class="na">map</span><span class="p">(</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">::</span><span class="k">new</span><span class="p">)</span>
@@ -413,7 +414,7 @@
 <span class="w">    </span><span class="p">}</span></div>
 <h3>3.5.2 컨트롤러</h3>
 <p>컨트롤러는 요청으로 받는 값과 서비스에서 전달받는 값이 모두 DTO 타입으로 바뀝니다.</p>
-<p>이를 반영하여 <code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
+<p><code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> board/BoardController.java. 요청·응답 타입을 DTO로</div><span class="w">    </span><span class="nd">@GetMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="n">respDTOList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글목록</span><span class="p">();</span>

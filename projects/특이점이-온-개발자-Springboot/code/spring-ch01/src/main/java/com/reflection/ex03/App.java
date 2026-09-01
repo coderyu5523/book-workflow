@@ -43,7 +43,7 @@ public class App {
             Method[] methods = instance.getClass().getDeclaredMethods(); 
             for (Method method : methods) {
                 RequestMapping rm = method.getDeclaredAnnotation(RequestMapping.class);
-                if(rm != null && rm.uri().equals(uri)){  
+                if(rm.uri().equals(uri)){  
                     try {
                         method.invoke(instance);  
                         break; 

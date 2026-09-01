@@ -21,9 +21,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 @NoArgsConstructor
 @Data
@@ -43,8 +41,6 @@ public class Board {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ToString.Exclude // Board <-> Reply 순환 출력 차단
-    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE) // reply 필드 연결
     private List<Reply> replies = new ArrayList<>();
 
