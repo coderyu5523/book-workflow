@@ -33,7 +33,7 @@
     <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
     <marker id="c3f-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-<p><text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 예외가 발생하면 어디서 받는가</text></p>
+  <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 예외가 발생하면 어디서 받는가</text>
   <rect x="20" y="62" width="115" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="77" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
   <line x1="135" y1="92" x2="198" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
@@ -64,10 +64,9 @@
 <div class="goal-box">
 <p><strong>이번 챕터가 끝나면</strong></p>
 <ul>
-<li>엔티티를 요청과 응답에 직접 사용하지 않고 DTO로 감싸는 이유를 설명할 수 있습니다</li>
-<li><strong>JpaRepository</strong>로 바꾸면 없는 데이터가 왜 <strong>Optional</strong>로 반환되는지 이해합니다</li>
-<li><strong>Optional</strong>과 <code>orElseThrow()</code>로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 <strong>RuntimeException</strong>인지 이해합니다</li>
-<li><strong>@RestControllerAdvice</strong>로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다</li>
+<li><strong>DTO</strong>로 엔티티를 그대로 내보내지 않고 요청과 응답 전용 클래스를 만들 수 있습니다</li>
+<li><strong>JpaRepository</strong>로 기본 조회, 저장, 삭제 메서드를 물려받고 결과를 <strong>Optional</strong>로 받을 수 있습니다</li>
+<li><strong>커스텀 예외</strong>와 <strong>전역 예외 처리</strong>로 실패 상황을 상태 코드에 맞는 JSON 응답으로 바꿀 수 있습니다</li>
 </ul>
 </div>
 <div class="prep-section-md">
@@ -89,11 +88,33 @@
 <p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>3.1 요청 DTO</h2>
-<p>챕터 2의 컨트롤러는 요청 바디를 <strong>Board</strong> 엔티티로 직접 받습니다. 클라이언트가 보낼 수 있는 값도, 그 이름도 엔티티가 정하는 상태입니다. 받을 값만 담는 클래스를 따로 두면 컨트롤러는 엔티티 대신 이 클래스로 요청을 받습니다.</p>
-<h3>3.1.1 엔티티 생성자</h3>
-<p>DTO가 담은 값으로 <strong>Board</strong>를 만들려면 값을 받는 생성자가 필요합니다.</p>
-<p><code>board/Board.java</code>에 아래와 같이 생성자를 추가하고 <strong>@Builder</strong>를 붙입니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span>
+<p>챕터 2의 컨트롤러는 요청을 <strong>Board</strong> 엔티티로 직접 받고, 응답할 때도 엔티티를 그대로 반환합니다. 하지만 실무에서는 엔티티를 요청이나 응답에 직접 사용하지 않습니다. 엔티티는 데이터베이스의 테이블 구조와 동일해서, 그대로 사용할 경우 응답에 불필요한 데이터가 노출되거나 테이블 구조가 변경될 때 예상치 못한 오류가 발생할 수 있기 때문입니다. 따라서 클라이언트와 주고받을 때는 필요한 데이터만 담아서 전달할 전용 객체를 사용해야 합니다.</p>
+<h3>3.1.1 DTO</h3>
+<p>계층 사이에서 데이터 전달만을 목적으로 하는 객체를 <strong>DTO(Data Transfer Object)</strong> 라고 합니다. 컨트롤러와 서비스처럼 서로 다른 계층 사이에서 필요한 값만 담아 전달합니다. DTO를 사용하면 요청 받을 값과 응답을 보낼 값을 필요한 형태로 정할 수 있습니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 Board 엔티티는 id, title, content, createdAt 네 값을 담고 있고, 오른쪽 DTO는 boardId, title, content 세 값만 담고 있다. 화살표가 왼쪽에서 오른쪽으로 이어지며 필요한 값만 담는다고 적혀 있다.">
+  <defs>
+    <marker id="c3dto-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="40" y="36" width="260" height="148" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="170" y="64" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 엔티티</text>
+  <text x="170" y="96" text-anchor="middle" font-size="12" fill="#334155">id : 1</text>
+  <text x="170" y="120" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
+  <text x="170" y="144" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
+  <text x="170" y="168" text-anchor="middle" font-size="12" fill="#334155">createdAt : 작성시각</text>
+  <line x1="304" y1="110" x2="452" y2="110" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
+  <text x="378" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">필요한 값만 담는다</text>
+  <rect x="460" y="49" width="260" height="122" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="590" y="77" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">DTO</text>
+  <text x="590" y="109" text-anchor="middle" font-size="12" fill="#334155">boardId : 1</text>
+  <text x="590" y="133" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
+  <text x="590" y="157" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
+</svg>
+</div>
+<div class="caption">그림 3-2. 엔티티와 DTO가 담는 값</div>
+<h3>3.1.2 엔티티 생성자</h3>
+<p>JPA는 엔티티만 데이터베이스에 저장할 수 있습니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 먼저 엔티티로 변환하는 과정이 필요합니다. 이를 처리할 수 있도록 <strong>Board</strong> 클래스에 생성자를 추가합니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span><span class="w"> </span><span class="c1">// 기본 생성자 추가</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
 <span class="nd">@Table</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board_tb&quot;</span><span class="p">)</span>
@@ -108,13 +129,13 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>명시 생성자를 선언하면 자바가 자동으로 제공하던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 <strong>@NoArgsConstructor</strong>도 함께 붙입니다.</p>
+<p>새로운 생성자를 직접 추가하면 자바가 기본으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, <strong>@NoArgsConstructor</strong> 어노테이션을 함께 붙여줍니다.</p>
 <div class="tip">
 <p><strong>빌더 패턴(Builder Pattern)이란?</strong></p>
 <p>객체를 생성할 때 순서에 의존하지 않고, 어떤 필드에 어떤 값이 들어가는지 명시적으로 지정하는 패턴입니다. <strong>@Builder</strong>를 사용하면 복잡한 매개변수 순서를 외울 필요 없이, 내가 원하는 필드의 값을 채워 넣을 수 있습니다.</p>
 </div>
-<h3>3.1.2 요청 DTO 만들기</h3>
-<p>요청으로 받을 값만 담는 클래스를 만듭니다. 계층 사이에서 데이터 전달만을 목적으로 하는 이 객체를 <strong>DTO(Data Transfer Object)</strong> 라고 합니다.</p>
+<h3>3.1.3 요청 DTO 만들기</h3>
+<p>요청 DTO는 클라이언트가 전송한 데이터를 담는 클래스입니다. 클라이언트가 데이터를 보내면, 스프링이 요청 바디에 담긴 값들을 이름이 일치하는 DTO 필드에 자동으로 채워줍니다. 덕분에 컨트롤러는 복잡한 변환 과정 없이 이 DTO를 매개변수로 받아 바로 사용할 수 있습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 800 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청 데이터와 DTO. 클라이언트가 제목과 내용을 application/json 타입으로 보내면, 그 값이 DTO의 title과 content로 자동 매핑되고, 컨트롤러가 이 DTO를 받는다.">
   <defs>
@@ -140,7 +161,7 @@
   <text x="570" y="78" text-anchor="middle" font-size="12.7" fill="#475569">3. 전달</text>
 </svg>
 </div>
-<div class="caption">그림 3-2. 요청 데이터와 DTO</div>
+<div class="caption">그림 3-3. 요청 데이터와 DTO</div>
 <p>데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 엔티티여야 합니다. <strong>SaveDTO</strong>는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 <code>toEntity()</code>를 둡니다.</p>
 <p><code>board/BoardRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/BoardRequest.java. 요청 DTO와 엔티티 변환</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
@@ -149,8 +170,8 @@
 <span class="w">        </span><span class="c1">// DTO를 엔티티로 변환한다</span>
 <span class="w">        </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">())</span>
-<span class="w">                    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
 <span class="w">                    </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
@@ -160,38 +181,7 @@
 <span class="p">}</span></div>
 <p><code>record</code>는 데이터 전달을 목적으로 하는 특수 클래스입니다. 필드만 선언하면 생성자와 getter 같은 메서드를 자동으로 만들어 줍니다.</p>
 <h2>3.2 응답 DTO</h2>
-<h3>3.2.1 DTO가 필요한 이유</h3>
-<p>챕터 2의 컨트롤러는 <strong>Board</strong> 엔티티를 그대로 반환하고, <strong>@RestController</strong>가 이를 JSON으로 변환합니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.</p>
-<p>응답으로 내보낼 값만 담는 클래스를 따로 정의하면, 컨트롤러는 엔티티 대신 이 클래스를 반환합니다. 앞에서 요청을 받을 때 만든 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.</p>
-<div class="svg-figure">
-<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽에 'DTO만 통과' 표지가 붙어 있다. 벽을 지나 오른쪽 응답에 담긴 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
-  <defs>
-    <marker id="c3dto-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-  </defs>
-  <text x="175" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">내부</text>
-  <text x="661" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">응답 (바깥)</text>
-  <rect x="40" y="46" width="270" height="256" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="175" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 엔티티</text>
-  <text x="175" y="118" text-anchor="middle" font-size="12" fill="#334155">id : 1</text>
-  <text x="175" y="146" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
-  <text x="175" y="174" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
-  <text x="175" y="202" text-anchor="middle" font-size="12" fill="#334155">createdAt : 작성시각</text>
-  <text x="175" y="250" text-anchor="middle" font-size="11" fill="#6b7280">테이블에 있는 그대로입니다</text>
-  <rect x="430" y="40" width="14" height="270" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="418" y="150" width="38" height="52" rx="4" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="388" y="102" width="98" height="28" rx="6" fill="#4f46e5"/>
-  <text x="437" y="121" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">DTO만 통과</text>
-  <rect x="556" y="118" width="210" height="130" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="661" y="148" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">BoardResponse.DTO</text>
-  <text x="661" y="178" text-anchor="middle" font-size="12" fill="#334155">boardId : 1</text>
-  <text x="661" y="202" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
-  <text x="661" y="226" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
-  <line x1="310" y1="176" x2="416" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
-  <line x1="458" y1="176" x2="554" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
-</svg>
-</div>
-<div class="caption">그림 3-3. 엔티티와 DTO의 역할</div>
-<h3>3.2.2 응답 DTO 만들기</h3>
+<p>응답으로 내보낼 값만 담는 클래스를 만듭니다.</p>
 <p><code>board/BoardResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardResponse.java. 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardResponse</span><span class="w"> </span><span class="p">{</span>
 

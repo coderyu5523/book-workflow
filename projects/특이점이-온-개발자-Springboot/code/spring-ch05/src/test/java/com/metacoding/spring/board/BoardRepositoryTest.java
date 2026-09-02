@@ -115,6 +115,17 @@ public class BoardRepositoryTest {
     }
 
     @Test
+    public void findByIdLazy_test() {
+        // given
+        int id = 1;
+        // when
+        Board board = boardRepository.findById(id).get();
+        // eye
+        System.out.println("=======================");
+        System.out.println("Board ID : " + board.getId());
+    }
+
+    @Test
     public void findByIdJoinUser_test() {
         // given
         int id = 1;

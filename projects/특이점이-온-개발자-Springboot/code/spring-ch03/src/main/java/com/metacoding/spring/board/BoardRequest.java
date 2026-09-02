@@ -6,8 +6,8 @@ public class BoardRequest {
 
         public Board toEntity() {
             return Board.builder()
-                    .title(title())
-                    .content(content())
+                    .title(title)
+                    .content(content)
                     .build();
         }
     }

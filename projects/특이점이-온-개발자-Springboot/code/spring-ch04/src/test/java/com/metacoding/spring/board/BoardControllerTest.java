@@ -55,6 +55,16 @@ public class BoardControllerTest {
     }
 
     @Test
+    public void detail_notfound_test() throws Exception {
+        // when : 존재하지 않는 게시글
+        ResultActions actions = mvc.perform(get("/api/boards/999"));
+        // then : 404 + Resp 에러 포맷
+        actions.andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.msg").value("게시글을 찾을 수 없습니다"));
+    }
+
+    @Test
     public void detail_owner_test() throws Exception {
         // 작성자 토큰으로 상세 -> isOwner true
         ResultActions actions = mvc.perform(get("/api/boards/1")
@@ -66,10 +76,10 @@ public class BoardControllerTest {
     @Test
     public void save_test() throws Exception {
         BoardRequest.SaveDTO reqDTO = new BoardRequest.SaveDTO("새제목", "새내용");
-        String body = om.writeValueAsString(reqDTO);
+        String requestBody = om.writeValueAsString(reqDTO);
 
         ResultActions actions = mvc.perform(post("/api/boards")
-                .content(body).contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", ssarToken));
 
         actions.andExpect(status().isOk())
@@ -80,10 +90,10 @@ public class BoardControllerTest {
     public void save_without_token_test() throws Exception {
         // 토큰 없이 쓰기 -> 401
         BoardRequest.SaveDTO reqDTO = new BoardRequest.SaveDTO("새제목", "새내용");
-        String body = om.writeValueAsString(reqDTO);
+        String requestBody = om.writeValueAsString(reqDTO);
 
         ResultActions actions = mvc.perform(post("/api/boards")
-                .content(body).contentType(MediaType.APPLICATION_JSON));
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON));
 
         actions.andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
@@ -94,10 +104,10 @@ public class BoardControllerTest {
     public void update_test() throws Exception {
         // 작성자(ssar)가 자신의 글 수정
         BoardRequest.UpdateDTO reqDTO = new BoardRequest.UpdateDTO("수정제목", "수정내용");
-        String body = om.writeValueAsString(reqDTO);
+        String requestBody = om.writeValueAsString(reqDTO);
 
         ResultActions actions = mvc.perform(put("/api/boards/1")
-                .content(body).contentType(MediaType.APPLICATION_JSON)
+                .content(requestBody).contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", ssarToken));
 
         actions.andExpect(status().isOk())

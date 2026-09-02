@@ -19,42 +19,28 @@
     <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
     <marker id="c3f-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-
   <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 3 한눈에 보기 - 예외가 발생하면 어디서 받는가</text>
-
   <rect x="20" y="62" width="115" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="77" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
-
   <line x1="135" y1="92" x2="198" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
   <text x="166" y="82" text-anchor="middle" font-size="11" font-weight="600" fill="#475569">요청</text>
-
   <rect x="200" y="62" width="165" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="282" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
-
   <line x1="365" y1="92" x2="428" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
-
   <rect x="430" y="62" width="145" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="502" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
-
   <line x1="575" y1="92" x2="638" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
-
   <rect x="640" y="62" width="145" height="60" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
   <text x="712" y="98" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스</text>
-
   <line x1="785" y1="92" x2="848" y2="92" stroke="#475569" stroke-width="1.7" marker-end="url(#c3f-g)"/>
-
   <rect x="850" y="62" width="135" height="60" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="917" y="98" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">리포지토리</text>
-
   <path d="M712,122 V168 H300 V126" fill="none" stroke="#ff7849" stroke-width="1.9" marker-end="url(#c3f-s)"/>
   <text x="724" y="146" font-size="12" font-weight="700" fill="#c2410c">예외 발생</text>
-
   <line x1="240" y1="122" x2="240" y2="202" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
   <text x="232" y="168" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">예외 처리를 맡긴다</text>
-
   <path d="M110,238 H77 V126" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3f-i)"/>
   <text x="88" y="186" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
-
   <rect x="110" y="204" width="330" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="275" y="230" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
   <text x="275" y="251" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11.5" fill="#3730a3">@RestControllerAdvice</text>
@@ -66,10 +52,9 @@
 :::goal
 **이번 챕터가 끝나면**
 
-- 엔티티를 요청과 응답에 직접 사용하지 않고 DTO로 감싸는 이유를 설명할 수 있습니다
-- **JpaRepository**로 바꾸면 없는 데이터가 왜 **Optional**로 반환되는지 이해합니다
-- **Optional**과 `orElseThrow()`로 없는 데이터를 예외로 바꾸고, 커스텀 예외가 왜 **RuntimeException**인지 이해합니다
-- **@RestControllerAdvice**로 예외를 한 곳에서 JSON으로 바꿔, 없는 게시글도 깔끔한 404로 응답합니다
+- **DTO**로 엔티티를 그대로 내보내지 않고 요청과 응답 전용 클래스를 만들 수 있습니다
+- **JpaRepository**로 기본 조회, 저장, 삭제 메서드를 물려받고 결과를 **Optional**로 받을 수 있습니다
+- **커스텀 예외**와 **전역 예외 처리**로 실패 상황을 상태 코드에 맞는 JSON 응답으로 바꿀 수 있습니다
 :::
 
 ::::prep
@@ -102,16 +87,41 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 
 ## 3.1 요청 DTO
 
-챕터 2의 컨트롤러는 요청 바디를 **Board** 엔티티로 직접 받습니다. 클라이언트가 보낼 수 있는 값도, 그 이름도 엔티티가 정하는 상태입니다. 받을 값만 담는 클래스를 따로 두면 컨트롤러는 엔티티 대신 이 클래스로 요청을 받습니다.
+챕터 2의 컨트롤러는 요청을 **Board** 엔티티로 직접 받고, 응답할 때도 엔티티를 그대로 반환합니다. 하지만 실무에서는 엔티티를 요청이나 응답에 직접 사용하지 않습니다. 엔티티는 데이터베이스의 테이블 구조와 동일해서, 그대로 사용할 경우 응답에 불필요한 데이터가 노출되거나 테이블 구조가 변경될 때 예상치 못한 오류가 발생할 수 있기 때문입니다. 따라서 클라이언트와 주고받을 때는 필요한 데이터만 담아서 전달할 전용 객체를 사용해야 합니다.
 
-### 3.1.1 엔티티 생성자
+### 3.1.1 DTO
 
-DTO가 담은 값으로 **Board**를 만들려면 값을 받는 생성자가 필요합니다.
+계층 사이에서 데이터 전달만을 목적으로 하는 객체를 **DTO(Data Transfer Object)** 라고 합니다. 컨트롤러와 서비스처럼 서로 다른 계층 사이에서 필요한 값만 담아 전달합니다. DTO를 사용하면 요청 받을 값과 응답을 보낼 값을 필요한 형태로 정할 수 있습니다.
 
-`board/Board.java`에 아래와 같이 생성자를 추가하고 **@Builder**를 붙입니다.
+<div class="svg-figure">
+<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 Board 엔티티는 id, title, content, createdAt 네 값을 담고 있고, 오른쪽 DTO는 boardId, title, content 세 값만 담고 있다. 화살표가 왼쪽에서 오른쪽으로 이어지며 필요한 값만 담는다고 적혀 있다.">
+  <defs>
+    <marker id="c3dto-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="40" y="36" width="260" height="148" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="170" y="64" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 엔티티</text>
+  <text x="170" y="96" text-anchor="middle" font-size="12" fill="#334155">id : 1</text>
+  <text x="170" y="120" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
+  <text x="170" y="144" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
+  <text x="170" y="168" text-anchor="middle" font-size="12" fill="#334155">createdAt : 작성시각</text>
+  <line x1="304" y1="110" x2="452" y2="110" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
+  <text x="378" y="100" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">필요한 값만 담는다</text>
+  <rect x="460" y="49" width="260" height="122" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="590" y="77" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">DTO</text>
+  <text x="590" y="109" text-anchor="middle" font-size="12" fill="#334155">boardId : 1</text>
+  <text x="590" y="133" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
+  <text x="590" y="157" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
+</svg>
+</div>
+
+*그림 3-2. 엔티티와 DTO가 담는 값*
+
+### 3.1.2 엔티티 생성자
+
+JPA는 엔티티만 데이터베이스에 저장할 수 있습니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 먼저 엔티티로 변환하는 과정이 필요합니다. 이를 처리할 수 있도록 **Board** 클래스에 생성자를 추가합니다.
 
 ```java [실습 1] board/Board.java. 빌더로 생성할 수 있게
-@NoArgsConstructor
+@NoArgsConstructor // 기본 생성자 추가
 @Data
 @Entity
 @Table(name = "board_tb")
@@ -128,7 +138,7 @@ public class Board {
 }
 ```
 
-명시 생성자를 선언하면 자바가 자동으로 제공하던 기본 생성자가 사라지는데, JPA 엔티티는 기본 생성자가 있어야 하므로 **@NoArgsConstructor**도 함께 붙입니다.
+새로운 생성자를 직접 추가하면 자바가 기본으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, **@NoArgsConstructor** 어노테이션을 함께 붙여줍니다.
 
 :::tip
 **빌더 패턴(Builder Pattern)이란?**
@@ -136,9 +146,9 @@ public class Board {
 객체를 생성할 때 순서에 의존하지 않고, 어떤 필드에 어떤 값이 들어가는지 명시적으로 지정하는 패턴입니다. **@Builder**를 사용하면 복잡한 매개변수 순서를 외울 필요 없이, 내가 원하는 필드의 값을 채워 넣을 수 있습니다.
 :::
 
-### 3.1.2 요청 DTO 만들기
+### 3.1.3 요청 DTO 만들기
 
-요청으로 받을 값만 담는 클래스를 만듭니다. 계층 사이에서 데이터 전달만을 목적으로 하는 이 객체를 **DTO(Data Transfer Object)** 라고 합니다.
+요청 DTO는 클라이언트가 전송한 데이터를 담는 클래스입니다. 클라이언트가 데이터를 보내면, 스프링이 요청 바디에 담긴 값들을 이름이 일치하는 DTO 필드에 자동으로 채워줍니다. 덕분에 컨트롤러는 복잡한 변환 과정 없이 이 DTO를 매개변수로 받아 바로 사용할 수 있습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 800 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="요청 데이터와 DTO. 클라이언트가 제목과 내용을 application/json 타입으로 보내면, 그 값이 DTO의 title과 content로 자동 매핑되고, 컨트롤러가 이 DTO를 받는다.">
@@ -166,7 +176,7 @@ public class Board {
 </svg>
 </div>
 
-*그림 3-2. 요청 데이터와 DTO*
+*그림 3-3. 요청 데이터와 DTO*
 
 데이터베이스에 저장되려면 영속성 컨텍스트가 관리하는 엔티티여야 합니다. **SaveDTO**는 값만 담은 일반 객체라 영속 상태가 되지 못하므로, DTO 안에 엔티티로 바꾸는 `toEntity()`를 둡니다.
 
@@ -179,8 +189,8 @@ public class BoardRequest {
         // DTO를 엔티티로 변환한다
         public Board toEntity() {
             return Board.builder()
-                    .title(title())
-                    .content(content())
+                    .title(title)
+                    .content(content)
                     .build();
         }
     }
@@ -194,43 +204,7 @@ public class BoardRequest {
 
 ## 3.2 응답 DTO
 
-### 3.2.1 DTO가 필요한 이유
-
-챕터 2의 컨트롤러는 **Board** 엔티티를 그대로 반환하고, **@RestController**가 이를 JSON으로 변환합니다. 그래서 엔티티에 선언한 필드가 곧 응답 JSON입니다.
-
-응답으로 내보낼 값만 담는 클래스를 따로 정의하면, 컨트롤러는 엔티티 대신 이 클래스를 반환합니다. 앞에서 요청을 받을 때 만든 DTO를, 이번에는 응답을 내보낼 때도 사용합니다.
-
-<div class="svg-figure">
-<svg viewBox="0 0 900 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="엔티티와 DTO 경계. 왼쪽 내부에는 id, title, content, createdAt을 테이블 그대로 담은 Board 엔티티가 있고, 가운데 벽에 'DTO만 통과' 표지가 붙어 있다. 벽을 지나 오른쪽 응답에 담긴 것은 boardId, title, content 세 줄만 담은 작은 DTO로, createdAt은 빠지고 id는 boardId로 이름이 바뀌었다.">
-  <defs>
-    <marker id="c3dto-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-  </defs>
-  <text x="175" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">내부</text>
-  <text x="661" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">응답 (바깥)</text>
-  <rect x="40" y="46" width="270" height="256" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
-  <text x="175" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board 엔티티</text>
-  <text x="175" y="118" text-anchor="middle" font-size="12" fill="#334155">id : 1</text>
-  <text x="175" y="146" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
-  <text x="175" y="174" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
-  <text x="175" y="202" text-anchor="middle" font-size="12" fill="#334155">createdAt : 작성시각</text>
-  <text x="175" y="250" text-anchor="middle" font-size="11" fill="#6b7280">테이블에 있는 그대로입니다</text>
-  <rect x="430" y="40" width="14" height="270" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
-  <rect x="418" y="150" width="38" height="52" rx="4" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="388" y="102" width="98" height="28" rx="6" fill="#4f46e5"/>
-  <text x="437" y="121" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">DTO만 통과</text>
-  <rect x="556" y="118" width="210" height="130" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="661" y="148" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">BoardResponse.DTO</text>
-  <text x="661" y="178" text-anchor="middle" font-size="12" fill="#334155">boardId : 1</text>
-  <text x="661" y="202" text-anchor="middle" font-size="12" fill="#334155">title : 제목</text>
-  <text x="661" y="226" text-anchor="middle" font-size="12" fill="#334155">content : 내용</text>
-  <line x1="310" y1="176" x2="416" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
-  <line x1="458" y1="176" x2="554" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3dto-a)"/>
-</svg>
-</div>
-
-*그림 3-3. 엔티티와 DTO의 역할*
-
-### 3.2.2 응답 DTO 만들기
+응답으로 내보낼 값만 담는 클래스를 만듭니다.
 
 `board/BoardResponse.java`를 열어 아래와 같이 작성합니다.
 
