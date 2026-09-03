@@ -1,0 +1,121 @@
+<!doctype html><meta charset="utf-8">
+<title>그림 3-4 단계별 시안</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin-top:10px;margin-bottom:30px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px}
+h2{font-size:17px;margin:34px 0 14px;color:#0f172a}
+p{line-height:1.9;font-size:15px;margin:0 0 16px}
+.figbox{margin-top:22px}
+b{color:#0f172a}
+code{font-family:Consolas,'D2Coding',monospace;background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13.5px}
+.note{font-size:12px;color:#94a3b8;margin:0 0 26px}
+</style>
+<div class="wrap">
+<h1>그림 3-4 시안 — 설명과 그림을 번갈아</h1>
+<p class="note">3.4 도입부부터 그림 세 개까지. 뒤 그림 번호는 3-7, 3-8로 밀립니다.</p>
+
+<h2>3.4 예외 처리 추가</h2>
+
+<p>조회 결과가 비어 있으면 예외를 발생시켜 처리하기로 했습니다. 그런데 발생한 예외를 받는 곳이 없으면 서버는 500 오류를 응답합니다. 게시글이 없어서 실패한 것인지 서버가 잘못된 것인지 클라이언트는 구분할 수 없습니다.</p>
+
+<p>그래서 예외를 받는 자리를 컨트롤러 바깥에 따로 둡니다. 발생한 예외가 어디까지 전달되고 누가 받아 응답으로 바꾸는지 순서대로 보겠습니다.</p>
+
+<p>서비스가 <b>Exception404</b>를 발생시키면 그 아래 코드는 실행되지 않고 메서드가 그 자리에서 중단됩니다. 게시글을 찾지 못한 채로 응답을 만들어 반환하는 일이 일어나지 않습니다.</p>
+
+<div class="figbox">
+<svg viewBox="0 0 1000 152" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="p2g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#cbd5e1"/></marker></defs>
+  <circle cx="30" cy="18" r="13" fill="#ff7849"/><text x="30" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">1</text>
+  <text x="52" y="24" font-size="15" font-weight="700" fill="#0f172a">서비스에서 예외가 발생하고 메서드가 중단됩니다</text>
+
+  <rect x="20" y="50" width="130" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="85" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">클라이언트</text>
+  <line x1="150" y1="81" x2="192" y2="81" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#p2g)"/>
+
+  <rect x="196" y="50" width="178" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="285" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">디스패처 서블릿</text>
+  <line x1="374" y1="81" x2="416" y2="81" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#p2g)"/>
+
+  <rect x="420" y="50" width="148" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="494" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <line x1="568" y1="81" x2="610" y2="81" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#p2g)"/>
+
+  <rect x="614" y="50" width="148" height="62" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="688" y="76" text-anchor="middle" font-size="13.5" font-weight="800" fill="#c2410c">서비스</text>
+  <text x="688" y="98" text-anchor="middle" font-size="12" fill="#c2410c">Exception404 발생</text>
+  <text x="688" y="136" text-anchor="middle" font-size="11.5" fill="#c2410c">이후 코드는 실행되지 않습니다</text>
+</svg>
+<div class="cap">그림 3-4. 서비스에서 발생한 예외</div>
+</div>
+
+<p>중단된 메서드는 자신을 호출한 곳으로 예외를 그대로 넘깁니다. 서비스를 호출한 곳은 컨트롤러이고, 컨트롤러에도 <code>try-catch</code>가 없으므로 컨트롤러 역시 중단됩니다. 예외는 컨트롤러를 호출한 디스패처 서블릿까지 전달됩니다.</p>
+
+<div class="figbox">
+<svg viewBox="0 0 1000 124" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="p3s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+  <circle cx="30" cy="18" r="13" fill="#ff7849"/><text x="30" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">2</text>
+  <text x="52" y="24" font-size="15" font-weight="700" fill="#0f172a">예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달됩니다</text>
+
+  <rect x="20" y="50" width="130" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="85" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">클라이언트</text>
+
+  <rect x="196" y="50" width="178" height="62" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="285" y="76" text-anchor="middle" font-size="13.5" font-weight="800" fill="#c2410c">디스패처 서블릿</text>
+  <text x="285" y="98" text-anchor="middle" font-size="12" fill="#c2410c">예외 도착</text>
+
+  <line x1="416" y1="81" x2="378" y2="81" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#p3s)"/>
+  <text x="397" y="70" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">전달</text>
+
+  <rect x="420" y="50" width="148" height="62" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="494" y="76" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="494" y="98" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11.5" fill="#c2410c">try-catch 없음</text>
+
+  <line x1="610" y1="81" x2="572" y2="81" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#p3s)"/>
+  <text x="591" y="70" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">예외 전파</text>
+
+  <rect x="614" y="50" width="148" height="62" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="688" y="87" text-anchor="middle" font-size="13.5" font-weight="800" fill="#c2410c">서비스</text>
+</svg>
+<div class="cap">그림 3-5. 컨트롤러를 거쳐 전달되는 예외</div>
+</div>
+
+<p>디스패처 서블릿은 예외를 직접 처리하지 않고 등록된 예외 처리기에 넘깁니다. <b>@RestControllerAdvice</b>가 붙은 클래스는 애플리케이션이 시작될 때 예외 처리기로 등록됩니다. 특정 컨트롤러에 속하지 않고 모든 컨트롤러에서 발생한 예외를 받기 때문에 전역 예외 처리기라고 부릅니다.</p>
+
+<p>예외를 넘겨받은 전역 예외 처리기는 발생한 예외의 타입과 <b>@ExceptionHandler</b>에 적힌 타입을 대조해 담당 메서드를 실행합니다. 이 메서드가 반환한 <b>ResponseEntity</b>가 그대로 응답이 되어, 정상 처리와 똑같은 경로로 클라이언트에게 전달됩니다.</p>
+
+<div class="figbox">
+<svg viewBox="0 0 1000 262" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="p4i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <circle cx="30" cy="18" r="13" fill="#4f46e5"/><text x="30" y="23" text-anchor="middle" font-size="13" font-weight="700" fill="#fff">3</text>
+  <text x="52" y="24" font-size="15" font-weight="700" fill="#0f172a">전역 예외 처리기가 예외를 받아 응답으로 바꿉니다</text>
+
+  <rect x="20" y="50" width="130" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="85" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="192" y1="81" x2="152" y2="81" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#p4i)"/>
+  <text x="172" y="70" text-anchor="middle" font-size="11" font-weight="600" fill="#4f46e5">응답</text>
+
+  <rect x="196" y="50" width="178" height="62" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="285" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+
+  <rect x="420" y="50" width="148" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="494" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="614" y="50" width="148" height="62" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="688" y="87" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="240" y1="112" x2="240" y2="154" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#p4i)"/>
+  <text x="232" y="138" text-anchor="end" font-size="11" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="330" y1="158" x2="330" y2="116" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#p4i)"/>
+  <text x="340" y="138" font-size="11" font-weight="600" fill="#4f46e5">ResponseEntity 반환</text>
+
+  <rect x="196" y="158" width="250" height="64" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="321" y="185" text-anchor="middle" font-size="13.5" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="321" y="205" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11.5" fill="#3730a3">@RestControllerAdvice</text>
+  <text x="321" y="246" text-anchor="middle" font-size="11.5" fill="#3730a3">예외 타입과 일치하는 @ExceptionHandler 메서드를 실행합니다</text>
+</svg>
+<div class="cap">그림 3-6. 전역 예외 처리기가 만드는 응답</div>
+</div>
+
+</div>
