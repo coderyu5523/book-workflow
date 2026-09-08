@@ -20,19 +20,16 @@
 <body>
 <div class="container">
 <h1>챕터 4. 인증과 인가</h1>
-<p>이제 게시판은 없는 게시글 요청에 404로 답하고, 요청으로 받을 값과 응답으로 내보낼 값은 DTO가 정합니다. 그런데 오픈이는 API를 테스트하다가 새로운 문제를 발견했습니다.</p>
-<p>아무런 정보 없이 1번 게시글에 수정 요청을 보냈는데, 응답 창에 200이 돌아오며 제목과 내용이 변경되었습니다. 삭제 요청도 마찬가지였습니다.</p>
-<p class="thought">누구든 글 번호만 알면 내용을 다 바꾸고 지울 수 있네. 요청을 보낸 사람이 누구인지 묻는 절차가 전혀 없구나.</p>
-<p>오픈이는 선배를 찾아가 화면을 보여줬습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "선배님, 아무런 정보 없이 1번 게시글에 수정과 삭제 요청을 보냈는데 막히는 것 없이 200 성공이 뜹니다."</div>
-<div class="dialogue"><span class="speaker">선배</span>: "서버에 요청자를 알아볼 근거가 하나도 없어요. 아무 표식 없이 온 요청도 그대로 통과합니다. 요청에 신원을 실어 보내게 하고, 서버는 그 신원으로 두 번 걸러야 해요. 본인이 맞는지, 그리고 이 글의 주인이 맞는지."</div>
-<p>이번 챕터에서는 회원 테이블을 추가합니다. 요청이 컨트롤러로 넘어가기 전에 사용자가 누구인지 확인하고(인증), 해당 작업을 수행할 자격이 있는지(인가) 검증하는 과정을 구현해 보겠습니다.</p>
-<div class="svg-figure">
-<svg viewBox="0 0 1000 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 4 한눈에 보기. 1단계에서 클라이언트가 로그인하면 서버가 JWT를 발급한다. 2단계에서 클라이언트는 요청마다 JWT를 헤더에 담아 보내고, 필터가 토큰을 확인해 신원을 담으며 막지 않고 통과시키고, 컨트롤러는 담긴 신원을 꺼내 서비스로 넘기며, 서비스가 로그인을 확인해 신원이 없으면 401로, 작성자가 아니면 403으로 막는다.">
+<p>게시글 기능이 완성되었으니, 다음은 회원을 추가해 <strong>인증 게시판</strong>을 만듭니다.</p>
+<p>오픈이는 회원 테이블을 만들고 회원가입과 로그인 기능을 구상했습니다. 하지만 로그인이 성공한 이후가 문제였습니다. 게시글의 작성자와 요청을 보낸 사용자가 같은지를 어떻게 구분할지 떠오르지 않았습니다.</p>
+<p>오픈이는 선배를 찾아갔습니다.</p>
+<div class="dialogue"><span class="speaker">오픈이</span>: "선배님, 로그인은 아이디와 비밀번호를 확인하면 되는데, 그 이후에 들어오는 요청은 서버가 누가 보냈는지 어떻게 아나요?"</div>
+<div class="dialogue"><span class="speaker">선배</span>: "서버는 기본적으로 요청만 처리할 뿐, 누가 보냈는지는 기억하지 않아요. 그래서 로그인에 성공한 사용자에게 인증 수단을 줘야 해요. 클라이언트가 이후 요청을 보낼 때마다 이걸 함께 보내면, 서버는 그걸 보고 누군지 식별하는 거예요. 그래야 글을 수정하거나 삭제할 때 작성자 본인이 맞는지 검증할 수 있거든요."</div>
+<div class="svg-figure svg-figure--wide">
+<svg viewBox="0 0 1000 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 4 한눈에 보기. 1단계에서 클라이언트가 로그인하면 서버가 JWT를 발급한다. 2단계에서 클라이언트는 요청마다 JWT를 헤더에 담아 보내고, 필터가 JWT를 확인해 회원 정보를 담고, 컨트롤러는 담긴 회원 정보를 서비스로 전달하고, 서비스가 로그인 여부와 소유자를 확인한다.">
   <defs>
     <marker id="c4ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c4ov-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#3730a3"/></marker>
-    <marker id="c4ov-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
   </defs>
   <text x="500" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">챕터 4 한눈에 보기 - 로그인부터 소유자 검증까지</text>
   <text x="40" y="72" font-size="12" font-weight="700" fill="#475569">1단계 · 로그인</text>
@@ -52,12 +49,10 @@
   <text x="90" y="304" text-anchor="middle" font-size="11" fill="#6b7280">헤더에 JWT</text>
   <rect x="300" y="248" width="180" height="84" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="390" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">필터 (인증)</text>
-  <text x="390" y="300" text-anchor="middle" font-size="11" fill="#3730a3">토큰 확인 · 신원 담기</text>
-  <text x="390" y="318" text-anchor="middle" font-size="11" fill="#3730a3">막지 않고 통과</text>
+  <text x="390" y="300" text-anchor="middle" font-size="11" fill="#3730a3">JWT 확인 · 회원 정보 담기</text>
   <rect x="540" y="248" width="180" height="84" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="630" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="630" y="300" text-anchor="middle" font-size="11" fill="#6b7280">담긴 신원을 꺼내</text>
-  <text x="630" y="318" text-anchor="middle" font-size="11" fill="#6b7280">서비스로 전달</text>
+  <text x="630" y="300" text-anchor="middle" font-size="11" fill="#6b7280">회원 정보를 서비스로 전달</text>
   <rect x="780" y="248" width="190" height="84" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
   <text x="875" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스 (인가)</text>
   <text x="875" y="300" text-anchor="middle" font-size="11" fill="#c2410c">로그인 확인</text>
@@ -66,9 +61,6 @@
   <text x="224" y="282" text-anchor="middle" font-size="11" font-weight="600" fill="#4f46e5">3. 요청</text>
   <line x1="480" y1="290" x2="538" y2="290" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c4ov-i)"/>
   <line x1="720" y1="290" x2="778" y2="290" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c4ov-i)"/>
-  <line x1="875" y1="332" x2="875" y2="384" stroke="#ff7849" stroke-width="1.7" stroke-dasharray="4,4" marker-end="url(#c4ov-s)"/>
-  <text x="875" y="404" text-anchor="middle" font-size="11" fill="#c2410c">로그인 없이 쓰기 → 401</text>
-  <text x="875" y="424" text-anchor="middle" font-size="11" fill="#c2410c">작성자가 아닌 수정 → 403</text>
 </svg>
 </div>
 <div class="caption">그림 4-1. 챕터 4의 실습 흐름</div>
@@ -382,7 +374,7 @@
 </div>
 <h2>4.3 테이블 관계</h2>
 <p>인증 기능을 구현하려면 회원 테이블이 필요합니다. 테이블을 만들기 전에 기존 데이터와 어떤 관계를 맺을지부터 정합니다.</p>
-<p><strong>관계형 데이터베이스(RDBMS)</strong> 는 데이터를 행(Row)과 열(Column)로 구성된 테이블에 저장하며, 이러한 테이블들을 서로 연결하는 '관계'를 통해 전체 데이터를 관리합니다. 테이블이 맺을 수 있는 대표적인 관계로는 1:1, 1:N, N:M(다대다) 세 가지가 있습니다.</p>
+<p><strong>관계형 데이터베이스(RDBMS)</strong> 는 데이터를 행(Row)과 열(Column)로 구성된 테이블에 저장하며, 이러한 테이블들을 서로 연결하는 <strong>관계</strong>를 통해 전체 데이터를 관리합니다. 테이블이 맺을 수 있는 대표적인 관계로는 1:1, 1:N, N:M(다대다) 세 가지가 있습니다.</p>
 <h3>4.3.1 1:N 관계</h3>
 <p>먼저 1:N은 한쪽의 데이터 하나가 다른 쪽의 데이터 여러 개와 연결되는 구조입니다. 재고가 단 하나뿐인 제품을 판매한다고 가정해 보겠습니다. 고객 한 명은 여러 제품을 살 수 있지만, 특정 제품은 오직 한 명의 고객에게만 판매됩니다.</p>
 <div class="svg-figure">
@@ -411,10 +403,10 @@
 </svg>
 </div>
 <div class="caption">그림 4-10. 1:N 관계</div>
-<p>전체 구조로 보면 고객이 1, 제품이 N인 1:N 관계가 성립합니다. 두 테이블을 연결하려면 한쪽에 상대를 가리키는 값을 넣어 두어야 합니다. 이렇게 다른 테이블의 기본 키를 담는 컬럼을 <strong>외래 키(Foreign Key)</strong> 라고 하며, 'N(다수)' 쪽인 제품 테이블에 둡니다.</p>
+<p>전체 구조로 보면 고객이 1, 제품이 N인 1:N 관계가 성립합니다. 두 테이블을 연결하려면 한쪽에 상대를 가리키는 값을 넣어 두어야 합니다. 이렇게 다른 테이블의 기본 키를 담는 컬럼을 <strong>외래 키(Foreign Key)</strong> 라고 하며, <strong>N(다수)</strong> 쪽인 제품 테이블에 둡니다.</p>
 <div class="tip">
 <p><strong>한 칸에는 값 하나만 들어가야 합니다</strong></p>
-<p>만약 테이블을 나누지 않고 고객 테이블 하나에 모든 정보를 담는다면 어떻게 될까요? 아래 그림처럼 고객 한 명의 제품 칸에 여러 개의 데이터가 들어가게 됩니다. 이는 '하나의 칸에는 하나의 값만 있어야 한다'는 데이터베이스의 <strong>원자성(Atomicity)</strong> 원칙을 어기는 잘못된 설계입니다.</p>
+<p>만약 테이블을 나누지 않고 고객 테이블 하나에 모든 정보를 담는다면 어떻게 될까요? 아래 그림처럼 고객 한 명의 제품 칸에 여러 개의 데이터가 들어가게 됩니다. 이는 <strong>하나의 칸에는 하나의 값만 있어야 한다</strong>는 데이터베이스의 <strong>원자성(Atomicity)</strong> 원칙을 어기는 잘못된 설계입니다.</p>
 </div>
 <div class="svg-figure">
 <svg viewBox="0 0 800 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="테이블을 나누지 않은 형태. 고객 ssar 행의 제품 칸에 사과, 수박, 딸기 세 값이 한꺼번에 들어가 있다.">
@@ -484,7 +476,7 @@
 </svg>
 </div>
 <div class="caption">그림 4-13. 제품에서 본 구매 관계</div>
-<p>이처럼 양쪽 모두가 여럿과 연결되는 구조를 N:M 관계라고 합니다. 관계형 데이터베이스에서는 N:M 관계를 직접 연결할 수 없으므로, 사이에 '중간 테이블'을 만들어 두 개의 1:N 관계로 쪼개야 합니다. '구매'라는 중간 테이블을 두면, '고객 한 명이 여러 번 구매하는 구조(1:N)'와 '제품 하나가 여러 고객에게 구매되는 구조(1:N)'로 나누어 데이터를 올바르게 담을 수 있습니다.</p>
+<p>이처럼 양쪽 모두가 여럿과 연결되는 구조를 N:M 관계라고 합니다. 관계형 데이터베이스에서는 N:M 관계를 직접 연결할 수 없으므로, 사이에 <strong>중간 테이블</strong>을 만들어 두 개의 1:N 관계로 쪼개야 합니다. <strong>구매</strong>라는 중간 테이블을 두면, **고객 한 명이 여러 번 구매하는 구조(1:N)**와 **제품 하나가 여러 고객에게 구매되는 구조(1:N)**로 나누어 데이터를 올바르게 담을 수 있습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 800 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="중간에 구매 테이블을 둔 형태. 고객 테이블과 구매 테이블이 1대 N, 제품 테이블과 구매 테이블이 1대 N으로 이어져 N대 M 관계가 1대 N 두 개로 나뉜다.">
   <defs>
@@ -522,7 +514,7 @@
 </svg>
 </div>
 <div class="caption">그림 4-14. 구매 테이블로 나눈 관계</div>
-<p>우리가 추가하려는 게시판의 회원과 게시글 역시 대표적인 1:N 관계입니다. 회원 한 명이 게시글을 여러 개 작성할 수 있고, 하나의 게시글은 한 명의 회원에게만 속하기 때문입니다. 따라서 외래 키는 'N'에 해당하는 게시글 테이블에 둡니다.</p>
+<p>우리가 추가하려는 게시판의 회원과 게시글 역시 대표적인 1:N 관계입니다. 회원 한 명이 게시글을 여러 개 작성할 수 있고, 하나의 게시글은 한 명의 회원에게만 속하기 때문입니다. 따라서 외래 키는 <strong>N</strong>에 해당하는 게시글 테이블에 둡니다.</p>
 <h2>4.4 테이블 만들기</h2>
 <h3>4.4.1 회원 엔티티</h3>
 <p>회원 테이블을 만들려면 엔티티가 필요합니다.</p>

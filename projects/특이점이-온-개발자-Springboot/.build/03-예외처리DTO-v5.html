@@ -21,9 +21,9 @@
 <div class="container">
 <h1>챕터 3. 예외 처리와 DTO</h1>
 <p>게시판의 기본 기능이 완료되었습니다. 오픈이는 뿌듯한 마음으로 선배에게 화면을 보여줬습니다.</p>
-<p>선배는 목록과 상세 조회를 한 번씩 눌러보더니, 주소창 끝에 있는 게시글 번호를 슬쩍 '999'로 바꿨습니다.</p>
+<p>선배는 목록과 상세 조회를 한 번씩 눌러보더니, 주소창 끝에 있는 게시글 번호를 슬쩍 <strong>999</strong>로 바꿨습니다.</p>
 <div class="dialogue"><span class="speaker">선배</span>: "없는 번호예요. 이런 예외 상황도 테스트해 봤어요?"</div>
-<p>엔터를 치자 응답 창에는 여전히 '200 성공'이 떴습니다. 하지만 응답 바디는 비어 있었습니다.</p>
+<p>엔터를 치자 응답 창에는 여전히 <strong>200 성공</strong>이 떴습니다. 하지만 응답 바디는 비어 있었습니다.</p>
 <p class="thought">게시글이 없는 번호인데 왜 응답이 성공으로 나오지?</p>
 <div class="dialogue"><span class="speaker">선배</span>: "데이터베이스에서 게시글을 못 찾으면 빈 값으로 응답이 오는데, 이 빈 값을 그대로 응답에 담아버리니 성공으로 응답이 뜨는 거에요. 만약 없는 게시글을 수정이나 삭제하려고 한다면 오류가 발생하겠죠. 서버에서는 이런 예외(Exception)가 발생했을 경우를 위해 미리 예외 처리를 해야 해요. 그래야 어떤 사유로 요청이 실패했는지 클라이언트에게 명확히 알려줄 수 있어요."</div>
 <div class="svg-figure">
@@ -351,33 +351,33 @@
 <tbody>
 <tr>
 <td>400</td>
-<td>요청이 잘못됨</td>
-<td>이미 쓰는 유저네임으로 가입</td>
+<td>처리할 수 없는 요청 값</td>
+<td>제목 없이 게시글 작성</td>
 </tr>
 <tr>
 <td>401</td>
-<td>인증되지 않음</td>
-<td>로그인 없이 접근</td>
+<td>인증하지 않은 요청</td>
+<td>로그인하지 않고 글쓰기</td>
 </tr>
 <tr>
 <td>403</td>
-<td>권한이 없음</td>
-<td>작성자가 아닌 사람의 게시글 수정</td>
+<td>인증했지만 권한이 없는 요청</td>
+<td>다른 사람이 쓴 게시글 수정</td>
 </tr>
 <tr>
 <td>404</td>
-<td>자원이 없음</td>
+<td>찾을 수 없는 자원</td>
 <td>없는 게시글 조회</td>
 </tr>
 <tr>
 <td>500</td>
 <td>서버 내부 오류</td>
-<td>처리하지 못한 예외</td>
+<td>앞의 네 가지에 해당하지 않는 나머지 예외</td>
 </tr>
 </tbody>
 </table>
 <h3>3.4.3 전역 예외 처리</h3>
-<p>이제 앞에서 본 전역 예외 처리기를 만들어 보겠습니다. <strong>@RestControllerAdvice</strong> 어노테이션이 지정된 클래스는 어느 컨트롤러에서 발생한 예외든 한 곳에서 받습니다. 서비스는 예외를 발생시키기만 하고, 응답으로 바꾸는 일은 이 클래스가 담당합니다.</p>
+<p>이제 앞에서 살펴본 전역 예외 처리기를 직접 만들어 보겠습니다. 클래스에 <strong>@RestControllerAdvice</strong>를 적용하면 그 클래스가 전역 예외 처리기가 됩니다. 이후 예외가 발생하면 디스패처 서블릿이 이 클래스 내부에서 예외 타입에 맞는 처리 메서드를 찾아 자동으로 실행합니다.</p>
 <p><code>core/handler/GlobalExceptionHandler.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span><span class="w"> </span><span class="p">{</span>
@@ -414,7 +414,6 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">fail</span><span class="p">(</span><span class="n">HttpStatus</span><span class="p">.</span><span class="na">INTERNAL_SERVER_ERROR</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;서버 오류가 발생했습니다&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>서비스 계층에서 예외가 발생해 <strong>Exception400</strong>을 던지면, 이 예외는 실패 사유와 함께 전역 예외 처리기로 전달됩니다. 그러면 <strong>@ExceptionHandler</strong>에 <strong>Exception400</strong>을 지정한 메서드가 이를 받아, 상태 코드 400과 실패 사유가 포함된 응답을 생성합니다.</p>
 <h2>3.5 서비스와 컨트롤러에 적용</h2>
 <h3>3.5.1 서비스</h3>
 <p>이제 서비스에서 예외 처리를 해보겠습니다.</p>
@@ -454,9 +453,9 @@
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>게시글을 찾지 못했다는 사실은 리포지토리가 반환한 <strong>Optional</strong>에 담겨 옵니다. 내부에 담긴 값을 꺼낼 때는 <code>orElseThrow()</code> 메서드를 사용합니다. 이 메서드는 값이 존재하면 해당 값을 그대로 반환하고, 비어 있으면 인자로 전달한 예외를 발생시킵니다.</p>
+<p>리포지토리가 반환한 <strong>Optional</strong>에서 값을 꺼낼 때는 <code>orElseThrow()</code>를 사용합니다. 이 메서드는 값이 있으면 게시글을 그대로 반환하고, 비어 있으면 인자로 받은 예외를 발생시킵니다.</p>
 <h3>3.5.2 컨트롤러</h3>
-<p>컨트롤러는 요청으로 받는 값과 서비스에서 전달받는 값이 모두 DTO 타입으로 바뀝니다.</p>
+<p>컨트롤러도 엔티티 대신 DTO로 값을 주고받도록 변경합니다.</p>
 <p><code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> board/BoardController.java. 요청·응답 타입을 DTO로</div><span class="w">    </span><span class="nd">@GetMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
@@ -488,33 +487,27 @@
 <span class="w">        </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글삭제</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>주소와 HTTP 메서드는 앞 챕터와 같습니다. 게시글 상세 API를 호출하면 응답에는 DTO에 담긴 세 값만 담깁니다.</p>
+<p>이제 프로젝트를 실행해 결과를 확인해 보겠습니다. 먼저 1번 게시글을 조회하면 정상적인 데이터를 응답받습니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
 <!-- [CAPTURE NEEDED: 01_board-detail-dto
   path: assets/CH3/terminal/01_board-detail-dto.png
   desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH3\terminal\01_board-detail-dto.png" alt="" /><div class="caption">그림 3-7. 상세 조회 응답</div></div>
-<p>앞에서 만든 전역 예외 처리기가 실제로 404를 돌려주는지, 없는 999번을 조회해 확인합니다.</p>
+<p>다음으로 예외를 발생시켜 보겠습니다. 더미 데이터에 없는 999번 게시글을 조회해 응답 결과를 확인합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 없는 게시글 다시 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/999</span></div>
-<p>빈 값이 담긴 성공 대신 404 응답을 받습니다.</p>
 <!-- [CAPTURE NEEDED: 02_404-response
   path: assets/CH3/terminal/02_404-response.png
   desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH3\terminal\02_404-response.png" alt="" /><div class="caption">그림 3-8. 404 응답</div></div>
-<p>오픈이는 목록 API를 받아 간 동료를 다시 불렀습니다. 키보드에서 손을 뗀 사무실이 잠깐 조용해졌습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "지난번에 없는 번호 넣으면 어떻게 되냐고 물었잖아요. 이제 없으면 없다고 딱 나와요."<br></div>
-<div class="dialogue"><span class="speaker">동료</span>: "아, 999번 호출해 볼게요. 없다고 딱 나오네요. 저번엔 성공이라면서 아무것도 없더니."</div>
-<p class="thought">여기까진 됐다.</p>
-<p>다섯 곳을 정리했지만, 오픈이는 화면을 내려다보다 한 가지가 걸렸습니다. 지금은 로그인 화면도, 게시글 주인을 확인하는 절차도 없습니다. 999번 하나 못 찾는 것은 막아 놨는데, 정작 누구나 게시글을 고치고 지울 수 있는 서버였습니다.</p>
-<p class="thought">없는 게시글은 걸렀는데, 문은 여전히 다 열려 있잖아.</p>
-<p>다음 챕터에서는 인증 기능을 추가해, 작성자 본인만 자기 게시글을 관리할 수 있게 합니다.</p>
+<p>챕터 2에서는 엔티티를 직접 요청과 응답에 사용했지만, 이번 챕터에서는 DTO를 활용해 데이터를 전달하는 구조로 개선했습니다. 또한 예외 처리를 추가하여, 처리 과정에서 문제가 발생하더라도 클라이언트가 상태 코드와 실패 사유를 응답받을 수 있습니다.</p>
+<p>다음 챕터에서는 회원 엔티티를 추가해 게시글과 작성자를 연결하고, 이를 바탕으로 인증과 인가 기능을 구현해 보겠습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li><strong>엔티티를 요청과 응답에 직접 사용하지 않고 DTO로 주고받습니다.</strong> 받을 값과 내보낼 값, 그 이름을 엔티티가 아니라 DTO에서 정합니다.</li>
-<li><strong>없는 값은 <code>Optional</code>에 담고 <code>orElseThrow</code>로 예외를 발생시킵니다.</strong> 커스텀 예외는 <strong>RuntimeException</strong>을 상속해, 발생시키는 일과 받는 일을 나눕니다. 발생한 예외는 <strong>@RestControllerAdvice</strong>가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
+<li><strong>엔티티를 요청과 응답에 직접 사용하지 않고 DTO로 주고받습니다.</strong> 테이블 구조가 바뀌어도 클라이언트와 주고받는 형식은 영향을 받지 않습니다.</li>
+<li><strong>요청이 실패하면 상태 코드와 사유를 담아 응답합니다.</strong> 서비스가 예외를 발생시키면 전역 예외 처리기가 한 곳에서 받아 상태 코드에 맞는 JSON으로 바꿉니다.</li>
 </ul>
 </div>
 
