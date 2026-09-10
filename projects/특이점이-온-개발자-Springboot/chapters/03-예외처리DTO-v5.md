@@ -251,11 +251,11 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 | 메서드 | 하는 일 |
 |---|---|
-| `save(엔티티)` | 저장하고 저장된 엔티티를 반환합니다 |
-| `findById(기본 키)` | 기본 키로 한 건을 조회해 **Optional**에 담아 반환합니다 |
-| `findAll()` | 전체를 **List**로 반환합니다 |
-| `delete(엔티티)` | 삭제합니다 |
-| `findBy필드명(값)` | 직접 선언합니다. `findBy` 뒤 필드 이름을 보고 select 문이 생성됩니다 |
+| **save(엔티티)** | 저장하고 저장된 엔티티를 반환합니다 |
+| **findById(기본 키)** | 기본 키로 한 건을 조회해 **Optional**에 담아 반환합니다 |
+| **findAll()** | 전체를 **List**로 반환합니다 |
+| **delete(엔티티)** | 삭제합니다 |
+| **findBy필드명(값)** | 직접 선언합니다. **findBy** 뒤 필드 이름을 보고 select 문이 생성됩니다 |
 
 ## 3.4 예외 처리 추가
 

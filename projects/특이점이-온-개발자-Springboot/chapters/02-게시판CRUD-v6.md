@@ -215,11 +215,11 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 
 | 규칙 | 권장 | 피할 것 |
 |------|------|---------|
-| 주소의 영어는 소문자로 쓴다 | `/boards` | `/Boards` |
-| 주소에 행위를 넣지 않고 메서드로 표현한다 | `PUT /boards/1` | `/boards/1/put` |
-| 자원은 단수형이 아닌 복수형으로 쓴다 | `/boards/1` | `/board/1` |
-| 긴 단어는 하이픈으로 구분한다 | `/check-username` | `/check_username` |
-| 확장자를 붙이지 않고 헤더에 타입을 담는다 | `/users` + 헤더 `application/json` | `/users.json` |
+| 주소의 영어는 소문자로 쓴다 | **/boards** | **/Boards** |
+| 주소에 행위를 넣지 않고 메서드로 표현한다 | **PUT /boards/1** | **/boards/1/put** |
+| 자원은 단수형이 아닌 복수형으로 쓴다 | **/boards/1** | **/board/1** |
+| 긴 단어는 하이픈으로 구분한다 | **/check-username** | **/check_username** |
+| 확장자를 붙이지 않고 헤더에 타입을 담는다 | **/users** + 헤더 **application/json** | **/users.json** |
 
 ### 2.1.4 요청과 응답
 
