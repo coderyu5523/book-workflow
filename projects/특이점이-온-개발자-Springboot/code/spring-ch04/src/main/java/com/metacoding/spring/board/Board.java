@@ -23,7 +23,6 @@ public class Board {
     private LocalDateTime createdAt;
 
     @ManyToOne // 다대일 관계 설정 (기본 전략은 즉시 로딩)
-    @JoinColumn(name = "user_id") // 외래 키지정
     private User user; // 객체를 직접 참조
 
     @Builder

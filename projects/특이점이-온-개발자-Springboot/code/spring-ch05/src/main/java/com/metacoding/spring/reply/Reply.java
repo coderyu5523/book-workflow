@@ -21,11 +21,9 @@ public class Reply {
     private String comment;
 
     @ManyToOne(fetch = FetchType.LAZY) // 외래키 필드
-    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY) // 외래키 필드
-    @JoinColumn(name = "board_id")
     private Board board;
 
     @CreationTimestamp

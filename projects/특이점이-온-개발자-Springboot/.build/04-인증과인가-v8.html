@@ -87,11 +87,10 @@
 │   │   ├── BoardResponse.java                   # [작성] 상세 응답에 작성자 · 본인 여부
 │   │   └── BoardService.java                    # [작성] 로그인 확인 · 소유자 검증
 │   ├── core/
-│   │   ├── config/WebMvcConfig.java             # [참고] CORS 설정
-│   │   ├── filter/JwtAuthenticationFilter.java  # [작성] 인증 필터
+│   │   ├── filter/JwtAuthenticationFilter.java  # [참고] 인증 필터
 │   │   └── util/
-│   │       ├── JwtProvider.java                 # [작성] 토큰 추출·유저 복원
-│   │       └── JwtUtil.java                     # [작성] JWT 발급·검증
+│   │       ├── JwtProvider.java                 # [참고] 토큰 추출·유저 복원
+│   │       └── JwtUtil.java                     # [참고] JWT 발급·검증
 │   └── user/
 │       ├── User.java                            # [작성] 회원 엔티티
 │       ├── UserController.java                  # [작성] /join, /login
@@ -99,7 +98,7 @@
 │       ├── UserRequest.java                     # [작성] 가입·로그인 요청 DTO
 │       ├── UserResponse.java                    # [작성] 가입 응답 DTO
 │       └── UserService.java                     # [작성] 회원가입·로그인(JWT)
-└── resources/db/data.sql                        # [작성] 회원·게시글 더미 데이터</div>
+└── resources/db/data.sql                        # [참고] 회원·게시글 더미 데이터</div>
 <p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>4.1 인증과 인가</h2>
@@ -477,7 +476,7 @@
 </svg>
 </div>
 <div class="caption">그림 4-12. 구매 테이블로 나눈 관계</div>
-<p>우리가 추가하려는 게시판의 회원과 게시글 역시 대표적인 1:N 관계입니다. 회원 한 명이 게시글을 여러 개 작성할 수 있고, 하나의 게시글은 한 명의 회원에게만 속하기 때문입니다. 따라서 외래 키는 <strong>N</strong>에 해당하는 게시글 테이블에 둡니다.</p>
+<p>회원 테이블과 게시글 테이블의 관계로 살펴보면, 회원 한 명은 여러 개의 게시글을 작성할 수 있고, 하나의 게시글은 작성자가 한 명입니다. 따라서 <strong>회원 테이블과 게시글 테이블은 1:N 관계</strong>이고, <strong>N</strong>에 해당하는 게시글에 외래 키를 추가해야 합니다.</p>
 <h2>4.4 테이블 만들기</h2>
 <h3>4.4.1 회원 엔티티</h3>
 <p>이제 회원 테이블 추가를 위한 엔티티를 만들어 보겠습니다.</p>
@@ -511,10 +510,9 @@
 <span class="p">}</span></div>
 <p><code>username</code>에 붙은 <code>@Column(unique = true)</code>는 <strong>user_tb</strong>를 생성할 때 <code>username</code> 컬럼에 유니크 제약을 추가합니다.</p>
 <h3>4.4.2 게시글에 작성자 연결</h3>
-<p>회원 테이블을 만들었으니 이제 게시글 테이블에 두 테이블을 연결할 외래 키가 필요합니다.</p>
+<p>회원 테이블을 만들었으니 이제 게시글 테이블에 회원 테이블을 연결할 외래 키가 필요합니다. 스프링에서는 외래 키 추가를 위해 <strong>@ManyToOne</strong> 어노테이션을 사용합니다.</p>
 <p><code>board/Board.java</code>를 열어 작성자 정보를 담을 필드를 아래와 같이 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/Board.java. 작성자 연관관계 추가</div><span class="w">    </span><span class="nd">@ManyToOne</span>
-<span class="w">    </span><span class="nd">@JoinColumn</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;user_id&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span>
 
 <span class="w">    </span><span class="nd">@Builder</span>
@@ -524,13 +522,16 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">title</span><span class="p">;</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">content</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">content</span><span class="p">;</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
-<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">;</span>
+<span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">;</span><span class="w"> </span><span class="c1">// 회원 필드 추가</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>외래 키는 다수 쪽인 게시글에 위치하므로 <strong>Board</strong>에 <strong>@ManyToOne</strong>을 붙입니다. <code>@JoinColumn(name = &quot;user_id&quot;)</code>은 <strong>board_tb</strong>에 작성자의 기본 키를 담을 <code>user_id</code> 컬럼을 생성합니다.</p>
+<p>데이터베이스에서는 참조할 테이블의 기본 키를 외래 키로 사용합니다. 하지만 JPA에서는 <strong>User</strong> 같은 엔티티를 필드로 선언할 수 있습니다. 이렇게 하면 연관된 회원 데이터를 함께 조회할 수 있다는 장점이 있습니다.</p>
+<div class="tip">
+<p><strong>외래 키 컬럼명 생성 규칙</strong></p>
+<p>JPA가 만드는 외래 키 컬럼명은 <strong>게시글 엔티티에 추가한 필드명(user)</strong> 과 <strong>회원 테이블의 기본 키(id)</strong> 를 언더스코어로 합친 <strong>user_id</strong>입니다. 만약 컬럼명을 명시하고 싶다면 JoinColumn 어노테이션을 사용해 원하는 컬럼명을 정할 수도 있습니다.</p>
+</div>
 <h3>4.4.3 더미 데이터</h3>
-<p>회원 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터도 함께 변경합니다.</p>
-<p><code>resources/db/data.sql</code>을 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge">실습 3</span> resources/db/data.sql. 회원과 게시글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">user_tb</span><span class="w"> </span><span class="p">(</span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span>
+<p>더미 데이터에 회원을 추가하고, 게시글에는 외래 키 값을 추가합니다.</p>
+<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge reference">참고</span> resources/db/data.sql. 회원과 게시글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">user_tb</span><span class="w"> </span><span class="p">(</span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;ssar&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;1234&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;ssar@metacoding.com&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">user_tb</span><span class="w"> </span><span class="p">(</span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">email</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;cos&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;1234&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;cos@metacoding.com&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span>
@@ -539,9 +540,8 @@
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">user_id</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span></div>
-<p>회원 두 명을 먼저 등록하고 게시글 두 건을 등록합니다. 게시글의 <code>user_id</code>는 <strong>@JoinColumn</strong>으로 생성한 외래 키 컬럼이며, 값이 둘 다 1이므로 1번 회원 ssar이 게시글 두 개를 작성한 상태가 됩니다.</p>
 <h2>4.5 core 폴더 구현</h2>
-<p>로그인한 사용자를 식별하려면 토큰을 발급하고, 요청에 실려 온 토큰을 검증하는 코드가 필요합니다. <code>core</code> 폴더에 두는 인증 관련 클래스는 다음과 같습니다.</p>
+<p>로그인한 사용자를 식별하려면 토큰을 발급하고, 이후 요청에 포함된 토큰을 검증하는 로직이 필요합니다. <code>core</code> 폴더에 있는 인증 관련 클래스는 다음과 같습니다.</p>
 <table>
 <thead>
 <tr>
@@ -562,16 +562,11 @@
 <td><strong>core/filter/JwtAuthenticationFilter.java</strong></td>
 <td>요청마다 회원 정보를 담아 둡니다</td>
 </tr>
-<tr>
-<td><strong>core/config/WebMvcConfig.java</strong></td>
-<td>CORS 설정입니다</td>
-</tr>
 </tbody>
 </table>
 <h3>4.5.1 JwtUtil</h3>
 <p>토큰 생성과 검증에는 <code>build.gradle</code>에 추가해 둔 <code>com.auth0:java-jwt</code> 라이브러리를 사용합니다.</p>
-<p><code>core/util/JwtUtil.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> core/util/JwtUtil.java. JWT 발급과 검증</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtUtil</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/util/JwtUtil.java. JWT 발급과 검증</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtUtil</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">HEADER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Authorization&quot;</span><span class="p">;</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">TOKEN_PREFIX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Bearer &quot;</span><span class="p">;</span>
@@ -601,8 +596,7 @@
 <p><code>create()</code>는 유저 정보를 페이로드에 담고 <code>SECRET</code>으로 서명해 토큰 한 줄을 생성합니다. <code>verify()</code>는 반대로 서명의 유효 여부를 확인한 뒤 페이로드에서 회원 정보를 꺼냅니다. 서명이 일치하지 않으면 예외가 발생합니다.</p>
 <h3>4.5.2 JwtProvider</h3>
 <p><strong>JwtProvider</strong>는 요청 헤더에서 토큰을 꺼낸 뒤 <strong>JwtUtil</strong>로 회원 정보를 복원합니다.</p>
-<p><code>core/util/JwtProvider.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtProvider</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="c1">// 1. 헤더에서 &quot;Bearer &quot; 접두어를 떼고 토큰만 꺼낸다</span>
@@ -627,8 +621,7 @@
 <h3>4.5.3 인증 필터</h3>
 <p><strong>필터(Filter)</strong> 는 요청이 컨트롤러에 도달하기 전에 먼저 거쳐 가는 지점입니다. 스프링에서는 <strong>OncePerRequestFilter</strong>를 상속하여 요청 한 건마다 한 번씩 실행되는 필터를 구현합니다.</p>
 <p><strong>JwtAuthenticationFilter</strong>는 이 지점에서 요청을 가로채 <strong>JwtProvider</strong>로 회원 정보를 복원한 뒤 요청에 담아 둡니다.</p>
-<p><code>core/filter/JwtAuthenticationFilter.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtAuthenticationFilter</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">OncePerRequestFilter</span><span class="w"> </span><span class="p">{</span>
 
@@ -657,17 +650,17 @@
 <h3>4.6.1 리포지토리</h3>
 <p>가입 요청을 처리하려면 동일한 유저네임의 존재 여부를 먼저 확인해야 합니다.</p>
 <p><code>user/UserRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> user/UserRepository.java. 유저네임으로 조회</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">UserRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> user/UserRepository.java. 유저네임으로 조회</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">UserRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">User</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByUsername</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">);</span>
 <span class="p">}</span></div>
 <div class="tip">
-<p><strong>메서드 이름이 곧 조회 조건입니다</strong></p>
+<p><strong>메서드 이름과 조회 조건</strong></p>
 <p>findBy 뒤에 엔티티의 필드 이름을 붙이면 Spring Data JPA가 select 문을 생성합니다. <code>findByUsername()</code>은 <code>username</code>이 일치하는 회원을 조회하며, 매개변수로 받은 값이 그 조건에 들어갑니다.</p>
 </div>
 <h3>4.6.2 요청 DTO</h3>
 <p><code>user/UserRequest.java</code>를 열어 회원가입 요청을 받을 DTO를 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> user/UserRequest.java. 회원가입 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserRequest</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> user/UserRequest.java. 회원가입 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserRequest</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">email</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 
@@ -684,7 +677,7 @@
 <h3>4.6.3 응답 DTO</h3>
 <p>회원 정보를 응답하는 공통 DTO로, 비밀번호를 제외한 컬럼을 담습니다.</p>
 <p><code>user/UserResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> user/UserResponse.java. 회원가입 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserResponse</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> user/UserResponse.java. 회원가입 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserResponse</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DTO</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">userId</span><span class="p">,</span>
@@ -708,7 +701,7 @@
 <h3>4.6.4 서비스</h3>
 <p>앞에서 만든 리포지토리와 DTO를 사용해 회원가입 메서드를 구현합니다.</p>
 <p><code>user/UserService.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> user/UserService.java. 회원가입</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> user/UserService.java. 회원가입</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserService</span><span class="w"> </span><span class="p">{</span>
 
@@ -726,7 +719,7 @@
 <h3>4.6.5 컨트롤러</h3>
 <p>컨트롤러는 가입 요청을 받아 서비스로 전달합니다.</p>
 <p><code>user/UserController.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> user/UserController.java. 회원가입 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> user/UserController.java. 회원가입 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserController</span><span class="w"> </span><span class="p">{</span>
 
@@ -755,12 +748,12 @@
 <p>로그인은 유저네임과 비밀번호를 받아 회원 일치 여부를 확인하고, 일치하면 토큰을 응답합니다.</p>
 <h3>4.7.1 요청 DTO</h3>
 <p>로그인 요청을 담을 DTO를 <code>user/UserRequest.java</code>에 아래와 같이 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> user/UserRequest.java. 로그인 요청 DTO</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">LoginDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> user/UserRequest.java. 로그인 요청 DTO</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">LoginDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.7.2 서비스</h3>
 <p>전달받은 유저네임과 비밀번호로 회원을 조회해 비밀번호 일치 여부를 확인합니다.</p>
 <p><code>user/UserService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> user/UserService.java. 로그인</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">로그인</span><span class="p">(</span><span class="n">UserRequest</span><span class="p">.</span><span class="na">LoginDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> user/UserService.java. 로그인</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="nf">로그인</span><span class="p">(</span><span class="n">UserRequest</span><span class="p">.</span><span class="na">LoginDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userRepository</span><span class="p">.</span><span class="na">findByUsername</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">username</span><span class="p">())</span>
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception401</span><span class="p">(</span><span class="s">&quot;유저네임 또는 비밀번호가 일치하지 않습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">user</span><span class="p">.</span><span class="na">getPassword</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">password</span><span class="p">()))</span><span class="w"> </span><span class="p">{</span>
@@ -772,7 +765,7 @@
 <h3>4.7.3 컨트롤러</h3>
 <p>컨트롤러는 서비스가 반환한 토큰 문자열을 응답 바디에 담아 전달합니다.</p>
 <p><code>user/UserController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> user/UserController.java. 로그인 엔드포인트</div><span class="w">    </span><span class="nd">@PostMapping</span><span class="p">(</span><span class="s">&quot;/login&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> user/UserController.java. 로그인 엔드포인트</div><span class="w">    </span><span class="nd">@PostMapping</span><span class="p">(</span><span class="s">&quot;/login&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">UserRequest</span><span class="p">.</span><span class="na">LoginDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">accessToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userService</span><span class="p">.</span><span class="na">로그인</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">accessToken</span><span class="p">);</span>
@@ -824,12 +817,12 @@
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span></div>
 <h3>4.8.2 리포지토리</h3>
 <p><code>board/BoardRepository.java</code>를 열어 <strong>@Query</strong>로 작성자를 함께 조회하는 메서드를 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardRepository.java. 작성자를 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user where b.id = :boardId&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> board/BoardRepository.java. 작성자를 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUser</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
 <p><code>findBy</code> 규칙으로는 조인 방식까지 지정할 수 없으므로, JPQL을 직접 적을 때는 <strong>@Query</strong>를 사용합니다. <strong>@Param</strong>은 메서드의 매개변수를 JPQL의 <code>:boardId</code> 자리에 연결합니다.</p>
 <h3>4.8.3 응답 DTO</h3>
 <p><code>board/BoardResponse.java</code>를 열어 <strong>DetailDTO</strong>에 작성자의 아이디와 유저네임, 그리고 본인 여부를 알려 주는 값을 아래와 같이 추가합니다. 비밀번호처럼 노출되면 안 되는 값은 응답에 담지 않습니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardResponse.java. 상세 응답에 작성자와 본인 여부 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> board/BoardResponse.java. 상세 응답에 작성자와 본인 여부 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">,</span>
@@ -851,7 +844,7 @@
 <p><code>isOwner</code>는 요청자가 이 게시글의 작성자인지를 참과 거짓으로 나타냅니다. 요청자의 아이디와 작성자의 아이디가 일치하면 true이고, 로그인하지 않아 <code>loginUser</code>가 null이면 false입니다.</p>
 <h3>4.8.4 서비스</h3>
 <p>작성자를 함께 조회하도록 <code>board/BoardService.java</code>의 <code>게시글상세()</code>를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardService.java. 상세 조회에 fetch 조인과 본인 여부</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> board/BoardService.java. 상세 조회에 fetch 조인과 본인 여부</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findByIdJoinUser</span><span class="p">(</span><span class="n">boardId</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
@@ -859,7 +852,7 @@
 <h3>4.8.5 컨트롤러</h3>
 <p>요청자 정보는 필터가 담아 둔 유저에서 꺼냅니다.</p>
 <p><code>board/BoardController.java</code>의 상세 메서드를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardController.java. 상세 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardController.java. 상세 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 필터가 담아 둔 유저를 꺼낸다 (비로그인이면 null)</span>
@@ -879,7 +872,7 @@
 <p>게시글을 새로 작성할 때는 로그인한 사용자를 해당 게시글의 작성자로 연결해 저장합니다.</p>
 <h3>4.9.1 요청 DTO</h3>
 <p><code>board/BoardRequest.java</code>를 열어 <code>toEntity()</code>에 <code>user</code>를 아래와 같이 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 19</span> board/BoardRequest.java. 작성자를 연결하는 toEntity</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">(</span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardRequest.java. 작성자를 연결하는 toEntity</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">(</span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
 <span class="w">                </span><span class="p">.</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
@@ -888,7 +881,7 @@
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.9.2 서비스</h3>
 <p>요청 DTO를 엔티티로 변환해 저장하도록 <code>board/BoardService.java</code>의 <code>게시글쓰기()</code>를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 20</span> board/BoardService.java. 로그인을 확인하고 작성자를 담아 저장</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardService.java. 로그인을 확인하고 작성자를 담아 저장</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글쓰기</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loginUser</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -901,7 +894,7 @@
 <h3>4.9.3 컨트롤러</h3>
 <p>컨트롤러는 필터가 담아 둔 유저를 꺼내 서비스로 전달합니다.</p>
 <p><code>board/BoardController.java</code>의 쓰기 메서드를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 21</span> board/BoardController.java. 쓰기 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PostMapping</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardController.java. 쓰기 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PostMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 필터가 담아 둔 유저를 꺼낸다 (비로그인이면 null)</span>
@@ -926,7 +919,7 @@
 <h3>4.10.1 서비스</h3>
 <p>글쓰기와 마찬가지로 먼저 로그인 여부를 확인합니다. 이어서 작성자 일치 여부를 검증하는데, 작성자 정보는 게시글을 조회해야 알 수 있으므로 이 과정 역시 서비스에서 처리합니다.</p>
 <p><code>board/BoardService.java</code>의 <code>게시글수정()</code>을 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 22</span> board/BoardService.java. 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardService.java. 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글수정</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">UpdateDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
@@ -946,7 +939,7 @@
 <p>더티체킹이 트랜잭션이 끝나는 시점에 수정을 반영합니다.</p>
 <h3>4.10.2 컨트롤러</h3>
 <p><code>board/BoardController.java</code>의 수정 메서드를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 23</span> board/BoardController.java. 수정 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PutMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 19</span> board/BoardController.java. 수정 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PutMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">UpdateDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -971,7 +964,7 @@
 <p>삭제도 대상 게시글의 작성자와 요청자의 일치 여부를 검증합니다. 검증을 통과하면 게시글을 삭제하고, 반환할 데이터가 없으므로 성공만 응답합니다.</p>
 <h3>4.11.1 서비스</h3>
 <p><code>board/BoardService.java</code>의 <code>게시글삭제()</code>를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 24</span> board/BoardService.java. 삭제의 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 20</span> board/BoardService.java. 삭제의 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">게시글삭제</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loginUser</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -987,7 +980,7 @@
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.11.2 컨트롤러</h3>
 <p><code>board/BoardController.java</code>의 삭제 메서드를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 25</span> board/BoardController.java. 삭제 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 21</span> board/BoardController.java. 삭제 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">deleteById</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getAttribute</span><span class="p">(</span><span class="s">&quot;loginUser&quot;</span><span class="p">);</span>

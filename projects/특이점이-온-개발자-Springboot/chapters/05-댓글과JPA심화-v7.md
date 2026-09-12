@@ -195,12 +195,10 @@ public class Reply {
 
     // 외래 키 필드
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
     private User user;
 
     // 외래 키 필드
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_id")
     private Board board;
 
     @CreationTimestamp
@@ -305,7 +303,6 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
 ```java [실습 5] board/Board.java. 작성자 조회를 지연 로딩으로
     // 지연 로딩을 직접 지정한다
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
     private User user;
 ```
 
