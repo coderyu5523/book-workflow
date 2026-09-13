@@ -26,8 +26,9 @@ public class BoardResponse {
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    loginUser != null && loginUser.getId()
-                            .equals(board.getUser().getId()));
+                    // 비로그인이면 false, 요청자와 작성자가 같으면 true
+                    loginUser != null
+                            && loginUser.getId().equals(board.getUser().getId()));
         }
     }
 }

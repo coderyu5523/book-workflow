@@ -54,7 +54,7 @@
   <text x="585" y="278" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">컨트롤러</text>
   <text x="585" y="300" text-anchor="middle" font-size="11" fill="#6b7280">회원 정보를 서비스로 전달</text>
   <rect x="735" y="248" width="190" height="84" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.9"/>
-  <text x="830" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스 (인가)</text>
+  <text x="830" y="278" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">서비스</text>
   <text x="830" y="300" text-anchor="middle" font-size="11" fill="#c2410c">로그인 확인</text>
   <text x="830" y="318" text-anchor="middle" font-size="11" fill="#c2410c">소유자 검증</text>
   <line x1="195" y1="290" x2="253" y2="290" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c4ov-i)"/>
@@ -552,20 +552,20 @@
 <tbody>
 <tr>
 <td><strong>core/util/JwtUtil.java</strong></td>
-<td>토큰을 생성하고 검증합니다</td>
+<td>회원 정보로 토큰을 생성하고, 토큰을 검증해 회원 정보를 복원합니다</td>
 </tr>
 <tr>
 <td><strong>core/util/JwtProvider.java</strong></td>
-<td>요청 헤더에서 토큰을 꺼내 회원 정보를 얻습니다</td>
+<td>요청 헤더에서 토큰을 꺼내고, 유효하면 회원 정보를 반환합니다</td>
 </tr>
 <tr>
 <td><strong>core/filter/JwtAuthenticationFilter.java</strong></td>
-<td>요청마다 회원 정보를 담아 둡니다</td>
+<td>토큰이 유효하면 회원 정보를 요청에 보관합니다</td>
 </tr>
 </tbody>
 </table>
 <h3>4.5.1 JwtUtil</h3>
-<p>토큰 생성과 검증에는 <code>build.gradle</code>에 추가해 둔 <code>com.auth0:java-jwt</code> 라이브러리를 사용합니다.</p>
+<p><strong>JwtUtil</strong>은 로그인한 회원 정보로 JWT를 만들어 서버만 아는 비밀키로 서명합니다. 이후 요청이 오면 같은 비밀키로 서명을 검증해 회원 정보를 복원합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/util/JwtUtil.java. JWT 발급과 검증</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtUtil</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kd">final</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">HEADER</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Authorization&quot;</span><span class="p">;</span>
@@ -594,8 +594,9 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>create()</code>는 유저 정보를 페이로드에 담고 <code>SECRET</code>으로 서명해 토큰 한 줄을 생성합니다. <code>verify()</code>는 반대로 서명의 유효 여부를 확인한 뒤 페이로드에서 회원 정보를 꺼냅니다. 서명이 일치하지 않으면 예외가 발생합니다.</p>
+<p>JWT를 만들고 검증하는 기능은 <strong>com.auth0:java-jwt</strong> 라이브러리가 제공하며, <code>build.gradle</code>에 추가되어 있습니다.</p>
 <h3>4.5.2 JwtProvider</h3>
-<p><strong>JwtProvider</strong>는 요청 헤더에서 토큰을 꺼낸 뒤 <strong>JwtUtil</strong>로 회원 정보를 복원합니다.</p>
+<p><strong>JwtProvider</strong>는 요청 헤더에서 토큰을 꺼낸 뒤 <strong>JwtUtil</strong>로 검증하고 회원 정보를 반환합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtProvider</span><span class="w"> </span><span class="p">{</span>
 
@@ -617,10 +618,9 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>토큰이 없거나 서명이 일치하지 않으면 null을 반환합니다. 이어서 만들 필터는 이 반환값만으로 회원 정보를 담을지 판단합니다.</p>
 <h3>4.5.3 인증 필터</h3>
 <p><strong>필터(Filter)</strong> 는 요청이 컨트롤러에 도달하기 전에 먼저 거쳐 가는 지점입니다. 스프링에서는 <strong>OncePerRequestFilter</strong>를 상속하여 요청 한 건마다 한 번씩 실행되는 필터를 구현합니다.</p>
-<p><strong>JwtAuthenticationFilter</strong>는 이 지점에서 요청을 가로채 <strong>JwtProvider</strong>로 회원 정보를 복원한 뒤 요청에 담아 둡니다.</p>
+<p><strong>JwtAuthenticationFilter</strong>는 이 지점에서 <strong>JwtProvider</strong>로 회원 정보를 얻어 요청 객체에 저장합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/filter/JwtAuthenticationFilter.java. 인증 필터</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Component</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">JwtAuthenticationFilter</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">OncePerRequestFilter</span><span class="w"> </span><span class="p">{</span>
@@ -645,10 +645,10 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>회원 정보는 <code>loginUser</code>라는 이름으로 요청에 담기며, 컨트롤러는 이 이름으로 꺼냅니다. 토큰이 없거나 서명이 일치하지 않으면 담지 않고 통과시킵니다.</p>
-<p><strong>@Component</strong>를 붙여 두면 스프링이 이 클래스를 빈으로 등록하면서 필터 목록에도 함께 올립니다. 별도의 등록 코드 없이 모든 요청이 이 필터를 거칩니다.</p>
 <h2>4.6 회원가입</h2>
+<p>회원가입은 클라이언트가 입력한 회원 정보를 데이터베이스에 저장한 뒤, 저장된 회원 정보를 응답합니다.</p>
 <h3>4.6.1 리포지토리</h3>
-<p>가입 요청을 처리하려면 동일한 유저네임의 존재 여부를 먼저 확인해야 합니다.</p>
+<p>먼저 리포지토리를 작성해 보겠습니다. <strong>JpaRepository</strong>를 상속하고, 유저네임으로 회원을 조회하는 메서드를 추가합니다.</p>
 <p><code>user/UserRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> user/UserRepository.java. 유저네임으로 조회</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">UserRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 
@@ -656,10 +656,11 @@
 <span class="p">}</span></div>
 <div class="tip">
 <p><strong>메서드 이름과 조회 조건</strong></p>
-<p>findBy 뒤에 엔티티의 필드 이름을 붙이면 Spring Data JPA가 select 문을 생성합니다. <code>findByUsername()</code>은 <code>username</code>이 일치하는 회원을 조회하며, 매개변수로 받은 값이 그 조건에 들어갑니다.</p>
+<p>findBy 뒤에 엔티티의 필드 이름을 붙이면 Spring Data JPA가 select 문을 생성합니다. <strong>findByUsername()</strong> 은 <strong>username</strong>이 일치하는 회원을 조회하며, 매개변수로 받은 값이 그 조건에 들어갑니다.</p>
 </div>
 <h3>4.6.2 요청 DTO</h3>
-<p><code>user/UserRequest.java</code>를 열어 회원가입 요청을 받을 DTO를 아래와 같이 작성합니다.</p>
+<p>다음으로 클라이언트가 입력한 값을 전달받을 DTO를 만들어 보겠습니다.</p>
+<p><code>user/UserRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> user/UserRequest.java. 회원가입 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserRequest</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">email</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -675,7 +676,7 @@
 <span class="p">}</span></div>
 <p><strong>SaveDTO</strong>는 유저네임과 비밀번호, 이메일을 받습니다. <code>toEntity()</code>는 리포지토리가 저장할 수 있도록 이 값으로 <strong>User</strong> 엔티티를 생성해 반환합니다.</p>
 <h3>4.6.3 응답 DTO</h3>
-<p>회원 정보를 응답하는 공통 DTO로, 비밀번호를 제외한 컬럼을 담습니다.</p>
+<p>이어서 회원 정보를 응답할 DTO를 만들어 보겠습니다. 비밀번호를 제외한 컬럼만 필드로 선언합니다.</p>
 <p><code>user/UserResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> user/UserResponse.java. 회원가입 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserResponse</span><span class="w"> </span><span class="p">{</span>
 
@@ -694,10 +695,6 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<div class="tip">
-<p><strong>실무에서는 비밀번호를 반드시 암호화합니다</strong></p>
-<p>비밀번호를 입력받은 그대로 저장하면 데이터베이스를 들여다보는 누구든 다른 사람의 비밀번호를 읽을 수 있습니다. 그래서 실무에서는 되돌릴 수 없는 해시로 변환해 저장합니다. 이 책은 인증 흐름에 집중하기 위해 비밀번호를 평문으로 다룹니다.</p>
-</div>
 <h3>4.6.4 서비스</h3>
 <p>앞에서 만든 리포지토리와 DTO를 사용해 회원가입 메서드를 구현합니다.</p>
 <p><code>user/UserService.java</code>를 열어 아래와 같이 작성합니다.</p>
@@ -716,6 +713,10 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">UserResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
+<div class="tip">
+<p><strong>실무에서는 비밀번호를 반드시 암호화합니다</strong></p>
+<p>비밀번호를 입력받은 그대로 저장하면 데이터베이스에 접근할 수 있는 사람은 누구나 다른 사람의 비밀번호를 알게 됩니다. 그래서 실무에서는 되돌릴 수 없는 해시로 변환해 저장합니다. 이 책은 인증 흐름에 집중하기 위해 비밀번호를 평문으로 다룹니다.</p>
+</div>
 <h3>4.6.5 컨트롤러</h3>
 <p>컨트롤러는 가입 요청을 받아 서비스로 전달합니다.</p>
 <p><code>user/UserController.java</code>를 열어 아래와 같이 작성합니다.</p>
@@ -745,7 +746,7 @@
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\03_join-200.png" alt="" /><div class="caption">그림 4-13. 회원가입 응답</div></div>
 <h2>4.7 로그인</h2>
-<p>로그인은 유저네임과 비밀번호를 받아 회원 일치 여부를 확인하고, 일치하면 토큰을 응답합니다.</p>
+<p>로그인은 유저네임과 비밀번호를 받아 회원 일치 여부를 확인하고, 일치하면 JWT를 응답합니다.</p>
 <h3>4.7.1 요청 DTO</h3>
 <p>로그인 요청을 담을 DTO를 <code>user/UserRequest.java</code>에 아래와 같이 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> user/UserRequest.java. 로그인 요청 DTO</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">LoginDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -761,21 +762,21 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JwtUtil</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>유저네임과 비밀번호가 일치하면 <code>JwtUtil.create()</code>로 생성한 토큰을 응답합니다.</p>
+<p>유저네임과 비밀번호가 일치하면 <code>JwtUtil.create()</code>로 생성한 JWT를 응답합니다.</p>
 <h3>4.7.3 컨트롤러</h3>
-<p>컨트롤러는 서비스가 반환한 토큰 문자열을 응답 바디에 담아 전달합니다.</p>
+<p>컨트롤러는 서비스가 반환한 JWT를 응답합니다.</p>
 <p><code>user/UserController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> user/UserController.java. 로그인 엔드포인트</div><span class="w">    </span><span class="nd">@PostMapping</span><span class="p">(</span><span class="s">&quot;/login&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">login</span><span class="p">(</span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">UserRequest</span><span class="p">.</span><span class="na">LoginDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">accessToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">userService</span><span class="p">.</span><span class="na">로그인</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">accessToken</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>클라이언트는 이 토큰을 저장해 두었다가 이후 요청마다 함께 전송합니다.</p>
-<p>방금 가입한 계정으로 로그인 API를 호출합니다.</p>
+<p>클라이언트는 이 JWT를 저장해 두었다가 이후 요청마다 함께 전송합니다.</p>
+<p>더미 데이터의 ssar 계정으로 로그인 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 로그인 요청</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/login</span>
 
 <span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;love&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;username&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ssar&quot;</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">&quot;password&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;1234&quot;</span>
 <span class="p">}</span></div>
 <!-- [CAPTURE NEEDED: 04_login-token
@@ -784,7 +785,7 @@
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\04_login-token.png" alt="" /><div class="caption">그림 4-14. 로그인 응답</div></div>
 <h2>4.8 게시글 상세</h2>
-<p>게시글 상세에는 게시글 정보와 작성자가 함께 응답되어야 합니다. 그러려면 게시글 엔티티와 회원 엔티티를 한 번의 조회로 가져와야 합니다.</p>
+<p>게시글 상세에는 게시글 정보와 작성자 정보가 함께 응답되어야 합니다. 그러려면 게시글 엔티티와 회원 엔티티를 한 번의 조회로 가져와야 합니다.</p>
 <h3>4.8.1 JPQL 조인문</h3>
 <p>이때 사용하는 문법이 JOIN입니다. 조인은 두 테이블의 행을 옆으로 이어 붙여 한 번의 조회로 가져오며, 어떤 행끼리 결합할지는 조건으로 지정합니다. SQL은 그 조건을 <code>on</code> 절에 명시하지만, JPQL은 연관관계 필드 이름만 명시합니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="n">u</span></div>
@@ -813,15 +814,17 @@
 </table>
 <p>작성자 정보가 없는 게시글까지 조회하려면 <code>left join</code>을 사용합니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="n">u</span></div>
-<p>일반 SQL과 달리 JPQL의 기본 조인은 FROM 절 엔티티만 반환하고, JOIN 절에 명시한 엔티티는 결과에 포함하지 않습니다. FETCH 키워드를 붙이면 JOIN 절 엔티티까지 한 번에 조회해, FROM 절 엔티티의 연관 필드를 실제 데이터로 채워서 반환합니다.</p>
+<p>일반 SQL과 달리 JPQL의 기본 조인은 FROM 절 엔티티만 반환합니다. 게시글의 <code>user_id</code>는 <strong>board_tb</strong>의 컬럼이라 함께 조회되지만, 그 값으로 <strong>User</strong> 엔티티를 채우려면 회원을 조회하는 쿼리가 한 번 더 실행됩니다.</p>
+<p>이때 사용하는 것이 <strong>FETCH</strong> 키워드입니다. 이 키워드를 붙이면 JOIN 절 엔티티까지 한 번에 조회해, FROM 절 엔티티의 연관 필드를 실제 데이터로 채워서 반환합니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span></div>
 <h3>4.8.2 리포지토리</h3>
+<p>게시글 상세에서 사용할 데이터를 조회해 보겠습니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 <strong>@Query</strong>로 작성자를 함께 조회하는 메서드를 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> board/BoardRepository.java. 작성자를 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUser</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
-<p><code>findBy</code> 규칙으로는 조인 방식까지 지정할 수 없으므로, JPQL을 직접 적을 때는 <strong>@Query</strong>를 사용합니다. <strong>@Param</strong>은 메서드의 매개변수를 JPQL의 <code>:boardId</code> 자리에 연결합니다.</p>
+<p><code>findBy</code> 규칙으로는 조인 방식까지 지정할 수 없으므로, JPQL을 직접 적을 때는 <strong>@Query</strong>를 사용합니다.</p>
 <h3>4.8.3 응답 DTO</h3>
-<p><code>board/BoardResponse.java</code>를 열어 <strong>DetailDTO</strong>에 작성자의 아이디와 유저네임, 그리고 본인 여부를 알려 주는 값을 아래와 같이 추가합니다. 비밀번호처럼 노출되면 안 되는 값은 응답에 담지 않습니다.</p>
+<p><code>board/BoardResponse.java</code>를 열어 <strong>DetailDTO</strong>에 작성자의 아이디와 유저네임, 그리고 본인 여부를 알려 주는 값을 아래와 같이 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> board/BoardResponse.java. 상세 응답에 작성자와 본인 여부 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span>
@@ -837,11 +840,12 @@
 <span class="w">                    </span><span class="n">board</span><span class="p">.</span><span class="na">getContent</span><span class="p">(),</span>
 <span class="w">                    </span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getId</span><span class="p">(),</span>
 <span class="w">                    </span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getUsername</span><span class="p">(),</span>
-<span class="w">                    </span><span class="n">loginUser</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">loginUser</span><span class="p">.</span><span class="na">getId</span><span class="p">()</span>
-<span class="w">                            </span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getId</span><span class="p">()));</span>
+<span class="w">                    </span><span class="c1">// 비로그인이면 false, 요청자와 작성자가 같으면 true</span>
+<span class="w">                    </span><span class="n">loginUser</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">                            </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">loginUser</span><span class="p">.</span><span class="na">getId</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getId</span><span class="p">()));</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>isOwner</code>는 요청자가 이 게시글의 작성자인지를 참과 거짓으로 나타냅니다. 요청자의 아이디와 작성자의 아이디가 일치하면 true이고, 로그인하지 않아 <code>loginUser</code>가 null이면 false입니다.</p>
+<p><code>isOwner</code>는 요청자가 이 게시글의 작성자인지를 참과 거짓으로 나타냅니다. 로그인하지 않았으면 <code>loginUser</code>가 null이므로 false가 되고, 로그인했다면 요청자의 아이디와 작성자의 아이디를 비교해 일치할 때 true가 됩니다. 클라이언트는 이 값으로 수정·삭제 버튼을 보여줄지 결정하고, 서버는 요청이 들어올 때 401과 403으로 다시 검증합니다.</p>
 <h3>4.8.4 서비스</h3>
 <p>작성자를 함께 조회하도록 <code>board/BoardService.java</code>의 <code>게시글상세()</code>를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> board/BoardService.java. 상세 조회에 fetch 조인과 본인 여부</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -850,7 +854,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.8.5 컨트롤러</h3>
-<p>요청자 정보는 필터가 담아 둔 유저에서 꺼냅니다.</p>
+<p>컨트롤러는 필터를 거쳐 요청 객체에 전달된 회원 정보를 꺼내 사용합니다.</p>
 <p><code>board/BoardController.java</code>의 상세 메서드를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardController.java. 상세 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
@@ -917,7 +921,7 @@
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\05_board-save.png" alt="" /><div class="caption">그림 4-16. 게시글 쓰기 응답</div></div>
 <h2>4.10 게시글 수정</h2>
 <h3>4.10.1 서비스</h3>
-<p>글쓰기와 마찬가지로 먼저 로그인 여부를 확인합니다. 이어서 작성자 일치 여부를 검증하는데, 작성자 정보는 게시글을 조회해야 알 수 있으므로 이 과정 역시 서비스에서 처리합니다.</p>
+<p>게시글 수정은 현재 사용자와 게시글 작성자가 일치하는지 검증 후, 게시글을 수정해야 합니다. 수정은 동일하게 더티 체킹으로 진행합니다.</p>
 <p><code>board/BoardService.java</code>의 <code>게시글수정()</code>을 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardService.java. 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글수정</span><span class="p">(</span>
@@ -936,7 +940,6 @@
 <span class="w">        </span><span class="n">board</span><span class="p">.</span><span class="na">setContent</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">content</span><span class="p">());</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>더티체킹이 트랜잭션이 끝나는 시점에 수정을 반영합니다.</p>
 <h3>4.10.2 컨트롤러</h3>
 <p><code>board/BoardController.java</code>의 수정 메서드를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 19</span> board/BoardController.java. 수정 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PutMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
@@ -947,8 +950,8 @@
 <span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글수정</span><span class="p">(</span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>방금 작성한 게시글의 번호로 게시글 수정 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 수정 요청</div><span class="err">PUT</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/3</span>
+<p>ssar이 작성한 1번 게시글의 수정 API를 호출합니다.</p>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 수정 요청</div><span class="err">PUT</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span>
 <span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span>
 
 <span class="p">{</span>
@@ -957,7 +960,7 @@
 <span class="p">}</span></div>
 <!-- [CAPTURE NEEDED: 06_board-update
   path: assets/CH4/terminal/06_board-update.png
-  desc: 토큰을 Authorization 헤더에 담고 보낸 PUT /api/boards/3 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 3, "title": "수정한 제목", "content": "수정한 내용" } } 형태로, 본인이 쓴 게시글이 수정된 화면. Hoppscotch 또는 브라우저 응답.
+  desc: 토큰을 Authorization 헤더에 담고 보낸 PUT /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "수정한 제목", "content": "수정한 내용" } } 형태로, 본인이 쓴 게시글이 수정된 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\06_board-update.png" alt="" /><div class="caption">그림 4-17. 게시글 수정 응답</div></div>
 <h2>4.11 게시글 삭제</h2>
@@ -987,28 +990,21 @@
 <span class="w">        </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글삭제</span><span class="p">(</span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>같은 게시글을 대상으로 게시글 삭제 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 삭제 요청</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/3</span>
+<p>ssar이 작성한 2번 게시글의 삭제 API를 호출합니다.</p>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 삭제 요청</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/2</span>
 <span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span></div>
 <!-- [CAPTURE NEEDED: 07_board-delete
   path: assets/CH4/terminal/07_board-delete.png
-  desc: 토큰을 Authorization 헤더에 담고 보낸 DELETE /api/boards/3 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": null } 형태로, 돌려줄 데이터가 없어 body가 null인 화면. Hoppscotch 또는 브라우저 응답.
+  desc: 토큰을 Authorization 헤더에 담고 보낸 DELETE /api/boards/2 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": null } 형태로, 돌려줄 데이터가 없어 body가 null인 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\07_board-delete.png" alt="" /><div class="caption">그림 4-18. 게시글 삭제 응답</div></div>
-<p>오픈이는 발급받은 토큰을 헤더에 담아 다른 사람이 쓴 게시글에 수정 요청을 보냈습니다.</p>
-<p>권한이 없다는 응답이 돌아왔습니다. 토큰을 빼고 다시 요청하자 이번에는 로그인이 필요하다는 응답이 돌아왔습니다. 똑같은 수정 요청인데 가로막힌 자리가 달랐습니다.</p>
-<p class="thought">익명 게시판일 때는 확인 절차가 없어서 그냥 무사통과였구나.</p>
-<p>오픈이는 선배에게 다가가 테스트 결과를 보여줬습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "요청에 토큰을 실어 보내니, 서버가 제가 누구인지 먼저 확인하고 이 글의 주인인지 한 번 더 짚고 넘어가네요."</div>
-<p>선배가 고개를 끄덕였습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "누구인지 확인하는 자리와 권한이 있는지 따지는 자리를 나눠 둔 거예요. 이렇게 해 두면 나중에 기능이 늘어도 검증은 한곳에서 처리할 수 있어요."</div>
-<p>다음 챕터에서는 게시글에 댓글을 추가하고, 상세 조회에서 댓글까지 함께 가져옵니다.</p>
+<p>이전까지 실습한 게시판은 누가 요청을 보냈는지 알 수 없는 익명 상태였습니다. 하지만 이번 챕터에서는 회원 기능을 추가하여 요청자를 식별하는 구조로 수정하였습니다. 서버가 세션처럼 로그인 상태를 따로 기억할 필요 없이, 요청에 포함된 JWT만으로 회원을 식별할 수 있습니다. 그리고 JWT를 활용해 사용자의 인증과 인가도 함께 구현했습니다.</p>
+<p>다음 챕터에서는 게시글에 필요한 댓글과, 이를 위해 회원, 게시글, 댓글 테이블간의 관계를 알아보겠습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li><strong>인증은 &quot;너 누구야&quot;를 밝히고, 인가는 &quot;그걸 할 권한이 있어&quot;를 따집니다.</strong> 이번 챕터에서 인증은 토큰을 확인해 회원 정보를 담는 필터가, 인가는 로그인 여부와 작성자를 확인하는 서비스가 담당합니다. 컨트롤러는 담긴 회원 정보를 꺼내 서비스로 넘깁니다.</li>
-<li><strong>로그인에 성공하면 JWT를 발급하고, 클라이언트는 토큰을 요청마다 지니고 옵니다.</strong> 서버는 토큰의 서명만 검증하면 되므로 로그인 상태를 따로 기억하지 않습니다. 다른 사람이 쓴 게시글에 보낸 수정·삭제 요청은 서비스의 소유자 검증에서 403으로 막힙니다.</li>
-<li><strong>상세 응답의 <code>isOwner</code>는 화면이 수정·삭제 버튼을 감추는 데 씁니다.</strong> 버튼을 감춰도 요청은 보낼 수 있으므로, 실제로 막는 일은 서비스의 401과 403입니다.</li>
+<li>인증은 사용자의 신원을 확인하는 과정이고, 인가는 특정 작업을 수행할 권한이 있는지 검증하는 과정입니다.</li>
+<li>클라이언트는 요청마다 JWT를 함께 전달합니다. JWT에는 회원 정보가 포함되어 있어, 서버는 사용자 정보를 서버에 저장하지 않아도 JWT를 통해 사용자를 식별할 수 있습니다.</li>
 </ul>
 </div>
 

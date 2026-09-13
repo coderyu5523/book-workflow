@@ -350,7 +350,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 :::tip
 **실무에서는 어떤 로딩 전략을 쓰는가**
 
-연관된 데이터를 가져오느라 추가 쿼리가 계속 늘어나는 상황을 막기 위해, 실무에서는 모든 연관관계를 지연 로딩으로 설정합니다. 두 엔티티를 항상 함께 사용하는 경우에만 즉시 로딩을 고려하되, 지연 로딩을 유지한 채 필요한 조회에서만 쿼리로 묶어 한 번에 가져오는 편이 안전합니다. **@ManyToOne**은 기본값이 즉시 로딩이라 `fetch = FetchType.LAZY`를 직접 적어야 하고, **@OneToMany**는 기본값이 지연 로딩입니다.
+연관된 데이터를 가져오느라 추가 쿼리가 계속 늘어나는 상황을 막기 위해, 실무에서는 모든 연관관계를 지연 로딩으로 설정합니다. 두 엔티티를 항상 함께 사용하는 경우에만 즉시 로딩을 고려하되, 지연 로딩을 유지한 채 필요한 조회에서만 쿼리로 묶어 한 번에 가져오는 편이 안전합니다. **@ManyToOne**은 기본값이 즉시 로딩이라 **fetch = FetchType.LAZY**를 직접 적어야 하고, **@OneToMany**는 기본값이 지연 로딩입니다.
 :::
 
 ## 5.3 댓글 목록
@@ -395,8 +395,9 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
                     board.getContent(),
                     board.getUser().getId(),
                     board.getUser().getUsername(),
-                    loginUser != null && loginUser.getId()
-                            .equals(board.getUser().getId()),
+                    // 비로그인이면 false, 요청자와 작성자가 같으면 true
+                    loginUser != null
+                            && loginUser.getId().equals(board.getUser().getId()),
                     board.getReplies().stream()
                             .map(reply -> new ReplyDTO(reply, loginUser))
                             .toList());
@@ -414,8 +415,9 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
                         reply.getId(),
                         reply.getUser().getUsername(),
                         reply.getComment(),
-                        loginUser != null && loginUser.getId()
-                                .equals(reply.getUser().getId()));
+                        // 비로그인이면 false, 요청자와 작성자가 같으면 true
+                        loginUser != null
+                                && loginUser.getId().equals(reply.getUser().getId()));
             }
         }
     }

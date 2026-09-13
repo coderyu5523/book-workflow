@@ -783,7 +783,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <div class="code-block highlight" data-lang="sql"><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;제목3&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;내용3&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span></div>
 <div class="tip">
 <p><strong>flush()란?</strong></p>
-<p><code>flush()</code>는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 실행합니다.</p>
+<p><strong>flush()</strong> 는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 실행합니다.</p>
 <p>단, 기본 키 생성을 DB에 맡기는 IDENTITY 전략에서는 persist() 호출 즉시 INSERT 쿼리가 날아갑니다. DB가 만들어준 기본 키를 먼저 알아야 영속성 컨텍스트에 엔티티를 등록할 수 있기 때문입니다.</p>
 </div>
 <h3>2.9.3 더티체킹</h3>
@@ -1173,7 +1173,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글쓰기</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">responseBoard</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>저장한 게시글을 응답 바디에 담아 반환합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.</p>
+<p>저장한 게시글을 응답합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.</p>
 <p>제목과 내용을 요청 바디에 담아 게시글 쓰기 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 쓰기</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
 
