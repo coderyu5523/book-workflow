@@ -1,20 +1,20 @@
 # 챕터 5. 댓글과 JPA 심화
 
-인증 기능이 적용되며 게시판의 기본 뼈대가 완성되었습니다. 이제 로그인한 사용자만 글을 작성할 수 있고, 본인이 쓴 글만 수정하거나 삭제할 수 있습니다. 다음 순서는 **댓글** 기능입니다.
+오픈이는 인증 게시판에 이어 댓글 기능을 추가하기로 했습니다. 게시글을 조회할 때 여러 개의 댓글을 함께 보여줘야 하고, 게시글과 댓글은 각각 작성자 정보를 가지고 있습니다.
 
-오픈이는 댓글 테이블에 필요한 컬럼을 정리하다가 멈칫했습니다.
+댓글 테이블을 설계하던 오픈이는 머릿속이 복잡해졌습니다.
 
-*게시글 하나에 댓글이 여러 개 달리니까 게시글과 댓글은 1대N 관계인데, 그럼 회원과 댓글은 어떻게 연결해야 하지?*
+*게시글, 게시글 작성자, 여러 개의 댓글, 그리고 댓글 작성자들까지... 이 많은 데이터를 한 화면에 뿌려주려면 어떻게 가져와야 하지?*
 
 오픈이는 선배를 찾아갔습니다.
 
-**오픈이**: "선배님, 댓글 테이블에 게시글 번호를 넣는 것까지는 알겠는데 회원과는 어떻게 이어야 할지 헷갈립니다. 게시글처럼 1대N 관계로 보면 될까요?"
+**오픈이**: "선배님, 게시글 상세 화면에 댓글까지 추가되니까 데이터를 어떻게 가져와야 할지 막막하네요."
 
-**선배**: "맞아요. 회원 한 명이 여러 개의 댓글을 작성하니까 회원과 댓글 역시 1대N 관계죠. 두 관계 모두 **N**쪽이 댓글이라서, 댓글 테이블에 게시글 번호와 회원 번호가 나란히 들어가게 됩니다."
+**선배**: "실무에서는 크게 두 가지 방법을 써요. 첫 번째는 쿼리를 두 번으로 나누는 겁니다. 게시글과 게시글 작성자를 먼저 조회하고, 그다음 이 게시글에 있는 댓글과 댓글 작성자 번호를 추가로 가져오는 거죠. 그리고 두 데이터를 DTO에 담아 합치는 방식이에요. 구조가 단순해서 실무에서도 많이 씁니다."
 
-선배는 자바 객체에서의 설계 방향도 덧붙여 주었습니다.
+**오픈이**: "그럼 두 번째 방법은요?"
 
-**선배**: "다만 DB 테이블과 달리, 자바 객체로 설계할 때는 게시글 객체만 댓글 목록을 리스트로 가집니다. 게시글 화면을 띄울 때는 달린 댓글도 같이 필요하지만, 회원 정보를 조회할 때 그 사람이 쓴 전체 댓글까지 한 번에 불러올 필요는 없으니까요."
+**선배**: "JPA의 양방향 매핑을 쓰는 거예요. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요. 이렇게 해두면 JPA에서 조인을 통해 한 번에 데이터를 가져올 수 있어요."
 
 <div class="svg-figure">
 <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블 구조에서는 board_tb와 user_tb가 각각 reply_tb와 1대N으로 이어지고 외래 키는 reply_tb에만 있다. 오른쪽 자바 객체 구조에서는 Board에 replies 목록 필드가 더 생겨 Board와 Reply가 양쪽 필드로 이어지고, User 쪽에는 목록 필드가 없다.">
@@ -136,7 +136,7 @@ spring-start/ch05/src/main/java/com/metacoding/spring/
     └── ReplyService.java                 # [작성] 댓글 저장·삭제(소유자 검증)
 
 spring-start/ch05/src/main/resources/
-└── db/data.sql                           # [작성] 댓글 더미 데이터
+└── db/data.sql                           # [참고] 댓글 더미 데이터
 
 spring-start/ch05/src/test/java/com/metacoding/spring/
 └── board/BoardRepositoryTest.java        # [작성] 즉시 로딩과 지연 로딩 확인
@@ -241,9 +241,7 @@ public class Reply {
 
 댓글 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터에도 댓글을 더합니다.
 
-`resources/db/data.sql`을 열어 회원·게시글 아래에 아래와 같이 작성합니다.
-
-```sql [실습 3] resources/db/data.sql. 댓글 더미 데이터
+```sql [참고] resources/db/data.sql. 댓글 더미 데이터
 insert into reply_tb(comment,board_id,user_id,created_at) values('comment1',1,1,now());
 insert into reply_tb(comment,board_id,user_id,created_at) values('comment2',1,1,now());
 insert into reply_tb(comment,board_id,user_id,created_at) values('comment3',1,2,now());
@@ -259,7 +257,7 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 
 `test/board/BoardRepositoryTest.java`를 열어 게시글 번호만 출력하는 테스트를 추가합니다.
 
-```java [실습 4] test/board/BoardRepositoryTest.java. 즉시 로딩 확인
+```java [실습 3] test/board/BoardRepositoryTest.java. 즉시 로딩 확인
     @Test
     public void findByIdEager_test() {
         // given
@@ -300,7 +298,7 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
 
 `board/Board.java`의 작성자 필드에 `fetch` 속성을 아래와 같이 추가합니다.
 
-```java [실습 5] board/Board.java. 작성자 조회를 지연 로딩으로
+```java [실습 4] board/Board.java. 작성자 조회를 지연 로딩으로
     // 지연 로딩을 직접 지정한다
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
@@ -310,7 +308,7 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
 
 `test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
 
-```java [실습 6] test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인
+```java [실습 5] test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인
     @Test
     public void findByIdLazyLoading_test() {
         // given
@@ -363,7 +361,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 7] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
+```java [실습 6] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
             + "left join fetch b.replies r left join fetch r.user "
             + "where b.id = :boardId")
@@ -378,7 +376,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
-```java [실습 8] board/BoardResponse.java. 상세에 댓글 목록 추가
+```java [실습 7] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -431,7 +429,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
-```java [실습 9] board/BoardService.java. 상세 조회를 fetch join으로 교체
+```java [실습 8] board/BoardService.java. 상세 조회를 fetch join으로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
@@ -463,7 +461,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 10] reply/ReplyRepository.java. JpaRepository 상속
+```java [실습 9] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
@@ -474,7 +472,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 11] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 10] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -496,7 +494,7 @@ public class ReplyRequest {
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 12] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 11] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -517,7 +515,7 @@ public class ReplyResponse {
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 13] reply/ReplyService.java. 댓글 저장
+```java [실습 12] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
 @Service
 public class ReplyService {
@@ -546,7 +544,7 @@ public class ReplyService {
 
 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 14] reply/ReplyController.java. 댓글 작성 엔드포인트
+```java [실습 13] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/replies")
@@ -588,7 +586,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 15] reply/ReplyService.java. 댓글 삭제
+```java [실습 14] reply/ReplyService.java. 댓글 삭제
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
@@ -609,7 +607,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyController.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 16] reply/ReplyController.java. 댓글 삭제 엔드포인트
+```java [실습 15] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {

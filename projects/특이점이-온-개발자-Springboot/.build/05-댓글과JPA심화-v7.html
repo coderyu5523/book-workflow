@@ -20,14 +20,14 @@
 <body>
 <div class="container">
 <h1>챕터 5. 댓글과 JPA 심화</h1>
-<p>인증 기능이 적용되며 게시판의 기본 뼈대가 완성되었습니다. 이제 로그인한 사용자만 글을 작성할 수 있고, 본인이 쓴 글만 수정하거나 삭제할 수 있습니다. 다음 순서는 <strong>댓글</strong> 기능입니다.</p>
-<p>오픈이는 댓글 테이블에 필요한 컬럼을 정리하다가 멈칫했습니다.</p>
-<p class="thought">게시글 하나에 댓글이 여러 개 달리니까 게시글과 댓글은 1대N 관계인데, 그럼 회원과 댓글은 어떻게 연결해야 하지?</p>
+<p>오픈이는 인증 게시판에 이어 댓글 기능을 추가하기로 했습니다. 게시글을 조회할 때 여러 개의 댓글을 함께 보여줘야 하고, 게시글과 댓글은 각각 작성자 정보를 가지고 있습니다.</p>
+<p>댓글 테이블을 설계하던 오픈이는 머릿속이 복잡해졌습니다.</p>
+<p class="thought">게시글, 게시글 작성자, 여러 개의 댓글, 그리고 댓글 작성자들까지... 이 많은 데이터를 한 화면에 뿌려주려면 어떻게 가져와야 하지?</p>
 <p>오픈이는 선배를 찾아갔습니다.</p>
-<div class="dialogue"><span class="speaker">오픈이</span>: "선배님, 댓글 테이블에 게시글 번호를 넣는 것까지는 알겠는데 회원과는 어떻게 이어야 할지 헷갈립니다. 게시글처럼 1대N 관계로 보면 될까요?"</div>
-<div class="dialogue"><span class="speaker">선배</span>: "맞아요. 회원 한 명이 여러 개의 댓글을 작성하니까 회원과 댓글 역시 1대N 관계죠. 두 관계 모두 <strong>N</strong>쪽이 댓글이라서, 댓글 테이블에 게시글 번호와 회원 번호가 나란히 들어가게 됩니다."</div>
-<p>선배는 자바 객체에서의 설계 방향도 덧붙여 주었습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "다만 DB 테이블과 달리, 자바 객체로 설계할 때는 게시글 객체만 댓글 목록을 리스트로 가집니다. 게시글 화면을 띄울 때는 달린 댓글도 같이 필요하지만, 회원 정보를 조회할 때 그 사람이 쓴 전체 댓글까지 한 번에 불러올 필요는 없으니까요."</div>
+<div class="dialogue"><span class="speaker">오픈이</span>: "선배님, 게시글 상세 화면에 댓글까지 추가되니까 데이터를 어떻게 가져와야 할지 막막하네요."</div>
+<div class="dialogue"><span class="speaker">선배</span>: "실무에서는 크게 두 가지 방법을 써요. 첫 번째는 쿼리를 두 번으로 나누는 겁니다. 게시글과 게시글 작성자를 먼저 조회하고, 그다음 이 게시글에 있는 댓글과 댓글 작성자 번호를 추가로 가져오는 거죠. 그리고 두 데이터를 DTO에 담아 합치는 방식이에요. 구조가 단순해서 실무에서도 많이 씁니다."</div>
+<div class="dialogue"><span class="speaker">오픈이</span>: "그럼 두 번째 방법은요?"</div>
+<div class="dialogue"><span class="speaker">선배</span>: "JPA의 양방향 매핑을 쓰는 거예요. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요. 이렇게 해두면 JPA에서 조인을 통해 한 번에 데이터를 가져올 수 있어요."</div>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블 구조에서는 board_tb와 user_tb가 각각 reply_tb와 1대N으로 이어지고 외래 키는 reply_tb에만 있다. 오른쪽 자바 객체 구조에서는 Board에 replies 목록 필드가 더 생겨 Board와 Reply가 양쪽 필드로 이어지고, User 쪽에는 목록 필드가 없다.">
   <text x="245" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">테이블</text>
@@ -129,7 +129,7 @@
     └── ReplyService.java                 # [작성] 댓글 저장·삭제(소유자 검증)
 
 spring-start/ch05/src/main/resources/
-└── db/data.sql                           # [작성] 댓글 더미 데이터
+└── db/data.sql                           # [참고] 댓글 더미 데이터
 
 spring-start/ch05/src/test/java/com/metacoding/spring/
 └── board/BoardRepositoryTest.java        # [작성] 즉시 로딩과 지연 로딩 확인</div>
@@ -204,8 +204,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 </div>
 <h3>5.1.3 더미 데이터</h3>
 <p>댓글 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터에도 댓글을 더합니다.</p>
-<p><code>resources/db/data.sql</code>을 열어 회원·게시글 아래에 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge">실습 3</span> resources/db/data.sql. 댓글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment1&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">now</span><span class="p">());</span>
+<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge reference">참고</span> resources/db/data.sql. 댓글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment1&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">now</span><span class="p">());</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment2&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">now</span><span class="p">());</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment3&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">now</span><span class="p">());</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment4&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">now</span><span class="p">());</span></div>
@@ -214,7 +213,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.2.1 즉시 로딩</h3>
 <p><strong>즉시 로딩(Eager Loading)</strong> 은 게시글을 조회할 때 연관된 <strong>User</strong> 엔티티까지 함께 조회하는 전략입니다. <strong>@ManyToOne</strong>의 기본 전략이 즉시 로딩이므로, <code>fetch</code> 속성을 따로 지정하지 않은 지금은 즉시 로딩으로 동작합니다.</p>
 <p><code>test/board/BoardRepositoryTest.java</code>를 열어 게시글 번호만 출력하는 테스트를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> test/board/BoardRepositoryTest.java. 즉시 로딩 확인</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> test/board/BoardRepositoryTest.java. 즉시 로딩 확인</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdEager_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
@@ -245,12 +244,12 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.2.2 지연 로딩</h3>
 <p><strong>지연 로딩(Lazy Loading)</strong> 은 게시글 데이터만 먼저 조회하고, 회원 데이터는 실제로 접근하는 순간에 쿼리를 실행해 가져오는 방식입니다.</p>
 <p><code>board/Board.java</code>의 작성자 필드에 <code>fetch</code> 속성을 아래와 같이 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="c1">// 지연 로딩을 직접 지정한다</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="c1">// 지연 로딩을 직접 지정한다</span>
 <span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span></div>
 <p>회원 데이터를 사용하면 어떻게 되는지 확인합니다.</p>
 <p><code>test/board/BoardRepositoryTest.java</code>에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findByIdLazyLoading_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
@@ -290,7 +289,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <p>이때 작성자는 반드시 있으므로 JOIN으로 가져오고, 댓글은 없을 수도 있으므로 댓글과 댓글 작성자에는 LEFT OUTER JOIN을 적용합니다.</p>
 <h3>5.3.1 리포지토리</h3>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 메서드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user &quot;</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user &quot;</span>
 <span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;left join fetch b.replies r left join fetch r.user &quot;</span>
 <span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReplies</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
@@ -298,7 +297,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.3.2 응답 DTO</h3>
 <p>하나의 게시글에는 여러 댓글이 달릴 수 있으므로 댓글 필드를 <strong>List</strong> 타입으로 담습니다.</p>
 <p><code>board/BoardResponse.java</code>의 <strong>DetailDTO</strong>를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> board/BoardResponse.java. 상세에 댓글 목록 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardResponse.java. 상세에 댓글 목록 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">,</span>
@@ -344,7 +343,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.3.3 서비스</h3>
 <p><strong>BoardService</strong>의 상세 메서드는 <code>findByIdJoinUser()</code> 대신 <code>findByIdJoinUserAndReplies()</code>를 호출합니다.</p>
 <p><code>board/BoardService.java</code>를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> board/BoardService.java. 상세 조회를 fetch join으로 교체</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> board/BoardService.java. 상세 조회를 fetch join으로 교체</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findByIdJoinUserAndReplies</span><span class="p">(</span><span class="n">boardId</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="p">(</span><span class="n">board</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
@@ -362,12 +361,12 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.4.1 리포지토리</h3>
 <p>댓글을 저장하고 조회하는 리포지토리를 구현합니다.</p>
 <p><code>reply/ReplyRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
 <h3>5.4.2 요청 DTO</h3>
 <p><strong>SaveDTO</strong>는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 <strong>User</strong> 엔티티를 활용합니다.</p>
 <p><code>reply/ReplyRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> reply/ReplyRequest.java. 댓글 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> reply/ReplyRequest.java. 댓글 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">comment</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 
@@ -383,7 +382,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.4.3 응답 DTO</h3>
 <p>응답으로 반환할 댓글 하나를 담을 <strong>DTO</strong>도 정의합니다.</p>
 <p><code>reply/ReplyResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> reply/ReplyResponse.java. 댓글 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyResponse</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> reply/ReplyResponse.java. 댓글 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyResponse</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DTO</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">replyId</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">comment</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 
@@ -398,7 +397,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.4.4 서비스</h3>
 <p>서비스는 전달받은 게시글 아이디와 로그인 유저로 <strong>Reply</strong> 엔티티를 생성하고 <code>save()</code>를 호출합니다.</p>
 <p><code>reply/ReplyService.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> reply/ReplyService.java. 댓글 저장</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> reply/ReplyService.java. 댓글 저장</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyService</span><span class="w"> </span><span class="p">{</span>
 
@@ -421,7 +420,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.4.5 컨트롤러</h3>
 <p>댓글 작성 엔드포인트를 구현합니다.</p>
 <p><code>reply/ReplyController.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> reply/ReplyController.java. 댓글 작성 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> reply/ReplyController.java. 댓글 작성 엔드포인트</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
 <span class="nd">@RequestMapping</span><span class="p">(</span><span class="s">&quot;/api/replies&quot;</span><span class="p">)</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyController</span><span class="w"> </span><span class="p">{</span>
@@ -450,7 +449,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <h3>5.5.1 서비스</h3>
 <p>게시글 수정·삭제와 마찬가지로 먼저 로그인 여부를 확인하고, 이어서 댓글 작성자와 로그인 유저가 같은지 검증한 뒤 삭제합니다.</p>
 <p><code>reply/ReplyService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> reply/ReplyService.java. 댓글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> reply/ReplyService.java. 댓글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">댓글삭제</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">replyId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loginUser</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -466,7 +465,7 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 <span class="w">    </span><span class="p">}</span></div>
 <h3>5.5.2 컨트롤러</h3>
 <p><code>reply/ReplyController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> reply/ReplyController.java. 댓글 삭제 엔드포인트</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{replyId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> reply/ReplyController.java. 댓글 삭제 엔드포인트</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{replyId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">deleteById</span><span class="p">(</span>
 <span class="w">            </span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;replyId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">replyId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getAttribute</span><span class="p">(</span><span class="s">&quot;loginUser&quot;</span><span class="p">);</span>

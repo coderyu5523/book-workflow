@@ -520,8 +520,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>애플리케이션을 실행하면 하이버네이트가 이 클래스를 읽어 <strong>board_tb</strong> 테이블을 생성합니다. 앞으로 게시글을 저장하고 조회할 때 필요한 SQL도 하이버네이트가 생성합니다.</p>
 <h3>2.4.3 더미 데이터</h3>
 <p>실습을 위해 미리 넣어 두는 가상의 데이터를 <strong>더미 데이터(Dummy Data)</strong> 라고 합니다.</p>
-<p><code>resources/db/data.sql</code>을 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge">실습 2</span> resources/db/data.sql. 게시글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span>
+<div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge reference">참고</span> resources/db/data.sql. 게시글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">());</span></div>
 <p>터미널에 <code>./gradlew bootRun</code>을 입력해 스프링을 실행합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH2\terminal\06_bootrun.png" alt="" /><div class="caption">그림 2-14. 스프링 실행 결과</div></div>
@@ -629,7 +628,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h2>2.7 리포지토리(Repository)</h2>
 <p>먼저 데이터베이스에 접근하는 리포지토리를 만들어 보겠습니다. 리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 <strong>EntityManager</strong>입니다. 이 객체는 스프링이 미리 빈(Bean)으로 등록해 두므로, 직접 만들 필요 없이 생성자로 주입받아 사용하면 됩니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRepository.java. 리포지토리 골격</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/BoardRepository.java. 리포지토리 골격</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Repository</span><span class="w"> </span><span class="c1">// 스프링이 빈으로 등록한다</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="p">{</span>
 
@@ -640,14 +639,14 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.7.1 게시글 한 건 조회</h3>
 <p><strong>EntityManager</strong>의 <code>find()</code> 메서드는 기본 키(PK)로 엔티티 한 건을 조회할 때 사용합니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 조건에 맞는 <strong>Board</strong> 엔티티 한 건을 반환합니다.</p>
 <p><code>board/BoardRepository.java</code>의 주석 자리에 아래 메서드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> board/BoardRepository.java. 기본 키로 한 건 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRepository.java. 기본 키로 한 건 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">em</span><span class="p">.</span><span class="na">find</span><span class="p">(</span><span class="n">Board</span><span class="p">.</span><span class="na">class</span><span class="p">,</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>find()</code> 메서드는 데이터베이스에 다음과 같은 select 문을 전달합니다.</p>
 <div class="code-block highlight" data-lang="sql"><span class="k">select</span><span class="w"> </span><span class="n">id</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span></div>
 <h3>2.7.2 게시글 전체 조회</h3>
 <p><strong>EntityManager</strong>에는 전체 목록을 한 번에 조회하는 전용 메서드가 없습니다. 따라서 전체 데이터를 가져오려면 <strong>JPQL(Java Persistence Query Language)</strong> 을 사용해 직접 쿼리를 작성해서 실행해야 합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardRepository.java. JPQL로 전체 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> board/BoardRepository.java. JPQL로 전체 조회</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">em</span><span class="p">.</span><span class="na">createQuery</span><span class="p">(</span><span class="s">&quot;select b from Board b&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">class</span><span class="p">).</span><span class="na">getResultList</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>createQuery()</code>에 JPQL 문자열과 반환 타입을 넘겨 쿼리를 생성한 뒤, <code>getResultList()</code>를 호출해 실행합니다. 그러면 하이버네이트가 이 JPQL을 아래와 같은 실제 SQL로 번역해 줍니다.</p>
@@ -655,7 +654,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>JPQL의 문법은 다음 절에서 따로 다루겠습니다.</p>
 <h3>2.7.3 게시글 저장</h3>
 <p>데이터를 조회할 때 <code>find()</code>를 사용했다면, 새로운 데이터를 추가할 때는 <code>persist()</code> 메서드를 사용합니다. 새로 만든 엔티티 객체를 <code>persist()</code>에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/BoardRepository.java. 새 게시글 저장</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardRepository.java. 새 게시글 저장</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">em</span><span class="p">.</span><span class="na">persist</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>persist()</code>가 데이터베이스에 전달하는 SQL은 다음과 같습니다. <code>created_at</code>은 <strong>@CreationTimestamp</strong>가 채운 값이 그대로 들어갑니다.</p>
@@ -664,7 +663,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>JPA에는 데이터를 수정하는 메서드없이, 조회해 온 엔티티 객체의 값만 변경하면 데이터베이스에 자동으로 수정이 반영됩니다. 이를 더티 체킹(변경 감지)이라 부르며, 자세한 원리는 영속성 컨텍스트 챕터에서 다루겠습니다.</p>
 <h3>2.7.5 게시글 삭제</h3>
 <p>게시글을 삭제할 때는 <code>remove()</code> 메서드를 사용합니다. 이 메서드에 지우고자 하는 엔티티를 넘겨주면 JPA가 이를 삭제 대상으로 표시하고, 데이터베이스에 삭제 쿼리를 전달합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardRepository.java. 게시글 삭제</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/BoardRepository.java. 게시글 삭제</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">delete</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">em</span><span class="p">.</span><span class="na">remove</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p><code>remove()</code>가 데이터베이스에 전달하는 SQL은 다음과 같습니다.</p>
@@ -946,7 +945,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>이제 given-when-eye 형식에 맞춰 실제 테스트를 만들어 보겠습니다.</p>
 <p>테스트 코드는 <code>src/test/java</code> 아래에 <code>src/main/java</code>와 같은 패키지 구조로 둡니다. <code>board</code> 패키지에 <code>BoardRepositoryTest.java</code>를 생성합니다.</p>
 <p><code>BoardRepositoryTest.java</code> 파일에는 아래와 같이 코드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> BoardRepositoryTest.java. 테스트 클래스 골격</div><span class="nd">@Import</span><span class="p">(</span><span class="n">BoardRepository</span><span class="p">.</span><span class="na">class</span><span class="p">)</span><span class="w"> </span><span class="c1">// 검증할 BoardRepository를 빈으로 등록한다</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> BoardRepositoryTest.java. 테스트 클래스 골격</div><span class="nd">@Import</span><span class="p">(</span><span class="n">BoardRepository</span><span class="p">.</span><span class="na">class</span><span class="p">)</span><span class="w"> </span><span class="c1">// 검증할 BoardRepository를 빈으로 등록한다</span>
 <span class="nd">@DataJpaTest</span><span class="w"> </span><span class="c1">// 데이터베이스 연결과 EntityManager를 등록한다</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRepositoryTest</span><span class="w"> </span><span class="p">{</span>
 
@@ -959,7 +958,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <span class="w">    </span><span class="c1">// 테스트 메서드를 하나씩 채운다</span>
 <span class="p">}</span></div>
 <p>먼저 게시글 한 건 조회입니다. 테스트 메서드를 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> BoardRepositoryTest.java. 한 건 조회</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> BoardRepositoryTest.java. 한 건 조회</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findById_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
@@ -982,7 +981,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </div>
 <div class="caption">그림 2-27. 한 건 조회 실행 결과</div>
 <p>전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> BoardRepositoryTest.java. 전체 조회</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> BoardRepositoryTest.java. 전체 조회</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">findAll_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 
@@ -1007,7 +1006,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </div>
 <div class="caption">그림 2-28. 전체 조회 실행 결과</div>
 <p>게시글 저장은 <code>save()</code> 메서드를 실행한 후 저장된 결과를 확인하기 위해 <code>findAll()</code>을 한 번 더 사용합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> BoardRepositoryTest.java. 저장</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> BoardRepositoryTest.java. 저장</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">save_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Board</span><span class="p">();</span>
@@ -1038,7 +1037,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <div class="caption">그림 2-29. 저장 실행 결과</div>
 <p>게시글 수정은 update 메서드를 만들지 않고 영속 상태 엔티티의 더티체킹을 사용합니다.</p>
 <p>실제 서비스에서는 트랜잭션이 끝날 때 JPA가 <code>flush()</code>를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 <code>flush()</code>를 직접 호출합니다. 그리고 <code>clear()</code>를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> BoardRepositoryTest.java. 수정과 더티체킹</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> BoardRepositoryTest.java. 수정과 더티체킹</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">update_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
@@ -1066,7 +1065,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 </div>
 <div class="caption">그림 2-30. 수정 실행 결과</div>
 <p>게시글 삭제 테스트를 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> BoardRepositoryTest.java. 삭제</div><span class="w">    </span><span class="nd">@Test</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 12</span> BoardRepositoryTest.java. 삭제</div><span class="w">    </span><span class="nd">@Test</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">delete_test</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// given</span>
 <span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
@@ -1094,7 +1093,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.11.1 서비스</h3>
 <p>먼저 서비스를 작성합니다. 서비스는 리포지토리를 주입받고, <code>게시글목록()</code>에서 리포지토리의 <code>findAll()</code>을 호출해 결과를 반환합니다.</p>
 <p><code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardService.java. 게시글 목록</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> board/BoardService.java. 게시글 목록</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@Service</span><span class="w"> </span><span class="c1">// 스프링이 빈으로 등록한다</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardService</span><span class="w"> </span><span class="p">{</span>
 
@@ -1107,7 +1106,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.11.2 컨트롤러</h3>
 <p>이어서 요청을 받을 컨트롤러를 작성합니다. 컨트롤러는 서비스를 주입받고, 서비스의 <code>게시글목록()</code>을 호출해 결과를 반환합니다.</p>
 <p><code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardController.java. 게시글 목록</div><span class="nd">@RequiredArgsConstructor</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardController.java. 게시글 목록</div><span class="nd">@RequiredArgsConstructor</span>
 <span class="nd">@RestController</span>
 <span class="nd">@RequestMapping</span><span class="p">(</span><span class="s">&quot;/api/boards&quot;</span><span class="p">)</span><span class="w"> </span><span class="c1">// 공통 주소</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardController</span><span class="w"> </span><span class="p">{</span>
@@ -1137,13 +1136,13 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h2>2.12 게시글 상세</h2>
 <h3>2.12.1 서비스</h3>
 <p>게시글 상세 조회는 기본 키를 사용해 단일 데이터만 가져옵니다. 서비스에서 리포지토리의 <code>findById()</code>를 호출하도록 <code>board/BoardService.java</code>에 다음 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardService.java. 게시글 상세</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 15</span> board/BoardService.java. 게시글 상세</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>2.12.2 컨트롤러</h3>
 <p>컨트롤러는 URL 경로에 포함된 게시글 번호를 추출하여 서비스로 전달합니다. 경로 변수인 <code>{boardId}</code> 값은 <strong>@PathVariable</strong>을 사용해 가져옵니다.</p>
 <p><code>board/BoardController.java</code>에 다음 메서드를 추가해 이를 구현합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardController.java. 게시글 상세</div><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardController.java. 게시글 상세</div><span class="w">    </span><span class="nd">@GetMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findById</span><span class="p">(</span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글상세</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">responseBoard</span><span class="p">);</span>
@@ -1159,7 +1158,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.13.1 서비스</h3>
 <p>게시글 쓰기는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.</p>
 <p><code>board/BoardService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardService.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardService.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글쓰기</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">;</span>
@@ -1168,7 +1167,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.13.2 컨트롤러</h3>
 <p>클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 파라미터에 <strong>@RequestBody</strong>가 있다면, 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 매개변수로 전달합니다.</p>
 <p><code>board/BoardController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 19</span> board/BoardController.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@PostMapping</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardController.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@PostMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글쓰기</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">responseBoard</span><span class="p">);</span>
@@ -1190,7 +1189,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.14.1 서비스</h3>
 <p><code>게시글수정()</code>은 URL에 담긴 게시글 번호와 요청 바디로 들어온 값을 함께 전달받습니다.</p>
 <p><code>board/BoardService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 20</span> board/BoardService.java. 더티체킹으로 수정</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 19</span> board/BoardService.java. 더티체킹으로 수정</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글수정</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 수정할 게시글을 조회해 영속 상태로 가져온다</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
@@ -1202,7 +1201,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <p>값을 변경하기만 했는데도, <strong>@Transactional</strong>이 끝날 때 <code>flush()</code>가 스냅샷과 현재 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.</p>
 <h3>2.14.2 컨트롤러</h3>
 <p><code>board/BoardController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 21</span> board/BoardController.java. 게시글 수정</div><span class="w">    </span><span class="nd">@PutMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 20</span> board/BoardController.java. 게시글 수정</div><span class="w">    </span><span class="nd">@PutMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">                                    </span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글수정</span><span class="p">(</span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">);</span>
@@ -1224,14 +1223,14 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.15.1 서비스</h3>
 <p>삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다.</p>
 <p><code>board/BoardService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 22</span> board/BoardService.java. 게시글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 21</span> board/BoardService.java. 게시글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">게시글삭제</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findById</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">board</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>2.15.2 컨트롤러</h3>
 <p><code>board/BoardController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 23</span> board/BoardController.java. 게시글 삭제</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 22</span> board/BoardController.java. 게시글 삭제</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{boardId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">deleteById</span><span class="p">(</span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글삭제</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
