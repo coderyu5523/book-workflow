@@ -1,0 +1,199 @@
+<!doctype html><meta charset="utf-8">
+<title>3.4 도입부 시안 — 흐름 정리 목록</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+.caption,.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin:10px 0 26px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px}
+h2{font-size:17px;margin:44px 0 14px;color:#0f172a;border-top:2px solid #cbd5e1;padding-top:26px}
+h3{font-size:15px;margin:26px 0 12px;color:#334155}
+p{line-height:1.9;font-size:15px;margin:0 0 16px}
+ol{line-height:1.95;font-size:15px;padding-left:22px}
+ol li{margin-bottom:10px}
+b{color:#0f172a}
+.note{font-size:12.5px;color:#64748b;margin:0 0 22px;line-height:1.7}
+.svg-figure{margin-top:22px}
+</style>
+<div class="wrap">
+<h1>3.4 도입부 시안 — 그림은 그대로, 글을 어떻게 둘지</h1>
+<p class="note">그림 3-4·3-5·3-6은 지금 그대로입니다. 그림을 합치지 않습니다. 달라지는 것은 글의 자리뿐입니다.</p>
+<h2>안 1 — 지금 구조 유지 + 마지막에 흐름 정리 목록</h2>
+<p class="note">그림마다 한 문장씩 붙는 지금 구조를 그대로 두고(제가 넣었던 등록·목록 문장은 걷어냄), 그림 3-6 뒤에 네 단계 정리를 답니다.</p>
+<h3>3.4 예외 처리 추가</h3>
+<p>스프링에서 예외가 어떻게 처리되는지 흐름부터 알아보겠습니다.</p>
+<p>서비스에서 예외가 발생하면 그 아래 코드는 실행되지 않고 메서드가 그 자리에서 중단됩니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트에서 디스패처 서블릿, 컨트롤러를 거쳐 서비스까지 요청이 전달된 상태에서, 서비스에서 예외가 발생한다.">
+  <defs><marker id="c3e1-gA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#cbd5e1"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">클라이언트</text>
+  <line x1="138" y1="86" x2="180" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gA)"/>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">디스패처 서블릿</text>
+  <line x1="356" y1="86" x2="398" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gA)"/>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <line x1="544" y1="86" x2="586" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gA)"/>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="667" y="84" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">서비스</text>
+  <text x="667" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">예외 발생</text>
+</svg>
+</div>
+<p class="cap">그림 3-4. 예외 발생 지점</p>
+<p>중단된 메서드는 자신을 호출한 곳으로 예외를 넘깁니다. 그렇게 예외는 디스패처 서블릿까지 전달됩니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 예외가 컨트롤러로 전파되고, 컨트롤러에 try-catch가 없어 디스패처 서블릿까지 전달된다.">
+  <defs><marker id="c3e2-sA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">클라이언트</text>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="269" y="84" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">디스패처 서블릿</text>
+  <text x="269" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">예외 도착</text>
+
+  <line x1="398" y1="86" x2="356" y2="86" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3e2-sA)"/>
+  <text x="377" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">전달</text>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="472" y="84" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="472" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">중단</text>
+
+  <line x1="586" y1="86" x2="544" y2="86" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3e2-sA)"/>
+  <text x="565" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">예외 전파</text>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">서비스</text>
+</svg>
+</div>
+<p class="cap">그림 3-5. 예외 전파 경로</p>
+<p>디스패처 서블릿은 예외를 직접 처리하지 않고 예외 처리기에 넘깁니다. 특정 컨트롤러에 속하지 않고 모든 컨트롤러에서 발생한 예외를 받기 때문에 전역 예외 처리기라고 부릅니다.</p>
+<p>스프링은 전역 예외 처리기에서 발생한 예외의 타입에 맞는 메서드를 찾아 실행합니다. 그 메서드가 반환한 값이 응답이 되어 클라이언트에게 전달됩니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 238" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="디스패처 서블릿이 예외를 전역 예외 처리기에 넘기고, 전역 예외 처리기가 반환한 값이 응답이 되어 클라이언트에게 전달된다.">
+  <defs><marker id="c3e3-iA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iA)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="330" y1="126" x2="330" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iA)"/>
+  <text x="340" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="220" y1="170" x2="220" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iA)"/>
+  <text x="212" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">처리 결과</text>
+
+  <rect x="184" y="170" width="300" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="334" y="204" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+<p>지금까지의 흐름을 정리하면 다음과 같습니다.</p>
+<ol>
+<li><b>예외 발생</b>. 서비스가 예외를 발생시키면 그 아래 코드는 실행되지 않고 메서드가 그 자리에서 중단됩니다.</li>
+<li><b>호출한 곳으로 전파</b>. 중단된 메서드는 자신을 호출한 컨트롤러로 예외를 넘깁니다. 컨트롤러도 받지 않으면 예외는 디스패처 서블릿까지 올라갑니다.</li>
+<li><b>전역 예외 처리기로 전달</b>. 디스패처 서블릿은 예외를 직접 처리하지 않고 예외 처리기에 넘깁니다. 모든 컨트롤러에서 발생한 예외를 한 곳에서 받기 때문에 전역 예외 처리기라고 부릅니다.</li>
+<li><b>응답 반환</b>. 스프링은 발생한 예외의 타입에 맞는 메서드를 찾아 실행하고, 그 메서드가 반환한 값이 응답이 되어 클라이언트에게 전달됩니다.</li>
+</ol>
+<h2>안 2 — 1.4 방식. 그림 세 장을 먼저 보여주고 목록으로 한 번에 설명</h2>
+<p class="note">그림 사이 설명 문장을 없애고, 세 장을 차례로 보여준 뒤 각 단계 역할을 번호 목록으로 몰아 둡니다. 1.4 "스프링의 요청 흐름"(그림 1-13 + 네 단계 목록)과 같은 구조입니다.</p>
+<h3>3.4 예외 처리 추가</h3>
+<p>서비스에서 발생한 예외가 어디까지 전달되고 무엇이 받아 응답으로 바꾸는지 순서대로 따라가 보겠습니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트에서 디스패처 서블릿, 컨트롤러를 거쳐 서비스까지 요청이 전달된 상태에서, 서비스에서 예외가 발생한다.">
+  <defs><marker id="c3e1-gB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#cbd5e1"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">클라이언트</text>
+  <line x1="138" y1="86" x2="180" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gB)"/>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">디스패처 서블릿</text>
+  <line x1="356" y1="86" x2="398" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gB)"/>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <line x1="544" y1="86" x2="586" y2="86" stroke="#cbd5e1" stroke-width="1.6" marker-end="url(#c3e1-gB)"/>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="667" y="84" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">서비스</text>
+  <text x="667" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">예외 발생</text>
+</svg>
+</div>
+<p class="cap">그림 3-4. 예외 발생 지점</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 172" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 발생한 예외가 컨트롤러로 전파되고, 컨트롤러에 try-catch가 없어 디스패처 서블릿까지 전달된다.">
+  <defs><marker id="c3e2-sB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">클라이언트</text>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="269" y="84" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">디스패처 서블릿</text>
+  <text x="269" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">예외 도착</text>
+
+  <line x1="398" y1="86" x2="356" y2="86" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3e2-sB)"/>
+  <text x="377" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">전달</text>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="472" y="84" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="472" y="106" text-anchor="middle" font-size="12.5" fill="#c2410c">중단</text>
+
+  <line x1="586" y1="86" x2="544" y2="86" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#c3e2-sB)"/>
+  <text x="565" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#c2410c">예외 전파</text>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.7"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="800" fill="#c2410c">서비스</text>
+</svg>
+</div>
+<p class="cap">그림 3-5. 예외 전파 경로</p>
+<div class="svg-figure">
+<svg viewBox="0 0 760 238" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="디스패처 서블릿이 예외를 전역 예외 처리기에 넘기고, 전역 예외 처리기가 반환한 값이 응답이 되어 클라이언트에게 전달된다.">
+  <defs><marker id="c3e3-iB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iB)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="330" y1="126" x2="330" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iB)"/>
+  <text x="340" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="220" y1="170" x2="220" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-iB)"/>
+  <text x="212" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">처리 결과</text>
+
+  <rect x="184" y="170" width="300" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="334" y="204" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+<p>세 그림에서 각 단계가 맡는 역할은 다음과 같습니다.</p>
+<ol>
+<li><b>예외 발생</b>. 서비스가 예외를 발생시키면 그 아래 코드는 실행되지 않고 메서드가 그 자리에서 중단됩니다.</li>
+<li><b>호출한 곳으로 전파</b>. 중단된 메서드는 자신을 호출한 컨트롤러로 예외를 넘깁니다. 컨트롤러도 받지 않으면 예외는 디스패처 서블릿까지 올라갑니다.</li>
+<li><b>전역 예외 처리기로 전달</b>. 디스패처 서블릿은 예외를 직접 처리하지 않고 예외 처리기에 넘깁니다. 모든 컨트롤러에서 발생한 예외를 한 곳에서 받기 때문에 전역 예외 처리기라고 부릅니다.</li>
+<li><b>응답 반환</b>. 스프링은 발생한 예외의 타입에 맞는 메서드를 찾아 실행하고, 그 메서드가 반환한 값이 응답이 되어 클라이언트에게 전달됩니다.</li>
+</ol>
+</div>

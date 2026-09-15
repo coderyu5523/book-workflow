@@ -1,0 +1,167 @@
+<!doctype html><meta charset="utf-8">
+<title>그림 3-6 시안 — 전역 예외 처리기 안을 보여주기</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin-top:10px;margin-bottom:8px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px}
+h2{font-size:17px;margin:40px 0 14px;color:#0f172a;border-top:1px solid #e2e8f0;padding-top:26px}
+p{line-height:1.9;font-size:15px;margin:0 0 16px}
+.figbox{margin-top:22px}
+b{color:#0f172a}
+.note{font-size:12.5px;color:#64748b;margin:0 0 20px;line-height:1.7}
+</style>
+<div class="wrap">
+<h1>그림 3-6 시안 — 상자 안을 보여줄지 말지</h1>
+<p class="note">그림 3-4, 3-5는 그대로입니다. 마지막 그림 하나와 그 위 본문만 바뀝니다.</p>
+
+<h2>현재 — 본문 5문장 + 이름만 있는 상자</h2>
+<p>디스패처 서블릿은 예외를 직접 처리하지 않고 예외 처리기에 넘깁니다. 이 예외 처리기는 애플리케이션이 시작될 때 스프링이 미리 등록해 둡니다. 스프링은 예외 처리를 맡은 클래스를 찾아, 그 안의 메서드가 각각 어떤 예외 타입을 맡는지 짝지어 목록으로 보관합니다. 이 클래스는 특정 컨트롤러에 속하지 않고 모든 컨트롤러에서 발생한 예외를 받기 때문에 전역 예외 처리기라고 부릅니다.</p>
+<p>예외를 넘겨받으면 스프링은 이 목록에서 발생한 예외의 타입과 짝지어진 메서드를 찾아 실행합니다. 짝이 없으면 모든 예외를 받도록 지정해 둔 메서드가 대신 실행됩니다. 어느 쪽이든 메서드가 반환한 값이 응답이 되어 클라이언트에게 전달됩니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 238" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="o-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#o-i)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+  <line x1="330" y1="126" x2="330" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#o-i)"/>
+  <text x="340" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="220" y1="170" x2="220" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#o-i)"/>
+  <text x="212" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">처리 결과</text>
+  <rect x="184" y="170" width="300" height="56" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="334" y="204" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+
+<h2>안 A — 한국어 라벨 3줄</h2>
+<p>디스패처 서블릿은 예외를 직접 처리하지 않고 예외 처리기에 넘깁니다. 특정 컨트롤러에 속하지 않고 모든 컨트롤러에서 발생한 예외를 받기 때문에 전역 예외 처리기라고 부릅니다.</p>
+<p>전역 예외 처리기에는 어떤 예외를 어떤 응답으로 바꿀지 미리 적어 둡니다. 스프링이 발생한 예외에 해당하는 줄을 찾아 실행하고, 그 결과가 응답이 되어 클라이언트에게 전달됩니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 306" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="a-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/></marker>
+  </defs>
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#a-i)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="316" y1="126" x2="316" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#a-i)"/>
+  <text x="326" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="234" y1="170" x2="234" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#a-i)"/>
+  <text x="226" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">정해진 응답</text>
+
+  <rect x="150" y="170" width="420" height="122" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="360" y="196" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+
+  <text x="374" y="226" text-anchor="end" font-size="13" fill="#1e1b4b">없는 게시글 예외</text>
+  <line x1="382" y1="222" x2="404" y2="222" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a-s)"/>
+  <text x="412" y="226" font-size="13" font-weight="700" fill="#3730a3">404 응답</text>
+
+  <text x="374" y="252" text-anchor="end" font-size="13" fill="#1e1b4b">잘못된 요청 예외</text>
+  <line x1="382" y1="248" x2="404" y2="248" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a-s)"/>
+  <text x="412" y="252" font-size="13" font-weight="700" fill="#3730a3">400 응답</text>
+
+  <text x="374" y="278" text-anchor="end" font-size="13" fill="#1e1b4b">그 밖의 예외</text>
+  <line x1="382" y1="274" x2="404" y2="274" stroke="#6366f1" stroke-width="1.5" marker-end="url(#a-s)"/>
+  <text x="412" y="278" font-size="13" font-weight="700" fill="#3730a3">500 응답</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+
+<h2>안 B — 클래스명 3줄</h2>
+<p class="note">본문은 안 A와 같습니다. 3.4.2 코드와 글자 그대로 맞지만, <b>Exception404</b>는 바로 다음 절인 3.4.1에서 만듭니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 306" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="b-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="b-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/></marker>
+  </defs>
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#b-i)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="316" y1="126" x2="316" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#b-i)"/>
+  <text x="326" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="234" y1="170" x2="234" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#b-i)"/>
+  <text x="226" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">정해진 응답</text>
+
+  <rect x="150" y="170" width="420" height="122" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="360" y="196" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+
+  <text x="374" y="226" text-anchor="end" font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#1e1b4b">Exception404</text>
+  <line x1="382" y1="222" x2="404" y2="222" stroke="#6366f1" stroke-width="1.5" marker-end="url(#b-s)"/>
+  <text x="412" y="226" font-size="13" font-weight="700" fill="#3730a3">404 응답</text>
+
+  <text x="374" y="252" text-anchor="end" font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#1e1b4b">Exception400</text>
+  <line x1="382" y1="248" x2="404" y2="248" stroke="#6366f1" stroke-width="1.5" marker-end="url(#b-s)"/>
+  <text x="412" y="252" font-size="13" font-weight="700" fill="#3730a3">400 응답</text>
+
+  <text x="374" y="278" text-anchor="end" font-family="Consolas, 'D2Coding', monospace" font-size="13" fill="#1e1b4b">Exception</text>
+  <line x1="382" y1="274" x2="404" y2="274" stroke="#6366f1" stroke-width="1.5" marker-end="url(#b-s)"/>
+  <text x="412" y="278" font-size="13" font-weight="700" fill="#3730a3">500 응답</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+
+<h2>안 C — 한국어 라벨 2줄</h2>
+<p class="note">본문은 안 A와 같습니다. 줄을 둘로 줄여 그림을 가볍게 둡니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="c-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/></marker>
+  </defs>
+  <rect x="16" y="46" width="120" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="86" x2="138" y2="86" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c-i)"/>
+  <text x="159" y="74" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="46" width="170" height="80" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="46" width="140" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="46" width="154" height="80" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="316" y1="126" x2="316" y2="166" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c-i)"/>
+  <text x="326" y="152" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="234" y1="170" x2="234" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c-i)"/>
+  <text x="226" y="152" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">정해진 응답</text>
+
+  <rect x="150" y="170" width="420" height="96" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="360" y="196" text-anchor="middle" font-size="14" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+
+  <text x="374" y="226" text-anchor="end" font-size="13" fill="#1e1b4b">없는 게시글 예외</text>
+  <line x1="382" y1="222" x2="404" y2="222" stroke="#6366f1" stroke-width="1.5" marker-end="url(#c-s)"/>
+  <text x="412" y="226" font-size="13" font-weight="700" fill="#3730a3">404 응답</text>
+
+  <text x="374" y="252" text-anchor="end" font-size="13" fill="#1e1b4b">그 밖의 예외</text>
+  <line x1="382" y1="248" x2="404" y2="248" stroke="#6366f1" stroke-width="1.5" marker-end="url(#c-s)"/>
+  <text x="412" y="252" font-size="13" font-weight="700" fill="#3730a3">500 응답</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 전역 예외 처리기의 응답</p>
+</div>

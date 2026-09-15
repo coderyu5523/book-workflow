@@ -1,0 +1,115 @@
+<!doctype html><meta charset="utf-8">
+<title>그림 3-6 시안 — 스프링 안에서 벌어지는 일</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin:10px 0 8px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px}
+h2{font-size:17px;margin:44px 0 14px;color:#0f172a;border-top:2px solid #cbd5e1;padding-top:26px}
+p{line-height:1.9;font-size:15px;margin:0 0 16px}
+b{color:#0f172a}
+.note{font-size:12.5px;color:#64748b;margin:0 0 22px;line-height:1.7}
+.figbox{margin-top:22px}
+</style>
+<div class="wrap">
+<h1>그림 3-6 시안 — 예외를 넘긴 뒤 스프링 안에서 벌어지는 일</h1>
+<p class="note">응답 모양은 그리지 않습니다. 디스패처 서블릿이 예외를 넘긴 다음 무엇이 어떤 순서로 실행되는지만 담습니다.</p>
+
+<h2>안 1 — 세 단계</h2>
+<p class="note">예외 처리기 확인 → 담당 메서드 탐색 → 리플렉션 호출. 챕터 1에서 컨트롤러를 찾아 호출하던 흐름과 같은 구조로 읽힙니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 348" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="s1-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="s1-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/></marker>
+  </defs>
+  <rect x="16" y="36" width="120" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="71" x2="138" y2="71" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s1-i)"/>
+  <text x="159" y="59" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="36" width="170" height="70" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="36" width="140" height="70" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="36" width="154" height="70" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="316" y1="106" x2="316" y2="150" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s1-i)"/>
+  <text x="326" y="133" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="234" y1="154" x2="234" y2="110" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s1-i)"/>
+  <text x="226" y="133" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">처리 결과</text>
+
+  <rect x="150" y="154" width="454" height="176" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="166" y="176" font-size="12" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+
+  <rect x="166" y="186" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="210" font-size="12.5" fill="#1e1b4b">1. 예외를 처리할 수 있는 곳을 차례로 확인한다</text>
+  <line x1="377" y1="224" x2="377" y2="236" stroke="#6366f1" stroke-width="1.5" marker-end="url(#s1-s)"/>
+
+  <rect x="166" y="240" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="264" font-size="12.5" fill="#1e1b4b">2. 발생한 예외 타입을 맡은 메서드를 찾는다</text>
+  <line x1="377" y1="278" x2="377" y2="290" stroke="#6366f1" stroke-width="1.5" marker-end="url(#s1-s)"/>
+
+  <rect x="166" y="294" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="318" font-size="12.5" fill="#1e1b4b">3. 찾은 메서드를 리플렉션으로 호출한다</text>
+
+  <line x1="620" y1="259" x2="596" y2="259" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#s1-s)"/>
+  <text x="628" y="255" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#64748b">@RestController</text>
+  <text x="628" y="270" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#64748b">Advice</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 예외를 넘겨받은 뒤의 처리</p>
+
+<h2>안 2 — 세 단계 + 맡은 메서드가 없을 때</h2>
+<p class="note">안 1에 갈림길을 더합니다. 타입을 맡은 메서드가 없으면 예외는 톰캣까지 올라가고 서버는 500을 응답합니다. 3.4.2에서 모든 예외를 받는 메서드를 왜 하나 더 두는지가 여기서 설명됩니다.</p>
+<div class="figbox">
+<svg viewBox="0 0 760 396" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="s2-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="s2-s" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6366f1"/></marker>
+    <marker id="s2-g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="16" y="36" width="120" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="76" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="180" y1="71" x2="138" y2="71" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s2-i)"/>
+  <text x="159" y="59" text-anchor="middle" font-size="11.5" font-weight="600" fill="#4f46e5">응답</text>
+  <rect x="184" y="36" width="170" height="70" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="269" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <rect x="402" y="36" width="140" height="70" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="472" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">컨트롤러</text>
+  <rect x="590" y="36" width="154" height="70" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="667" y="77" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">서비스</text>
+
+  <line x1="316" y1="106" x2="316" y2="150" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s2-i)"/>
+  <text x="326" y="133" font-size="11.5" font-weight="600" fill="#4f46e5">예외를 넘김</text>
+  <line x1="234" y1="154" x2="234" y2="110" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s2-i)"/>
+  <text x="226" y="133" text-anchor="end" font-size="11.5" font-weight="600" fill="#4f46e5">처리 결과</text>
+
+  <rect x="150" y="154" width="454" height="176" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="166" y="176" font-size="12" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+
+  <rect x="166" y="186" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="210" font-size="12.5" fill="#1e1b4b">1. 예외를 처리할 수 있는 곳을 차례로 확인한다</text>
+  <line x1="377" y1="224" x2="377" y2="236" stroke="#6366f1" stroke-width="1.5" marker-end="url(#s2-s)"/>
+
+  <rect x="166" y="240" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="264" font-size="12.5" fill="#1e1b4b">2. 발생한 예외 타입을 맡은 메서드를 찾는다</text>
+  <line x1="377" y1="278" x2="377" y2="290" stroke="#6366f1" stroke-width="1.5" marker-end="url(#s2-s)"/>
+  <text x="387" y="288" font-size="10.5" font-weight="600" fill="#4338ca">있으면</text>
+
+  <rect x="166" y="294" width="422" height="38" rx="6" fill="#fff" stroke="#6366f1" stroke-width="1.4"/>
+  <text x="182" y="318" font-size="12.5" fill="#1e1b4b">3. 찾은 메서드를 리플렉션으로 호출한다</text>
+
+  <line x1="620" y1="259" x2="596" y2="259" stroke="#94a3b8" stroke-width="1.3" marker-end="url(#s2-s)"/>
+  <text x="628" y="255" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#64748b">@RestController</text>
+  <text x="628" y="270" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#64748b">Advice</text>
+
+  <path d="M150,259 H92 V352" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#s2-g)"/>
+  <text x="84" y="255" text-anchor="end" font-size="10.5" font-weight="600" fill="#64748b">없으면</text>
+  <rect x="16" y="356" width="330" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="32" y="378" font-size="12.5" fill="#475569">톰캣까지 올라가 500 응답</text>
+</svg>
+</div>
+<p class="cap">그림 3-6. 예외를 넘겨받은 뒤의 처리</p>
+</div>

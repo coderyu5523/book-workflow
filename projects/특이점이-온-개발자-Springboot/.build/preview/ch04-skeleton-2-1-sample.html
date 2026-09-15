@@ -1,0 +1,43 @@
+<!doctype html><meta charset="utf-8">
+<title>스프링 뼈대 원문 — 2.1 테이블 관계 (1:N, N:N)</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+h1{font-size:20px;margin:0 0 6px}
+.note{font-size:12.5px;color:#64748b;margin:0 0 26px;line-height:1.7}
+h2{font-size:17px;margin:38px 0 14px;color:#0f172a;border-top:1px solid #e2e8f0;padding-top:24px}
+h3{font-size:15.5px;margin:28px 0 12px;color:#3730a3}
+p{line-height:1.95;font-size:15px;margin:0 0 16px}
+blockquote{margin:0 0 18px;padding:16px 20px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;font-weight:700;line-height:1.9;font-size:14.5px;color:#312e81}
+.aside{margin:0 0 18px;padding:16px 20px;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;font-weight:700;line-height:1.9;font-size:14.5px;color:#7c2d12}
+figure{margin:22px 0 26px;text-align:center}
+figure img{max-width:100%;border:1px solid #e2e8f0;border-radius:6px}
+figcaption{font-size:12.5px;color:#64748b;margin-top:8px}
+b{color:#0f172a}
+</style>
+<div class="wrap">
+<h1>스프링 뼈대 원문 — 2.1 데이터베이스 테이블 관계 (1:N, N:N) 이해</h1>
+<p class="note">출처: 스프링-뼈대/v1/챕터 4/2 테이블 만들기. 문장·강조·그림 순서를 원문 그대로 옮겼습니다. 현재 원고 4.3과 비교용입니다.</p>
+
+<blockquote>관계형 데이터베이스는 데이터를 행(Row)과 열(Column) 구조의 테이블로 저장하고, 테이블 간의 관계를 통해 데이터를 관리하는 방식입니다. 테이블 간 관계의 종류에는 1:1 , 1:N , N:M 이 있습니다.</blockquote>
+
+<h2>2.1.1 1:N 관계</h2>
+<p>1대N 관계는 하나의 엔티티가 여러 개의 다른 엔티티와 연결되는 구조입니다.</p>
+<p>고객 테이블과 제품 테이블이 존재한다고 가정합니다. 한 명의 고객(예: 고객 ID 1)은 여러 개의 제품을 구매할 수 있습니다. 반면, 제품은 재고 수량 개념이 없으므로 하나의 제품은 특정 고객 테이블의 단일 행과만 매핑됩니다.</p>
+<figure><img src="../../%EC%8A%A4%ED%94%84%EB%A7%81-%EB%BC%88%EB%8C%80/v1/%EC%B1%95%ED%84%B0%204/2%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%A7%8C%EB%93%A4%EA%B8%B0/image.png" alt=""><figcaption>1.png — 고객 테이블과 제품 테이블의 1:N</figcaption></figure>
+<p>따라서 전체 구조로 보면 <b>소비자(1) : 제품(N)</b> , 즉 <b>1:N 관계</b>입니다.</p>
+<p>관계형 데이터베이스에서 두 테이블 간의 연관 관계를 정의하고 연결하기 위해 외래 키(Foreign Key)를 정의해야 합니다.</p>
+<div class="aside">아래 그림처럼 테이블 간 관계를 분리하지 않고 하나의 테이블에 저장하면, 한 컬럼에 여러 값이 들어가는 문제가 생깁니다. 이는 컬럼이 하나의 값만 가져야 한다는 원자성 원칙을 위반한 형태입니다.</div>
+<figure><img src="../../%EC%8A%A4%ED%94%84%EB%A7%81-%EB%BC%88%EB%8C%80/v1/%EC%B1%95%ED%84%B0%204/2%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%A7%8C%EB%93%A4%EA%B8%B0/image%201.png" alt=""><figcaption>2.png — 분리하지 않은 테이블(원자성 위반)</figcaption></figure>
+
+<h2>2.1.2 N:N 관계</h2>
+<p>이번에는 제품 테이블에 수량(Column)이 존재한다고 가정합니다.</p>
+<p>이 경우, 한 명의 고객은 여러 제품을 구매할 수 있으며, 동시에 각 제품도 재고 수량을 보유하고 있으므로 여러 고객에게 판매될 수 있습니다</p>
+<figure><img src="../../%EC%8A%A4%ED%94%84%EB%A7%81-%EB%BC%88%EB%8C%80/v1/%EC%B1%95%ED%84%B0%204/2%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%A7%8C%EB%93%A4%EA%B8%B0/image%202.png" alt=""><figcaption>3.png — 수량이 있는 제품 테이블, 고객에서 본 방향</figcaption></figure>
+<figure><img src="../../%EC%8A%A4%ED%94%84%EB%A7%81-%EB%BC%88%EB%8C%80/v1/%EC%B1%95%ED%84%B0%204/2%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%A7%8C%EB%93%A4%EA%B8%B0/image%203.png" alt=""><figcaption>4.png — 제품에서 본 방향</figcaption></figure>
+<p>따라서 고객과 제품 간에는 <b>소비자(N) : 제품(N)</b> , 즉 <b>N:N 관계</b>입니다.</p>
+<blockquote>중간 테이블을 생성하면, 두 테이블 간의 N:N(다대다) 관계를 각각의 1:N 관계로 분해하여 구현할 수 있습니다.</blockquote>
+<p>아래의 그림과 같이 구매 테이블을 생성합니다.</p>
+<p>한 고객은 여러 차례 제품을 구매할 수 있으며, 각 제품 역시 여러 고객에 의해 반복적으로 구매될 수 있습니다.</p>
+<figure><img src="../../%EC%8A%A4%ED%94%84%EB%A7%81-%EB%BC%88%EB%8C%80/v1/%EC%B1%95%ED%84%B0%204/2%20%ED%85%8C%EC%9D%B4%EB%B8%94%20%EB%A7%8C%EB%93%A4%EA%B8%B0/image%204.png" alt=""><figcaption>5.png — 구매 중간 테이블</figcaption></figure>
+</div>
