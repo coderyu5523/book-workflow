@@ -4,102 +4,17 @@
 
 댓글 테이블을 설계하던 오픈이는 머릿속이 복잡해졌습니다.
 
-*게시글, 게시글 작성자, 여러 개의 댓글, 그리고 댓글 작성자들까지... 이 많은 데이터를 한 화면에 뿌려주려면 어떻게 가져와야 하지?*
+*게시글, 게시글 작성자, 여러 개의 댓글, 그리고 댓글 작성자들까지... 이 많은 데이터를 한 화면에 다 보여주려면 어떻게 가져와야 하지?*
 
 오픈이는 선배를 찾아갔습니다.
 
 **오픈이**: "선배님, 게시글 상세 화면에 댓글까지 추가되니까 데이터를 어떻게 가져와야 할지 막막하네요."
 
-**선배**: "실무에서는 크게 두 가지 방법을 써요. 첫 번째는 쿼리를 두 번으로 나누는 겁니다. 게시글과 게시글 작성자를 먼저 조회하고, 그다음 이 게시글에 있는 댓글과 댓글 작성자 번호를 추가로 가져오는 거죠. 그리고 두 데이터를 DTO에 담아 합치는 방식이에요. 구조가 단순해서 실무에서도 많이 씁니다."
+**선배**: "실무에서는 크게 두 가지 방법을 써요. **첫 번째는 쿼리를 두 번으로 나누는 겁니다**. 게시글과 게시글 작성자를 먼저 조회하고, 그다음 이 게시글에 있는 댓글과 댓글 작성자 번호를 추가로 가져오는 거죠. 그리고 두 데이터를 DTO에 담아 합치는 방식이에요. 구조가 단순해서 실무에서도 많이 씁니다."
 
 **오픈이**: "그럼 두 번째 방법은요?"
 
-**선배**: "JPA의 양방향 매핑을 쓰는 거예요. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요. 이렇게 해두면 JPA에서 조인을 통해 한 번에 데이터를 가져올 수 있어요."
-
-<div class="svg-figure">
-<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블 구조에서는 board_tb와 user_tb가 각각 reply_tb와 1대N으로 이어지고 외래 키는 reply_tb에만 있다. 오른쪽 자바 객체 구조에서는 Board에 replies 목록 필드가 더 생겨 Board와 Reply가 양쪽 필드로 이어지고, User 쪽에는 목록 필드가 없다.">
-  <text x="245" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">테이블</text>
-  <text x="755" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">자바 객체</text>
-  <line x1="500" y1="50" x2="500" y2="380" stroke="#e2e8f0" stroke-width="2"/>
-
-  <rect x="40" y="60" width="150" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="40" y="60" width="150" height="28" rx="8" fill="#eef2ff"/>
-  <rect x="40" y="80" width="150" height="8" fill="#eef2ff"/>
-  <text x="115" y="79" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
-  <text x="56" y="108" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="56" y="128" font-size="12" font-family="monospace" fill="#475569">title</text>
-
-  <rect x="40" y="290" width="150" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="40" y="290" width="150" height="28" rx="8" fill="#eef2ff"/>
-  <rect x="40" y="310" width="150" height="8" fill="#eef2ff"/>
-  <text x="115" y="309" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
-  <text x="56" y="338" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="56" y="358" font-size="12" font-family="monospace" fill="#475569">username</text>
-
-  <rect x="290" y="150" width="160" height="124" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
-  <rect x="290" y="150" width="160" height="28" rx="8" fill="#fff4ed"/>
-  <rect x="290" y="170" width="160" height="8" fill="#fff4ed"/>
-  <text x="370" y="169" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
-  <text x="306" y="200" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="306" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
-  <text x="306" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
-  <text x="306" y="266" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
-
-  <path d="M190,110 H240 V210 H290" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <line x1="215" y1="100" x2="215" y2="120" stroke="#334155" stroke-width="1.8"/>
-  <text x="215" y="94" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
-  <path d="M278,200 L290,210 L278,220 M278,210 L290,210" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <text x="272" y="196" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
-
-  <path d="M190,326 H240 V236 H290" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <line x1="215" y1="316" x2="215" y2="336" stroke="#334155" stroke-width="1.8"/>
-  <text x="215" y="352" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
-  <path d="M278,226 L290,236 L278,246 M278,236 L290,236" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <text x="272" y="262" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
-
-  <rect x="550" y="60" width="180" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="550" y="60" width="180" height="28" rx="8" fill="#eef2ff"/>
-  <rect x="550" y="80" width="180" height="8" fill="#eef2ff"/>
-  <text x="640" y="79" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
-  <text x="566" y="108" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="566" y="130" font-size="12" font-family="monospace" fill="#475569">title</text>
-  <rect x="556" y="138" width="168" height="20" rx="4" fill="#eef2ff"/>
-  <text x="566" y="153" font-size="12" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
-
-  <rect x="550" y="290" width="180" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="550" y="290" width="180" height="28" rx="8" fill="#eef2ff"/>
-  <rect x="550" y="310" width="180" height="8" fill="#eef2ff"/>
-  <text x="640" y="309" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">User</text>
-  <text x="566" y="338" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="566" y="358" font-size="12" font-family="monospace" fill="#475569">username</text>
-
-  <rect x="800" y="150" width="180" height="124" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
-  <rect x="800" y="150" width="180" height="28" rx="8" fill="#fff4ed"/>
-  <rect x="800" y="170" width="180" height="8" fill="#fff4ed"/>
-  <text x="890" y="169" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
-  <text x="816" y="200" font-size="12" font-family="monospace" fill="#475569">id</text>
-  <text x="816" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
-  <text x="816" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
-  <text x="816" y="266" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
-
-  <path d="M730,148 H762 V244 H800" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <circle cx="730" cy="148" r="4" fill="#3730a3"/>
-  <line x1="746" y1="138" x2="746" y2="158" stroke="#334155" stroke-width="1.8"/>
-  <text x="746" y="132" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
-  <circle cx="800" cy="244" r="4" fill="#c2410c"/>
-  <path d="M788,234 L800,244 L788,254 M788,244 L800,244" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <text x="782" y="230" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
-
-  <path d="M800,266 H772 V326 H730" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <circle cx="800" cy="266" r="4" fill="#c2410c"/>
-  <path d="M812,256 L800,266 L812,276 M800,266 L812,266" fill="none" stroke="#334155" stroke-width="1.8"/>
-  <text x="818" y="288" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
-  <line x1="750" y1="316" x2="750" y2="336" stroke="#334155" stroke-width="1.8"/>
-  <text x="750" y="352" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
-</svg>
-</div>
-
-*그림 5-1. 테이블과 자바 객체의 차이*
+**선배**: "**JPA의 양방향 매핑을 쓰는 거예요**. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요. 이렇게 해두면 JPA에서 조인을 통해 한 번에 데이터를 가져올 수 있어요."
 
 :::goal
 **이번 챕터가 끝나면**
@@ -126,7 +41,7 @@ spring-start/ch05/src/main/java/com/metacoding/spring/
 │   ├── Board.java                        # [작성] @OneToMany replies, 작성자 지연 로딩
 │   ├── BoardRepository.java              # [작성] findByIdJoinUserAndReplies
 │   ├── BoardResponse.java                # [작성] DetailDTO에 replies
-│   └── BoardService.java                 # [작성] 상세 조회를 fetch join으로 교체
+│   └── BoardService.java                 # [작성] 상세 조회를 join fetch로 교체
 └── reply/
     ├── Reply.java                        # [작성] 댓글 엔티티(@ManyToOne user/board)
     ├── ReplyController.java              # [작성] 작성·삭제 엔드포인트
@@ -137,9 +52,6 @@ spring-start/ch05/src/main/java/com/metacoding/spring/
 
 spring-start/ch05/src/main/resources/
 └── db/data.sql                           # [참고] 댓글 더미 데이터
-
-spring-start/ch05/src/test/java/com/metacoding/spring/
-└── board/BoardRepositoryTest.java        # [작성] 즉시 로딩과 지연 로딩 확인
 ```
 
 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
@@ -147,38 +59,95 @@ spring-start/ch05/src/test/java/com/metacoding/spring/
 
 ## 5.1 양방향 매핑
 
-게시글 하나에 댓글이 여러 개 달리는 1대N 관계입니다. 데이터베이스는 댓글 쪽에 외래 키 하나만 두면 양쪽 조회가 다 가능하고, 자바에서도 매번 쿼리를 날려 댓글을 가져오면 됩니다. 하지만 JPA는 매번 쿼리를 짜는 대신, `board.getReplies()`처럼 자바 코드에서 연관 데이터를 바로 꺼내보는 편의성을 제공합니다.
+먼저 게시글과 댓글의 관계를 알아보겠습니다. 하나의 게시글에는 여러 개의 댓글이 달릴 수 있습니다. 그리고 하나의 댓글은 하나의 게시글에만 속하므로, **게시글과 댓글은 1:N 관계입니다**.
 
-이렇게 객체를 통해 데이터를 탐색하려면 게시글 객체 내부에도 댓글 목록(**List**)을 둬야 합니다. 그리고 이 리스트가 DB의 1대N 관계라는 것을 JPA에 알려주는 설정이 바로 **@OneToMany**입니다. 댓글의 **@ManyToOne**과 짝을 이뤄 서로를 연결해 주는 이 방식을 **양방향 매핑(Bidirectional Mapping)** 이라고 합니다.
+관계형 데이터베이스에서는 외래 키가 어느 쪽에 있든 두 테이블을 조인하여 연관된 데이터를 가져올 수 있습니다. 예를 들어 외래 키가 댓글 테이블에 있으면, 조인으로 게시글과 댓글 데이터를 한 번에 조회할 수 있습니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 엔티티와 Reply 엔티티가 서로를 참조하는 그림. Board에는 @OneToMany가, Reply에는 @ManyToOne이 붙어 있다. Reply에서 Board로 향하는 화살표에 getBoard()가, Board에서 Reply로 향하는 화살표에 getReplies()가 적혀 있다.">
+<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="board_tb와 reply_tb가 나란히 놓이고 두 박스를 잇는 직선의 양끝에 화살촉이 달려 있다. reply_tb에만 board_id 외래 키가 있다.">
+  <defs>
+    <marker id="c5tbl-two" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+  </defs>
+  <rect x="60" y="50" width="200" height="96" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="60" y="50" width="200" height="30" rx="10" fill="#eef2ff"/>
+  <rect x="60" y="72" width="200" height="8" fill="#eef2ff"/>
+  <text x="160" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="80" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="80" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
+  <rect x="460" y="50" width="200" height="124" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="50" width="200" height="30" rx="10" fill="#fff4ed"/>
+  <rect x="460" y="72" width="200" height="8" fill="#fff4ed"/>
+  <text x="560" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="480" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="480" y="130" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="480" y="154" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <path d="M260,98 H460" fill="none" stroke="#334155" stroke-width="2" marker-start="url(#c5tbl-two)" marker-end="url(#c5tbl-two)"/>
+  <text x="284" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">1</text>
+  <text x="436" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">N</text>
+  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">외래 키 하나로 양쪽 모두 조인합니다</text>
+</svg>
+</div>
+
+*그림 5-1. 테이블의 1:N 관계*
+
+반면 자바 객체의 참조는 한 방향으로만 이루어집니다. **Reply** 객체에 **Board** 타입 필드를 두면 댓글에서 게시글을 참조할 수는 있지만, 반대로 **Board** 객체에는 댓글을 가리키는 필드가 없어 게시글에서 댓글에 접근할 수는 없습니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Reply의 board 필드에서 Board로 향하는 화살표 하나만 그려져 있다. Board 쪽에는 댓글을 가리키는 필드가 없다.">
+  <defs>
+    <marker id="c5obj-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+  </defs>
+  <rect x="60" y="50" width="200" height="96" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="60" y="50" width="200" height="30" rx="10" fill="#eef2ff"/>
+  <rect x="60" y="72" width="200" height="8" fill="#eef2ff"/>
+  <text x="160" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <text x="80" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="80" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
+  <rect x="460" y="50" width="200" height="124" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="50" width="200" height="30" rx="10" fill="#fff4ed"/>
+  <rect x="460" y="72" width="200" height="8" fill="#fff4ed"/>
+  <text x="560" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="480" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="480" y="130" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="480" y="154" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <path d="M460,98 H260" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#c5obj-one)"/>
+  <text x="360" y="88" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#334155">board</text>
+  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">참조는 댓글에서 게시글 한 방향뿐입니다</text>
+</svg>
+</div>
+
+*그림 5-2. 자바 객체의 한 방향 참조*
+
+따라서 객체에서도 반대 방향으로 접근하려면 반대쪽 객체에도 참조를 위한 필드를 추가해야 합니다. JPA에서는 이런 방식을 **양방향 매핑(Bidirectional Mapping)** 이라고 합니다. 외래 키 참조를 위해 사용된 **@ManyToOne**과 짝을 이루도록, 반대편 객체에 **@OneToMany**를 추가하여 서로를 참조하게 만드는 방식입니다.
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 박스에는 replies 필드가, Reply 박스에는 board 필드가 있다. Board에서 Reply로 향하는 위쪽 화살표에는 OneToMany가, Reply에서 Board로 향하는 아래쪽 화살표에는 ManyToOne이 적혀 있다.">
   <defs>
     <marker id="c5bi-l" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
     <marker id="c5bi-r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-
-  <rect x="60" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <text x="170" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">@OneToMany</text>
-  <text x="170" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Board</text>
-
-  <rect x="440" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
-  <text x="550" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">@ManyToOne</text>
-  <text x="550" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Reply</text>
-
-  <line x1="436" y1="95" x2="288" y2="95" stroke="#ff7849" stroke-width="2" marker-end="url(#c5bi-l)"/>
-  <text x="362" y="82" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">getBoard()</text>
-
-  <line x1="284" y1="140" x2="432" y2="140" stroke="#4f46e5" stroke-width="2" marker-end="url(#c5bi-r)"/>
-  <text x="358" y="166" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">getReplies()</text>
+  <rect x="30" y="40" width="230" height="100" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="30" y="40" width="230" height="32" rx="10" fill="#eef2ff"/>
+  <rect x="30" y="64" width="230" height="8" fill="#eef2ff"/>
+  <text x="145" y="63" text-anchor="middle" font-size="16" font-weight="800" fill="#3730a3">Board</text>
+  <text x="145" y="112" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#475569">List&lt;Reply&gt; replies</text>
+  <rect x="460" y="40" width="230" height="100" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="40" width="230" height="32" rx="10" fill="#fff4ed"/>
+  <rect x="460" y="64" width="230" height="8" fill="#fff4ed"/>
+  <text x="575" y="63" text-anchor="middle" font-size="16" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="575" y="112" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#475569">Board board</text>
+  <path d="M260,80 H456" fill="none" stroke="#4f46e5" stroke-width="2" marker-end="url(#c5bi-r)"/>
+  <text x="358" y="70" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#4f46e5">@OneToMany</text>
+  <path d="M460,120 H264" fill="none" stroke="#ff7849" stroke-width="2" marker-end="url(#c5bi-l)"/>
+  <text x="360" y="142" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#c2410c">@ManyToOne</text>
 </svg>
 </div>
 
-*그림 5-2. 양방향 매핑*
+*그림 5-3. 양방향 매핑*
 
 ### 5.1.1 댓글 엔티티
 
-먼저 댓글 엔티티부터 정의합니다. **User** 엔티티와 **Board** 엔티티를 참조하는 필드를 포함하면, 각 댓글이 어떤 회원이 어떤 게시글에 작성했는지를 알 수 있습니다.
+먼저 댓글 엔티티부터 정의합니다. 댓글 작성자 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 추가합니다.
 
 `reply/Reply.java`를 열어 아래와 같이 작성합니다.
 
@@ -218,9 +187,9 @@ public class Reply {
 
 ### 5.1.2 게시글에 댓글 목록 추가
 
-양방향 매핑을 위해 **Board** 엔티티에 **Reply** 컬렉션을 필드로 추가합니다. 게시글에 달린 댓글을 한 번에 조회할 수 있도록 **List** 타입으로 선언하고, `mappedBy`에는 **Reply**에서 **Board**를 참조하는 필드 이름을 지정합니다.
+양방향 매핑을 위해 **Board** 엔티티에 댓글 목록을 필드로 추가합니다.
 
-두 엔티티가 서로를 참조하게 되면 어느 쪽을 기준으로 외래 키를 바꿀지 정해야 합니다. 외래 키 `board_id`를 실제로 가진 쪽은 댓글이므로, 값을 바꾸는 권한도 댓글이 갖습니다. 이렇게 외래 키를 관리하는 쪽을 **연관관계 주인**이라고 하며, 주인이 아닌 게시글 쪽은 `mappedBy`로 주인의 필드 이름을 가리키기만 합니다. 게시글의 `replies`에 댓글을 넣어도 데이터베이스는 바뀌지 않고, 댓글의 `board`를 바꿔야 반영됩니다.
+양방향 참조를 설정할 때는 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션에 `mappedBy`를 설정하고 상대방의 필드 이름을 명시해 주기만 하면 두 객체의 매핑이 연결됩니다.
 
 `board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
 
@@ -229,17 +198,11 @@ public class Reply {
     private List<Reply> replies = new ArrayList<>();
 ```
 
-`cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다. 또한 필드를 `new ArrayList<>()`로 초기화하면 댓글이 없는 경우에도 null 대신 빈 목록을 가지므로, 에러 없이 댓글 개수(0)를 확인할 수 있습니다.
-
-:::note
-**@OneToMany 필드는 테이블 컬럼이 아닙니다**
-
-**@OneToMany**에 선언한 필드는 엔티티 사이의 참조만 나타내며, 실제 데이터베이스 테이블에는 컬럼으로 추가되지 않습니다. 게시글 쪽에는 외래 키가 없고, JPA가 댓글의 `board_id`를 따라가 `replies`를 채웁니다.
-:::
+`cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다.
 
 ### 5.1.3 더미 데이터
 
-댓글 테이블이 추가되었으므로 시작할 때 넣어 둘 데이터에도 댓글을 더합니다.
+더미 데이터에 댓글을 추가합니다.
 
 ```sql [참고] resources/db/data.sql. 댓글 더미 데이터
 insert into reply_tb(comment,board_id,user_id,created_at) values('comment1',1,1,now());
@@ -255,21 +218,7 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 
 **즉시 로딩(Eager Loading)** 은 게시글을 조회할 때 연관된 **User** 엔티티까지 함께 조회하는 전략입니다. **@ManyToOne**의 기본 전략이 즉시 로딩이므로, `fetch` 속성을 따로 지정하지 않은 지금은 즉시 로딩으로 동작합니다.
 
-`test/board/BoardRepositoryTest.java`를 열어 게시글 번호만 출력하는 테스트를 추가합니다.
-
-```java [실습 3] test/board/BoardRepositoryTest.java. 즉시 로딩 확인
-    @Test
-    public void findByIdEager_test() {
-        // given
-        int id = 1;
-        // when
-        Board board = boardRepository.findById(id).get();
-        // eye
-        System.out.println("Board ID : " + board.getId());
-    }
-```
-
-EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 조회하면 **board_tb**와 **user_tb**를 조인하는 SELECT 쿼리가 실행됩니다.
+그래서 `findById()`로 게시글 하나를 조회하면 **board_tb**와 **user_tb**를 조인하는 SELECT 쿼리가 실행됩니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -284,13 +233,12 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">left join user_tb u1_0 on u1_0.id=b1_0.user_id</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;where b1_0.id=?</div>
-    <div><span class="tl-val">Board ID : 1</span></div>
   </div>
 </div>
 
-*그림 5-3. 즉시 로딩*
+*그림 5-4. 즉시 로딩*
 
-출력한 값은 게시글 번호뿐인데도 회원 데이터를 읽었습니다. 게시글 목록처럼 제목과 내용만 사용하는 화면에서는 이 조회는 필요 없습니다. 이럴 때는 반대 전략인 지연 로딩을 선택합니다.
+게시글 번호만 필요한 상황에도 회원 데이터까지 함께 조회합니다. 게시글 목록처럼 제목과 내용만 사용하는 화면에서는 이 조회는 필요 없습니다. 이럴 때는 반대 전략인 지연 로딩을 선택합니다.
 
 ### 5.2.2 지연 로딩
 
@@ -298,27 +246,10 @@ EAGER 전략이 적용되어 있으므로, `findById()`로 게시글 하나를 �
 
 `board/Board.java`의 작성자 필드에 `fetch` 속성을 아래와 같이 추가합니다.
 
-```java [실습 4] board/Board.java. 작성자 조회를 지연 로딩으로
+```java [실습 3] board/Board.java. 작성자 조회를 지연 로딩으로
     // 지연 로딩을 직접 지정한다
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
-```
-
-회원 데이터를 사용하면 어떻게 되는지 확인합니다.
-
-`test/board/BoardRepositoryTest.java`에 게시글 번호와 작성자 이름을 함께 출력하는 테스트를 추가합니다.
-
-```java [실습 5] test/board/BoardRepositoryTest.java. 지연 로딩 시점 확인
-    @Test
-    public void findByIdLazyLoading_test() {
-        // given
-        int id = 1;
-        // when
-        Board board = boardRepository.findById(id).get();
-        // eye
-        System.out.println("Board ID : " + board.getId());
-        System.out.println("username : " + board.getUser().getUsername());
-    }
 ```
 
 LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 **board_tb**만 조회하는 SELECT 쿼리가 실행됩니다. 이후 `getUsername()`으로 작성자 이름에 접근하는 순간, **user_tb**를 조회하는 쿼리가 추가로 실행됩니다.
@@ -334,16 +265,14 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
     <div>&nbsp;&nbsp;&nbsp;&nbsp;select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title, b1_0.user_id</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;where b1_0.id=?</div>
-    <div><span class="tl-val">Board ID : 1</span></div>
     <div><span class="tl-label">Hibernate:</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">select u1_0.id, u1_0.created_at, u1_0.email, u1_0.password, u1_0.username</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from user_tb u1_0</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?</div>
-    <div><span class="tl-val">username : ssar</span></div>
   </div>
 </div>
 
-*그림 5-4. 지연 로딩*
+*그림 5-5. 지연 로딩*
 
 :::tip
 **실무에서는 어떤 로딩 전략을 쓰는가**
@@ -353,7 +282,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 ## 5.3 댓글 목록
 
-댓글 목록은 게시글 상세 화면에서 게시글과 함께 가져와야 합니다. 이때 지연 로딩을 사용하면 조회 쿼리가 여러 번 발생하므로, FETCH JOIN으로 한 번에 조회합니다.
+댓글 목록은 게시글 상세 화면에서 게시글과 함께 가져와야 합니다. 이때 지연 로딩을 사용하면 조회 쿼리가 여러 번 발생하므로, join fetch로 한 번에 조회합니다.
 
 이때 작성자는 반드시 있으므로 JOIN으로 가져오고, 댓글은 없을 수도 있으므로 댓글과 댓글 작성자에는 LEFT OUTER JOIN을 적용합니다.
 
@@ -361,7 +290,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 6] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
+```java [실습 4] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
             + "left join fetch b.replies r left join fetch r.user "
             + "where b.id = :boardId")
@@ -376,7 +305,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
-```java [실습 7] board/BoardResponse.java. 상세에 댓글 목록 추가
+```java [실습 5] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -429,7 +358,7 @@ LAZY 전략으로 바꿨으므로, `findById()`로 게시글을 조회하는 시
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
-```java [실습 8] board/BoardService.java. 상세 조회를 fetch join으로 교체
+```java [실습 6] board/BoardService.java. 상세 조회를 join fetch로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
@@ -449,7 +378,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar로 로그인해 발급받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. body에 게시글(boardId 1, title1, content1, userId 1, username ssar)과 isOwner true가 담기고, replies 배열에 댓글 세 개(replyId 1·2는 ssar이 써서 isOwner true, replyId 3은 cos이 써서 isOwner false)가 이어지는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
-*그림 5-5. 댓글이 담긴 상세 응답*
+*그림 5-6. 댓글이 담긴 상세 응답*
 
 게시글의 `isOwner`가 true이고, ssar가 쓴 1·2번 댓글도 true, cos가 쓴 3번 댓글은 false입니다.
 
@@ -461,7 +390,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 9] reply/ReplyRepository.java. JpaRepository 상속
+```java [실습 7] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
@@ -472,7 +401,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 10] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 8] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -494,7 +423,7 @@ public class ReplyRequest {
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 11] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 9] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -515,7 +444,7 @@ public class ReplyResponse {
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 12] reply/ReplyService.java. 댓글 저장
+```java [실습 10] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
 @Service
 public class ReplyService {
@@ -544,7 +473,7 @@ public class ReplyService {
 
 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 13] reply/ReplyController.java. 댓글 작성 엔드포인트
+```java [실습 11] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/replies")
@@ -576,7 +505,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar 토큰을 Authorization 헤더에 담고 보낸 POST /api/replies 요청에 대한 200 응답. body에 replyId 5, comment "comment5", username ssar이 담긴 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/04_reply-save.png)
-*그림 5-6. 댓글 쓰기 응답*
+*그림 5-7. 댓글 쓰기 응답*
 
 ## 5.5 댓글 삭제
 
@@ -586,7 +515,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 14] reply/ReplyService.java. 댓글 삭제
+```java [실습 12] reply/ReplyService.java. 댓글 삭제
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
@@ -607,7 +536,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyController.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 15] reply/ReplyController.java. 댓글 삭제 엔드포인트
+```java [실습 13] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
@@ -629,7 +558,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: 두 장면을 위아래로 담은 캡처. (1) ssar 토큰으로 cos가 쓴 3번 댓글에 보낸 DELETE /api/replies/3 요청에 { "status": 403, "msg": "댓글을 삭제할 권한이 없습니다", "body": null }가 돌아오는 화면. (2) ssar이 쓴 1번 댓글에 보낸 DELETE /api/replies/1 요청이 200으로 성공하는 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/05_reply-delete-403.png)
-*그림 5-7. 댓글 삭제 응답*
+*그림 5-8. 댓글 삭제 응답*
 
 댓글까지 되자 게시판이 완성됐습니다. 게시글을 쓰고 읽고 고치고 지우고, 게시글과 댓글은 작성자만 관리합니다.
 
@@ -640,7 +569,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 :::remember
 **이것만은 기억하자**
 
-- **양방향 매핑에서 외래 키를 가진 쪽이 연관관계 주인입니다.** 댓글에 `board_id`가 있으므로 주인이고, 게시글은 `mappedBy`로 주인을 가리킵니다. **@OneToMany** 필드는 테이블 컬럼이 아니며, `cascade = REMOVE`를 붙이면 게시글을 지울 때 연관된 댓글도 함께 지워집니다.
+- **양방향 매핑은 `mappedBy`로 연결합니다.** 게시글의 **@OneToMany**에 댓글의 필드 이름을 적으면 두 엔티티가 서로를 참조합니다. `cascade = REMOVE`를 붙이면 게시글을 지울 때 연관된 댓글도 함께 지워집니다.
 - **즉시 로딩은 연관 엔티티를 함께 가져오고, 지연 로딩은 접근하는 순간 조회합니다.** 기본은 지연 로딩으로 두고, 한 번에 가져와야 하는 조회에서만 `join fetch`로 묶습니다. 댓글이 없는 게시글까지 조회하려면 `left join fetch`를 씁니다.
 - **리플렉션에서 시작해 게시판 하나를 인증과 댓글까지 챙겨 완성했습니다.** 스프링이 대신 해 주던 일들의 이름을 이제 하나씩 부를 수 있습니다. 마법처럼 보이던 것은 리플렉션 위에 세운 규칙이었습니다.
 :::
