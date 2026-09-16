@@ -191,14 +191,17 @@ public class Reply {
 
 양방향 참조를 설정할 때는 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션에 `mappedBy`를 설정하고 상대방의 필드 이름을 명시해 주기만 하면 두 객체의 매핑이 연결됩니다.
 
-`board/Board.java`를 열어 아래와 같이 필드를 작성합니다.
+`board/Board.java`를 열어 아래와 같이 작성자 필드를 변경하고 댓글 목록 필드를 추가합니다.
 
-```java [실습 2] board/Board.java. 댓글 목록 연관관계 추가
+```java [실습 2] board/Board.java. 댓글 목록 추가와 작성자 필드 수정
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Reply> replies = new ArrayList<>();
 ```
 
-`cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다.
+`cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다. 두 필드에 함께 적은 `fetch`는 연관된 데이터를 언제 가져올지 정하는 속성으로, 다음 절에서 이어서 설명합니다.
 
 ### 5.1.3 더미 데이터
 
@@ -212,51 +215,15 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 ```
 ## 5.2 즉시 로딩과 지연 로딩
 
-JPA로 개발할 때 마주하는 가장 흔한 성능 문제는 당장 필요 없는 연관 데이터까지 조회하는 상황입니다. 예를 들어 게시글 상세 화면에서 댓글이 없는 경우를 가정해 보겠습니다. 댓글이 없어도 데이터베이스에서 존재 유무를 확인하므로 불필요한 조회가 발생하고, 서버에 부하를 줍니다.
+JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연관 데이터까지 함께 조회할 때 발생합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. `findAll()`로 게시글을 조회할 때 JPA가 연관된 회원 엔티티까지 가져온다면, 게시글 수만큼 회원 조회 쿼리가 추가로 실행됩니다. 결국 쓰지 않는 데이터 때문에 서버와 데이터베이스에 부하를 줍니다.
 
 이러한 성능 저하를 막기 위해 JPA는 연관된 데이터를 **조회하는 시점에 한 번에 가져올지**, 아니면 **실제로 사용하는 시점에 조회할지**를 개발자가 직접 정할 수 있도록 두 가지 로딩 방식을 제공합니다.
 
 ### 5.2.1 즉시 로딩
 
-**즉시 로딩(Eager Loading)** 은 엔티티를 조회할 때 연관된 엔티티까지 한 번에 조회하는 방식입니다. 게시글을 조회하면 JPA가 작성자 정보까지 함께 조회합니다.
+**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 한 번에 가져오는 방식**으로, **@ManyToOne** 어노테이션은 이 즉시 로딩이 기본 전략입니다. 그래서 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
 
-**@ManyToOne**의 기본 전략이 즉시 로딩이므로, `fetch` 속성을 지정하지 않은 **Board**의 작성자 필드는 즉시 로딩으로 동작합니다.
-
-그래서 `findById()`로 게시글 하나를 조회하면 **board_tb**와 **user_tb**를 조인하는 SELECT 쿼리가 실행됩니다.
-
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div><span class="tl-label">Hibernate:</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title,</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;u1_0.id, u1_0.created_at, u1_0.email, u1_0.password, u1_0.username</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">left join user_tb u1_0 on u1_0.id=b1_0.user_id</span></div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;where b1_0.id=?</div>
-  </div>
-</div>
-
-*그림 5-4. 즉시 로딩*
-
-게시글 번호만 필요한 상황에도 회원 데이터까지 함께 조회합니다. 게시글 목록처럼 제목과 내용만 사용하는 화면에서는 이 조회는 필요 없습니다. 이럴 때는 반대 방식인 지연 로딩을 선택합니다.
-
-### 5.2.2 지연 로딩
-
-**지연 로딩(Lazy Loading)** 은 엔티티를 먼저 조회하고, 연관된 엔티티는 실제로 접근하는 순간에 조회하는 방식입니다. 게시글을 조회할 때는 게시글 데이터만 읽고, 작성자 정보는 필요해질 때 다시 조회합니다.
-
-`board/Board.java`의 작성자 필드에 `fetch` 속성을 아래와 같이 추가합니다.
-
-```java [실습 3] board/Board.java. 작성자 조회를 지연 로딩으로
-    // 지연 로딩을 직접 지정한다
-    @ManyToOne(fetch = FetchType.LAZY)
-    private User user;
-```
-
-LAZY로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 **board_tb**만 조회하는 SELECT 쿼리가 실행됩니다. 이후 `getUsername()`으로 작성자 이름에 접근하는 순간, **user_tb**를 조회하는 쿼리가 추가로 실행됩니다.
+이러한 설정 때문에 `findAll()`로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 작성자 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -268,15 +235,46 @@ LAZY로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 
     <div><span class="tl-label">Hibernate:</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title, b1_0.user_id</div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;where b1_0.id=?</div>
     <div><span class="tl-label">Hibernate:</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">select u1_0.id, u1_0.created_at, u1_0.email, u1_0.password, u1_0.username</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from user_tb u1_0</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?</div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?<span class="tl-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 게시글마다 반복</span></div>
   </div>
 </div>
 
-*그림 5-5. 지연 로딩*
+*그림 5-4. 즉시 로딩으로 목록을 조회할 때의 쿼리*
+
+### 5.2.2 지연 로딩
+
+이러한 문제를 해결하기 위해 사용하는 방식이 **지연 로딩(Lazy Loading)** 입니다.
+
+지연 로딩은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. 이 방식은 처음 데이터를 조회할 때 엔티티 대신 외래 키(`user_id`)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.
+
+지연 로딩은 **@ManyToOne**의 `fetch` 속성을 LAZY로 설정해 적용할 수 있습니다.
+
+```java board/Board.java. 작성자 조회를 지연 로딩으로
+    @ManyToOne(fetch = FetchType.LAZY)
+    private User user;
+```
+
+같은 `findAll()`을 실행해도 이번에는 **board_tb**를 읽는 쿼리 하나로 끝납니다. 목록이 작성자를 꺼내 쓰지 않으므로 회원을 조회할 이유가 없습니다.
+
+<div class="terminal-log">
+  <div class="tl-chrome">
+    <div class="tl-traffic"><span></span><span></span><span></span></div>
+    <div class="tl-title">실행결과</div>
+    <div class="tl-spacer"></div>
+  </div>
+  <div class="tl-body">
+    <div><span class="tl-label">Hibernate:</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">select b1_0.id, b1_0.content, b1_0.created_at, b1_0.title, b1_0.user_id</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;from board_tb b1_0</div>
+  </div>
+</div>
+
+*그림 5-5. 지연 로딩으로 목록을 조회할 때의 쿼리*
+
+작성자가 필요한 상세 화면에서는 `getUsername()`으로 이름을 꺼내는 순간 **user_tb**를 조회하는 쿼리가 그때 실행됩니다.
 
 :::tip
 **실무에서는 어떤 로딩 방식을 쓰는가**
@@ -294,7 +292,7 @@ LAZY로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 4] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
+```java [실습 3] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user "
             + "left join fetch b.replies r left join fetch r.user "
             + "where b.id = :boardId")
@@ -309,7 +307,7 @@ LAZY로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
-```java [실습 5] board/BoardResponse.java. 상세에 댓글 목록 추가
+```java [실습 4] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -362,7 +360,7 @@ LAZY로 바꿨으므로, `findById()`로 게시글을 조회하는 시점에는 
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
-```java [실습 6] board/BoardService.java. 상세 조회를 join fetch로 교체
+```java [실습 5] board/BoardService.java. 상세 조회를 join fetch로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
@@ -394,7 +392,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 7] reply/ReplyRepository.java. JpaRepository 상속
+```java [실습 6] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
@@ -405,7 +403,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 8] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 7] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -427,7 +425,7 @@ public class ReplyRequest {
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 9] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 8] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -448,7 +446,7 @@ public class ReplyResponse {
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 10] reply/ReplyService.java. 댓글 저장
+```java [실습 9] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
 @Service
 public class ReplyService {
@@ -477,7 +475,7 @@ public class ReplyService {
 
 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 11] reply/ReplyController.java. 댓글 작성 엔드포인트
+```java [실습 10] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/replies")
@@ -519,7 +517,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 12] reply/ReplyService.java. 댓글 삭제
+```java [실습 11] reply/ReplyService.java. 댓글 삭제
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
@@ -540,7 +538,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 
 `reply/ReplyController.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 13] reply/ReplyController.java. 댓글 삭제 엔드포인트
+```java [실습 12] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
