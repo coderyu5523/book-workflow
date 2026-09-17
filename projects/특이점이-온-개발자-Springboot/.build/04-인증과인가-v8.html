@@ -865,8 +865,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>서버를 실행한 뒤 ssar로 로그인해 받은 토큰을 헤더에 담아 1번 게시글의 상세 조회 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span>
-<span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span></div>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
 <!-- [CAPTURE NEEDED: 02_board-detail-with-user
   path: assets/CH4/terminal/02_board-detail-with-user.png
   desc: ssar로 로그인해 받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1", "userId": 1, "username": "ssar", "isOwner": true } } 형태로, 게시글 세 값에 작성자의 아이디와 유저네임, 본인 여부가 더해져 나온 화면. 비밀번호는 응답에 없음. Hoppscotch 또는 브라우저 응답.
@@ -908,7 +907,6 @@
 <span class="w">    </span><span class="p">}</span></div>
 <p>로그인에서 받은 토큰을 Authorization 헤더에 담아 게시글 추가 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 추가 요청</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
-<span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span>
 
 <span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;제목&quot;</span><span class="p">,</span>
@@ -952,7 +950,6 @@
 <span class="w">    </span><span class="p">}</span></div>
 <p>ssar이 작성한 1번 게시글의 수정 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 수정 요청</div><span class="err">PUT</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span>
-<span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span>
 
 <span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;수정한 제목&quot;</span><span class="p">,</span>
@@ -991,8 +988,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>ssar이 작성한 2번 게시글의 삭제 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 삭제 요청</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/2</span>
-<span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span></div>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 삭제 요청</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/2</span></div>
 <!-- [CAPTURE NEEDED: 07_board-delete
   path: assets/CH4/terminal/07_board-delete.png
   desc: 토큰을 Authorization 헤더에 담고 보낸 DELETE /api/boards/2 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": null } 형태로, 돌려줄 데이터가 없어 body가 null인 화면. Hoppscotch 또는 브라우저 응답.
