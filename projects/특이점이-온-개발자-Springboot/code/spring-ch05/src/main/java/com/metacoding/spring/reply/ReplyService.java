@@ -15,7 +15,7 @@ public class ReplyService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User loginUser) {
+    public ReplyResponse.DTO 댓글추가(ReplyRequest.SaveDTO requestDTO, User loginUser) {
         // 로그인 확인
         if (loginUser == null) {
             throw new Exception401("로그인이 필요합니다");

@@ -215,15 +215,15 @@ insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,
 ```
 ## 5.2 즉시 로딩과 지연 로딩
 
-JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연관 데이터까지 함께 조회할 때 발생합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. `findAll()`로 게시글을 조회할 때 JPA가 연관된 회원 엔티티까지 가져온다면, 게시글 수만큼 회원 조회 쿼리가 추가로 실행됩니다. 결국 쓰지 않는 데이터 때문에 서버와 데이터베이스에 부하를 줍니다.
+JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연관 데이터까지 함께 조회할 때 발생합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. `findAll()`로 게시글 전체를 조회할 때 JPA가 연관된 회원 엔티티까지 가져온다면, 게시글 수만큼 회원 조회 쿼리가 추가로 실행됩니다. 결국 쓰지 않는 데이터 때문에 서버와 데이터베이스에 부하를 줍니다.
 
-이러한 성능 저하를 막기 위해 JPA는 연관된 데이터를 **조회하는 시점에 한 번에 가져올지**, 아니면 **실제로 사용하는 시점에 조회할지**를 개발자가 직접 정할 수 있도록 두 가지 로딩 방식을 제공합니다.
+이러한 성능 저하를 막기 위해 JPA는 연관된 데이터를 **조회하는 시점에 한 번에 가져올지**, 아니면 **실제로 사용하는 시점에 조회할지**를 직접 지정할 수 있습니다.
 
 ### 5.2.1 즉시 로딩
 
-**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 한 번에 가져오는 방식**으로, **@ManyToOne** 어노테이션은 이 즉시 로딩이 기본 전략입니다. 그래서 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
+**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 한 번에 가져오는 방식**으로, **@ManyToOne** 어노테이션은 즉시 로딩이 기본 전략입니다. 그래서 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
 
-이러한 설정 때문에 `findAll()`로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 작성자 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
+이러한 설정 때문에 `findAll()`로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -284,7 +284,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 이제 게시글 상세 화면에 댓글 목록을 추가해 보겠습니다.
 
-게시글 상세 화면에서는 게시글과 게시글 작성자 정보, 그리고 댓글과 댓글 작성자 정보를 함께 가져와야 합니다. 이때 게시글의 작성자는 항상 존재하므로 INNER JOIN을 사용합니다. 반면 댓글은 아직 작성되지 않았을 수도 있으므로, 게시글 데이터 자체가 누락되지 않도록 댓글과 댓글 작성자는 LEFT OUTER JOIN을 적용해야 합니다.
+게시글 상세 화면에서는 게시글과 게시글 작성자 정보, 그리고 댓글과 댓글 작성자 정보를 함께 가져와야 합니다. 이때 게시글의 작성자는 항상 존재하므로 INNER JOIN을 사용합니다. 반면 **댓글도 INNER JOIN을 사용하면 댓글이 없는 게시글은 조회되지 않으므로, LEFT OUTER JOIN을 사용해야 합니다**.
 
 ### 5.3.1 리포지토리
 
@@ -298,11 +298,11 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
     Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);
 ```
 
-게시글 상세 화면의 응답 데이터에는 댓글 목록과 각 댓글 작성자 정보가 모두 포함되어야 합니다. 만약 fetch 없이 일반 조인만 사용하면 이 엔티티들이 지연 로딩 상태로 남게 되어, 응답 DTO로 변환할 때 실제 데이터에 접근하면서 추가 쿼리가 발생하게 됩니다. 따라서 댓글과 그 작성자 정보도 join fetch를 사용하여 게시글과 함께 한 번에 가져옵니다.
+게시글 상세 화면의 응답 데이터에는 댓글 목록과 각 댓글 작성자 정보가 모두 포함되어야 합니다. 만약 fetch 없이 일반 조인만 사용하면 댓글과 작성자 정보는 지연 로딩으로 조회되어, **댓글과 작성자 정보를 실제로 사용하는 시점에 추가 쿼리가 실행**됩니다. 따라서 댓글과 댓글 작성자 정보도 join fetch를 사용하여 게시글과 함께 한 번에 가져옵니다.
 
 ### 5.3.2 응답 DTO
 
-하나의 게시글에는 여러 댓글이 달릴 수 있으므로 댓글 필드를 **List** 타입으로 담습니다.
+다음으로 데이터베이스에서 조회된 결과를 담을 수 있도록 DTO를 수정해 보겠습니다. 하나의 게시글에는 여러 개의 댓글이 있을 수 있으므로 DTO 내부에 **List** 타입의 DTO 필드를 추가하여 하나씩 담습니다.
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
@@ -314,6 +314,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
             Integer userId,
             String username,
             Boolean isOwner,
+            // List 타입의 댓글 DTO 필드
             List<ReplyDTO> replies) {
 
         public DetailDTO(Board board, User loginUser) {
@@ -326,6 +327,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
                     // 비로그인이면 false, 요청자와 작성자가 같으면 true
                     loginUser != null
                             && loginUser.getId().equals(board.getUser().getId()),
+                    // 댓글 엔티티를 하나씩 ReplyDTO로 변환해 List에 담기
                     board.getReplies().stream()
                             .map(reply -> new ReplyDTO(reply, loginUser))
                             .toList());
@@ -350,8 +352,6 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
         }
     }
 ```
-
-함께 조회된 댓글 엔티티는 **DetailDTO** 내부에 별도의 **DTO**를 추가하여 담습니다.
 
 ### 5.3.3 서비스
 
@@ -381,13 +381,11 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
 *그림 5-6. 댓글이 담긴 상세 응답*
 
-게시글의 `isOwner`가 true이고, ssar가 쓴 1·2번 댓글도 true, cos가 쓴 3번 댓글은 false입니다.
-
-## 5.4 댓글 쓰기
+## 5.4 댓글 추가
 
 ### 5.4.1 리포지토리
 
-댓글을 저장하고 조회하는 리포지토리를 구현합니다.
+댓글 추가 기능을 위해 Repository를 구현해야 합니다.
 
 `reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
 
@@ -398,7 +396,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 ### 5.4.2 요청 DTO
 
-**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 담아 둔 **User** 엔티티를 활용합니다.
+**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 JWT를 확인해 요청 객체에 담아 둔 로그인 회원 정보를 사용합니다.
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
@@ -420,7 +418,7 @@ public class ReplyRequest {
 
 ### 5.4.3 응답 DTO
 
-응답으로 반환할 댓글 하나를 담을 **DTO**도 정의합니다.
+댓글을 추가한 결과를 응답으로 반환할 **DTO**도 정의합니다.
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
@@ -441,7 +439,7 @@ public class ReplyResponse {
 
 ### 5.4.4 서비스
 
-서비스는 전달받은 게시글 아이디와 로그인 유저로 **Reply** 엔티티를 생성하고 `save()`를 호출합니다.
+서비스는 요청으로 받은 게시글 번호로 게시글을 조회합니다. 그리고 조회한 게시글과 로그인 회원 정보로 댓글 엔티티를 생성해 저장합니다.
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
@@ -454,7 +452,7 @@ public class ReplyService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public ReplyResponse.DTO 댓글쓰기(ReplyRequest.SaveDTO requestDTO, User loginUser) {
+    public ReplyResponse.DTO 댓글추가(ReplyRequest.SaveDTO requestDTO, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
         if (loginUser == null) {
             throw new Exception401("로그인이 필요합니다");
@@ -486,7 +484,7 @@ public class ReplyController {
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody ReplyRequest.SaveDTO requestDTO) {
         User loginUser = (User) request.getAttribute("loginUser");
-        ReplyResponse.DTO respDTO = replyService.댓글쓰기(requestDTO, loginUser);
+        ReplyResponse.DTO respDTO = replyService.댓글추가(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 }
@@ -506,7 +504,7 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9...
   desc: ssar 토큰을 Authorization 헤더에 담고 보낸 POST /api/replies 요청에 대한 200 응답. body에 replyId 5, comment "comment5", username ssar이 담긴 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 ![](../assets/CH5/terminal/04_reply-save.png)
-*그림 5-7. 댓글 쓰기 응답*
+*그림 5-7. 댓글 추가 응답*
 
 ## 5.5 댓글 삭제
 

@@ -26,7 +26,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글쓰기(BoardRequest.SaveDTO requestDTO, User loginUser) {
+    public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO, User loginUser) {
         // 로그인 확인
         if (loginUser == null) {
             throw new Exception401("로그인이 필요합니다");

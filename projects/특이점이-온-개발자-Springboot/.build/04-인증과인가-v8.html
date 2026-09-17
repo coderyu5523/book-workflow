@@ -872,7 +872,7 @@
   desc: ssar로 로그인해 받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1", "userId": 1, "username": "ssar", "isOwner": true } } 형태로, 게시글 세 값에 작성자의 아이디와 유저네임, 본인 여부가 더해져 나온 화면. 비밀번호는 응답에 없음. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\02_board-detail-with-user.png" alt="" /><div class="caption">그림 4-15. 상세 조회 응답의 isOwner</div></div>
-<h2>4.9 게시글 쓰기</h2>
+<h2>4.9 게시글 추가</h2>
 <p>게시글을 새로 작성할 때는 로그인한 사용자를 해당 게시글의 작성자로 연결해 저장합니다.</p>
 <h3>4.9.1 요청 DTO</h3>
 <p><code>board/BoardRequest.java</code>를 열어 <code>toEntity()</code>에 <code>user</code>를 아래와 같이 추가합니다.</p>
@@ -884,9 +884,9 @@
 <span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.9.2 서비스</h3>
-<p>요청 DTO를 엔티티로 변환해 저장하도록 <code>board/BoardService.java</code>의 <code>게시글쓰기()</code>를 아래와 같이 변경합니다.</p>
+<p>요청 DTO를 엔티티로 변환해 저장하도록 <code>board/BoardService.java</code>의 <code>게시글추가()</code>를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardService.java. 로그인을 확인하고 작성자를 담아 저장</div><span class="w">    </span><span class="nd">@Transactional</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글쓰기</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글추가</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">loginUser</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="kc">null</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="k">throw</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception401</span><span class="p">(</span><span class="s">&quot;로그인이 필요합니다&quot;</span><span class="p">);</span>
@@ -897,17 +897,17 @@
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.9.3 컨트롤러</h3>
 <p>컨트롤러는 필터가 담아 둔 유저를 꺼내 서비스로 전달합니다.</p>
-<p><code>board/BoardController.java</code>의 쓰기 메서드를 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardController.java. 쓰기 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PostMapping</span>
+<p><code>board/BoardController.java</code>의 추가 메서드를 아래와 같이 변경합니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardController.java. 추가 요청에서 로그인 유저 꺼내기</div><span class="w">    </span><span class="nd">@PostMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span>
 <span class="w">            </span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 필터가 담아 둔 유저를 꺼낸다 (비로그인이면 null)</span>
 <span class="w">        </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">User</span><span class="p">)</span><span class="w"> </span><span class="n">request</span><span class="p">.</span><span class="na">getAttribute</span><span class="p">(</span><span class="s">&quot;loginUser&quot;</span><span class="p">);</span>
-<span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글쓰기</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글추가</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>로그인에서 받은 토큰을 Authorization 헤더에 담아 게시글 쓰기 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 쓰기 요청</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
+<p>로그인에서 받은 토큰을 Authorization 헤더에 담아 게시글 추가 API를 호출합니다.</p>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 추가 요청</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
 <span class="err">Au</span><span class="kc">t</span><span class="err">horiza</span><span class="kc">t</span><span class="err">io</span><span class="kc">n</span><span class="p">:</span><span class="w"> </span><span class="err">Bearer</span><span class="w"> </span><span class="err">eyJ</span><span class="mf">0e</span><span class="err">XAiOiJKV</span><span class="mi">1</span><span class="err">QiLCJhbGciOiJIUzUxMiJ</span><span class="mf">9...</span>
 
 <span class="p">{</span>
@@ -918,7 +918,7 @@
   path: assets/CH4/terminal/05_board-save.png
   desc: 토큰을 Authorization 헤더에 담고 보낸 POST /api/boards 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 3, "title": "제목", "content": "내용" } } 형태로, 새 게시글이 등록된 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH4\terminal\05_board-save.png" alt="" /><div class="caption">그림 4-16. 게시글 쓰기 응답</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH4\terminal\05_board-save.png" alt="" /><div class="caption">그림 4-16. 게시글 추가 응답</div></div>
 <h2>4.10 게시글 수정</h2>
 <h3>4.10.1 서비스</h3>
 <p>게시글 수정은 현재 사용자와 게시글 작성자가 일치하는지 검증 후, 게시글을 수정해야 합니다. 수정은 동일하게 더티 체킹으로 진행합니다.</p>

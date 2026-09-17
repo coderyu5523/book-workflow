@@ -383,7 +383,7 @@ public class Exception404 extends RuntimeException {
 | 상태 코드 | 뜻 | 예 |
 |---|---|---|
 | 400 | 처리할 수 없는 요청 값 | 제목 없이 게시글 작성 |
-| 401 | 인증하지 않은 요청 | 로그인하지 않고 글쓰기 |
+| 401 | 인증하지 않은 요청 | 로그인하지 않고 게시글 추가 |
 | 403 | 인증했지만 권한이 없는 요청 | 다른 사람이 쓴 게시글 수정 |
 | 404 | 찾을 수 없는 자원 | 없는 게시글 조회 |
 | 500 | 서버 내부 오류 | 앞의 네 가지에 해당하지 않는 나머지 예외 |
@@ -456,7 +456,7 @@ public class GlobalExceptionHandler {
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글쓰기(BoardRequest.SaveDTO requestDTO) {
+    public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO) {
         Board savedBoard = boardRepository.save(requestDTO.toEntity()); // DTO -> 엔티티
         return new BoardResponse.DTO(savedBoard); // 저장된 게시글 반환
     }
@@ -502,7 +502,7 @@ public class GlobalExceptionHandler {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
-        BoardResponse.DTO respDTO = boardService.게시글쓰기(requestDTO);
+        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO);
         return Resp.ok(respDTO);
     }
 

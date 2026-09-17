@@ -18,7 +18,7 @@ public class ReplyController {
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody ReplyRequest.SaveDTO requestDTO) {
         User loginUser = (User) request.getAttribute("loginUser");
-        ReplyResponse.DTO respDTO = replyService.댓글쓰기(requestDTO, loginUser);
+        ReplyResponse.DTO respDTO = replyService.댓글추가(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 

@@ -28,7 +28,7 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
-        BoardResponse.DTO respDTO = boardService.게시글쓰기(requestDTO);
+        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO);
         return Resp.ok(respDTO);
     }
 

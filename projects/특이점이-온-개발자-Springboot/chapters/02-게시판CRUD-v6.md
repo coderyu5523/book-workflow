@@ -1317,17 +1317,17 @@ GET http://localhost:8080/api/boards/1
 ![](../assets/CH2/terminal/02_board-detail.png)
 *그림 2-35. 게시글 상세 응답*
 
-## 2.13 게시글 쓰기
+## 2.13 게시글 추가
 
 ### 2.13.1 서비스
 
-게시글 쓰기는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.
+게시글 추가는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.
 
 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 17] board/BoardService.java. 게시글 쓰기
+```java [실습 17] board/BoardService.java. 게시글 추가
     @Transactional
-    public Board 게시글쓰기(Board requestBoard) {
+    public Board 게시글추가(Board requestBoard) {
         boardRepository.save(requestBoard);
         return requestBoard;
     }
@@ -1341,19 +1341,19 @@ GET http://localhost:8080/api/boards/1
 
 `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
-```java [실습 18] board/BoardController.java. 게시글 쓰기
+```java [실습 18] board/BoardController.java. 게시글 추가
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Board requestBoard) {
-        Board responseBoard = boardService.게시글쓰기(requestBoard);
+        Board responseBoard = boardService.게시글추가(requestBoard);
         return Resp.ok(responseBoard);
     }
 ```
 
 저장한 게시글을 응답합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
 
-제목과 내용을 요청 바디에 담아 게시글 쓰기 API를 호출합니다.
+제목과 내용을 요청 바디에 담아 게시글 추가 API를 호출합니다.
 
-```json [Hoppscotch] 게시글 쓰기
+```json [Hoppscotch] 게시글 추가
 POST http://localhost:8080/api/boards
 
 {
@@ -1367,7 +1367,7 @@ POST http://localhost:8080/api/boards
   desc: POST /api/boards 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 3, "title": "title3", "content": "content3", "createdAt": "..." } } 형태로 방금 저장한 게시글이 기본 키 3을 부여받아 나온 화면. Hoppscotch 응답.
 ] -->
 ![](../assets/CH2/terminal/03_board-save.png)
-*그림 2-36. 게시글 쓰기 응답*
+*그림 2-36. 게시글 추가 응답*
 
 ## 2.14 게시글 수정
 

@@ -22,7 +22,7 @@ public class BoardService {
     }
 
     @Transactional
-    public Board 게시글쓰기(Board requestBoard) {
+    public Board 게시글추가(Board requestBoard) {
         boardRepository.save(requestBoard);
         return requestBoard; // 저장된 게시글 반환 (REST)
     }

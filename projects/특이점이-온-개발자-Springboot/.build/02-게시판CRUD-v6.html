@@ -1154,12 +1154,12 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 1, "title": "title1", "content": "content1", "createdAt": "..." } } 형태로 1번 게시글 한 건이 Resp 형식에 담겨 나온 화면. Hoppscotch 또는 브라우저 응답.
 ] -->
 <div class="chapter-image terminal"><img src="..\assets\CH2\terminal\02_board-detail.png" alt="" /><div class="caption">그림 2-35. 게시글 상세 응답</div></div>
-<h2>2.13 게시글 쓰기</h2>
+<h2>2.13 게시글 추가</h2>
 <h3>2.13.1 서비스</h3>
-<p>게시글 쓰기는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.</p>
+<p>게시글 추가는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.</p>
 <p><code>board/BoardService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardService.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@Transactional</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글쓰기</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 17</span> board/BoardService.java. 게시글 추가</div><span class="w">    </span><span class="nd">@Transactional</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">게시글추가</span><span class="p">(</span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span></div>
@@ -1167,14 +1167,14 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 <h3>2.13.2 컨트롤러</h3>
 <p>클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 파라미터에 <strong>@RequestBody</strong>가 있다면, 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 매개변수로 전달합니다.</p>
 <p><code>board/BoardController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardController.java. 게시글 쓰기</div><span class="w">    </span><span class="nd">@PostMapping</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardController.java. 게시글 추가</div><span class="w">    </span><span class="nd">@PostMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">requestBoard</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글쓰기</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">responseBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글추가</span><span class="p">(</span><span class="n">requestBoard</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">responseBoard</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <p>저장한 게시글을 응답합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.</p>
-<p>제목과 내용을 요청 바디에 담아 게시글 쓰기 API를 호출합니다.</p>
-<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 쓰기</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
+<p>제목과 내용을 요청 바디에 담아 게시글 추가 API를 호출합니다.</p>
+<div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 추가</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards</span>
 
 <span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;title3&quot;</span><span class="p">,</span>
@@ -1184,7 +1184,7 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
   path: assets/CH2/terminal/03_board-save.png
   desc: POST /api/boards 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 3, "title": "title3", "content": "content3", "createdAt": "..." } } 형태로 방금 저장한 게시글이 기본 키 3을 부여받아 나온 화면. Hoppscotch 응답.
 ] -->
-<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\03_board-save.png" alt="" /><div class="caption">그림 2-36. 게시글 쓰기 응답</div></div>
+<div class="chapter-image terminal"><img src="..\assets\CH2\terminal\03_board-save.png" alt="" /><div class="caption">그림 2-36. 게시글 추가 응답</div></div>
 <h2>2.14 게시글 수정</h2>
 <h3>2.14.1 서비스</h3>
 <p><code>게시글수정()</code>은 URL에 담긴 게시글 번호와 요청 바디로 들어온 값을 함께 전달받습니다.</p>

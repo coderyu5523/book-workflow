@@ -28,7 +28,7 @@ public class BoardController {
 
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Board requestBoard) {
-        Board responseBoard = boardService.게시글쓰기(requestBoard);
+        Board responseBoard = boardService.게시글추가(requestBoard);
         return Resp.ok(responseBoard);
     }
 

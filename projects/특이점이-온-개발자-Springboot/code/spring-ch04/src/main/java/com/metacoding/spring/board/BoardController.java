@@ -33,7 +33,7 @@ public class BoardController {
     public ResponseEntity<?> save(HttpServletRequest request,
             @RequestBody BoardRequest.SaveDTO requestDTO) {
         User loginUser = (User) request.getAttribute("loginUser");
-        BoardResponse.DTO respDTO = boardService.게시글쓰기(requestDTO, loginUser);
+        BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO, loginUser);
         return Resp.ok(respDTO);
     }
 

@@ -357,7 +357,7 @@
 <tr>
 <td>401</td>
 <td>인증하지 않은 요청</td>
-<td>로그인하지 않고 글쓰기</td>
+<td>로그인하지 않고 게시글 추가</td>
 </tr>
 <tr>
 <td>403</td>
@@ -432,7 +432,7 @@
 <span class="w">    </span><span class="p">}</span>
 
 <span class="w">    </span><span class="nd">@Transactional</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글쓰기</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글추가</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">savedBoard</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">save</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">.</span><span class="na">toEntity</span><span class="p">());</span><span class="w"> </span><span class="c1">// DTO -&gt; 엔티티</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">(</span><span class="n">savedBoard</span><span class="p">);</span><span class="w"> </span><span class="c1">// 저장된 게시글 반환</span>
 <span class="w">    </span><span class="p">}</span>
@@ -471,7 +471,7 @@
 
 <span class="w">    </span><span class="nd">@PostMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">save</span><span class="p">(</span><span class="nd">@RequestBody</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글쓰기</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">);</span>
+<span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글추가</span><span class="p">(</span><span class="n">requestDTO</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 

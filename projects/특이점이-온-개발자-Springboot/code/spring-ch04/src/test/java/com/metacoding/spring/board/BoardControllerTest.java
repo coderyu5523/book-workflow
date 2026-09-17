@@ -88,7 +88,7 @@ public class BoardControllerTest {
 
     @Test
     public void save_without_token_test() throws Exception {
-        // 토큰 없이 쓰기 -> 401
+        // 토큰 없이 추가 -> 401
         BoardRequest.SaveDTO reqDTO = new BoardRequest.SaveDTO("새제목", "새내용");
         String requestBody = om.writeValueAsString(reqDTO);
 
