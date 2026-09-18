@@ -73,7 +73,7 @@ Spring Boot 프로젝트가 시작되는 챕터입니다. `@RestController`, `@E
 
 **더티체킹이 코드에 직접 드러나는 지점**: `BoardService.게시글수정()`은 `boardRepository.findById()`로 영속 상태의 `Board`를 가져온 뒤 `board.setTitle()/setContent()`만 호출하고 별도 `save()`나 `update()` 호출이 없습니다. 메서드 끝의 주석 `// 트랜잭션 종료시 flush()`가 명시하듯, `@Transactional` 메서드 종료 시점에 영속성 컨텍스트가 변경을 감지해 자동으로 UPDATE 쿼리를 날리는 흐름입니다. `BoardRepositoryTest.update_test()`는 `em.flush()` + `em.clear()`로 이 시점을 강제로 눈에 보이게 만듭니다.
 
-**테스트**: `BoardControllerTest`(`@SpringBootTest` + `@AutoConfigureMockMvc` + `@Transactional`, API 전체를 MockMvc로 검증하는 통합 테스트), `BoardRepositoryTest`(`@DataJpaTest`, 리포지토리 단위에 가까운 테스트, `System.out.println`으로 결과를 눈으로 확인하는 "eye" 패턴).
+**테스트**: `BoardRepositoryTest`(`@DataJpaTest`, 리포지토리 단위에 가까운 테스트, `System.out.println`으로 결과를 눈으로 확인하는 "eye" 패턴). MockMvc 통합 테스트(`*ControllerTest`)는 **저자 결정(단위 테스트만)** 에 따라 전 챕터에서 제거.
 
 ### ch03 전역 예외처리
 
@@ -87,7 +87,6 @@ Spring Boot 프로젝트가 시작되는 챕터입니다. `@RestController`, `@E
 | 변경 | `board/BoardRequest.java` | `SaveDTO.toEntity()` 추가 (Board.builder() 사용) |
 | 변경 | `board/Board.java` | `@NoArgsConstructor` + `@Builder` 생성자 추가 (toEntity()가 사용) |
 | 변경 | `board/BoardController.java` | 응답 타입을 `BoardResponse.DTO`/`DetailDTO`로 교체 |
-| 테스트 | `BoardControllerTest` | `detail_notfound_test()` 추가 (404 + Resp 에러 포맷 검증) |
 
 **핵심 변화**: (1) 엔티티를 API 응답에 직접 노출하지 않고 DTO로 감싸는 계층 분리, (2) `null` 체크 대신 `Optional` + `orElseThrow`로 예외를 던지고 `@RestControllerAdvice`가 일괄 JSON 변환하는 예외 기반 흐름 제어. (원천 코드에는 조회/쓰기를 `readOnly` 클래스·메서드 레벨로 나눈 조합도 있으나, 완성본은 **저자 결정 #2**로 제거·통일하므로 이 책에서는 다루지 않음)
 
@@ -165,7 +164,7 @@ Spring Security를 쓰지 않고 필터·인터셉터·JWT 유틸을 직접 구�
 | 리소스 소유자 검증 | ch04 게시글, ch05 댓글 | 도메인 로직(`board.getUser().getId().equals(sessionUserId)`) |
 | 연관관계 매핑 (`@ManyToOne`, `@OneToMany`, cascade) | ch04~ch05 `Board.user`, `Board.replies`, `Reply.user/board` | JPA 연관관계, `CascadeType.REMOVE` |
 | Fetch 전략과 N+1 문제 | ch05 `Board.user`(EAGER→LAZY 변경), `BoardRepository.findByIdJoinUser*`, `BoardRepositoryTest` 5종 실습 | `FetchType`, `join fetch` |
-| 단위/통합 테스트 | 전 챕터 `*Test.java` | JUnit5, `@SpringBootTest`+`MockMvc`(통합), `@DataJpaTest`(단위에 가까움) |
+| 단위 테스트 | 전 챕터 `*RepositoryTest.java` | JUnit5, `@DataJpaTest`(단위에 가까움) |
 | 댓글 CRUD (작성/삭제, 목록은 게시글 상세에 내장) | ch05 `reply/*` | 위 기술들의 조합 응용 |
 
 ## 의도 밖 기능 (제외)
@@ -193,8 +192,8 @@ Spring Security를 쓰지 않고 필터·인터셉터·JWT 유틸을 직접 구�
 | Lombok | compileOnly | `@Data`, `@Builder`, `@NoArgsConstructor`, `@RequiredArgsConstructor` |
 | java-jwt (auth0) | 4.3.0 | JWT 생성/검증 (ch04부터) |
 | bcrypt (at.favre.lib) | 0.10.2 | 비밀번호 해싱 (ch04부터) |
-| JUnit 5 + Spring Test | `spring-boot-starter-test` | 단위/통합 테스트, MockMvc |
-| `spring-boot-data-jpa-test`, `spring-boot-webmvc-test` | Boot 관리 버전 | `@DataJpaTest`, `@AutoConfigureMockMvc` 슬라이스 테스트 |
+| JUnit 5 + Spring Test | `spring-boot-starter-test` | 단위 테스트 |
+| `spring-boot-data-jpa-test` | Boot 관리 버전 | `@DataJpaTest` 슬라이스 테스트 |
 
 ## 기술 의존성 메모
 

@@ -238,7 +238,11 @@ JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연�
     <div><span class="tl-label">Hibernate:</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">select u1_0.id, u1_0.created_at, u1_0.email, u1_0.password, u1_0.username</span></div>
     <div>&nbsp;&nbsp;&nbsp;&nbsp;from user_tb u1_0</div>
-    <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?<span class="tl-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 게시글마다 반복</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?<span class="tl-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 1번 게시글의 작성자(ssar)</span></div>
+    <div><span class="tl-label">Hibernate:</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="tl-hl">select u1_0.id, u1_0.created_at, u1_0.email, u1_0.password, u1_0.username</span></div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;from user_tb u1_0</div>
+    <div>&nbsp;&nbsp;&nbsp;&nbsp;where u1_0.id=?<span class="tl-dim">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 2번 게시글의 작성자(cos)</span></div>
   </div>
 </div>
 
@@ -373,10 +377,6 @@ ssar로 로그인해 게시글 상세 API를 호출하면 결과를 확인할 �
 GET http://localhost:8080/api/boards/1
 ```
 
-<!-- [CAPTURE NEEDED: 03_board-detail-with-replies
-  path: assets/CH5/terminal/03_board-detail-with-replies.png
-  desc: ssar로 로그인해 발급받은 토큰을 Authorization 헤더에 담고 보낸 GET /api/boards/1 요청에 대한 200 응답. body에 게시글(boardId 1, title1, content1, userId 1, username ssar)과 isOwner true가 담기고, replies 배열에 댓글 세 개(replyId 1·2는 ssar이 써서 isOwner true, replyId 3은 cos이 써서 isOwner false)가 이어지는 화면. Hoppscotch 또는 브라우저 응답.
-] -->
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
 *그림 5-6. 댓글이 담긴 상세 응답*
 
@@ -500,10 +500,6 @@ POST http://localhost:8080/api/replies
 }
 ```
 
-<!-- [CAPTURE NEEDED: 04_reply-save
-  path: assets/CH5/terminal/04_reply-save.png
-  desc: ssar 토큰을 Authorization 헤더에 담고 보낸 POST /api/replies 요청에 대한 200 응답. body에 replyId 5, comment "comment5", username ssar이 담긴 화면. Hoppscotch 또는 브라우저 응답.
-] -->
 ![](../assets/CH5/terminal/04_reply-save.png)
 *그림 5-7. 댓글 추가 응답*
 
@@ -546,17 +542,13 @@ POST http://localhost:8080/api/replies
     }
 ```
 
-ssar로 로그인해 cos가 쓴 3번 댓글에 삭제를 요청합니다.
+ssar로 로그인해 자신이 쓴 1번 댓글에 삭제를 요청합니다.
 
 ```json [Hoppscotch] 댓글 삭제
-DELETE http://localhost:8080/api/replies/3
+DELETE http://localhost:8080/api/replies/1
 ```
 
-<!-- [CAPTURE NEEDED: 05_reply-delete-403
-  path: assets/CH5/terminal/05_reply-delete-403.png
-  desc: 두 장면을 위아래로 담은 캡처. (1) ssar 토큰으로 cos가 쓴 3번 댓글에 보낸 DELETE /api/replies/3 요청에 { "status": 403, "msg": "댓글을 삭제할 권한이 없습니다", "body": null }가 돌아오는 화면. (2) ssar이 쓴 1번 댓글에 보낸 DELETE /api/replies/1 요청이 200으로 성공하는 화면. Hoppscotch 또는 브라우저 응답.
-] -->
-![](../assets/CH5/terminal/05_reply-delete-403.png)
+![](../assets/CH5/terminal/05_reply-delete.png)
 *그림 5-8. 댓글 삭제 응답*
 
 오픈이는 1번 게시글의 상세 조회를 다시 호출했습니다. 게시글과 작성자, 그 아래 댓글 목록까지 응답 하나에 담겨 돌아옵니다.

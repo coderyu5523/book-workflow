@@ -270,17 +270,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p><code>uri</code>가 /insert이므로 실행하면 <code>insert()</code>가 호출됩니다.</p>
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>insert 호출됨</div>
-  </div>
-</div>
-<div class="caption">그림 1-6. if 문 라우팅 실행 결과</div>
+<div class="chapter-image terminal"><img src="..\assets\CH1\terminal\01_if-routing.png" alt="" /><div class="caption">그림 1-6. if 문 라우팅 실행 결과</div></div>
 <p>여기서 만약 게시글을 조회하는 <code>select()</code> 메서드를 하나 더 추가한다면 어떨까요?</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> ex01/BoardController.java. 메서드 추가</div><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">select</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span>
@@ -401,17 +391,7 @@
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>이제 <code>main()</code> 메서드에서는 컨트롤러에 어떤 메서드가 있는지 알지 못해도, 리플렉션이 실행 중에 어노테이션을 읽어 요청 주소와 맞는 메서드를 호출합니다.</p>
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>update 호출됨</div>
-  </div>
-</div>
-<div class="caption">그림 1-8. 리플렉션 실행 결과</div>
+<div class="chapter-image terminal"><img src="..\assets\CH1\terminal\02_reflection.png" alt="" /><div class="caption">그림 1-8. 리플렉션 실행 결과</div></div>
 <p>이러한 구조 덕분에 새 메서드에 어노테이션만 추가해 두면, 호출부 수정 없이도 리플렉션이 이를 읽고 담당 메서드를 찾아 호출할 수 있습니다.</p>
 <h3>1.2.3 컴포넌트 스캔</h3>
 <p>현재 구조는 <code>main()</code> 메서드에서 개발자가 직접 컨트롤러 객체를 생성하고 있습니다. 컨트롤러가 하나일 때는 괜찮지만, 게시판이나 회원처럼 기능이 늘어나면 매번 객체 생성 코드를 추가해야 합니다. 객체 생성을 개발자가 직접 관리하면 프로그램이 어떤 컨트롤러를 가지고 있는지 스스로 파악할 수 없어, 결국 코드를 계속 수정해야 하는 한계에 부딪힙니다.</p>
@@ -528,23 +508,7 @@
 <span class="p">}</span></div>
 <p><code>getDeclaredConstructor().newInstance()</code>는 클래스의 기본 생성자를 찾아 객체를 만듭니다. 리플렉션으로 클래스와 생성자를 다루는 동안 생기는 예외는 <strong>ReflectiveOperationException</strong> 하나로 묶어 선언했습니다.</p>
 <p>실행하면 콘솔에 <code>ex03</code> 폴더 안의 파일 이름이 하나씩 출력되고, 그중 <strong>@Controller</strong>가 붙은 클래스가 객체로 등록됩니다. 이어서 <code>findUri()</code>가 등록된 객체에서 /delete와 주소가 일치하는 <code>delete()</code>를 찾아 호출합니다.</p>
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>파일명: App.class</div>
-    <div>파일명: BoardController.class</div>
-    <div>어노테이션이 있는 클래스 : BoardController.class</div>
-    <div>파일명: Controller.class</div>
-    <div>파일명: RequestMapping.class</div>
-    <div>--------------------------------</div>
-    <div>delete 호출됨</div>
-  </div>
-</div>
-<div class="caption">그림 1-10. 컴포넌트 스캔 실행 결과</div>
+<div class="chapter-image terminal"><img src="..\assets\CH1\terminal\03_component-scan.png" alt="" /><div class="caption">그림 1-10. 컴포넌트 스캔 실행 결과</div></div>
 <p>이제 개발자는 클래스에는 <strong>@Controller</strong>를, 메서드에는 <strong>@RequestMapping</strong>을 추가하면 됩니다. 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 대신 처리합니다.</p>
 <h2>1.3 객체 생성과 연결</h2>
 <h3>1.3.1 빈과 컨테이너</h3>

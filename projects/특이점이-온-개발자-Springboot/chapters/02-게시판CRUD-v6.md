@@ -1050,23 +1050,13 @@ public class BoardRepositoryTest {
         // when
         Board board = boardRepository.findById(id);
         // eye
+        System.out.println("=======================");
         System.out.println("Board Title : " + board.getTitle());
         System.out.println("Board Content : " + board.getContent());
     }
 ```
 
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>Board Title : title2</div>
-    <div>Board Content : content2</div>
-  </div>
-</div>
-
+![](../assets/CH2/terminal/07_test-findbyid.png)
 *그림 2-27. 한 건 조회 실행 결과*
 
 전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다.
@@ -1079,25 +1069,14 @@ public class BoardRepositoryTest {
         // when
         List<Board> boards = boardRepository.findAll();
         // eye
+        System.out.println("=======================");
         System.out.println("Board Count : " + boards.size());
-        System.out.println("Board 1 title : " + boards.get(0).getTitle());
-        System.out.println("Board 2 content : " + boards.get(1).getContent());
+        System.out.println("Board 1 title :" + boards.get(0).getTitle());
+        System.out.println("Board 2 content :" + boards.get(1).getContent());
     }
 ```
 
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>Board Count : 2</div>
-    <div>Board 1 title : title1</div>
-    <div>Board 2 content : content2</div>
-  </div>
-</div>
-
+![](../assets/CH2/terminal/08_test-findall.png)
 *그림 2-28. 전체 조회 실행 결과*
 
 게시글 저장은 `save()` 메서드를 실행한 후 저장된 결과를 확인하기 위해 `findAll()`을 한 번 더 사용합니다.
@@ -1113,27 +1092,15 @@ public class BoardRepositoryTest {
         boardRepository.save(board);
         // eye
         List<Board> boards = boardRepository.findAll();
+        System.out.println("=======================");
         System.out.println("Board Count : " + boards.size());
-        System.out.println("Board ID : " + boards.get(2).getId());
-        System.out.println("Board Title : " + boards.get(2).getTitle());
-        System.out.println("Board Content : " + boards.get(2).getContent());
+        System.out.println("Board ID: " + boards.get(2).getId());
+        System.out.println("Board Title: " + boards.get(2).getTitle());
+        System.out.println("Board Content: " + boards.get(2).getContent());
     }
 ```
 
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>Board Count : 3</div>
-    <div>Board ID : 3</div>
-    <div>Board Title : title3</div>
-    <div>Board Content : content3</div>
-  </div>
-</div>
-
+![](../assets/CH2/terminal/09_test-save.png)
 *그림 2-29. 저장 실행 결과*
 
 게시글 수정은 update 메서드를 만들지 않고 영속 상태 엔티티의 더티체킹을 사용합니다.
@@ -1153,23 +1120,13 @@ public class BoardRepositoryTest {
         em.clear(); // 영속성 컨텍스트를 강제로 비운다
         // eye
         Board result = boardRepository.findById(id);
+        System.out.println("=======================");
         System.out.println("Board title : " + result.getTitle());
         System.out.println("Board content : " + result.getContent());
     }
 ```
 
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>Board title : title-update</div>
-    <div>Board content : Update-test</div>
-  </div>
-</div>
-
+![](../assets/CH2/terminal/10_test-update.png)
 *그림 2-30. 수정 실행 결과*
 
 게시글 삭제 테스트를 아래와 같이 작성합니다.
@@ -1185,21 +1142,12 @@ public class BoardRepositoryTest {
         em.flush();
         // eye
         List<Board> boards = boardRepository.findAll();
+        System.out.println("=======================");
         System.out.println("Board count : " + boards.size());
     }
 ```
 
-<div class="terminal-log">
-  <div class="tl-chrome">
-    <div class="tl-traffic"><span></span><span></span><span></span></div>
-    <div class="tl-title">실행결과</div>
-    <div class="tl-spacer"></div>
-  </div>
-  <div class="tl-body">
-    <div>Board count : 1</div>
-  </div>
-</div>
-
+![](../assets/CH2/terminal/11_test-delete.png)
 *그림 2-31. 삭제 실행 결과*
 
 이렇게 단위 테스트로 리포지토리만 따로 검증하면 서버를 실행하지 않아도 기능이 의도대로 동작하는지 확인할 수 있습니다.
@@ -1271,10 +1219,6 @@ public class BoardController {
 GET http://localhost:8080/api/boards
 ```
 
-<!-- [CAPTURE NEEDED: 01_api-response
-  path: assets/CH2/terminal/01_api-response.png
-  desc: GET /api/boards 요청에 대한 JSON 응답. { "status": 200, "msg": "성공", "body": [ {id:1, title:"title1", ...}, {id:2, title:"title2", ...} ] } 형태로 data.sql로 들어간 게시글 두 개가 Resp 형식에 담겨 나온 화면. Hoppscotch 또는 브라우저 응답.
-] -->
 ![](../assets/CH2/terminal/01_api-response.png)
 *그림 2-34. 게시글 목록 응답*
 
@@ -1310,10 +1254,6 @@ GET http://localhost:8080/api/boards
 GET http://localhost:8080/api/boards/1
 ```
 
-<!-- [CAPTURE NEEDED: 02_board-detail
-  path: assets/CH2/terminal/02_board-detail.png
-  desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 1, "title": "title1", "content": "content1", "createdAt": "..." } } 형태로 1번 게시글 한 건이 Resp 형식에 담겨 나온 화면. Hoppscotch 또는 브라우저 응답.
-] -->
 ![](../assets/CH2/terminal/02_board-detail.png)
 *그림 2-35. 게시글 상세 응답*
 
@@ -1362,10 +1302,6 @@ POST http://localhost:8080/api/boards
 }
 ```
 
-<!-- [CAPTURE NEEDED: 03_board-save
-  path: assets/CH2/terminal/03_board-save.png
-  desc: POST /api/boards 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 3, "title": "title3", "content": "content3", "createdAt": "..." } } 형태로 방금 저장한 게시글이 기본 키 3을 부여받아 나온 화면. Hoppscotch 응답.
-] -->
 ![](../assets/CH2/terminal/03_board-save.png)
 *그림 2-36. 게시글 추가 응답*
 
@@ -1415,10 +1351,6 @@ PUT http://localhost:8080/api/boards/1
 }
 ```
 
-<!-- [CAPTURE NEEDED: 04_board-update
-  path: assets/CH2/terminal/04_board-update.png
-  desc: PUT /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "id": 1, "title": "title-update", "content": "content-update", "createdAt": "..." } } 형태로 save() 호출 없이 더티체킹만으로 값이 바뀐 게시글이 나온 화면. Hoppscotch 응답.
-] -->
 ![](../assets/CH2/terminal/04_board-update.png)
 *그림 2-37. 게시글 수정 응답*
 
@@ -1458,10 +1390,6 @@ PUT http://localhost:8080/api/boards/1
 DELETE http://localhost:8080/api/boards/1
 ```
 
-<!-- [CAPTURE NEEDED: 05_board-delete
-  path: assets/CH2/terminal/05_board-delete.png
-  desc: DELETE /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": null } 형태로 body가 비어 있는 화면. 이어서 GET /api/boards로 목록을 조회하면 게시글이 한 건만 남아 있음. Hoppscotch 응답.
-] -->
 ![](../assets/CH2/terminal/05_board-delete.png)
 *그림 2-38. 게시글 삭제 응답*
 

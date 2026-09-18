@@ -289,7 +289,6 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
   <text x="605" y="82" text-anchor="middle" font-size="10.5" font-weight="600" fill="#64748b">빈 결과</text>
   <rect x="632" y="20" width="116" height="64" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="690" y="57" text-anchor="middle" font-size="11.5" font-weight="700" fill="#94a3b8">BoardRepository</text>
-
   <line x1="528" y1="84" x2="528" y2="114" stroke="#ff7849" stroke-width="1.8" marker-end="url(#c3e1-s)"/>
   <rect x="413" y="118" width="230" height="56" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
   <text x="528" y="140" text-anchor="middle" font-size="13" font-weight="800" fill="#c2410c">Exception404</text>
@@ -316,7 +315,6 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
   <text x="528" y="57" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c2410c">BoardService</text>
   <rect x="632" y="20" width="116" height="64" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="690" y="57" text-anchor="middle" font-size="11.5" font-weight="700" fill="#94a3b8">BoardRepository</text>
-
   <path d="M528,84 V110 H366 V90" fill="none" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="5,4" marker-end="url(#c3e2-s)"/>
   <line x1="528" y1="110" x2="528" y2="128" stroke="#ff7849" stroke-width="1.3" stroke-dasharray="3,3"/>
   <rect x="413" y="128" width="230" height="56" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.7"/>
@@ -347,7 +345,6 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
   <text x="528" y="57" text-anchor="middle" font-size="11.5" font-weight="700" fill="#94a3b8">BoardService</text>
   <rect x="632" y="20" width="116" height="64" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="690" y="57" text-anchor="middle" font-size="11.5" font-weight="700" fill="#94a3b8">BoardRepository</text>
-
   <line x1="180" y1="84" x2="180" y2="120" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-i)"/>
   <rect x="60" y="124" width="240" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="180" y="148" text-anchor="middle" font-size="12.5" font-weight="800" fill="#3730a3">GlobalExceptionHandler</text>
@@ -526,10 +523,6 @@ public class GlobalExceptionHandler {
 GET http://localhost:8080/api/boards/1
 ```
 
-<!-- [CAPTURE NEEDED: 01_board-detail-dto
-  path: assets/CH3/terminal/01_board-detail-dto.png
-  desc: GET /api/boards/1 요청에 대한 200 응답. { "status": 200, "msg": "성공", "body": { "boardId": 1, "title": "title1", "content": "content1" } } 형태로, 엔티티가 가진 나머지 필드 없이 DTO에 담긴 세 값만 나온 화면. Hoppscotch 또는 브라우저 응답.
-] -->
 ![](../assets/CH3/terminal/01_board-detail-dto.png)
 *그림 3-7. 상세 조회 응답*
 
@@ -539,10 +532,6 @@ GET http://localhost:8080/api/boards/1
 GET http://localhost:8080/api/boards/999
 ```
 
-<!-- [CAPTURE NEEDED: 02_404-response
-  path: assets/CH3/terminal/02_404-response.png
-  desc: GET /api/boards/999 요청에 대한 404 JSON 응답. { "status": 404, "msg": "게시글을 찾을 수 없습니다", "body": null } 형태. Hoppscotch 또는 브라우저 응답 화면. HTTP 상태 코드가 404로 표시되면 좋음.
-] -->
 ![](../assets/CH3/terminal/02_404-response.png)
 *그림 3-8. 404 응답*
 
