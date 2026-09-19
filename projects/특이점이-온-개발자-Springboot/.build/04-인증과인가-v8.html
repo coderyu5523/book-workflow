@@ -540,7 +540,7 @@
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title1&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content1&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">user_id</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span></div>
-<h2>4.5 core 폴더 구현</h2>
+<h2>4.5 core 폴더 살펴보기</h2>
 <p>로그인한 사용자를 식별하려면 토큰을 발급하고, 이후 요청에 포함된 토큰을 검증하는 로직이 필요합니다. <code>core</code> 폴더에 있는 인증 관련 클래스는 다음과 같습니다.</p>
 <table>
 <thead>
@@ -990,8 +990,8 @@
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li>인증은 사용자의 신원을 확인하는 과정이고, 인가는 특정 작업을 수행할 권한이 있는지 검증하는 과정입니다.</li>
-<li>클라이언트는 요청마다 JWT를 함께 전달합니다. JWT에는 회원 정보가 포함되어 있어, 서버는 사용자 정보를 서버에 저장하지 않아도 JWT를 통해 사용자를 식별할 수 있습니다.</li>
+<li><strong>인증은 사용자의 신원을 확인하는 과정이고, 인가는 특정 작업을 수행할 권한이 있는지 검증하는 과정입니다.</strong></li>
+<li><strong>클라이언트는 요청마다 JWT를 함께 전달합니다.</strong> JWT에는 회원 정보가 포함되어 있어, 서버는 사용자 정보를 서버에 저장하지 않아도 JWT를 통해 사용자를 식별할 수 있습니다.</li>
 </ul>
 </div>
 
