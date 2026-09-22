@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""특이점이 온 개��자 - MSA — PDF 빌드 스크립트
+"""오픈스킬 IT 입문 - 단계별로 시작하는 MSA — PDF 빌드 스크립트
    typst CLI 대신 Python typst 모듈을 사용합니다.
 """
 
@@ -33,7 +33,7 @@ def find_chapter(pattern_v7, pattern_orig):
     return v7  # 경고용
 
 CONFIG = {
-    "title": "특이점이 온 개발자 - MSA",
+    "title": "오픈스킬 IT 입문 - 단계별로 시작하는 MSA",
     "base": PROJECT,
     "assets_dir": PROJECT / "images",
     "mermaid_out": BOOK / "_mermaid",
@@ -59,7 +59,7 @@ CONFIG = {
 
     "output_md":  BOOK / "integrated.md",
     "output_typ": BOOK / "book_final.typ",
-    "output_pdf": BOOK / "특이점이 온 개발자 - MSA 아키텍처.pdf",
+    "output_pdf": BOOK / "오픈스킬 IT 입문 - 단계별로 시작하는 MSA.pdf",
 
     "layout_checker": str(SKILL_SCRIPTS / "pdf_layout_checker.py"),
 

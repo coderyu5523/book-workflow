@@ -253,7 +253,7 @@
   ]
   #v(1fr)
   #align(center)[
-    #text(9pt, fill: rgb("#94a3b8"))[특이점이 온 개발자 - MSA 아키텍처]
+    #text(9pt, fill: rgb("#94a3b8"))[오픈스킬 IT 입문 - 단계별로 시작하는 MSA]
   ]
   #v(20pt)
 ]

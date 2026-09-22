@@ -1,4 +1,4 @@
-# 답변 누적 (특이점이 온 개발자 - Springboot)
+# 답변 누적 (오픈스킬 IT 입문 - 처음 시작하는 Spring Boot)
 
 ## STEP 1: 씨앗
 

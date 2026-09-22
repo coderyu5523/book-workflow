@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/check-chapter-style.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-chapter-style.sh\""
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/analyze-trigger.sh"
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/analyze-trigger.sh\""
           }
         ]
       }

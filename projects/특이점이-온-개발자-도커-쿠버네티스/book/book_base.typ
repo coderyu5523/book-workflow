@@ -253,7 +253,7 @@
   ]
   #v(1fr)
   #align(center)[
-    #text(9pt, fill: rgb("#94a3b8"))[특이점이 온 개발자 - Docker & K8s 컨테이너 인프라]
+    #text(9pt, fill: rgb("#94a3b8"))[오픈스킬 IT 입문 - 개념으로 시작하는 Docker & Kubernetes]
   ]
   #v(20pt)
 ]
