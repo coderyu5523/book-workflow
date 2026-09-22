@@ -25,7 +25,7 @@
 <p>정작 게시글 화면은 하나도 만들지 못했는데, 요청을 분류하기 위한 분기문(if-else)만 에너지를 쏟고 있었습니다. 오픈이는 멍하니 모니터를 보며 한숨을 쉬었습니다.</p>
 <p class="thought">과제는 게시판인데, 서버 뼈대만 만들다 학기가 끝나겠네.</p>
 <p>다음 날, 오픈이는 같은 수업을 듣는 선배에게 사정을 털어놓았습니다. 선배는 오픈이가 지금까지 쓴 코드를 훑어보더니 말했습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "이런 걸 처음부터 직접 만드는 사람은 없어요. 프레임워크를 사용하면 요청을 받고 주소를 분배하는 공통 기능은 이미 다 갖춰져 있거든요. 자바 웹이면 보통 스프링(Spring)을 쓰니까, 그 위에 만들고 싶은 게시판 기능만 구현해 봐요."</div>
+<div class="dialogue"><span class="speaker">선배</span>: "이런 걸 처음부터 직접 만드는 사람은 없어요. 웹 서버에 공통으로 필요한 뼈대는 프레임워크에 이미 갖춰져 있거든요. 자바 웹이면 보통 스프링(Spring)을 쓰니까, 그 위에 만들고 싶은 게시판 기능만 구현해 봐요."</div>
 <div class="svg-figure">
 <svg viewBox="0 0 900 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="세 단계 실습 흐름. if-else는 개발자가 주소마다 손으로 연결하고, 리플렉션은 메서드에 붙은 표식을 읽어 자동으로 호출하고, 컴포넌트 스캔은 폴더를 뒤져 객체를 자동으로 만든다.">
   <defs>
@@ -70,15 +70,6 @@
 </svg>
 </div>
 <div class="caption">그림 1-1. 챕터 1의 실습 흐름</div>
-<div class="goal-box">
-<p><strong>이번 챕터가 끝나면</strong></p>
-<ul>
-<li><strong>제어의 역전</strong>으로 프레임워크가 개발자의 코드를 대신 실행하는 구조를 이해할 수 있습니다</li>
-<li><strong>리플렉션</strong>으로 어노테이션이 붙은 메서드를 찾아 호출할 수 있습니다</li>
-<li><strong>컴포넌트 스캔</strong>으로 클래스를 찾아 객체로 만드는 과정을 직접 구현할 수 있습니다</li>
-<li><strong>스프링 컨테이너</strong>가 빈을 보관하고 필요한 곳에 주입하는 구조를 이해할 수 있습니다</li>
-</ul>
-</div>
 <div class="prep-section-md">
 <p><strong>소스코드 준비</strong></p>
 <p>이번 챕터의 코드는 스프링 프로젝트가 아니라 순수 자바입니다. 빌드 도구 없이 IDE에서 각 <code>App.java</code>의 <code>main()</code> 메서드를 실행합니다.</p>
