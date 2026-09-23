@@ -22,10 +22,10 @@
 <h1>챕터 1. 리플렉션</h1>
 <p>오픈이는 이제 막 자바(Java)를 배우기 시작한 학생입니다. 이번 학기 과제인 <strong>게시판 웹 서버</strong>를 만들기 위해 호기롭게 코드를 작성하기 시작했지만, 몇 줄 쓰지도 못하고 벽에 부딪혔습니다.</p>
 <p>문제는 게시판 기능이 아니라 그 이전 단계에 있었습니다. 웹 서버를 직접 만들려면 외부와 통신하기 위한 작업부터, 들어온 요청을 해석하고 주소에 맞는 코드를 찾아 실행하는 처리까지 모두 구현해야 합니다.</p>
-<p>정작 게시글 화면은 아직 하나도 없는데, 요청을 받기 위한 코드만 늘어 갑니다. 오픈이는 멍하니 모니터를 보며 한숨을 쉬었습니다.</p>
-<p class="thought">과제는 게시판인데, 서버 뼈대만 만들다 학기가 끝나겠네.</p>
-<p>다음 날, 오픈이는 같은 수업을 듣는 선배에게 사정을 털어놓았습니다. 선배는 오픈이가 지금까지 쓴 코드를 훑어보더니 말했습니다.</p>
-<div class="dialogue"><span class="speaker">선배</span>: "이런 걸 처음부터 직접 만드는 사람은 없어요. 웹 서버에 공통으로 필요한 뼈대는 프레임워크에 이미 갖춰져 있거든요. 자바 웹이면 보통 스프링(Spring)을 쓰니까, 그 위에 만들고 싶은 게시판 기능만 구현해 봐요."</div>
+<p>중요한 게시글 화면은 시작도 못했는데, 서버 뼈대를 만들기 위한 작업만 산더미같이 쌓여 있었습니다. 오픈이는 멍하니 모니터를 보며 한숨을 쉬었습니다.</p>
+<p class="thought">이거 뼈대만 만들다가 과제는 손도 못 대겠는데...</p>
+<p>다음 날, 오픈이는 같은 수업을 듣는 선배에게 고민을 털어놓았습니다. 선배는 오픈이가 지금까지 쓴 코드를 훑어보더니 말했습니다.</p>
+<div class="dialogue"><span class="speaker">선배</span>: "이런 걸 처음부터 직접 만드는 사람은 없어요. <strong>웹 서버에 공통으로 필요한 뼈대는 프레임워크에 이미 갖춰져 있거든요</strong>. 자바로 웹 서버를 만들면 보통 <strong>스프링(Spring)</strong> 을 써요. 스프링으로 시작해서 게시판 기능만 구현해 봐요."</div>
 <div class="svg-figure">
 <svg viewBox="0 0 900 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="세 단계 실습 흐름. if-else는 개발자가 주소마다 손으로 연결하고, 리플렉션은 메서드에 붙은 표식을 읽어 자동으로 호출하고, 컴포넌트 스캔은 폴더를 뒤져 객체를 자동으로 만든다.">
   <defs>
@@ -72,7 +72,7 @@
 <div class="caption">그림 1-1. 챕터 1의 실습 흐름</div>
 <div class="prep-section-md">
 <p><strong>소스코드 준비</strong></p>
-<p>이번 챕터의 코드는 스프링 프로젝트가 아니라 순수 자바입니다. 빌드 도구 없이 IDE에서 각 <code>App.java</code>의 <code>main()</code> 메서드를 실행합니다.</p>
+<p>이번 챕터의 코드는 스프링 프로젝트가 아니라 순수 자바입니다. 빌드 도구 없이 IDE에서 각 <code>App.java</code>의 main 메서드를 실행합니다.</p>
 <p>앞의 소스코드 준비에서 클론한 예제 저장소로 이동합니다.</p>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 1 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch01</div>
 <p><code>ch01</code> 폴더는 패키지 <code>com.reflection</code> 아래 세 단계로 나뉩니다.</p>
@@ -239,7 +239,7 @@
 <span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;update 호출됨&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>이제 요청 주소를 알맞은 담당 메서드로 연결해 주는 <strong>라우팅(Routing)</strong> 처리를 위해 <code>main()</code> 메서드를 작성해 보겠습니다.</p>
+<p>이제 요청 주소를 알맞은 담당 메서드로 연결해 주는 <strong>라우팅(Routing)</strong> 처리를 위해 main 메서드를 작성해 보겠습니다.</p>
 <p><code>ex01/App.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> ex01/App.java. 주소에 따라 메서드 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -266,10 +266,10 @@
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> ex01/BoardController.java. 메서드 추가</div><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">select</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span>
 <span class="p">}</span></div>
-<p>컨트롤러에 <code>select()</code> 메서드를 추가했지만, 정작 <code>main()</code> 메서드에는 /select 주소를 처리할 분기문이 없습니다. 이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다. 이처럼 컨트롤러뿐만 아니라 호출부의 코드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
+<p>컨트롤러에 <code>select()</code> 메서드를 추가했지만, 정작 main 메서드에는 /select 주소를 처리할 분기문이 없습니다. 이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다. 이처럼 컨트롤러뿐만 아니라 main 메서드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
 <h3>1.2.2 어노테이션과 리플렉션</h3>
-<p>앞서 확인한 한계를 극복하려면, 호출부 코드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 어노테이션과 리플렉션입니다.</p>
-<p>방식은 이렇습니다. 주소를 if 문에 일일이 나열하는 대신, 각 메서드 위에 담당할 주소를 표식으로 붙여 둡니다. 클래스나 메서드에 붙이는 이 표식을 <strong>어노테이션(Annotation)</strong> 이라고 합니다.</p>
+<p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 어노테이션과 리플렉션입니다.</p>
+<p>main 메서드가 주소를 일일이 알고 있을 필요가 없습니다. 각 메서드 위에 담당할 주소를 표식으로 붙여 둡니다. 클래스나 메서드에 붙이는 이 표식을 <strong>어노테이션(Annotation)</strong> 이라고 합니다.</p>
 <p>그리고 프로그램이 실행될 때 컨트롤러의 메서드를 모두 확인하여 이 표식을 읽고, 요청 주소와 일치하는 메서드를 찾아 호출합니다. 실행 중에 이렇게 코드를 분석하고 알맞은 메서드를 호출하는 일을 리플렉션이 담당합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 32 760 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="if문과 리플렉션의 비교. if문은 등록된 주소 슬래시 insert, 슬래시 delete, 슬래시 update만 알아 요청 슬래시 insert는 실행하지만 등록 안 된 슬래시 select는 실행하지 못한다. 리플렉션은 메서드에 붙은 어노테이션을 읽어 슬래시 insert는 물론 처음 보는 슬래시 select도 실행한다.">
@@ -355,7 +355,7 @@
 <span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>이어서 <code>main()</code> 메서드에서 어노테이션을 읽을 수 있도록 수정합니다.</p>
+<p>이어서 main 메서드에서 어노테이션을 읽을 수 있도록 수정합니다.</p>
 <p><code>ex02/App.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> ex02/App.java. 어노테이션을 읽어 맞는 메서드를 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -381,11 +381,11 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>이제 <code>main()</code> 메서드에서는 컨트롤러에 어떤 메서드가 있는지 알지 못해도, 리플렉션이 실행 중에 어노테이션을 읽어 요청 주소와 맞는 메서드를 호출합니다.</p>
+<p>이제 main 메서드에서는 컨트롤러에 어떤 메서드가 있는지 알지 못해도, 리플렉션이 실행 중에 어노테이션을 읽어 요청 주소와 맞는 메서드를 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\02_reflection.png" alt="" /><div class="caption">그림 1-8. 리플렉션 실행 결과</div></div>
-<p>이러한 구조 덕분에 새 메서드에 어노테이션만 추가해 두면, 호출부 수정 없이도 리플렉션이 이를 읽고 담당 메서드를 찾아 호출할 수 있습니다.</p>
+<p>이러한 구조 덕분에 새 메서드에 어노테이션만 추가해 두면, main 메서드를 고치지 않아도 리플렉션이 이를 읽고 담당 메서드를 찾아 호출할 수 있습니다.</p>
 <h3>1.2.3 컴포넌트 스캔</h3>
-<p>현재 구조는 <code>main()</code> 메서드에서 개발자가 직접 컨트롤러 객체를 생성하고 있습니다. 컨트롤러가 하나일 때는 괜찮지만, 게시판이나 회원처럼 기능이 늘어나면 매번 객체 생성 코드를 추가해야 합니다. 객체 생성을 개발자가 직접 관리하면 프로그램이 어떤 컨트롤러를 가지고 있는지 스스로 파악할 수 없어, 결국 코드를 계속 수정해야 하는 한계에 부딪힙니다.</p>
+<p>현재 구조는 main 메서드에서 개발자가 직접 컨트롤러 객체를 생성하고 있습니다. 컨트롤러가 하나일 때는 괜찮지만, 게시판이나 회원처럼 기능이 늘어나면 매번 객체 생성 코드를 추가해야 합니다. 객체 생성을 개발자가 직접 관리하면 프로그램이 어떤 컨트롤러를 가지고 있는지 스스로 파악할 수 없어, 결국 코드를 계속 수정해야 하는 한계에 부딪힙니다.</p>
 <p>이를 극복하려면 개발자가 직접 객체를 만드는 대신, 프로그램 실행 중에 <strong>어노테이션이 붙은 클래스를 찾아 자동으로 객체를 생성</strong>하는 구조가 필요합니다. 이러한 기능을 <strong>컴포넌트 스캔(Component Scan)</strong> 이라고 부릅니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="개발자가 클래스에 어노테이션을 추가하면, 클래스 네 개 가운데 어노테이션이 붙은 BoardController만 객체로 만들어진다.">
@@ -444,7 +444,7 @@
 <span class="w">    </span><span class="nd">@RequestMapping</span><span class="p">(</span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/create&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">create</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;create 호출됨&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>이제 핵심이 되는 <code>main()</code> 메서드를 살펴보겠습니다. 코드를 보면 직접 객체를 생성하는 구문은 어디에도 없습니다. 대신 <code>ex03</code> 폴더의 실제 경로를 읽고 그 안의 클래스 파일을 하나씩 확인하여, <strong>@Controller</strong> 어노테이션이 붙은 클래스만 찾아 객체로 생성합니다.</p>
+<p>이제 핵심이 되는 main 메서드를 살펴보겠습니다. 코드를 보면 직접 객체를 생성하는 구문은 어디에도 없습니다. 대신 <code>ex03</code> 폴더의 실제 경로를 읽고 그 안의 클래스 파일을 하나씩 확인하여, <strong>@Controller</strong> 어노테이션이 붙은 클래스만 찾아 객체로 생성합니다.</p>
 <p><code>ex03/App.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> ex03/App.java. 폴더를 뒤져 @Controller 클래스를 등록하고 주소로 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
