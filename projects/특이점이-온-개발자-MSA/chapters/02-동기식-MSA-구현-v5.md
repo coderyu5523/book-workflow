@@ -67,7 +67,7 @@ git clone https://github.com/metacoding-12-msa/start.git
 cd start/ex01
 ```
 
-완성 코드는 final 레포(`github.com/metacoding-12-msa/final`)의 `ex01` 폴더에서 확인할 수 있습니다.
+완성 코드는 final 레포(`https://github.com/metacoding-12-msa/final`)의 `ex01` 폴더에서 확인할 수 있습니다.
 
 ### 2. 파일 구조
 

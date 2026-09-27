@@ -1,6 +1,6 @@
 # 챕터 3. 예외 처리와 DTO
 
-게시판 기본 기능을 완성한 오픈이는 다음 날 뿌듯한 마음으로 선배에게 결과물을 보여주었습니다. 선배는 게시글 목록과 상세 조회 기능을 차례로 확인하더니, 이번에는 게시글 번호를 999로 바꿔 다시 조회했습니다. 그러자 상태 코드는 여전히 200(성공)을 반환했지만, 정작 응답 바디는 텅 비어 있었습니다.
+게시판 기본 기능을 완성한 오픈이는 다음 날 뿌듯한 마음으로 선배에게 결과물을 보여주었습니다. 선배는 게시글 목록과 상세 조회 기능을 차례로 확인하더니, 이번에는 게시글 번호를 999로 바꿔 다시 조회했습니다. 그러자 상태 코드는 여전히 200(성공)을 반환했지만, 정작 응답에 담긴 게시글 데이터는 null이었습니다.
 
 *데이터베이스에 없는 게시글인데 오류가 나지 않고 왜 성공으로 응답하지?*
 
@@ -49,18 +49,23 @@
 *그림 3-1. 챕터 3의 실습 흐름*
 
 ::::prep
-**소스코드 준비**
+**준비하기**
 
-소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 챕터 2와 같은 `com.metacoding.spring`입니다.
+### 1. 소스 코드 클론
 
-```bash [터미널] 챕터 3 폴더로 이동
-cd spring-start/ch03
+```bash [터미널] 레포 클론
+git clone https://github.com/metacoding-06-springboot-v1/start.git
+cd start/ch03
 ```
 
-이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다. 나머지는 챕터 2 그대로입니다.
+완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 `ch03` 폴더에서 확인할 수 있습니다.
 
-```text ch03 파일 구조
-spring-start/ch03/src/main/java/com/metacoding/spring/
+### 2. 파일 구조
+
+이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 2 그대로입니다.
+
+```text ch03 디렉토리
+start/ch03/src/main/java/com/metacoding/spring/
 ├── board/
 │   ├── Board.java                    # [작성] @Builder + 생성자 추가
 │   ├── BoardController.java          # [작성] 요청·응답 타입 DTO로 교체
@@ -69,11 +74,13 @@ spring-start/ch03/src/main/java/com/metacoding/spring/
 │   ├── BoardResponse.java            # [작성] 응답 DTO(DTO/DetailDTO)
 │   └── BoardService.java             # [작성] orElseThrow + DTO 반환
 └── core/handler/
-    ├── ex/Exception400,401,403,404,500.java   # [작성] 커스텀 예외
+    ├── ex/Exception400.java               # [참고] 커스텀 예외
+    ├── ex/Exception401.java               # [참고] 커스텀 예외
+    ├── ex/Exception403.java               # [참고] 커스텀 예외
+    ├── ex/Exception404.java               # [작성] 커스텀 예외
+    ├── ex/Exception500.java               # [참고] 커스텀 예외
     └── GlobalExceptionHandler.java        # [작성] 전역 예외 처리
 ```
-
-챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
 ::::
 
 ## 3.1 요청 DTO
@@ -369,7 +376,7 @@ public class Exception404 extends RuntimeException {
 
 | 상태 코드 | 뜻 | 예 |
 |---|---|---|
-| 400 | 처리할 수 없는 요청 값 | 제목 없이 게시글 작성 |
+| 400 | 서버가 정한 규칙에 맞지 않는 요청 | 제목 없이 게시글 작성 |
 | 401 | 인증하지 않은 요청 | 로그인하지 않고 게시글 추가 |
 | 403 | 인증했지만 권한이 없는 요청 | 다른 사람이 쓴 게시글 수정 |
 | 404 | 찾을 수 없는 자원 | 없는 게시글 조회 |

@@ -40,8 +40,8 @@
 
 | 레포 | 용도 | 주소 |
 |------|------|------|
-| **start** | 직접 작성하는 예제(실습용). 클론해서 진행 | `github.com/metacoding-12-msa/start` |
-| **final** | 완성된 전체 코드. 막히면 참고 | `github.com/metacoding-12-msa/final` |
+| **start** | 직접 작성하는 예제(실습용). 클론해서 진행 | `https://github.com/metacoding-12-msa/start` |
+| **final** | 완성된 전체 코드. 막히면 참고 | `https://github.com/metacoding-12-msa/final` |
 
 두 레포 모두 챕터별 폴더로 구성됩니다.
 

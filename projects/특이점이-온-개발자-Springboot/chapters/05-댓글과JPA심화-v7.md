@@ -13,18 +13,23 @@
 **선배**: "**JPA의 양방향 매핑을 쓰는 거예요**. 게시글에 댓글을 참조할 수 있도록 필드를 추가하면 게시글 객체 쪽에서도 댓글을 참조할 수 있게 돼요. 이렇게 하면 양쪽에서 참조가 가능하기 때문에 조인을 통해 한 번에 데이터를 가져올 수 있어요."
 
 ::::prep
-**소스코드 준비**
+**준비하기**
 
-소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 챕터 4와 같은 `com.metacoding.spring`입니다.
+### 1. 소스 코드 클론
 
-```bash [터미널] 챕터 5 폴더로 이동
-cd spring-start/ch05
+```bash [터미널] 레포 클론
+git clone https://github.com/metacoding-06-springboot-v1/start.git
+cd start/ch05
 ```
 
-이번 챕터에서 새로 만들거나 고치는 파일은 다음과 같습니다.
+완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 `ch05` 폴더에서 확인할 수 있습니다.
 
-```text ch05 파일 구조
-spring-start/ch05/src/main/java/com/metacoding/spring/
+### 2. 파일 구조
+
+이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 4 그대로입니다.
+
+```text ch05 디렉토리
+start/ch05/src/main/java/com/metacoding/spring/
 ├── board/
 │   ├── Board.java                        # [작성] @OneToMany replies, 작성자 지연 로딩
 │   ├── BoardRepository.java              # [작성] findByIdJoinUserAndReplies
@@ -38,11 +43,9 @@ spring-start/ch05/src/main/java/com/metacoding/spring/
     ├── ReplyResponse.java                # [작성] 댓글 응답 DTO
     └── ReplyService.java                 # [작성] 댓글 저장·삭제(소유자 검증)
 
-spring-start/ch05/src/main/resources/
+start/ch05/src/main/resources/
 └── db/data.sql                           # [참고] 댓글 더미 데이터
 ```
-
-챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
 ::::
 
 ## 5.1 양방향 매핑

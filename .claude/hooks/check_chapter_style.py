@@ -45,7 +45,8 @@ CHECKS = [
      "테이블은 볼드: `board_tb` -> **board_tb** (code.md)"),
     (r"`(?:null|true|false)`",
      "값은 평문: null·true·false에 백틱 금지 (code.md)"),
-    (r"\*\*[^*\n]*(?:/|\.java|\.sql|\.gradle)[^*\n]*\*\*",
+    # URL 경로(/로 시작, 또는 "PUT /boards/1"처럼 메서드 + 경로)는 표에서 볼드 허용
+    (r"\*\*(?!/|(?:GET|POST|PUT|PATCH|DELETE) /)[^*\n]*(?:/|\.java|\.sql|\.gradle)[^*\n]*\*\*",
      "파일은 백틱: **board/Board.java** -> `board/Board.java` (code.md)"),
     (r"^#{1,4} .*\*\*",
      "제목에 볼드 금지: 제목 자체가 강조다 (code.md)"),

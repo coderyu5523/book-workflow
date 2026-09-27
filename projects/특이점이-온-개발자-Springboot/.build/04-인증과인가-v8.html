@@ -65,11 +65,14 @@
 </div>
 <div class="caption">그림 4-1. 챕터 4의 실습 흐름</div>
 <div class="prep-section-md">
-<p><strong>소스코드 준비</strong></p>
-<p>소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다. 패키지 루트는 앞 챕터와 같은 <code>com.metacoding.spring</code>입니다.</p>
-<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 챕터 4 폴더로 이동</div><span class="nb">cd</span><span class="w"> </span>spring-start/ch04</div>
-<p>새로 만들거나 고치는 파일은 다음과 같습니다.</p>
-<div class="code-block highlight" data-lang="text"><div class="cb-title">ch04 파일 구조</div>spring-start/ch04/src/main/
+<p><strong>준비하기</strong></p>
+<h3>1. 소스 코드 클론</h3>
+<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 레포 클론</div>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metacoding-06-springboot-v1/start.git
+<span class="nb">cd</span><span class="w"> </span>start/ch04</div>
+<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch04</code> 폴더에서 확인할 수 있습니다.</p>
+<h3>2. 파일 구조</h3>
+<p>이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 3 그대로입니다.</p>
+<div class="code-block highlight" data-lang="text"><div class="cb-title">ch04 디렉토리</div>start/ch04/src/main/
 ├── java/com/metacoding/spring/
 │   ├── board/
 │   │   ├── Board.java                           # [작성] 작성자 연관관계
@@ -91,7 +94,6 @@
 │       ├── UserResponse.java                    # [작성] 가입 응답 DTO
 │       └── UserService.java                     # [작성] 회원가입·로그인(JWT)
 └── resources/db/data.sql                        # [참고] 회원·게시글 더미 데이터</div>
-<p>챕터를 따라 코드를 채우고, 막히면 <code>spring-end</code>의 완성 코드를 참고하세요.</p>
 </div>
 <h2>4.1 인증과 인가</h2>
 <p>지금까지 만든 게시판에는 게시글을 작성한 회원 정보가 없습니다. 회원 기능을 추가하면 서버는 요청을 보낸 사용자가 누구인지 검증해야 합니다.</p>

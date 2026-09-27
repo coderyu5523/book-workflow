@@ -53,18 +53,21 @@
 *그림 2-1. 챕터 2의 실습 흐름*
 
 ::::prep
-**소스코드 준비**
+**준비하기**
 
-소스코드 준비에서 클론한 예제 저장소에서 이번 챕터 폴더로 이동합니다.
+### 1. 소스 코드 클론
 
-```bash [터미널] 챕터 2 폴더로 이동
-cd spring-start/ch02
+```bash [터미널] 레포 클론
+git clone https://github.com/metacoding-06-springboot-v1/start.git
+cd start/ch02
 ```
 
-`ch02` 폴더는 다음과 같이 구성되어 있습니다. 패키지 루트는 `com.metacoding.spring`입니다.
+완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 `ch02` 폴더에서 확인할 수 있습니다.
 
-```text ch02 파일 구조
-spring-start/ch02/src/main/java/com/metacoding/spring/
+### 2. 파일 구조
+
+```text ch02 디렉토리
+start/ch02/src/main/java/com/metacoding/spring/
 ├── board/
 │   ├── Board.java                # [작성] 게시글 클래스
 │   ├── BoardController.java      # [작성] REST 엔드포인트 5개
@@ -72,18 +75,15 @@ spring-start/ch02/src/main/java/com/metacoding/spring/
 │   └── BoardService.java         # [작성] 게시글 처리 흐름
 └── core/util/Resp.java           # [참고] 공통 응답 형식
 
-spring-start/ch02/src/main/resources/
+start/ch02/src/main/resources/
 ├── application.properties        # [참고] H2·JPA 설정
 └── db/data.sql                   # [참고] 더미 데이터
 
-spring-start/ch02/src/test/java/com/metacoding/spring/board/
+start/ch02/src/test/java/com/metacoding/spring/board/
 └── BoardRepositoryTest.java      # [작성] 단위 테스트
 ```
 
-핵심 로직 자리는 비어 있습니다. 챕터를 따라 코드를 채우고, 막히면 `spring-end`의 완성 코드를 참고하세요.
-::::
-
-이 파일들이 앞의 그림 2-1에서 본 세 층을 이룹니다. 각 클래스가 담당하는 역할은 다음과 같습니다.
+### 3. 클래스 역할
 
 | 클래스 | 역할 |
 |--------|------|
@@ -92,6 +92,8 @@ spring-start/ch02/src/test/java/com/metacoding/spring/board/
 | **BoardService** | 목록, 상세, 작성, 수정, 삭제의 처리 흐름을 담당합니다. |
 | **BoardController** | REST 요청을 받아 서비스로 넘기는 입구입니다. |
 | **Resp** | 모든 응답을 한 가지 형식으로 통일합니다. |
+::::
+
 ## 2.1 REST API
 
 **REST API(Representational State Transfer API)** 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 주소(URI)로 무엇을 원하는지 가리키고, HTTP 메서드로 그것에 무엇을 할지 나타냅니다.
@@ -210,7 +212,7 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 | 주소의 영어는 소문자로 쓴다 | **/boards** | **/Boards** |
 | 주소에 행위를 넣지 않고 메서드로 표현한다 | **PUT /boards/1** | **/boards/1/put** |
 | 자원은 단수형이 아닌 복수형으로 쓴다 | **/boards/1** | **/board/1** |
-| 긴 단어는 하이픈으로 구분한다 | **/check-username** | **/check_username** |
+| 긴 단어는 하이픈으로 구분한다 | **/user-profiles** | **/user_profiles** |
 | 확장자를 붙이지 않고 헤더에 타입을 담는다 | **/users** + 헤더 **application/json** | **/users.json** |
 
 ### 2.1.4 요청과 응답
@@ -284,7 +286,7 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 :::tip
 **이 책의 실습 방식**
 
-본격적인 실습은 미리 준비해 둔 **spring-start** 저장소에서 진행합니다. 다만 첫 프로젝트 생성 과정은 직접 눈으로 확인해 보는 것이 좋으므로 여기서는 프로젝트를 만드는 절차만 먼저 살펴보겠습니다.
+본격적인 실습은 미리 준비해 둔 **start** 레포에서 진행합니다. 다만 첫 프로젝트 생성 과정은 직접 눈으로 확인해 보는 것이 좋으므로 여기서는 프로젝트를 만드는 절차만 먼저 살펴보겠습니다.
 :::
 
 먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 View > Extensions를 선택합니다.
@@ -471,7 +473,7 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 ![](../assets/CH2/terminal/06_bootrun.png)
 *그림 2-14. 스프링 실행 결과*
 
-브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 User Name과 Password는 `application.properties`에서 설정한 값입니다.
+브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 JDBC URL과 User Name, Password는 `application.properties`에서 설정한 값입니다.
 
 ![](../assets/CH2/terminal/03_h2-login.png)
 *그림 2-15. H2 콘솔 로그인 화면*
@@ -704,7 +706,7 @@ delete from Board b where b.id = :id
 
 ## 2.9 영속성 컨텍스트
 
-스프링의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영하는데, 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 영속성 컨텍스트에 등록되면, **엔티티는 영속 상태가 됩니다**. 영속성 컨텍스트는 이 객체의 상태 변화를 지켜보고 있다가, 변경된 내용을 데이터베이스에 반영합니다.
+JPA의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영하는데, 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 영속성 컨텍스트에 등록되면, **엔티티는 영속 상태가 됩니다**. 영속성 컨텍스트는 이 객체의 상태 변화를 지켜보고 있다가, 변경된 내용을 데이터베이스에 반영합니다.
 
 영속성 컨텍스트의 특징은 크게 세 가지입니다.
 
@@ -782,7 +784,7 @@ select * from board_tb where id = 1;
 
 **트랜잭션(Transaction)** 은 여러 작업을 하나로 묶어 전부 반영하거나 전부 취소하는 작업 단위입니다. 스프링에서는 보통 서비스 계층의 메서드 하나가 한 트랜잭션 단위가 됩니다.
 
-영속성 컨텍스트도 이 트랜잭션이 실행되는 동안에만 유지됩니다. 메서드가 정상적으로 끝나 트랜잭션이 종료되면 컨텍스트도 닫히고, 안에 있던 엔티티는 더 이상 관리되지 않습니다.
+영속성 컨텍스트도 기본적으로 이 트랜잭션이 실행되는 동안 유지됩니다. 메서드가 정상적으로 끝나 트랜잭션이 종료되면 컨텍스트도 닫히고, 안에 있던 엔티티는 더 이상 관리되지 않습니다.
 :::
 
 ### 2.9.2 쓰기 지연
@@ -839,7 +841,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 
 ### 2.9.3 더티체킹
 
-렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 **영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다**. 이후 엔티티의 값이 변경되면 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 버퍼에 담아 둡니다. 이를 **더티체킹(Dirty Checking)** 이라고 합니다.
+렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 **영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다**. 이후 엔티티의 값이 변경되면, `flush()` 시점에 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 만들어 데이터베이스로 내보냅니다. 이를 **더티체킹(Dirty Checking)** 이라고 합니다.
 
 수정할 게시글을 `find()`로 조회하면 영속화가 되며 이 상태를 스냅샷으로 남깁니다.
 
@@ -871,10 +873,10 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 
 *그림 2-23. 수정할 게시글 조회와 영속화*
 
-영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 이 차이를 감지해 UPDATE 문을 버퍼에 만들어 두고, `flush()` 시점에 데이터베이스로 내보냅니다.
+영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 `flush()` 시점에 이 차이를 감지해 UPDATE 문을 만들고, 데이터베이스로 내보냅니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속성 컨텍스트 안에서 영속 엔티티의 제목이 수정되고, 그에 맞는 update 문이 버퍼에 저장된다. 이후 flush 시점에 버퍼의 update 문이 데이터베이스로 전송되어 반영된다.">
+<svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속성 컨텍스트 안에서 영속 엔티티의 제목이 수정된다. 이후 flush 시점에 스냅샷과 비교해 만든 update 문이 버퍼를 거쳐 데이터베이스로 전송되어 반영된다.">
   <defs>
     <marker id="c2d2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
@@ -889,7 +891,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
   <rect x="145" y="124" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="230" y="145" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
   <line x1="230" y1="160" x2="230" y2="186" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="242" y="177" font-size="10.5" fill="#475569">5. 버퍼에 update문 저장</text>
+  <text x="242" y="177" font-size="10.5" fill="#475569">5. 스냅샷과 비교해 update문 생성</text>
   <rect x="145" y="192" width="170" height="42" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="230" y="211" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
   <text x="230" y="227" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
@@ -1206,7 +1208,7 @@ public class BoardController {
 ![](../assets/CH2/setup/07_hoppscotch-home.png)
 *그림 2-32. Hoppscotch 화면*
 
-웹 브라우저는 보안 때문에 내 컴퓨터의 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, 설정 > Interceptor에서 익스텐션을 선택합니다.
+Hoppscotch는 브라우저 보안 때문에 내 컴퓨터의 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, 설정 > Interceptor에서 익스텐션을 선택합니다.
 
 ![](../assets/CH2/setup/08_hoppscotch-interceptor.png)
 *그림 2-33. Browser Extension 인터셉터 설정*
