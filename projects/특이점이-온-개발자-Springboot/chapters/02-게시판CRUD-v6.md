@@ -12,7 +12,7 @@
     <marker id="c2ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c2ov-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <text x="500" y="30" text-anchor="middle" font-size="19.2" font-weight="700" fill="#0f172a">챕터 2 한눈에 보기 - 요청 하나가 게시글이 되기까지</text>
+  <text x="500" y="30" text-anchor="middle" font-size="19.2" font-weight="700" fill="#0f172a">챕터 2 한눈에 보기 - 요청이 응답이 되기까지</text>
   <rect x="30" y="70" width="210" height="250" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="135" y="98" text-anchor="middle" font-size="15.8" font-weight="800" fill="#0f172a">클라이언트</text>
   <text x="135" y="117" text-anchor="middle" font-size="12.4" fill="#6b7280">게시글 요청 5가지</text>
@@ -69,10 +69,10 @@ cd start/ch02
 ```text ch02 디렉토리
 start/ch02/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                # [작성] 게시글 클래스
-│   ├── BoardController.java      # [작성] REST 엔드포인트 5개
-│   ├── BoardRepository.java      # [작성] DB 저장·조회·삭제
-│   └── BoardService.java         # [작성] 게시글 처리 흐름
+│   ├── Board.java                # [작성] 게시글 엔티티
+│   ├── BoardController.java      # [작성] 게시글 컨트롤러
+│   ├── BoardRepository.java      # [작성] 게시글 리포지토리
+│   └── BoardService.java         # [작성] 게시글 서비스
 └── core/util/Resp.java           # [참고] 공통 응답 형식
 
 start/ch02/src/main/resources/
@@ -80,7 +80,7 @@ start/ch02/src/main/resources/
 └── db/data.sql                   # [참고] 더미 데이터
 
 start/ch02/src/test/java/com/metacoding/spring/board/
-└── BoardRepositoryTest.java      # [작성] 단위 테스트
+└── BoardRepositoryTest.java      # [작성] 리포지토리 단위 테스트
 ```
 
 ### 3. 클래스 역할
@@ -96,15 +96,15 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 
 ## 2.1 REST API
 
-**REST API(Representational State Transfer API)** 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 주소(URI)로 무엇을 원하는지 가리키고, HTTP 메서드로 그것에 무엇을 할지 나타냅니다.
+**REST API(Representational State Transfer API)** 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 주소(URI)로 원하는 대상을 가리키고, HTTP 메서드로 그 대상에 할 작업을 나타냅니다.
 
 이때 주소가 가리키는 것을 **자원(Resource)** 이라고 합니다. 예를 들어 게시판 서버라면 게시글 목록과 1번 게시글이 각각 자원이고, `/boards`와 `/boards/1`이 그 주소가 됩니다.
 
 ### 2.1.1 REST API 탄생 배경
 
-REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 단계로 거슬러 올라가 보겠습니다.
+REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 단계로 살펴보겠습니다.
 
-초창기의 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 역할만 했습니다. 브라우저가 특정 주소를 요청하면, 서버는 그 주소에 있는 파일을 찾아 있는 그대로 보내주었습니다.
+초창기의 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 역할만 했습니다. 브라우저가 특정 주소를 요청하면, 서버는 그 주소에 있는 파일을 찾아 보내주었습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="브라우저와 서버가 마주 보고 있다. 브라우저가 서버로 요청을 보내면, 서버는 문서나 이미지 같은 정적 자원을 그대로 돌려준다.">
@@ -124,7 +124,7 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
 
 *그림 2-2. 초창기 서버의 정적 응답*
 
-이후 인터넷이 발전하면서 서버는 단순한 파일 전달을 넘어 WAS(웹 애플리케이션 서버) 형태로 진화했습니다. 요청이 들어올 때마다 서버가 상황에 맞는 HTML 화면을 새로 만들어 응답하기 시작한 것입니다. 하지만 이때까지만 해도 서버가 만든 HTML 화면을 받아보는 대상은 오직 **웹 브라우저**뿐이었습니다.
+이후 인터넷이 발전하면서 서버는 단순한 파일 전달을 넘어 WAS(웹 애플리케이션 서버) 형태로 진화했습니다. 요청이 들어올 때마다 서버가 상황에 맞는 HTML 화면을 새로 만들어 응답하기 시작했습니다. 하지만 이때까지만 해도 서버가 만든 HTML 화면을 받아보는 대상은 오직 **웹 브라우저**뿐이었습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 자리의 브라우저와 서버. 브라우저가 요청을 보내면 서버가 HTML 화면을 만들어 동적 자원으로 돌려준다.">
@@ -145,7 +145,7 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
 
 *그림 2-3. WAS의 동적 화면 생성*
 
-문제는 스마트폰 앱, 스마트 TV, 심지어 다른 서버들까지 등장하면서 시작됐습니다. 다양한 기기들이 서버에 동일한 데이터를 요청하기 시작했는데, 브라우저 전용인 **HTML 화면**을 통째로 넘겨주는 것은 이들에게 전혀 맞지 않았습니다.
+문제는 스마트폰 앱, 스마트 TV, 심지어 다른 서버들까지 등장하면서 시작됐습니다. 이 기기들도 서버에 같은 데이터를 요청했지만, 브라우저 전용인 **HTML 화면**은 이들이 쓰기에 맞지 않았습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 640 320" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에 브라우저, 스마트폰, TV, 다른 서버 네 개가 세로로 놓여 있고 오른쪽에 서버가 있다. 네 기기가 저마다 서버와 양방향 화살표로 이어져 같은 데이터를 주고받는다.">
@@ -172,15 +172,15 @@ REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 �
 
 *그림 2-4. REST API로 자원에 접근하는 여러 기기*
 
-결국 서버는 무거운 화면(HTML) 대신 **데이터** 그 자체만 전달하는 방향으로 변화했습니다. 서버가 HTML이 아닌 JSON이나 XML 같은 데이터를 반환하고, 클라이언트가 이를 받아 화면 구성이나 로직을 처리하는 방식이 REST API입니다.
+결국 서버는 무거운 화면(HTML) 대신 **데이터** 그 자체만 전달하는 방향으로 변화했습니다. 서버가 HTML이 아닌 JSON이나 XML 같은 데이터를 반환하고, 클라이언트가 이를 받아 화면을 구성하고 로직을 처리하는 방식이 REST API입니다.
 
 REST API 방식을 활용하면 브라우저뿐 아니라 스마트폰, TV, IoT 기기, 다른 서버에서도 자원에 접근할 수 있어, 다양한 플랫폼에서 활용 가능한 서버로 확장할 수 있습니다.
 
 ### 2.1.2 JSON
 
-그렇다면 서버는 어떤 형식으로 데이터를 넘겨줄까요? 이때 가장 널리 쓰이는 표준 형식이 바로 JSON입니다.
+그렇다면 서버는 어떤 형식으로 데이터를 넘겨줄까요? 가장 널리 쓰이는 표준 형식은 JSON입니다.
 
-**JSON(JavaScript Object Notation)** 은 데이터를 **키(Key)** 와 **값(Value)** 의 쌍으로 묶어 표현하는 텍스트 형식입니다. 구조가 단순해서 기계뿐만 아니라 사람도 직관적으로 읽고 이해하기 쉽다는 장점이 있습니다. 게시글 한 건을 JSON으로 표현하면 이런 모습입니다.
+**JSON(JavaScript Object Notation)** 은 데이터를 **키(Key)** 와 **값(Value)** 의 쌍으로 묶어 표현하는 텍스트 형식입니다. 구조가 단순해서 기계뿐만 아니라 사람도 읽고 이해하기 쉽습니다. 게시글 한 건을 JSON으로 표현하면 이런 모습입니다.
 
 ```json
 {
@@ -203,13 +203,13 @@ REST API의 핵심은 **무엇을(주소)**, **어떻게(메서드)** 할 것인
 | PUT | 수정한다 | 게시글 내용을 고친다 |
 | DELETE | 삭제한다 | 게시글을 지운다 |
 
-이처럼 HTTP 메서드를 통해 **행위(어떻게)** 를 명확히 분리하고 나면, 주소에는 온전히 **자원(무엇을)** 만 남게 됩니다.
+이처럼 **행위(어떻게)** 를 HTTP 메서드로 분리하면 주소에는 **자원(무엇을)** 만 남습니다.
 
-REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다루는지 직관적으로 예측할 수 있도록, 자원의 이름을 지을 때 지켜야 할 몇 가지 권장 규칙을 두고 있습니다.
+REST API에는 다른 개발자가 주소만 보고도 어떤 자원을 다루는지 알 수 있도록 자원 이름을 짓는 몇 가지 권장 규칙이 있습니다.
 
 | 규칙 | 권장 | 피할 것 |
 |------|------|---------|
-| 주소의 영어는 소문자로 쓴다 | **/boards** | **/Boards** |
+| 주소는 영문 소문자로 쓴다 | **/boards** | **/Boards** |
 | 주소에 행위를 넣지 않고 메서드로 표현한다 | **PUT /boards/1** | **/boards/1/put** |
 | 자원은 단수형이 아닌 복수형으로 쓴다 | **/boards/1** | **/board/1** |
 | 긴 단어는 하이픈으로 구분한다 | **/user-profiles** | **/user_profiles** |
@@ -279,47 +279,35 @@ REST API에서는 다른 개발자가 주소만 보고도 어떤 자원을 다�
 
 ## 2.2 프로젝트 생성과 구조
 
-스프링 부트는 스프링을 사용하는 데 필요한 것들을 미리 묶어 둔 도구로, 내장 서버를 갖추고 설정을 맞추는 일을 대신 해 줍니다. 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.
+스프링은 자바 기반의 웹 애플리케이션 프레임워크이고, 스프링 부트(Spring Boot)는 그 스프링을 쉽고 빠르게 사용할 수 있도록 초기 설정을 자동화해 주는 도구입니다. 필요한 라이브러리를 묶어서 제공하고 내장 서버도 들어 있어, 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.
 
 ### 2.2.1 프로젝트 생성
 
 :::tip
 **이 책의 실습 방식**
 
-본격적인 실습은 미리 준비해 둔 **start** 레포에서 진행합니다. 다만 첫 프로젝트 생성 과정은 직접 눈으로 확인해 보는 것이 좋으므로 여기서는 프로젝트를 만드는 절차만 먼저 살펴보겠습니다.
+본격적인 실습은 미리 준비해 둔 **start** 레포에서 진행합니다. 다만 프로젝트 생성 과정은 직접 눈으로 확인해 보는 것이 좋으므로 여기서는 프로젝트를 만드는 절차만 먼저 살펴보겠습니다.
 :::
 
-먼저 자바와 스프링을 다룰 확장 프로그램을 설치합니다. 상단 탭에서 View > Extensions를 선택합니다.
-
-![](../assets/CH2/setup/01_extensions-menu.png)
-
-*그림 2-7. Extensions 메뉴 선택*
-
-검색창에 java를 넣어 Extension Pack for Java를 설치합니다.
-
-![](../assets/CH2/setup/02_java-pack.png)
-
-*그림 2-8. Extension Pack for Java*
-
-이어서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
+먼저 View > Extensions에서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장 프로그램에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
 
 ![](../assets/CH2/setup/03_spring-pack.png)
 
-*그림 2-9. Spring Boot Extension Pack*
+*그림 2-7. Spring Boot Extension Pack*
 
 설치가 끝나면 View > Command Palette를 엽니다.
 
 ![](../assets/CH2/setup/04_command-palette.png)
 
-*그림 2-10. Command Palette 선택*
+*그림 2-8. Command Palette 선택*
 
 spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니다.
 
 ![](../assets/CH2/setup/05_initializr.png)
 
-*그림 2-11. Gradle 프로젝트 생성 명령*
+*그림 2-9. Gradle 프로젝트 생성 명령*
 
-이후 묻는 항목에 이 값들을 넣습니다.
+이어서 나오는 항목에 다음 값을 넣습니다.
 
 | 항목 | 값 |
 |------|-----|
@@ -330,22 +318,20 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
 | Packaging | JAR |
 | 자바 버전 | 21 |
 
-마지막으로 프로젝트에 넣을 의존성을 고릅니다.
+마지막으로 프로젝트에 추가할 의존성을 고릅니다. 의존성은 프로젝트에서 사용하는 외부 라이브러리를 말합니다.
 
 | 의존성 | 역할 |
 |--------|------|
 | Spring Web | REST 요청을 받는 웹 계층과 내장 웹 서버가 들어 있습니다 |
-| Spring Data JPA | 객체와 테이블을 잇는 JPA와 하이버네이트가 들어 있습니다 |
+| Spring Data JPA | 객체와 테이블을 연결하는 JPA와 하이버네이트가 들어 있습니다 |
 | H2 Database | 메모리에서만 동작하는 실습용 데이터베이스입니다 |
-| Lombok | 게터·세터 같은 반복 코드를 대신 만들어 줍니다 |
+| Lombok | 게터·세터 같은 반복 코드를 자동으로 생성합니다 |
 
-생성이 끝나면 이런 구조가 만들어집니다.
-
-`build.gradle`에 방금 고른 의존성이 적혀 있고, 코드는 `src` 아래에 들어갑니다.
+생성이 끝나면 다음과 같은 구조가 됩니다. 앞에서 고른 의존성은 `build.gradle`에 추가되어 있고, 자바 코드는 `src` 폴더 안에 작성합니다.
 
 ![](../assets/CH2/setup/06_project-tree.png)
 
-*그림 2-12. 스프링 부트 프로젝트 구조*
+*그림 2-10. 스프링 부트 프로젝트 구조*
 
 ## 2.3 하이버네이트
 
@@ -362,33 +348,33 @@ spring을 입력해 Spring Initializr: Create a Gradle Project를 실행합니�
   <rect x="154" y="92" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
   <rect x="154" y="120" width="34" height="11" rx="5" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
   <text x="112" y="196" text-anchor="middle" font-size="12.7" font-weight="700" fill="#3730a3">Board 객체</text>
-  <text x="112" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">자바가 쓰는 모양</text>
+  <text x="112" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">자바의 구조</text>
   <line x1="202" y1="111" x2="256" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
   <rect x="264" y="62" width="170" height="98" rx="12" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
   <text x="349" y="117" text-anchor="middle" font-size="13.6" font-weight="800" fill="#3730a3">하이버네이트</text>
   <rect x="434" y="88" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
   <rect x="434" y="126" width="26" height="9" rx="3" fill="#cbd5e1" stroke="#64748b" stroke-width="1.2"/>
-  <text x="349" y="196" text-anchor="middle" font-size="10.7" fill="#64748b">두 모양 사이를 오갑니다</text>
+  <text x="349" y="196" text-anchor="middle" font-size="10.7" fill="#64748b">객체와 행을 서로 변환합니다</text>
   <line x1="472" y1="111" x2="526" y2="111" stroke="#94a3b8" stroke-width="1.8" marker-start="url(#c2ad-l)" marker-end="url(#c2ad-r)"/>
   <rect x="534" y="58" width="130" height="106" rx="10" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <rect x="578" y="88" width="11" height="34" rx="2" fill="#334155"/>
   <rect x="610" y="88" width="11" height="34" rx="2" fill="#334155"/>
   <text x="599" y="196" text-anchor="middle" font-size="12.7" font-weight="700" fill="#0f172a">board_tb의 한 행</text>
-  <text x="599" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">데이터베이스가 쓰는 모양</text>
+  <text x="599" y="216" text-anchor="middle" font-size="10.7" fill="#64748b">데이터베이스의 구조</text>
 </svg>
 </div>
 
-*그림 2-13. 어댑터를 끼운 플러그와 콘센트*
+*그림 2-11. 어댑터를 끼운 플러그와 콘센트*
 
 앞으로 만들 게시글 하나는 자바에서 **Board** 객체이고, 데이터베이스에서는 **board_tb** 테이블의 한 행입니다. 두 구조의 차이는 이렇습니다.
 
 | 구분 | 데이터베이스 (RDB) | 자바 (Java) |
 |------|-------------------|-------------|
-| 구조 | 행과 열로 이루어진 2차원의 평면적인 표입니다. 각 칸에는 숫자나 문자 같은 단순한 **값**만 들어갑니다. | 상태(필드)와 행위(메서드)를 함께 가지는 입체적인 구조입니다. |
-| 연관관계 | 데이터 간의 관계를 **외래 키(Foreign Key)** 를 통해 맺습니다. 한 칸에 표나 배열을 통째로 넣을 수 없습니다. | 객체 안에 다른 객체를 품거나, List나 Map 같은 컬렉션을 담아 훨씬 복잡한 관계를 표현할 수 있습니다. |
+| 구조 | 행과 열로 이루어진 평면적인 표입니다. 각 칸에는 숫자나 문자 같은 단순한 **값**만 들어갑니다. | 상태(필드)와 행위(메서드)를 함께 가지는 입체적인 구조입니다. |
+| 연관관계 | 데이터 간의 관계를 **외래 키(Foreign Key)** 를 통해 맺습니다. 한 칸에 표나 배열을 통째로 넣을 수 없습니다. | 객체 안에 다른 객체를 포함하거나, List나 Map 같은 컬렉션을 담아 훨씬 복잡한 관계를 표현할 수 있습니다. |
 | 상속 | 부모와 자식이라는 상속의 개념 자체가 없습니다. | 부모 클래스의 특징을 물려받는 **상속**과 **다형성**이 핵심입니다. |
 
-이러한 구조적 차이 때문에, 객체를 저장하거나 꺼낼 때는 매번 값을 일일이 옮겨 담는 변환 작업이 필요합니다. 마치 어댑터처럼 이 간극을 메워주는 기술을 **ORM(Object-Relational Mapping)** 이라고 합니다. 자바에서는 이 ORM이 갖춰야 할 기능을 **JPA(Java Persistence API)** 라는 규칙으로 정해두었고, 이 규칙대로 만든 대표적인 엔진이 바로 **하이버네이트(Hibernate)** 입니다. 우리가 앞서 추가한 Spring Data JPA 의존성에는 이 하이버네이트가 기본적으로 포함되어 있습니다.
+이러한 구조적 차이 때문에, 객체를 저장하거나 꺼낼 때는 매번 값을 일일이 옮겨 담는 변환 작업이 필요합니다. 마치 어댑터처럼 이 간극을 메워주는 기술을 **ORM(Object-Relational Mapping)** 이라고 합니다. 자바에서는 이 ORM이 갖춰야 할 기능을 **JPA(Java Persistence API)** 라는 규칙으로 정해두었고, 이 규칙대로 만든 대표적인 라이브러리가 **하이버네이트(Hibernate)** 입니다. 앞서 추가한 Spring Data JPA 의존성에는 하이버네이트가 기본적으로 포함되어 있습니다.
 
 ## 2.4 데이터베이스와 엔티티
 
@@ -431,7 +417,7 @@ spring.jpa.properties.hibernate.format_sql=true
 :::tip
 **ddl-auto=create는 개발 단계에서만**
 
-**ddl-auto=create** 는 스프링을 실행할 때마다 테이블을 새로 생성하는 설정입니다. 운영 중인 데이터베이스에 두면 재시작 한 번으로 데이터가 사라지므로, 개발 단계에서만 사용합니다.
+**ddl-auto=create** 는 스프링을 실행할 때마다 테이블을 새로 생성하는 설정입니다. 운영 환경에 이 설정을 적용하면 재시작할 때마다 데이터가 모두 사라지므로, 개발 단계에서만 사용합니다.
 :::
 
 ### 2.4.2 엔티티
@@ -471,32 +457,32 @@ insert into board_tb (title, content, created_at) values ('title2', 'content2', 
 터미널에 `./gradlew bootRun`을 입력해 스프링을 실행합니다.
 
 ![](../assets/CH2/terminal/06_bootrun.png)
-*그림 2-14. 스프링 실행 결과*
+*그림 2-12. 스프링 실행 결과*
 
-브라우저에서 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 접속할 JDBC URL과 User Name, Password는 `application.properties`에서 설정한 값입니다.
+브라우저 주소창에 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 로그인 화면에 입력할 JDBC URL과 User Name, Password는 `application.properties`에서 설정한 값입니다.
 
 ![](../assets/CH2/terminal/03_h2-login.png)
-*그림 2-15. H2 콘솔 로그인 화면*
+*그림 2-13. H2 콘솔 로그인 화면*
 
 H2 콘솔에서 **board_tb** 테이블을 확인할 수 있습니다.
 
 ![](../assets/CH2/terminal/04_h2-board-tb.png)
-*그림 2-16. H2 콘솔의 board_tb 테이블*
+*그림 2-14. H2 콘솔의 board_tb 테이블*
 
-H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이블을 조회하면 `data.sql`에 넣어 둔 데이터가 들어와 있는 것을 확인할 수 있습니다.
+H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이블을 조회하면 `data.sql`에 넣어 둔 데이터를 확인할 수 있습니다.
 
 ![](../assets/CH2/terminal/05_h2-select.png)
-*그림 2-17. board_tb 조회 결과*
+*그림 2-15. board_tb 조회 결과*
 
 :::tip
 **자바의 카멜 케이스와 DB의 스네이크 케이스**
 
-자바는 단어의 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 잇는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 하이버네이트는 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
+자바는 두 번째 단어부터 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 구분하는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 하이버네이트는 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
 :::
 
 ## 2.5 3계층 아키텍처
 
-게시판에 필요한 모든 코드를 하나의 클래스에 작성해도 프로그램은 정상적으로 돌아갑니다. 하지만 요청과 응답을 다루는 코드, 비즈니스 로직을 처리하는 코드, 데이터베이스에 접근하는 코드가 한 곳에 있으면 어디서 에러가 났는지 찾기도 힘든 복잡한 코드가 됩니다.
+게시판에 필요한 모든 코드를 하나의 클래스에 작성해도 프로그램은 정상적으로 돌아갑니다. 하지만 요청과 응답을 다루는 코드, 비즈니스 로직을 처리하는 코드, 데이터베이스에 접근하는 코드가 한 곳에 섞여 있으면 코드가 복잡해져 어디서 에러가 났는지 찾기 힘듭니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 320 210" style="max-width:330px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BoardAll.java 파일 상자 하나 안에 요청과 응답, 데이터베이스 접근, 비즈니스 로직이 순서 없이 섞여 있다.">
@@ -513,9 +499,9 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 </svg>
 </div>
 
-*그림 2-18. 한 클래스에 섞인 코드*
+*그림 2-16. 한 클래스에 섞인 코드*
 
-이런 문제를 막기 위해, 성격이 같은 코드끼리 층을 나누어 역할을 분리합니다. 이렇게 하면 각 클래스가 맡은 책임이 하나로 뚜렷해져 시스템에 변화가 생겼을 때 다른 코드에 미치는 영향을 최소화할 수 있습니다.
+이런 문제를 막기 위해, 성격이 같은 코드끼리 묶어 층으로 나눕니다. 이렇게 하면 각 클래스가 맡은 책임이 하나로 뚜렷해져 시스템에 변화가 생겼을 때 다른 코드에 미치는 영향을 최소화할 수 있습니다.
 
 <div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에서 요청이 들어와 컨트롤러, 서비스, 리포지토리를 차례로 지나 오른쪽 데이터베이스에 닿는다. 응답은 같은 길을 거꾸로 되짚어 데이터베이스에서 리포지토리, 서비스, 컨트롤러 순서로 돌아온다.">
@@ -550,27 +536,27 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 </svg>
 </div>
 
-*그림 2-19. 계층으로 나눈 코드*
+*그림 2-17. 계층으로 나눈 코드*
 
 스프링 웹 개발에서는 이렇게 역할에 따라 코드를 3개의 층으로 나누는 **3계층 아키텍처(3-Layer Architecture)** 를 주로 사용합니다.
 
 | 층 | 하는 일 |
 |----|---------|
-| 컨트롤러(Controller) | HTTP 요청 주소를 받아 서비스를 호출하고, 돌려받은 결과를 응답합니다 |
-| 서비스(Service) | 리포지토리를 호출해 요청을 완성하는 **비즈니스 로직**을 수행하고, 그 작업을 하나의 트랜잭션으로 처리합니다 |
+| 컨트롤러(Controller) | HTTP 요청을 받아 서비스를 호출하고, 그 결과를 응답으로 반환합니다 |
+| 서비스(Service) | 리포지토리를 호출해 요청에 필요한 **비즈니스 로직**을 수행합니다 |
 | 리포지토리(Repository) | 엔티티를 데이터베이스에서 조회하고 저장·수정·삭제합니다 |
 
 :::tip
 **Spring MVC와 JSON 응답**
 
-스프링에서 웹 요청을 다루는 기술을 **Spring MVC**라고 부릅니다. 본래는 화면(View), 요청 처리(Controller), 데이터(Model)를 나누는 전통적인 웹 개발 방식에서 유래한 이름입니다. 하지만 이 책에서는 별도의 화면을 만들지 않고 순수하게 데이터만 제공하는 API 서버를 만듭니다. 따라서 View 계층 없이, 컨트롤러가 반환한 자바 객체가 JSON 문자로 변환되어 응답 본문(Body)에 실립니다.
+스프링에서 웹 요청을 다루는 기술을 **Spring MVC**라고 부릅니다. 본래는 화면(View), 요청 처리(Controller), 데이터(Model)를 나누는 전통적인 웹 개발 방식에서 유래한 이름입니다. 하지만 이 책에서는 별도의 화면 없이 데이터만 제공하는 API 서버를 만듭니다. 따라서 View 계층 없이, 컨트롤러가 반환한 자바 객체가 JSON 문자열로 변환되어 응답 바디에 담깁니다.
 :::
 
 ## 2.6 공통 응답
 
 `core` 폴더는 프로젝트에 필요한 설정 파일, 도구 파일 등을 모아 놓은 폴더입니다.
 
-**Resp** 클래스는 API 응답 구조를 정하는 역할을 합니다. 요청이 성공하면 `status`를 200으로 두고 응답 데이터를 `body`에 담아 응답하며, 실패하면 에러 상태 코드와 메시지를 응답합니다.
+**Resp** 클래스는 API 응답 구조를 정하는 역할을 합니다. 요청이 성공하면 `status`에 200을, `body`에 응답 데이터를 담고, 실패하면 `status`에 에러 상태 코드를, `msg`에 에러 메시지를 담습니다.
 
 ```java [참고] core/util/Resp.java. 공통 응답 형식
 public record Resp<T>(Integer status, String msg, T body) {
@@ -604,9 +590,9 @@ public class BoardRepository {
 
 ### 2.7.1 게시글 한 건 조회
 
-**EntityManager**의 `find()` 메서드는 기본 키(PK)로 엔티티 한 건을 조회할 때 사용합니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 조건에 맞는 **Board** 엔티티 한 건을 반환합니다.
+**EntityManager**의 `find()`는 기본 키(PK)로 엔티티 한 건을 조회하는 메서드입니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 `find()`가 조건에 맞는 **Board** 엔티티 한 건을 반환합니다.
 
-`board/BoardRepository.java`의 주석 자리에 아래 메서드를 작성합니다.
+`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 3] board/BoardRepository.java. 기본 키로 한 건 조회
     public Board findById(int boardId) {
@@ -624,6 +610,8 @@ select id, content, created_at, title from board_tb where id = 1;
 
 **EntityManager**에는 전체 목록을 한 번에 조회하는 전용 메서드가 없습니다. 따라서 전체 데이터를 가져오려면 **JPQL(Java Persistence Query Language)** 을 사용해 직접 쿼리를 작성해서 실행해야 합니다.
 
+`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
+
 ```java [실습 4] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
         return em.createQuery("select b from Board b", Board.class).getResultList();
@@ -640,7 +628,9 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 
 ### 2.7.3 게시글 저장
 
-데이터를 조회할 때 `find()`를 사용했다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티 객체를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
+데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티 객체를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
+
+`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 5] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
@@ -648,7 +638,7 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
     }
 ```
 
-`persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다. `created_at`은 **@CreationTimestamp**가 채운 값이 그대로 들어갑니다.
+`persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다.
 
 ```sql
 insert into board_tb (content, created_at, title) values ('content3', now(), 'title3');
@@ -656,11 +646,13 @@ insert into board_tb (content, created_at, title) values ('content3', now(), 'ti
 
 ### 2.7.4 게시글 수정
 
-JPA에는 데이터를 수정하는 메서드가 없습니다. 조회해 온 엔티티 객체의 값만 변경하면 데이터베이스에 수정이 자동으로 반영됩니다. 이를 더티 체킹(변경 감지)이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.
+JPA에는 데이터를 수정하는 메서드가 없습니다. 조회해 온 엔티티 객체의 값만 변경하면 변경 내용이 데이터베이스에 자동으로 반영됩니다. 이를 더티체킹(변경 감지)이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.
 
 ### 2.7.5 게시글 삭제
 
-게시글을 삭제할 때는 `remove()` 메서드를 사용합니다. 이 메서드에 지우고자 하는 엔티티를 넘겨주면 JPA가 이를 삭제 대상으로 표시하고, 데이터베이스에 삭제 쿼리를 전달합니다.
+게시글을 삭제할 때는 `remove()` 메서드를 사용합니다. 이 메서드에 삭제할 엔티티를 넘겨주면 JPA가 이를 삭제 대상으로 표시하고, 데이터베이스에 삭제 쿼리를 전달합니다.
+
+`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 6] board/BoardRepository.java. 게시글 삭제
     public void delete(Board board) {
@@ -676,9 +668,9 @@ delete from board_tb where id = 2;
 
 ## 2.8 JPQL
 
-JPQL은 데이터베이스 테이블이 아닌 자바 엔티티와 필드 이름을 기준으로 작성하는 JPA 전용 SQL입니다. 작성된 JPQL은 실행 시점에 JPA가 SQL로 번역하여 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE는 지원하지만 INSERT는 지원하지 않으므로, 새로운 데이터를 추가할 때는 앞서 살펴본 `persist()` 메서드를 사용합니다.
+JPQL은 데이터베이스 테이블이 아닌 자바 엔티티와 필드 이름을 기준으로 작성하는 JPA 전용 쿼리 언어입니다. 작성된 JPQL은 실행 시점에 JPA가 SQL로 번역하여 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE는 지원하지만 INSERT는 지원하지 않으므로, 새로운 데이터를 추가할 때는 앞서 살펴본 `persist()` 메서드를 사용합니다.
 
-JPQL의 기본 형태는 테이블 이름 대신 엔티티 이름을 적고, 별칭을 사용해 대상을 가리키는 방식입니다. 앞서 전체 조회에 사용한 쿼리가 바로 이 형태입니다.
+JPQL은 테이블 이름 대신 엔티티 이름을 적고, 별칭을 사용해 대상을 가리키는 형태로 작성합니다. 앞서 전체 조회에 사용한 쿼리가 바로 이 형태입니다.
 
 ```java
 select b from Board b
@@ -690,7 +682,7 @@ select b from Board b
 select b.title, b.content from Board b
 ```
 
-조건을 추가할 때는 `where` 절에 콜론(:)을 붙여 파라미터를 조건에 넣습니다.
+조건을 추가할 때는 `where` 절에서 파라미터 이름 앞에 콜론(:)을 붙입니다.
 
 ```java
 select b from Board b where b.id = :id
@@ -706,7 +698,7 @@ delete from Board b where b.id = :id
 
 ## 2.9 영속성 컨텍스트
 
-JPA의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에, 엔티티를 먼저 올려두고 관리하는 전용 공간을 운영하는데, 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`나 `find()`처럼 **EntityManager**를 통해 엔티티가 영속성 컨텍스트에 등록되면, **엔티티는 영속 상태가 됩니다**. 영속성 컨텍스트는 이 객체의 상태 변화를 지켜보고 있다가, 변경된 내용을 데이터베이스에 반영합니다.
+JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티티를 별도 공간에 보관하고 관리합니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`로 저장하거나 `find()`로 조회한 엔티티는 영속성 컨텍스트에 보관되는데, 이 상태를 **영속 상태**라고 합니다.
 
 영속성 컨텍스트의 특징은 크게 세 가지입니다.
 
@@ -714,7 +706,7 @@ JPA의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에
 
 캐싱은 한 번 조회한 엔티티를 영속성 컨텍스트에 보관해 두었다가, **똑같은 엔티티를 다시 요청할 때 데이터베이스를 거치지 않고 바로 반환하는 기능입니다**.
 
-처음 조회하는 게시글은 아직 영속성 컨텍스트에 없습니다. 따라서 데이터베이스에 SELECT 쿼리를 보내 데이터를 직접 조회해 온 뒤, 이를 영속성 컨텍스트에 보관하고 반환합니다.
+처음 조회하는 게시글은 아직 영속성 컨텍스트에 없습니다. 따라서 JPA가 데이터베이스에 SELECT 쿼리를 보내 데이터를 조회해 온 뒤, 이를 영속성 컨텍스트에 보관하고 반환합니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="캐시에 없는 첫 조회. 리포지토리가 find()를 호출하면 영속성 컨텍스트는 캐시 miss 상태라 select SQL로 데이터베이스에서 읽어 오고, 읽어 온 board를 영속화한 뒤 리포지토리에 엔티티를 돌려준다.">
@@ -744,7 +736,13 @@ JPA의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에
 </svg>
 </div>
 
-*그림 2-20. 첫 조회와 영속화*
+*그림 2-18. 첫 조회와 영속화*
+
+처음 조회할 때 전달되는 SQL은 다음과 같습니다.
+
+```sql
+select * from board_tb where id = 1;
+```
 
 반면 같은 게시글을 다시 조회할 때는 데이터베이스를 거치지 않습니다. 영속성 컨텍스트에 보관된 엔티티를 바로 반환하기 때문에, **한 트랜잭션 안에서** 여러 번 조회하더라도 SELECT 쿼리는 최초 한 번만 실행됩니다.
 
@@ -767,17 +765,11 @@ JPA의 **EntityManager**는 데이터베이스에 직접 SQL을 보내기 전에
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c2-a)"/>
   <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
   <line x1="238" y1="152" x2="142" y2="152" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2c2-a)"/>
-  <text x="190" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">2. 캐싱</text>
+  <text x="190" y="170" text-anchor="middle" font-size="10.5" fill="#64748b">2. 캐시에서 반환</text>
 </svg>
 </div>
 
-*그림 2-21. 캐시 조회*
-
-같은 게시글을 두 번 조회해도 데이터베이스에 전달되는 SQL은 한 번뿐입니다.
-
-```sql
-select * from board_tb where id = 1;
-```
+*그림 2-19. 캐시 조회*
 
 :::tip
 **트랜잭션이란?**
@@ -823,9 +815,9 @@ select * from board_tb where id = 1;
 </svg>
 </div>
 
-*그림 2-22. 쓰기 지연*
+*그림 2-20. 쓰기 지연*
 
-`persist()`로 저장한 게시글은 `flush()` 시점에 다음 SQL로 데이터베이스에 전달됩니다.
+`persist()`로 저장한 게시글은 `flush()` 시점에 다음 SQL로 데이터베이스에 저장됩니다.
 
 ```sql
 insert into board_tb (title, content, created_at) values ('제목3', '내용3', now());
@@ -836,14 +828,14 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 
 **flush()** 는 영속성 컨텍스트의 변경 사항을 데이터베이스에 동기화하기 위해, 버퍼에 쌓여 있던 SQL을 전송하는 메서드입니다. 개발자가 직접 호출하지 않아도 트랜잭션이 성공할 때 JPA가 실행합니다.
 
-단, 기본 키 생성을 DB에 맡기는 IDENTITY 전략에서는 persist() 호출 즉시 INSERT 쿼리가 날아갑니다. DB가 만들어준 기본 키를 먼저 알아야 영속성 컨텍스트에 엔티티를 등록할 수 있기 때문입니다.
+단, 기본 키 생성을 DB에 맡기는 IDENTITY 전략에서는 persist()를 호출하는 즉시 INSERT 쿼리가 전송됩니다. DB가 만들어준 기본 키를 먼저 알아야 영속성 컨텍스트에 엔티티를 등록할 수 있기 때문입니다.
 :::
 
 ### 2.9.3 더티체킹
 
 렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 **영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다**. 이후 엔티티의 값이 변경되면, `flush()` 시점에 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 만들어 데이터베이스로 내보냅니다. 이를 **더티체킹(Dirty Checking)** 이라고 합니다.
 
-수정할 게시글을 `find()`로 조회하면 영속화가 되며 이 상태를 스냅샷으로 남깁니다.
+예를 들어 수정할 게시글을 `find()`로 조회하면, 게시글이 영속 상태가 되면서 그 시점의 값이 스냅샷으로 남습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 find()로 수정할 게시글을 조회하면 캐시에 없으므로 select SQL이 데이터베이스로 나가고, 읽어 온 board가 영속성 컨텍스트에서 영속화된다.">
@@ -871,7 +863,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 </svg>
 </div>
 
-*그림 2-23. 수정할 게시글 조회와 영속화*
+*그림 2-21. 수정할 게시글 조회와 영속화*
 
 영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 `flush()` 시점에 이 차이를 감지해 UPDATE 문을 만들고, 데이터베이스로 내보냅니다.
 
@@ -891,19 +883,18 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
   <rect x="145" y="124" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="230" y="145" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
   <line x1="230" y1="160" x2="230" y2="186" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="242" y="177" font-size="10.5" fill="#475569">5. 스냅샷과 비교해 update문 생성</text>
+  <text x="242" y="177" font-size="10.5" fill="#475569">5. flush() 시 스냅샷과 비교</text>
   <rect x="145" y="192" width="170" height="42" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="230" y="211" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
   <text x="230" y="227" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
   <line x1="315" y1="213" x2="503" y2="213" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
-  <text x="409" y="205" text-anchor="middle" font-size="10.5" fill="#475569">6. flush()</text>
-  <text x="409" y="229" text-anchor="middle" font-size="10.5" fill="#64748b">update문 전송</text>
+  <text x="409" y="205" text-anchor="middle" font-size="10.5" fill="#475569">6. update문 전송</text>
   <text x="575" y="120" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
   <text x="575" y="142" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
 </svg>
 </div>
 
-*그림 2-24. 더티체킹*
+*그림 2-22. 더티체킹*
 
 ## 2.10 단위 테스트
 
@@ -911,7 +902,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 
 커피 머신을 예로 들어 보겠습니다. 커피 머신은 원두를 가는 분쇄기와 커피를 내리는 추출기로 구성됩니다. 두 기능이 하나로 결합되어 있다면, 커피가 정상적으로 나오지 않을 때 어느 쪽 문제인지 파악하기 어렵습니다.
 
-반면 두 기능을 분리해 독립적으로 작동시키면 원인 파악이 쉬워집니다. 소프트웨어 역시 문제의 원인을 쉽게 찾기 위해 외부 의존성을 배제하고 가장 작은 기능 단위만 분리해 검증합니다. 이 방식이 단위 테스트입니다.
+반면 두 기능을 분리해 독립적으로 작동시키면 원인 파악이 쉬워집니다. 소프트웨어 역시 문제의 원인을 쉽게 찾기 위해 다른 기능과 분리해 가장 작은 기능 단위만 검증합니다. 이 방식이 단위 테스트입니다.
 
 <div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 940 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="커피 머신으로 본 단위 테스트. 왼쪽은 분쇄기와 추출기가 한 몸통에 들어 있는 커피 머신으로, 원두를 넣어 커피까지 한 번에 뽑기 때문에 잔이 비면 어디가 원인인지 알기 어렵다. 오른쪽은 분쇄기만 있는 머신과 추출기만 있는 머신을 따로 두고, 원두에서 분쇄된 원두, 분쇄된 원두에서 커피를 각각 독립적으로 검증하는 단위 방식이다.">
@@ -972,15 +963,15 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 </svg>
 </div>
 
-*그림 2-25. 단위 테스트가 필요한 이유*
+*그림 2-23. 단위 테스트가 필요한 이유*
 
-자바에서는 이러한 단위 테스트 실행을 **JUnit**이 담당합니다. 검증할 메서드 위에 **@Test** 어노테이션만 추가하면 해당 메서드를 개별적으로 실행할 수 있습니다.
+자바에서는 이러한 단위 테스트 실행을 **JUnit**이 담당합니다. 테스트 메서드 위에 **@Test** 어노테이션만 추가하면 해당 메서드를 개별적으로 실행할 수 있습니다.
 
 ### 2.10.1 given-when-then 패턴
 
 단위 테스트 코드는 일반적으로 **given-when-then**이라는 세 단계로 나누어 작성합니다. 테스트에 필요한 데이터를 준비하는 **given**, 검증할 대상 메서드를 호출하는 **when**, 그리고 실행 결과가 기대한 대로 나왔는지 확인하는 **then** 순서입니다.
 
-본래 마지막 then 단계에서는 테스트 도구를 사용해 예상값과 실제 결괏값을 코드로 비교하고 검증합니다. 하지만 이 책에서는 편의상 복잡한 검증 코드를 작성하는 대신, 실행 결과를 콘솔에 출력하고 눈으로 직접 확인하는 **eye** 단계로 대체하여 진행하겠습니다.
+본래 마지막 then 단계에서는 테스트 도구를 사용해 예상값과 실제 결괏값을 코드로 비교하고 검증합니다. 하지만 이 책에서는 편의상 검증 코드 대신, 실행 결과를 콘솔에 출력해 눈으로 확인하는 **eye** 단계를 사용합니다.
 
 <div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 코드로 결과를 검증하지만 학습 단계에서는 eye로 대체한다.">
@@ -1001,29 +992,27 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
   <rect x="620" y="66" width="240" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
   <text x="740" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#c2410c">eye</text>
   <text x="740" y="124" text-anchor="middle" font-size="13.8" fill="#334155">확인</text>
-  <text x="740" y="146" text-anchor="middle" font-size="13.8" fill="#475569">결과를 찍어</text>
+  <text x="740" y="146" text-anchor="middle" font-size="13.8" fill="#475569">결과를 출력해</text>
   <text x="740" y="162" text-anchor="middle" font-size="13.8" fill="#475569">눈으로 본다</text>
   <line x1="280" y1="121" x2="328" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
   <line x1="570" y1="121" x2="618" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
-  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">원래 then 자리를 학습 단계에선 eye로 대체합니다</text>
+  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">학습 단계에서는 then 대신 eye를 사용합니다</text>
 </svg>
 </div>
 
-*그림 2-26. given-when-eye 세 단계*
+*그림 2-24. given-when-eye 세 단계*
 
 :::tip
 **행위 주도 개발(Behavior Driven Development)**
 
-Given-When-Then 패턴은 사용자 관점에서 시스템이 **어떤 행위**를 하는지 시나리오 형태로 작성하는 행위 주도 개발 기법에서 유래했습니다. 테스트 코드가 마치 한 편의 설명서처럼 읽히기 때문에, 개발자뿐만 아니라 다른 협업자들도 요구사항과 테스트의 목적을 직관적으로 파악할 수 있습니다.
+Given-When-Then 패턴은 사용자 관점에서 시스템이 **어떤 행위**를 하는지 시나리오 형태로 작성하는 행위 주도 개발 기법에서 유래했습니다. 테스트 코드가 시나리오처럼 읽히기 때문에, 개발자뿐만 아니라 다른 협업자들도 요구사항과 테스트의 목적을 쉽게 파악할 수 있습니다.
 :::
 
 ### 2.10.2 리포지토리 테스트 작성
 
 이제 given-when-eye 형식에 맞춰 실제 테스트를 만들어 보겠습니다.
 
-테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 둡니다. `board` 패키지에 `BoardRepositoryTest.java`를 생성합니다.
-
-`BoardRepositoryTest.java` 파일에는 아래와 같이 코드를 작성합니다.
+테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 둡니다. `board` 패키지의 `BoardRepositoryTest.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 7] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class) // 검증할 BoardRepository를 빈으로 등록한다
@@ -1056,10 +1045,12 @@ public class BoardRepositoryTest {
     }
 ```
 
-![](../assets/CH2/terminal/07_test-findbyid.png)
-*그림 2-27. 한 건 조회 실행 결과*
+테스트 메서드 왼쪽의 실행 버튼을 누르면 해당 테스트만 실행됩니다.
 
-전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다.
+![](../assets/CH2/terminal/07_test-findbyid.png)
+*그림 2-25. 한 건 조회 실행 결과*
+
+전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 9] BoardRepositoryTest.java. 전체 조회
     @Test
@@ -1077,9 +1068,9 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/08_test-findall.png)
-*그림 2-28. 전체 조회 실행 결과*
+*그림 2-26. 전체 조회 실행 결과*
 
-게시글 저장은 `save()` 메서드를 실행한 후 저장된 결과를 확인하기 위해 `findAll()`을 한 번 더 사용합니다.
+저장 테스트는 `save()`를 호출한 뒤, `findAll()`로 목록을 조회해 새 게시글이 추가되었는지 확인합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 10] BoardRepositoryTest.java. 저장
     @Test
@@ -1101,11 +1092,11 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/09_test-save.png)
-*그림 2-29. 저장 실행 결과*
+*그림 2-27. 저장 실행 결과*
 
-게시글 수정은 update 메서드를 만들지 않고 영속 상태 엔티티의 더티체킹을 사용합니다.
+수정 테스트에서는 update 메서드 없이 더티체킹으로 값을 수정합니다.
 
-실제 서비스에서는 트랜잭션이 끝날 때 JPA가 `flush()`를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 `flush()`를 직접 호출합니다. 그리고 `clear()`를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다.
+실제 서비스에서는 트랜잭션이 끝날 때 JPA가 `flush()`를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 `flush()`를 직접 호출합니다. 그리고 `clear()`를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 11] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
@@ -1127,7 +1118,7 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/10_test-update.png)
-*그림 2-30. 수정 실행 결과*
+*그림 2-28. 수정 실행 결과*
 
 게시글 삭제 테스트를 아래와 같이 작성합니다.
 
@@ -1148,7 +1139,7 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/11_test-delete.png)
-*그림 2-31. 삭제 실행 결과*
+*그림 2-29. 삭제 실행 결과*
 
 이렇게 단위 테스트로 리포지토리만 따로 검증하면 서버를 실행하지 않아도 기능이 의도대로 동작하는지 확인할 수 있습니다.
 
@@ -1206,12 +1197,12 @@ public class BoardController {
 서버를 실행했으니, 이제 API를 호출해 잘 동작하는지 확인해 보겠습니다. 이 책에서는 브라우저에서 API를 호출하는 도구인 **Hoppscotch**(https://hoppscotch.io/)를 사용합니다.
 
 ![](../assets/CH2/setup/07_hoppscotch-home.png)
-*그림 2-32. Hoppscotch 화면*
+*그림 2-30. Hoppscotch 화면*
 
-Hoppscotch는 브라우저 보안 때문에 내 컴퓨터의 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, 설정 > Interceptor에서 익스텐션을 선택합니다.
+Hoppscotch는 브라우저 보안 때문에 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, 설정 > Interceptor에서 이 확장 프로그램을 선택합니다.
 
 ![](../assets/CH2/setup/08_hoppscotch-interceptor.png)
-*그림 2-33. Browser Extension 인터셉터 설정*
+*그림 2-31. Browser Extension 인터셉터 설정*
 
 확장 프로그램을 설치했다면 게시글 목록 API를 호출합니다.
 
@@ -1220,13 +1211,13 @@ GET http://localhost:8080/api/boards
 ```
 
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-34. 게시글 목록 응답*
+*그림 2-32. 게시글 목록 응답*
 
 ## 2.12 게시글 상세
 
 ### 2.12.1 서비스
 
-게시글 상세 조회는 기본 키를 사용해 단일 데이터만 가져옵니다. 서비스에서 리포지토리의 `findById()`를 호출하도록 `board/BoardService.java`에 다음 메서드를 추가합니다.
+게시글 상세 조회는 기본 키로 게시글 한 건을 가져옵니다. 서비스에서 리포지토리의 `findById()`를 호출하도록 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 15] board/BoardService.java. 게시글 상세
     public Board 게시글상세(Integer boardId) {
@@ -1238,7 +1229,7 @@ GET http://localhost:8080/api/boards
 
 컨트롤러는 URL 경로에 포함된 게시글 번호를 추출하여 서비스로 전달합니다. 경로 변수인 `{boardId}` 값은 **@PathVariable**을 사용해 가져옵니다.
 
-`board/BoardController.java`에 다음 메서드를 추가해 이를 구현합니다.
+`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
 ```java [실습 16] board/BoardController.java. 게시글 상세
     @GetMapping("/{boardId}")
@@ -1255,7 +1246,7 @@ GET http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/02_board-detail.png)
-*그림 2-35. 게시글 상세 응답*
+*그림 2-33. 게시글 상세 응답*
 
 ## 2.13 게시글 추가
 
@@ -1273,11 +1264,11 @@ GET http://localhost:8080/api/boards/1
     }
 ```
 
-**@Transactional**은 메서드가 실행되는 동안 트랜잭션을 열어 두었다가, 정상으로 끝나면 변경을 반영하고 중간에 예외가 나면 되돌립니다.
+**@Transactional**은 메서드가 실행되는 동안 트랜잭션을 열어 두었다가, 정상적으로 끝나면 변경 내용을 반영하고 중간에 예외가 발생하면 되돌립니다.
 
 ### 2.13.2 컨트롤러
 
-클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 파라미터에 **@RequestBody**가 있다면, 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 매개변수로 전달합니다.
+클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 이때 매개변수에 **@RequestBody**가 있으면, 스프링이 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 전달합니다.
 
 `board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -1289,9 +1280,19 @@ GET http://localhost:8080/api/boards/1
     }
 ```
 
-저장한 게시글을 응답합니다. 클라이언트가 다시 조회하지 않아도 저장된 결과를 바로 확인할 수 있습니다.
+컨트롤러는 서비스가 저장한 게시글을 응답으로 반환합니다.
 
-제목과 내용을 요청 바디에 담아 게시글 추가 API를 호출합니다.
+:::tip
+**POST와 PUT의 응답**
+
+데이터를 생성(POST)하거나 수정(PUT)할 때 응답 바디로 결과를 돌려주는 이유는, 추가적인 서버 요청 없이 화면을 즉시 갱신하기 위해서입니다.
+
+예를 들어 게시글을 작성했을 때 처리 결과를 돌려주지 않으면, 변경된 내용을 확인하기 위해 사용자가 직접 새로고침을 하거나 서버에 데이터를 다시 요청해야 합니다. 반면 완성된 데이터를 바로 응답받으면 추가적인 통신 없이 화면을 업데이트할 수 있습니다.
+
+결과적으로 불필요한 네트워크 낭비를 막고 사용자 경험을 높이기 위해 데이터를 반환하는 것이 좋습니다.
+:::
+
+본문 탭에서 컨텐츠 종류를 application/json으로 선택한 뒤, 제목과 내용을 담아 게시글 추가 API를 호출합니다.
 
 ```json [Hoppscotch] 게시글 추가
 POST http://localhost:8080/api/boards
@@ -1303,7 +1304,7 @@ POST http://localhost:8080/api/boards
 ```
 
 ![](../assets/CH2/terminal/03_board-save.png)
-*그림 2-36. 게시글 추가 응답*
+*그림 2-34. 게시글 추가 응답*
 
 ## 2.14 게시글 수정
 
@@ -1325,7 +1326,7 @@ POST http://localhost:8080/api/boards
     } // 트랜잭션이 끝나는 이 지점에서 변경이 반영된다
 ```
 
-값을 변경하기만 했는데도, **@Transactional**이 끝날 때 `flush()`가 스냅샷과 현재 값을 비교해 달라진 엔티티를 UPDATE로 내보냅니다.
+값만 변경해도 트랜잭션이 끝나는 시점에 더티체킹이 동작해 변경된 내용을 데이터베이스에 반영합니다.
 
 ### 2.14.2 컨트롤러
 
@@ -1352,13 +1353,13 @@ PUT http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/04_board-update.png)
-*그림 2-37. 게시글 수정 응답*
+*그림 2-35. 게시글 수정 응답*
 
 ## 2.15 게시글 삭제
 
 ### 2.15.1 서비스
 
-삭제는 지울 엔티티를 먼저 조회해 리포지토리에 전달합니다.
+`게시글삭제()`는 삭제할 게시글을 먼저 조회한 뒤, 조회한 엔티티를 리포지토리에 전달합니다.
 
 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
 
@@ -1382,7 +1383,7 @@ PUT http://localhost:8080/api/boards/1
     }
 ```
 
-삭제는 반환할 데이터가 없으므로 `Resp.ok(null)`로 성공만 응답합니다.
+삭제는 반환할 데이터가 없으므로 `Resp.ok(null)`로 성공 응답만 반환합니다.
 
 1번 게시글의 삭제 API를 호출합니다.
 
@@ -1391,10 +1392,11 @@ DELETE http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/05_board-delete.png)
-*그림 2-38. 게시글 삭제 응답*
+*그림 2-36. 게시글 삭제 응답*
 
+실습이 끝난 서버는 종료합니다.
 
-스프링 프레임워크의 웹 계층 구조를 활용해 게시판의 기본 기능을 완성했습니다. 데이터베이스와 통신하는 리포지토리, 비즈니스 로직을 품은 서비스, 클라이언트의 요청을 받는 컨트롤러까지, 스프링의 구성 요소들이 어떻게 맞물려 하나의 애플리케이션으로 동작하는지 확인해 보았습니다.
+스프링 프레임워크의 웹 계층 구조를 활용해 게시판의 기본 기능을 완성했습니다. 데이터베이스와 통신하는 리포지토리, 비즈니스 로직을 처리하는 서비스, 클라이언트의 요청을 받는 컨트롤러까지, 스프링의 구성 요소들이 어떻게 하나의 애플리케이션으로 동작하는지 확인해 보았습니다.
 
 다음 챕터에서는 클라이언트와 주고받을 데이터를 DTO로 분리하여 구조를 개선하고, 잘못된 조회 요청에 대비한 예외 처리를 다룹니다.
 
@@ -1402,6 +1404,6 @@ DELETE http://localhost:8080/api/boards/1
 **이것만은 기억하자**
 
 - **JPA는 객체와 테이블 사이를 변환합니다.** 테이블이 아니라 엔티티와 필드 이름으로 JPQL을 작성하면 JPA가 이를 SQL로 번역해 데이터베이스에 전달합니다.
-- **영속성 컨텍스트는 조회한 엔티티를 트랜잭션 동안 관리합니다.** 같은 엔티티를 다시 조회하면 캐시에 있는 것을 반환하고, 쿼리는 버퍼에 모았다가 `flush()` 시점에 내보냅니다.
+- **영속성 컨텍스트는 조회한 엔티티를 트랜잭션 동안 관리합니다.** 같은 엔티티를 다시 조회하면 캐시에 있는 것을 반환하고, 변경 쿼리는 버퍼에 모았다가 `flush()` 시점에 내보냅니다.
 - **애플리케이션은 컨트롤러, 서비스, 리포지토리 세 계층으로 나눕니다.** 컨트롤러는 요청을 받고, 서비스는 트랜잭션 내에서 비즈니스 로직을 처리하며, 리포지토리는 데이터베이스를 다룹니다.
 :::

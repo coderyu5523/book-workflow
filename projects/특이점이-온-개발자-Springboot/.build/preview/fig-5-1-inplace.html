@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>그림 5-1 · 현재 틀 안에서 양방향 매핑 표현</title>
+<style>
+  body { margin:0; padding:40px 24px 80px; background:#f8fafc;
+         font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:#0f172a; }
+  .wrap { max-width:940px; margin:0 auto; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { font-size:13px; color:#64748b; margin:0 0 32px; line-height:1.7; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px 20px; margin-bottom:28px; }
+  .card > h2 { font-size:14px; margin:0 0 6px; color:#3730a3; }
+  .card > .lead { font-size:12.5px; color:#64748b; margin:0 0 16px; line-height:1.7; }
+  .svg-figure { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 8px; margin:0; }
+  .svg-figure svg { display:block; width:100%; height:auto; }
+  .caption { text-align:center; font-size:12.5px; color:#475569; font-style:italic; margin:10px 0 0; }
+  .note { font-size:12.5px; color:#64748b; line-height:1.8; margin:16px 0 0; }
+  code { font-family:monospace; background:#f1f5f9; padding:1px 4px; border-radius:3px; }
+  .diff { font-size:12.5px; color:#475569; line-height:1.9; margin:14px 0 0; padding-left:18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>그림 5-1 · 현재 틀 안에서 양방향 매핑 표현</h1>
+  <p class="sub">좌우 2분할, 박스 구성, 색은 그대로 둡니다. 바꾸는 것은 <b>화살촉의 방향</b>과 <code>replies</code> 칸의 성격 두 가지입니다.</p>
+
+  <!-- ============ 안 1 ============ -->
+  <div class="card">
+    <h2>안 1 · 화살표 방향으로 대비</h2>
+    <p class="lead">왼쪽은 화살촉이 양쪽에 달리고, 오른쪽은 한쪽에만 달립니다. 그리고 오른쪽에 주황 점선 화살표가 하나 더 생깁니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 412" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블에서는 board_tb와 reply_tb, user_tb와 reply_tb가 각각 양쪽 화살표로 이어져 외래 키 하나로 양쪽 조인이 가능함을 보여준다. 오른쪽 자바 객체에서는 Reply의 board 필드에서 Board로 향하는 화살표와 Reply의 user 필드에서 User로 향하는 화살표가 한 방향뿐이고, Board의 replies 필드에서 Reply로 향하는 주황 점선 화살표가 양방향 매핑으로 새로 추가된 것으로 표시된다.">
+  <defs>
+    <marker id="f1-two" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+    <marker id="f1-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+    <marker id="f1-new" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <text x="245" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">테이블</text>
+  <text x="755" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">자바 객체</text>
+  <line x1="500" y1="48" x2="500" y2="376" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="40" y="64" width="150" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="64" width="150" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="84" width="150" height="8" fill="#eef2ff"/>
+  <text x="115" y="83" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="56" y="112" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="56" y="132" font-size="12" font-family="monospace" fill="#475569">title</text>
+  <rect x="40" y="278" width="150" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="278" width="150" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="298" width="150" height="8" fill="#eef2ff"/>
+  <text x="115" y="297" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">user_tb</text>
+  <text x="56" y="326" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="56" y="346" font-size="12" font-family="monospace" fill="#475569">username</text>
+  <rect x="290" y="150" width="160" height="124" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="290" y="150" width="160" height="28" rx="8" fill="#fff4ed"/>
+  <rect x="290" y="170" width="160" height="8" fill="#fff4ed"/>
+  <text x="370" y="169" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="306" y="200" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="306" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="306" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <text x="306" y="266" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">user_id</text>
+  <path d="M196,114 H240 V244 H284" fill="none" stroke="#334155" stroke-width="1.8" marker-start="url(#f1-two)" marker-end="url(#f1-two)"/>
+  <text x="228" y="106" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
+  <text x="276" y="236" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
+  <path d="M196,320 H240 V266 H284" fill="none" stroke="#334155" stroke-width="1.8" marker-start="url(#f1-two)" marker-end="url(#f1-two)"/>
+  <text x="228" y="338" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
+  <text x="276" y="288" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
+  <text x="245" y="396" text-anchor="middle" font-size="12" fill="#475569">외래 키 하나로 양쪽 모두 조인합니다</text>
+  <rect x="550" y="64" width="180" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="550" y="64" width="180" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="550" y="84" width="180" height="8" fill="#eef2ff"/>
+  <text x="640" y="83" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <text x="566" y="112" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="566" y="132" font-size="12" font-family="monospace" fill="#475569">title</text>
+  <rect x="556" y="140" width="168" height="22" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="566" y="156" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">List&lt;Reply&gt; replies</text>
+  <rect x="550" y="278" width="180" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="550" y="278" width="180" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="550" y="298" width="180" height="8" fill="#eef2ff"/>
+  <text x="640" y="297" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">User</text>
+  <text x="566" y="326" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="566" y="346" font-size="12" font-family="monospace" fill="#475569">username</text>
+  <rect x="800" y="150" width="180" height="124" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="800" y="150" width="180" height="28" rx="8" fill="#fff4ed"/>
+  <rect x="800" y="170" width="180" height="8" fill="#fff4ed"/>
+  <text x="890" y="169" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="816" y="200" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="816" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="816" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <text x="816" y="266" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">User user</text>
+  <path d="M794,244 H772 V124 H736" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#f1-one)"/>
+  <text x="753" y="116" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#334155">board</text>
+  <path d="M794,266 H782 V326 H736" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#f1-one)"/>
+  <text x="792" y="302" font-size="11" font-family="monospace" font-weight="800" fill="#334155">user</text>
+  <path d="M730,152 H744 V260 H794" fill="none" stroke="#ff7849" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#f1-new)"/>
+  <text x="766" y="230" text-anchor="middle" font-size="11" font-weight="800" fill="#c2410c">양방향 매핑</text>
+  <text x="766" y="249" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#c2410c">replies</text>
+  <text x="755" y="396" text-anchor="middle" font-size="12" fill="#475569">참조는 한 방향이라 반대쪽 필드를 추가합니다</text>
+</svg>
+</div>
+<div class="caption">그림 5-1. 테이블과 자바 객체의 차이</div>
+
+    <p class="diff">
+      바뀐 곳 세 군데입니다.<br>
+      1. 왼쪽 연결선 양끝에 화살촉 — 외래 키 하나로 <b>양쪽</b> 조인<br>
+      2. 오른쪽 <code>board</code>·<code>user</code> 화살표는 <b>한쪽</b>에만 화살촉 — 일방통행<br>
+      3. <code>replies</code> 칸과 거기서 나가는 <b>주황 점선 화살표</b> — 양방향 매핑으로 새로 여는 길
+    </p>
+  </div>
+
+  <!-- ============ 안 2 ============ -->
+  <div class="card">
+    <h2>안 2 · 안 1에서 User를 뺀 판</h2>
+    <p class="lead">작성자 관계를 빼면 화살표가 셋에서 둘로 줄어 대비가 더 세게 보입니다. 작성자는 5.1 본문에서 다시 나옵니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 1000 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블에서는 board_tb와 reply_tb가 board_id 외래 키 하나로 이어지고 화살촉이 양쪽에 달려 있다. 오른쪽 자바 객체에서는 Reply의 board 필드에서 Board로 향하는 화살표가 한 방향이고, Board의 replies 필드에서 Reply로 향하는 주황 점선 화살표가 양방향 매핑으로 새로 추가된 것으로 표시된다.">
+  <defs>
+    <marker id="f2-two" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+    <marker id="f2-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+    <marker id="f2-new" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <text x="245" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">테이블</text>
+  <text x="755" y="30" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">자바 객체</text>
+  <line x1="500" y1="48" x2="500" y2="296" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="40" y="64" width="150" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="40" y="64" width="150" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="40" y="84" width="150" height="8" fill="#eef2ff"/>
+  <text x="115" y="83" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="56" y="112" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="56" y="132" font-size="12" font-family="monospace" fill="#475569">title</text>
+  <rect x="290" y="172" width="160" height="80" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="290" y="172" width="160" height="28" rx="8" fill="#fff4ed"/>
+  <rect x="290" y="192" width="160" height="8" fill="#fff4ed"/>
+  <text x="370" y="191" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="306" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="306" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <path d="M196,114 H240 V244 H284" fill="none" stroke="#334155" stroke-width="1.8" marker-start="url(#f2-two)" marker-end="url(#f2-two)"/>
+  <text x="228" y="106" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">1</text>
+  <text x="276" y="236" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">N</text>
+  <text x="245" y="300" text-anchor="middle" font-size="12" fill="#475569">외래 키 하나로 양쪽 모두 조인합니다</text>
+  <rect x="550" y="64" width="180" height="104" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="550" y="64" width="180" height="28" rx="8" fill="#eef2ff"/>
+  <rect x="550" y="84" width="180" height="8" fill="#eef2ff"/>
+  <text x="640" y="83" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <text x="566" y="112" font-size="12" font-family="monospace" fill="#475569">id</text>
+  <text x="566" y="132" font-size="12" font-family="monospace" fill="#475569">title</text>
+  <rect x="556" y="140" width="168" height="22" rx="4" fill="#fff4ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="566" y="156" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">List&lt;Reply&gt; replies</text>
+  <rect x="800" y="172" width="180" height="80" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="800" y="172" width="180" height="28" rx="8" fill="#fff4ed"/>
+  <rect x="800" y="192" width="180" height="8" fill="#fff4ed"/>
+  <text x="890" y="191" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="816" y="222" font-size="12" font-family="monospace" fill="#475569">comment</text>
+  <text x="816" y="244" font-size="12" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <path d="M794,244 H772 V124 H736" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#f2-one)"/>
+  <text x="753" y="116" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#334155">board</text>
+  <path d="M730,152 H746 V272 H794 V258" fill="none" stroke="#ff7849" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#f2-new)"/>
+  <text x="768" y="240" text-anchor="middle" font-size="11" font-weight="800" fill="#c2410c">양방향 매핑</text>
+  <text x="768" y="258" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#c2410c">replies</text>
+  <text x="755" y="300" text-anchor="middle" font-size="12" fill="#475569">참조는 한 방향이라 반대쪽 필드를 추가합니다</text>
+</svg>
+</div>
+<div class="caption">그림 5-1. 테이블과 자바 객체의 차이</div>
+
+    <p class="note">작성자 관계를 덜어내면 남는 화살표가 <code>board</code> 하나와 점선 <code>replies</code> 하나뿐이라, "원래 한 방향, 반대쪽은 새로 연다"가 한눈에 들어옵니다. 다만 도입부에서 오픈이가 걱정한 대상이 게시글·작성자·댓글·댓글 작성자 넷이라, 작성자가 그림에서 사라지는 점은 걸립니다.</p>
+  </div>
+
+  <p class="note"><b>남는 문제.</b> 이 그림은 선배의 <b>두 번째</b> 방법만 그립니다. 첫 번째 방법(쿼리 두 번 + DTO 합치기)은 그림에 없습니다. 한 그림에 둘을 다 담으면 초점이 흐려지므로, 첫 번째 방법은 대사로만 두거나 5.4 조회 절에서 따로 그리는 편이 낫습니다.</p>
+</div>
+</body>
+</html>

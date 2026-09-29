@@ -46,7 +46,7 @@ public class BoardService {
         if (!board.getUser().getId().equals(loginUser.getId())) {
             throw new Exception403("게시글을 수정할 권한이 없습니다");
         }
-        board.setTitle(requestDTO.title()); // 더티 체킹
+        board.setTitle(requestDTO.title()); // 더티체킹
         board.setContent(requestDTO.content());
         return new BoardResponse.DTO(board);
     }

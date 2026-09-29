@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>그림 5-1 샘플 · 두 가지 방법</title>
+<style>
+  body { margin:0; padding:40px 24px 80px; background:#f8fafc;
+         font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:#0f172a; }
+  .wrap { max-width:880px; margin:0 auto; }
+  h1 { font-size:18px; margin:0 0 4px; }
+  .sub { font-size:13px; color:#64748b; margin:0 0 32px; }
+  .card { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:24px 20px; margin-bottom:28px; }
+  .card > h2 { font-size:14px; margin:0 0 16px; color:#3730a3; letter-spacing:.02em; }
+  .svg-figure { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px 8px; margin:0 0 10px; }
+  .svg-figure svg { display:block; width:100%; height:auto; }
+  .caption { text-align:center; font-size:12.5px; color:#475569; font-style:italic; margin:6px 0 20px; }
+  .note { font-size:12.5px; color:#64748b; line-height:1.7; margin:12px 0 0; }
+  code { font-family:monospace; background:#f1f5f9; padding:1px 4px; border-radius:3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>그림 5-1 교체 샘플 (수정본)</h1>
+  <p class="sub">방법 2에 양방향 매핑 단계를 넣었습니다. 게시글 객체 쪽에 댓글 목록을 열어두는 일이 조인 한 번의 전제입니다.</p>
+
+  <!-- ============ 안 A ============ -->
+  <div class="card">
+    <h2>안 A · 쿼리 횟수로 대비 + 양방향 매핑 단계 포함</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 430" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="위쪽 방법 1은 게시글과 작성자를 가져오는 쿼리 1과 댓글과 작성자를 가져오는 쿼리 2가 각각 DTO로 모이고 DTO에서 상세 화면으로 이어진다. 아래쪽 방법 2는 Board 객체에 replies 목록을 두어 Board와 Reply가 서로를 참조하는 양방향 매핑을 먼저 만들고, 그 덕분에 조인 쿼리 한 번으로 상세 화면까지 이어진다.">
+  <defs>
+    <marker id="aA-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="aA-o" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <text x="24" y="26" font-size="13" font-weight="800" fill="#3730a3">방법 1 · 쿼리를 두 번으로 나눈다</text>
+
+  <rect x="24" y="44" width="180" height="54" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="114" y="65" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#4f46e5">쿼리 1</text>
+  <text x="114" y="85" text-anchor="middle" font-size="13" fill="#0f172a">게시글 + 작성자</text>
+
+  <rect x="24" y="118" width="180" height="54" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="114" y="139" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#4f46e5">쿼리 2</text>
+  <text x="114" y="159" text-anchor="middle" font-size="13" fill="#0f172a">댓글 + 작성자</text>
+
+  <path d="M204,71 H258 V96" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aA-i)"/>
+  <path d="M204,145 H258 V120" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aA-i)"/>
+
+  <rect x="296" y="81" width="150" height="54" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="371" y="114" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">DTO에 합치기</text>
+
+  <path d="M446,108 H540" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aA-i)"/>
+
+  <rect x="548" y="81" width="150" height="54" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="2"/>
+  <text x="623" y="114" text-anchor="middle" font-size="13" fill="#0f172a">상세 화면</text>
+
+  <line x1="24" y1="212" x2="736" y2="212" stroke="#e2e8f0" stroke-width="2"/>
+
+  <text x="24" y="252" font-size="13" font-weight="800" fill="#7b341e">방법 2 · 양방향 매핑으로 이어놓고 한 번에 가져온다</text>
+
+  <rect x="24" y="268" width="246" height="130" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="147" y="290" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">양방향 매핑</text>
+
+  <rect x="42" y="302" width="94" height="76" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="89" y="324" text-anchor="middle" font-size="12" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <rect x="48" y="334" width="82" height="22" rx="4" fill="#eef2ff"/>
+  <text x="89" y="349" text-anchor="middle" font-size="10" font-family="monospace" font-weight="800" fill="#3730a3">replies</text>
+
+  <rect x="166" y="302" width="88" height="76" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="210" y="324" text-anchor="middle" font-size="12" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <rect x="172" y="334" width="76" height="22" rx="4" fill="#fff4ed"/>
+  <text x="210" y="349" text-anchor="middle" font-size="10" font-family="monospace" font-weight="800" fill="#7b341e">board</text>
+
+  <path d="M140,326 H160" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#aA-o)"/>
+  <path d="M162,352 H142" fill="none" stroke="#334155" stroke-width="1.8" marker-end="url(#aA-i)"/>
+
+  <path d="M270,333 H300" fill="none" stroke="#ff7849" stroke-width="1.8" marker-end="url(#aA-o)"/>
+
+  <rect x="308" y="306" width="138" height="54" rx="8" fill="#fff4ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="377" y="327" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#c2410c">쿼리 1번</text>
+  <text x="377" y="347" text-anchor="middle" font-size="13" fill="#0f172a">조인으로 한 번에</text>
+
+  <path d="M446,333 H540" fill="none" stroke="#ff7849" stroke-width="1.8" marker-end="url(#aA-o)"/>
+
+  <rect x="548" y="306" width="150" height="54" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="2"/>
+  <text x="623" y="339" text-anchor="middle" font-size="13" fill="#0f172a">상세 화면</text>
+</svg>
+</div>
+<div class="caption">그림 5-1. 상세 화면 데이터를 모으는 두 가지 방법</div>
+
+    <p class="note">방법 2의 앞칸이 선배 대사의 "게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는" 대목입니다. <code>Board</code>에 <code>replies</code>가, <code>Reply</code>에 <code>board</code>가 생겨 화살표가 양쪽으로 납니다. 그 칸이 있어야 뒤의 조인 한 번이 가능하다는 순서가 보입니다.</p>
+  </div>
+
+  <!-- ============ 안 B ============ -->
+  <div class="card">
+    <h2>안 B · 합치는 주체로 대비 (DTO가 합치나, 매핑이 이어주나)</h2>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 방법 1은 Board와 Reply 목록이 서로 떨어진 채 각각 조회되고 DTO가 둘을 받아 합친다. 오른쪽 방법 2는 Board의 replies 필드와 Reply의 board 필드가 서로를 참조해 양방향 매핑을 이루고, 조인 쿼리 한 번이 두 객체를 함께 채운다.">
+  <defs>
+    <marker id="aB-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="aB-o" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+
+  <text x="24" y="28" font-size="13" font-weight="800" fill="#3730a3">방법 1 · DTO가 합친다</text>
+  <line x1="380" y1="14" x2="380" y2="316" stroke="#e2e8f0" stroke-width="2"/>
+  <text x="404" y="28" font-size="13" font-weight="800" fill="#7b341e">방법 2 · 양방향 매핑이 이어준다</text>
+
+  <rect x="24" y="52" width="130" height="50" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="89" y="83" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+
+  <rect x="24" y="126" width="130" height="50" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="89" y="157" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+
+  <text x="89" y="196" text-anchor="middle" font-size="11" fill="#94a3b8">참조가 없어 따로 조회</text>
+
+  <path d="M154,77 H196 V112" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aB-i)"/>
+  <path d="M154,151 H196 V136" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aB-i)"/>
+
+  <rect x="220" y="98" width="120" height="52" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="280" y="129" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">DTO</text>
+
+  <text x="182" y="244" text-anchor="middle" font-size="12" fill="#64748b">쿼리 두 번 + 코드가 붙이는 작업</text>
+
+  <rect x="446" y="52" width="150" height="78" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="521" y="76" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <rect x="456" y="88" width="130" height="26" rx="5" fill="#eef2ff"/>
+  <text x="521" y="106" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+
+  <path d="M496,130 V166" fill="none" stroke="#ff7849" stroke-width="1.8" marker-end="url(#aB-o)"/>
+  <path d="M546,166 V130" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#aB-i)"/>
+  <text x="628" y="152" text-anchor="middle" font-size="11" font-weight="800" fill="#c2410c">양방향 매핑</text>
+
+  <rect x="446" y="166" width="150" height="78" rx="8" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="521" y="190" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <rect x="456" y="202" width="130" height="26" rx="5" fill="#fff4ed"/>
+  <text x="521" y="220" text-anchor="middle" font-size="11" font-family="monospace" font-weight="800" fill="#7b341e">Board board</text>
+
+  <text x="521" y="288" text-anchor="middle" font-size="12" fill="#64748b">조인 쿼리 한 번이 둘을 함께 채웁니다</text>
+</svg>
+</div>
+<div class="caption">그림 5-1. 댓글을 DTO에서 합치는 방식과 양방향 매핑으로 이어두는 방식</div>
+
+    <p class="note">대비 축이 <b>합치는 주체</b>입니다. 왼쪽은 참조가 없어 따로 조회하고 DTO가 붙이고, 오른쪽은 <code>replies</code>와 <code>board</code>가 서로를 가리켜 조인 한 번으로 채워집니다. 다만 필드 이름까지 드러나 5.1 본문 그림과 소재가 겹칩니다.</p>
+  </div>
+
+  <p class="note"><b>정리.</b> 안 A는 쿼리 횟수와 순서(매핑을 먼저 해둬야 조인이 된다)가 보이고, 안 B는 객체 구조 차이가 선명합니다. 도입부는 아직 <code>@OneToMany</code>를 모르는 지점이라 안 A가 덜 앞서갑니다.</p>
+</div>
+</body>
+</html>

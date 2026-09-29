@@ -36,7 +36,7 @@ public class BoardService {
     @Transactional
     public Board 게시글수정(Integer boardId, Board requestBoard) {
         Board board = boardRepository.findById(boardId);
-        // 더티 체킹
+        // 더티체킹
         board.setTitle(requestBoard.getTitle());
         board.setContent(requestBoard.getContent());
         return board; // 수정된 게시글 반환 (REST)

@@ -1,0 +1,95 @@
+<meta charset="utf-8"><title>2.4.1 사물 일러스트 안</title>
+<style>
+body{max-width:900px;margin:0 auto;padding:40px 24px;background:#fff;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;}
+h2{margin:48px 0 6px;font-size:19px;}
+.sub{color:#64748b;font-size:14px;margin:0 0 18px;line-height:1.7;}
+p.body{font-size:16px;line-height:1.75;margin:0 0 16px;}
+.caption{margin-top:4px;margin-bottom:16px;color:#64748b;font-size:13px;font-style:italic;text-align:center;}
+.svg-figure{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin:20px 0;}
+.svg-figure svg{width:100%;height:auto;display:block;margin:0 auto;max-width:720px;}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:#4f46e5;border-radius:4px;padding:2px 8px;margin-right:6px;}
+hr{border:0;border-top:1px dashed #cbd5e1;margin:56px 0;}
+.note{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:14px 18px;font-size:14px;line-height:1.7;color:#334155;}
+</style>
+
+<h2><span class="tag">H안</span> 추상 박스를 버리고 실제 사물로</h2>
+<p class="sub">"객체"를 상자로 그리면 표와 모양이 비슷해 차이가 안 느껴집니다. 자바 쪽은 <b>쟁반 위에 실제 물건이 담긴 그림</b>으로, 데이터베이스 쪽은 <b>번호만 적힌 종이 장부</b>로 그리면 두 세상이 눈으로 갈립니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+  <text x="200" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">자바 - 쟁반에 통째로 담깁니다</text>
+
+  <rect x="40" y="44" width="320" height="200" rx="14" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.8"/>
+  <rect x="62" y="196" width="276" height="26" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="200" y="214" text-anchor="middle" font-size="11" fill="#475569">햄버거 세트 쟁반</text>
+
+  <path d="M96,120 q34,-34 68,0 z" fill="#e6b169" stroke="#b98a44" stroke-width="1.4"/>
+  <rect x="94" y="120" width="72" height="9" rx="3" fill="#7dbb63" stroke="#5f9a48" stroke-width="1.2"/>
+  <rect x="94" y="129" width="72" height="13" rx="3" fill="#a4713f" stroke="#7d5430" stroke-width="1.2"/>
+  <path d="M94,142 h72 a10,10 0 0 1 -10,14 h-52 a10,10 0 0 1 -10,-14 z" fill="#e6b169" stroke="#b98a44" stroke-width="1.4"/>
+  <text x="130" y="178" text-anchor="middle" font-size="11" fill="#475569">햄버거</text>
+
+  <path d="M196,112 h44 l-6,52 h-32 z" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="194" y="106" width="48" height="8" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="228" y1="106" x2="236" y2="86" stroke="#94a3b8" stroke-width="2.2"/>
+  <text x="218" y="178" text-anchor="middle" font-size="11" fill="#475569">콜라</text>
+
+  <path d="M276,124 h48 l-7,40 h-34 z" fill="#e05a4e" stroke="#b0443a" stroke-width="1.4"/>
+  <rect x="284" y="104" width="7" height="22" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <rect x="296" y="98" width="7" height="28" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <rect x="308" y="106" width="7" height="20" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <text x="300" y="178" text-anchor="middle" font-size="11" fill="#475569">감자</text>
+
+  <text x="200" y="268" text-anchor="middle" font-size="12" fill="#3730a3">쟁반 하나만 들면 안의 내용물이 함께 옵니다</text>
+  <text x="200" y="290" text-anchor="middle" font-size="12" fill="#3730a3">먹는 방법(행위)도 세트에 붙어 있습니다</text>
+
+  <line x1="382" y1="140" x2="438" y2="140" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="410" y="130" text-anchor="middle" font-size="10" fill="#94a3b8">같은 세트</text>
+
+  <text x="628" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">데이터베이스 - 장부에 번호만 적힙니다</text>
+
+  <rect x="466" y="44" width="320" height="200" rx="14" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+
+  <rect x="492" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="500" y1="82" x2="560" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="500" y1="96" x2="560" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="530" y="114" text-anchor="middle" font-size="10" fill="#334155">햄버거 표</text>
+
+  <rect x="590" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="598" y1="82" x2="658" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="598" y1="96" x2="658" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="628" y="114" text-anchor="middle" font-size="10" fill="#334155">콜라 표</text>
+
+  <rect x="688" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="696" y1="82" x2="756" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="696" y1="96" x2="756" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="726" y="114" text-anchor="middle" font-size="10" fill="#334155">감자 표</text>
+
+  <line x1="530" y1="124" x2="560" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="628" y1="124" x2="628" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="726" y1="124" x2="696" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+
+  <rect x="512" y="156" width="232" height="56" rx="3" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <text x="628" y="176" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">세트 표</text>
+  <text x="628" y="198" text-anchor="middle" font-size="10" fill="#475569">햄버거 1 · 콜라 1 · 감자 1</text>
+
+  <text x="628" y="268" text-anchor="middle" font-size="12" fill="#475569">표 안에 표를 넣을 수 없어 번호만 적어 둡니다</text>
+  <text x="628" y="290" text-anchor="middle" font-size="12" fill="#475569">먹는 방법을 적을 칸도 없습니다</text>
+</svg>
+</div>
+<div class="caption">그림 2-16. 세트를 담는 두 방식</div>
+
+<hr>
+
+<h2><span class="tag">참고</span> 뼈대 v1의 원본 그림</h2>
+<p class="sub">지금 우리 그림 2-18이 이것을 옮긴 것입니다. 양쪽 다 네모 상자라 "객체 세상"과 "테이블 세상"의 생김새가 같습니다.</p>
+<div class="svg-figure"><img src="ref-burger.png" style="width:100%;height:auto;"></div>
+
+<hr>
+
+<div class="note">
+<b>제안</b><br>
+지금 2.4.1에는 그림이 셋입니다. 2-16(표), 2-17(객체 박스), 2-18(햄버거 세트 상자). 앞의 둘이 추상 박스라 대비가 안 서고, 셋째가 같은 말을 또 합니다.<br><br>
+뼈대 v1도 이 대목에 그림을 <b>한 장</b>만 씁니다. 표와 객체를 각각 그리지 않고 햄버거 세트 하나로 끝냅니다.<br><br>
+2-16과 2-17을 빼고, 위 H안 한 장으로 이 절의 그림을 통일하는 방향을 권합니다.
+</div>

@@ -1,0 +1,121 @@
+<meta charset="utf-8"><title>2.4.1 비유 설명 + 그림</title>
+<style>
+body{max-width:820px;margin:0 auto;padding:40px 24px;background:#fff;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;}
+h2{margin:44px 0 10px;font-size:19px;}
+h3{margin:32px 0 12px;font-size:17px;font-weight:700;}
+.sub{color:#64748b;font-size:14px;margin:0 0 22px;line-height:1.7;}
+p{font-size:16px;line-height:1.8;margin:0 0 18px;}
+table{border-collapse:collapse;width:100%;margin:18px 0;font-size:14px;}
+th,td{border:1px solid #e2e8f0;padding:9px 12px;text-align:left;}
+th{background:#f4f6fa;font-weight:700;}
+.caption{margin-top:4px;margin-bottom:22px;color:#64748b;font-size:13px;font-style:italic;text-align:center;}
+.svg-figure{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin:20px 0;}
+.svg-figure svg{width:100%;height:auto;display:block;margin:0 auto;max-width:720px;}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:#4f46e5;border-radius:4px;padding:2px 8px;margin-right:6px;}
+hr{border:0;border-top:1px dashed #cbd5e1;margin:64px 0;}
+.new{background:#fffbeb;}
+</style>
+
+<h2><span class="tag">1안</span> 지금 본문 그대로 + 그림 한 장</h2>
+<p class="sub">2-16·2-17을 빼고, 원고에 이미 있는 햄버거 단락 뒤에 그림 한 장만 둡니다. 뼈대 v1과 같은 구성입니다. 노란 바탕은 새로 쓰거나 바뀐 문장입니다.</p>
+
+<h3>2.4.1 데이터를 다루는 방식의 차이</h3>
+
+<p>데이터베이스는 데이터를 정확히 보관하고 빠르게 검색하도록 설계되었습니다. 데이터를 행(Row)과 열(Column)로 구성된 표 형태로 저장하며, 각 칸에는 단일 값만 들어갑니다. 다른 테이블과 관계를 맺을 때는 외래 키(Foreign Key)를 사용합니다.</p>
+
+<p>반면 자바는 데이터(필드)와 행위(메서드)를 하나의 객체로 묶어 관리합니다. 다른 객체와 관계를 맺을 때는 외래 키 같은 값을 공유하는 대신, 객체 자체를 참조(Reference)합니다.</p>
+
+<p>이처럼 데이터를 다루는 구조가 다르기 때문에 객체를 테이블에 저장할 때 구조적 불일치가 발생합니다. 주요 차이점은 크게 세 가지입니다.</p>
+
+<table>
+<tr><th>구분</th><th>데이터베이스</th><th>자바</th></tr>
+<tr><td>구조</td><td>행과 열로 이루어진 평면적인 표입니다. 값만 담습니다</td><td>상태와 행위를 함께 가진 입체적인 객체입니다</td></tr>
+<tr><td>상속</td><td>상속이라는 개념이 없습니다</td><td>부모의 특징을 물려받는 상속이 있습니다</td></tr>
+<tr><td>자료형</td><td>숫자·문자는 비슷하지만, 객체나 컬렉션을 한 칸에 담을 수 없습니다</td><td>객체 안에 다른 객체도, List·Map 같은 컬렉션도 담습니다</td></tr>
+</table>
+
+<p>이 차이를 가장 잘 보여 주는 예가 햄버거 세트입니다. 자바에서는 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 가집니다. 세트 하나만 들고 다니면 그 안의 내용물을 바로 꺼내 씁니다. 데이터베이스는 세트라는 상자 안에 다른 음식을 집어넣지 못합니다. 햄버거, 콜라, 감자 표를 각각 만들고 외래 키로 "우리는 같은 세트"라고 연결해 둘 뿐입니다.</p>
+
+<div class="svg-figure" id="fig"></div>
+<div class="caption">그림 2-16. 세트를 담는 두 방식</div>
+
+<p>이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.</p>
+
+<hr>
+
+<h2><span class="tag">2안</span> 비유를 장면으로 먼저 깔고 그림</h2>
+<p class="sub">햄버거 단락을 둘로 나눠 쟁반 장면을 먼저 세우고, 그 다음 데이터베이스 쪽을 대비시킵니다. 그림이 그 장면을 그대로 받습니다.</p>
+
+<h3>2.4.1 데이터를 다루는 방식의 차이</h3>
+
+<p>데이터베이스는 데이터를 정확히 보관하고 빠르게 검색하도록 설계되었습니다. 데이터를 행(Row)과 열(Column)로 구성된 표 형태로 저장하며, 각 칸에는 단일 값만 들어갑니다. 다른 테이블과 관계를 맺을 때는 외래 키(Foreign Key)를 사용합니다.</p>
+
+<p>반면 자바는 데이터(필드)와 행위(메서드)를 하나의 객체로 묶어 관리합니다. 다른 객체와 관계를 맺을 때는 외래 키 같은 값을 공유하는 대신, 객체 자체를 참조(Reference)합니다.</p>
+
+<p>이처럼 데이터를 다루는 구조가 다르기 때문에 객체를 테이블에 저장할 때 구조적 불일치가 발생합니다. 주요 차이점은 크게 세 가지입니다.</p>
+
+<table>
+<tr><th>구분</th><th>데이터베이스</th><th>자바</th></tr>
+<tr><td>구조</td><td>행과 열로 이루어진 평면적인 표입니다. 값만 담습니다</td><td>상태와 행위를 함께 가진 입체적인 객체입니다</td></tr>
+<tr><td>상속</td><td>상속이라는 개념이 없습니다</td><td>부모의 특징을 물려받는 상속이 있습니다</td></tr>
+<tr><td>자료형</td><td>숫자·문자는 비슷하지만, 객체나 컬렉션을 한 칸에 담을 수 없습니다</td><td>객체 안에 다른 객체도, List·Map 같은 컬렉션도 담습니다</td></tr>
+</table>
+
+<p class="new">햄버거 세트를 주문하면 쟁반 하나에 햄버거와 콜라, 감자튀김이 함께 담겨 나옵니다. 자바의 객체가 이 쟁반입니다. 세트 객체 하나가 햄버거와 콜라, 감자튀김을 필드로 가지므로, 쟁반만 들면 안의 내용물을 바로 꺼내 씁니다.</p>
+
+<p class="new">데이터베이스에는 이 쟁반이 없습니다. 표 안에 표를 넣을 수 없기 때문입니다. 햄버거 표, 콜라 표, 감자 표를 각각 따로 두고, 세트 표에는 어느 햄버거와 어느 콜라인지 번호만 적어 둡니다.</p>
+
+<div class="svg-figure" id="fig2"></div>
+<div class="caption">그림 2-16. 세트를 담는 두 방식</div>
+
+<p>이 차이 때문에, 자바에서 객체 하나로 다루던 것을 저장하려면 여러 표로 쪼개야 하고, 꺼낼 때는 흩어진 값을 다시 하나로 모아야 합니다.</p>
+
+<script>
+const svg = `
+<svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+  <text x="200" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">자바 - 쟁반에 통째로 담깁니다</text>
+  <rect x="40" y="44" width="320" height="200" rx="14" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.8"/>
+  <rect x="62" y="196" width="276" height="26" rx="8" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="200" y="214" text-anchor="middle" font-size="11" fill="#475569">햄버거 세트 쟁반</text>
+  <path d="M96,120 q34,-34 68,0 z" fill="#e6b169" stroke="#b98a44" stroke-width="1.4"/>
+  <rect x="94" y="120" width="72" height="9" rx="3" fill="#7dbb63" stroke="#5f9a48" stroke-width="1.2"/>
+  <rect x="94" y="129" width="72" height="13" rx="3" fill="#a4713f" stroke="#7d5430" stroke-width="1.2"/>
+  <path d="M94,142 h72 a10,10 0 0 1 -10,14 h-52 a10,10 0 0 1 -10,-14 z" fill="#e6b169" stroke="#b98a44" stroke-width="1.4"/>
+  <text x="130" y="178" text-anchor="middle" font-size="11" fill="#475569">햄버거</text>
+  <path d="M196,112 h44 l-6,52 h-32 z" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <rect x="194" y="106" width="48" height="8" rx="3" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="228" y1="106" x2="236" y2="86" stroke="#94a3b8" stroke-width="2.2"/>
+  <text x="218" y="178" text-anchor="middle" font-size="11" fill="#475569">콜라</text>
+  <path d="M276,124 h48 l-7,40 h-34 z" fill="#e05a4e" stroke="#b0443a" stroke-width="1.4"/>
+  <rect x="284" y="104" width="7" height="22" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <rect x="296" y="98" width="7" height="28" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <rect x="308" y="106" width="7" height="20" rx="2" fill="#f0c05a" stroke="#c99b3c" stroke-width="1"/>
+  <text x="300" y="178" text-anchor="middle" font-size="11" fill="#475569">감자</text>
+  <text x="200" y="268" text-anchor="middle" font-size="12" fill="#3730a3">쟁반 하나만 들면 안의 내용물이 함께 옵니다</text>
+  <line x1="382" y1="140" x2="438" y2="140" stroke="#cbd5e1" stroke-width="1.6" stroke-dasharray="6,4"/>
+  <text x="410" y="130" text-anchor="middle" font-size="10" fill="#94a3b8">같은 세트</text>
+  <text x="628" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">데이터베이스 - 장부에 번호만 적힙니다</text>
+  <rect x="466" y="44" width="320" height="200" rx="14" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="492" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="500" y1="82" x2="560" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="500" y1="96" x2="560" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="530" y="114" text-anchor="middle" font-size="10" fill="#334155">햄버거 표</text>
+  <rect x="590" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="598" y1="82" x2="658" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="598" y1="96" x2="658" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="628" y="114" text-anchor="middle" font-size="10" fill="#334155">콜라 표</text>
+  <rect x="688" y="66" width="76" height="58" rx="3" fill="#fff" stroke="#94a3b8" stroke-width="1.3"/>
+  <line x1="696" y1="82" x2="756" y2="82" stroke="#cbd5e1" stroke-width="1"/>
+  <line x1="696" y1="96" x2="756" y2="96" stroke="#cbd5e1" stroke-width="1"/>
+  <text x="726" y="114" text-anchor="middle" font-size="10" fill="#334155">감자 표</text>
+  <line x1="530" y1="124" x2="560" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="628" y1="124" x2="628" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+  <line x1="726" y1="124" x2="696" y2="156" stroke="#94a3b8" stroke-width="1.2"/>
+  <rect x="512" y="156" width="232" height="56" rx="3" fill="#f1f5f9" stroke="#475569" stroke-width="1.5"/>
+  <text x="628" y="176" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a">세트 표</text>
+  <text x="628" y="198" text-anchor="middle" font-size="10" fill="#475569">햄버거 1 · 콜라 1 · 감자 1</text>
+  <text x="628" y="268" text-anchor="middle" font-size="12" fill="#475569">표 안에 표를 넣을 수 없어 번호만 적어 둡니다</text>
+</svg>`;
+document.getElementById('fig').innerHTML = svg;
+document.getElementById('fig2').innerHTML = svg;
+</script>

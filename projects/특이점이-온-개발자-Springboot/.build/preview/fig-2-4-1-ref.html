@@ -1,0 +1,94 @@
+<meta charset="utf-8"><title>외부 자료 그림 + 적용안</title>
+<style>
+body{max-width:900px;margin:0 auto;padding:40px 24px;background:#fff;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;}
+h2{margin:48px 0 6px;font-size:19px;}
+h3{margin:28px 0 6px;font-size:15px;color:#334155;}
+.sub{color:#64748b;font-size:14px;margin:0 0 18px;line-height:1.7;}
+p.body{font-size:16px;line-height:1.75;margin:0 0 16px;}
+.caption{margin-top:4px;margin-bottom:16px;color:#64748b;font-size:13px;font-style:italic;text-align:center;}
+.svg-figure{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin:20px 0;}
+.svg-figure svg{width:100%;height:auto;display:block;margin:0 auto;max-width:720px;}
+.svg-figure--half svg{max-width:400px;}
+.tag{display:inline-block;font-size:12px;font-weight:700;color:#fff;background:#4f46e5;border-radius:4px;padding:2px 8px;margin-right:6px;}
+.tag.ref{background:#64748b;}
+hr{border:0;border-top:1px dashed #cbd5e1;margin:56px 0;}
+.refbox{border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin:14px 0;text-align:center;background:#fff;}
+.refbox img{max-width:100%;height:auto;}
+.refbox .lb{font-size:12px;color:#94a3b8;margin-top:8px;}
+</style>
+
+<h2><span class="tag ref">참고</span> 외부 자료가 실제로 그리는 방식</h2>
+<p class="sub">김영한 JPA 책 계열 도식입니다. 색도 그림자도 없고, 제목 칸 하나에 필드 목록만 있는 박스입니다. 값(1, title1)은 넣지 않고 구조만 보여 줍니다. 객체와 테이블이 <b>같은 이름·같은 모양</b>이고, 차이는 한 줄에서만 드러납니다.</p>
+
+<div class="refbox"><img src="ref-obj.png"><div class="lb">객체 — Member 박스가 <b>Team team</b> 필드를 가지고 Team을 화살표로 참조</div></div>
+<div class="refbox"><img src="ref-table.png"><div class="lb">테이블 — MEMBER 박스가 <b>TEAM_ID(FK)</b> 컬럼으로 TEAM과 연결</div></div>
+<div class="refbox"><img src="ref-inherit.png"><div class="lb">상속 — Item 아래 Album·Movie·Book. 같은 박스 형식 재사용</div></div>
+
+<hr>
+
+<h2><span class="tag">D안</span> 외부 형식을 그대로 따른 두 장</h2>
+<p class="sub">값을 빼고 구조만. board_tb와 Board가 같은 이름·같은 모양이고, 차이는 마지막 칸 <b>update()</b> 하나입니다. CH02의 Board 엔티티(id·title·content·createdAt)와 정확히 일치합니다.</p>
+<p class="body">데이터베이스는 데이터를 정확히 보관하고 빠르게 검색하도록 설계되었습니다. 데이터를 행(Row)과 열(Column)로 구성된 표 형태로 저장하며, 각 칸에는 단일 값만 들어갑니다.</p>
+<div class="svg-figure svg-figure--half">
+<svg viewBox="0 0 400 210" xmlns="http://www.w3.org/2000/svg">
+  <rect x="90" y="24" width="220" height="30" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+  <text x="200" y="45" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">board_tb</text>
+  <rect x="90" y="54" width="220" height="122" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="112" y="80" font-size="12" fill="#334155">id (PK)</text>
+  <line x1="90" y1="92" x2="310" y2="92" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="112" y="116" font-size="12" fill="#334155">title</text>
+  <text x="112" y="140" font-size="12" fill="#334155">content</text>
+  <text x="112" y="164" font-size="12" fill="#334155">created_at</text>
+  <text x="200" y="198" text-anchor="middle" font-size="11" fill="#6b7280">값을 담는 칸만 있습니다</text>
+</svg>
+</div>
+<div class="caption">그림 2-16. 데이터베이스의 board_tb 테이블</div>
+<p class="body">반면 자바는 데이터(필드)와 행위(메서드)를 하나의 객체로 묶어 관리합니다.</p>
+<div class="svg-figure svg-figure--half">
+<svg viewBox="0 0 400 210" xmlns="http://www.w3.org/2000/svg">
+  <rect x="90" y="24" width="220" height="30" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="200" y="45" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board</text>
+  <rect x="90" y="54" width="220" height="122" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="112" y="78" font-size="12" fill="#334155">id</text>
+  <text x="112" y="100" font-size="12" fill="#334155">title</text>
+  <text x="112" y="122" font-size="12" fill="#334155">content</text>
+  <text x="112" y="144" font-size="12" fill="#334155">createdAt</text>
+  <line x1="90" y1="152" x2="310" y2="152" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="112" y="170" font-size="12" font-weight="700" fill="#3730a3">update()</text>
+  <text x="200" y="198" text-anchor="middle" font-size="11" fill="#6b7280">값과 행위를 함께 가집니다</text>
+</svg>
+</div>
+<div class="caption">그림 2-17. 자바의 Board 객체</div>
+
+<hr>
+
+<h2><span class="tag">E안</span> 외부 형식을 좌우 한 장으로</h2>
+<p class="sub">D안과 같은 박스를 한 그림에 나란히. 가운데 점선이 같은 게시글임을 잇습니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 800 230" xmlns="http://www.w3.org/2000/svg">
+  <text x="185" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">데이터베이스</text>
+  <rect x="70" y="36" width="230" height="30" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+  <text x="185" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a">board_tb</text>
+  <rect x="70" y="66" width="230" height="126" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="92" y="92" font-size="12" fill="#334155">id (PK)</text>
+  <line x1="70" y1="104" x2="300" y2="104" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="92" y="128" font-size="12" fill="#334155">title</text>
+  <text x="92" y="152" font-size="12" fill="#334155">content</text>
+  <text x="92" y="176" font-size="12" fill="#334155">created_at</text>
+  <text x="185" y="216" text-anchor="middle" font-size="11" fill="#6b7280">값을 담는 칸만 있습니다</text>
+  <text x="615" y="22" text-anchor="middle" font-size="12" font-weight="700" fill="#64748b">자바</text>
+  <rect x="500" y="36" width="230" height="30" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="615" y="57" text-anchor="middle" font-size="13" font-weight="800" fill="#3730a3">Board</text>
+  <rect x="500" y="66" width="230" height="126" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="522" y="90" font-size="12" fill="#334155">id</text>
+  <text x="522" y="112" font-size="12" fill="#334155">title</text>
+  <text x="522" y="134" font-size="12" fill="#334155">content</text>
+  <text x="522" y="156" font-size="12" fill="#334155">createdAt</text>
+  <line x1="500" y1="164" x2="730" y2="164" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="522" y="183" font-size="12" font-weight="700" fill="#3730a3">update()</text>
+  <text x="615" y="216" text-anchor="middle" font-size="11" fill="#6b7280">값과 행위를 함께 가집니다</text>
+  <line x1="312" y1="128" x2="488" y2="128" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="400" y="120" text-anchor="middle" font-size="11" fill="#94a3b8">같은 게시글</text>
+</svg>
+</div>
+<div class="caption">그림 2-16. 같은 게시글을 담는 두 방식</div>

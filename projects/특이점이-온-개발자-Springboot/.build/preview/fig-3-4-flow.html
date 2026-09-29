@@ -1,0 +1,375 @@
+<meta charset="utf-8"><title>그림 3-4 흐름 샘플</title>
+<style>
+body{max-width:900px;margin:0 auto;padding:40px 24px;background:#fff;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;}
+h2{margin:44px 0 8px;font-size:19px;}
+p{font-size:16px;line-height:1.8;margin:0 0 18px;}
+.sub{color:#64748b;font-size:14px;margin:0 0 22px;line-height:1.7;}
+.caption{margin-top:4px;margin-bottom:34px;color:#64748b;font-size:13px;font-style:italic;text-align:center;}
+.svg-figure{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;margin:20px 0;}
+.svg-figure svg{width:100%;height:auto;display:block;margin:0 auto;max-width:820px;}
+hr{border:0;border-top:1px dashed #cbd5e1;margin:56px 0;}
+.old{opacity:.5}
+</style>
+
+<h2 class="old">현재 (요소 3개)</h2>
+<p class="sub old">지금 챕터에 들어가 있는 버전입니다.</p>
+
+<div class="svg-figure old">
+<svg viewBox="0 0 960 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="현재 버전">
+  <defs>
+    <marker id="a1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="w1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="20" y="45" width="190" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="115" y="80" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="115" y="102" text-anchor="middle" font-size="14" fill="#c2410c">Exception404 던짐</text>
+  <line x1="212" y1="85" x2="296" y2="85" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#w1)"/>
+  <text x="254" y="72" text-anchor="middle" font-size="14" fill="#c2410c">예외 전파</text>
+  <rect x="300" y="35" width="300" height="100" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="450" y="78" text-anchor="middle" font-size="16" font-weight="800" fill="#3730a3">@RestControllerAdvice</text>
+  <text x="450" y="102" text-anchor="middle" font-size="14" fill="#3730a3">예외를 가로챈다</text>
+  <line x1="602" y1="85" x2="686" y2="85" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#a1)"/>
+  <text x="644" y="72" text-anchor="middle" font-size="14" fill="#4f46e5">Resp.fail</text>
+  <rect x="690" y="40" width="250" height="90" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="815" y="72" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">404 JSON 응답</text>
+  <text x="815" y="94" text-anchor="middle" font-size="14" fill="#6b7280">status 404, msg,</text>
+  <text x="815" y="112" text-anchor="middle" font-size="14" fill="#6b7280">body null</text>
+</svg>
+</div>
+<div class="caption old">그림 3-4. 전역 예외 처리 흐름</div>
+
+<hr>
+
+<h2>제안 (4단계 흐름)</h2>
+<p class="sub">각 지점에서 무슨 일이 일어나는지를 담았습니다. 그림 3-1과 달라지는 곳은 셋입니다. 컨트롤러가 잡지 않고 지나보낸다는 것, <b>@ExceptionHandler</b>가 어떤 예외를 맡을지 고른다는 것, <code>Resp.fail</code>이 응답을 만든다는 것입니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 990 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스가 게시글을 찾지 못해 Exception404를 발생시키면, 컨트롤러는 잡지 않고 그대로 전파하고, GlobalExceptionHandler의 ExceptionHandler가 Exception404를 맡아 Resp.fail을 호출해 status 404 JSON 응답을 만든다.">
+  <defs>
+    <marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="w2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="10" y="50" width="180" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="100" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="100" y="112" text-anchor="middle" font-size="13.5" fill="#6b7280">게시글을 못 찾아</text>
+  <text x="100" y="134" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">Exception404 발생</text>
+  <line x1="192" y1="112" x2="246" y2="112" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#w2)"/>
+  <text x="220" y="98" text-anchor="middle" font-size="12.5" fill="#c2410c">전파</text>
+  <rect x="250" y="50" width="155" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="327" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="327" y="112" text-anchor="middle" font-size="13.5" fill="#6b7280">잡지 않고</text>
+  <text x="327" y="134" text-anchor="middle" font-size="13.5" fill="#6b7280">그대로 지나보냄</text>
+  <line x1="407" y1="112" x2="461" y2="112" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#w2)"/>
+  <text x="435" y="98" text-anchor="middle" font-size="12.5" fill="#c2410c">전파</text>
+  <rect x="465" y="40" width="270" height="140" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="600" y="76" text-anchor="middle" font-size="14.5" font-weight="800" fill="#3730a3">GlobalExceptionHandler</text>
+  <text x="600" y="104" text-anchor="middle" font-size="13.5" fill="#3730a3">@ExceptionHandler가</text>
+  <text x="600" y="126" text-anchor="middle" font-size="13.5" fill="#3730a3">Exception404를 맡아</text>
+  <text x="600" y="150" text-anchor="middle" font-size="13.5" font-weight="700" fill="#3730a3">Resp.fail 호출</text>
+  <line x1="737" y1="112" x2="791" y2="112" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#a2)"/>
+  <rect x="795" y="50" width="180" height="120" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="885" y="86" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">응답</text>
+  <text x="885" y="112" text-anchor="middle" font-size="13.5" fill="#6b7280">status 404, msg,</text>
+  <text x="885" y="134" text-anchor="middle" font-size="13.5" fill="#6b7280">body null</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 전역 예외 처리 흐름</div>
+
+<hr>
+
+<h2>제안 2 (전역 · 일괄이 보이는 그림)</h2>
+<p class="sub">여러 곳에서 나온 서로 다른 예외가 한 곳으로 모이고, 거기서 상태 코드별로 갈라져 나갑니다. "전역적으로 가로채어 한 곳에서 일괄 처리한다"는 문장이 그림으로 보입니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 960 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="게시글 조회에서 Exception404, 회원가입에서 Exception400, 로그인에서 Exception401이 발생하면 모두 RestControllerAdvice가 붙은 GlobalExceptionHandler로 모이고, 여기서 각각 404, 400, 401 JSON 응답으로 갈라져 나간다.">
+  <defs>
+    <marker id="f-in" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ff7849"/></marker>
+    <marker id="f-out" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="10" y="30" width="210" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="115" y="52" text-anchor="middle" font-size="13" fill="#6b7280">게시글 조회</text>
+  <text x="115" y="74" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">Exception404</text>
+  <rect x="10" y="105" width="210" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="115" y="127" text-anchor="middle" font-size="13" fill="#6b7280">회원가입</text>
+  <text x="115" y="149" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">Exception400</text>
+  <rect x="10" y="180" width="210" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="115" y="202" text-anchor="middle" font-size="13" fill="#6b7280">로그인</text>
+  <text x="115" y="224" text-anchor="middle" font-size="13.5" font-weight="700" fill="#c2410c">Exception401</text>
+  <path d="M222,59 C278,59 278,100 322,100" fill="none" stroke="#ff7849" stroke-width="1.7" stroke-dasharray="4,4" marker-end="url(#f-in)"/>
+  <path d="M222,134 L322,131" fill="none" stroke="#ff7849" stroke-width="1.7" stroke-dasharray="4,4" marker-end="url(#f-in)"/>
+  <path d="M222,209 C278,209 278,162 322,162" fill="none" stroke="#ff7849" stroke-width="1.7" stroke-dasharray="4,4" marker-end="url(#f-in)"/>
+  <rect x="330" y="65" width="280" height="130" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="470" y="97" text-anchor="middle" font-size="14.5" font-weight="800" fill="#3730a3">GlobalExceptionHandler</text>
+  <text x="470" y="119" text-anchor="middle" font-size="13" fill="#3730a3">@RestControllerAdvice</text>
+  <text x="470" y="147" text-anchor="middle" font-size="13" fill="#3730a3">@ExceptionHandler가</text>
+  <text x="470" y="169" text-anchor="middle" font-size="13" fill="#3730a3">예외마다 응답을 지정</text>
+  <path d="M612,100 C662,100 664,59 712,59" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f-out)"/>
+  <path d="M612,131 L712,134" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f-out)"/>
+  <path d="M612,162 C662,162 664,209 712,209" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f-out)"/>
+  <rect x="720" y="30" width="230" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="835" y="65" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">404 JSON 응답</text>
+  <rect x="720" y="105" width="230" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="835" y="140" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">400 JSON 응답</text>
+  <rect x="720" y="180" width="230" height="58" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="835" y="215" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">401 JSON 응답</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 전역 예외 처리 흐름</div>
+
+<hr>
+
+<h2>제안 3 (스프링이 예외를 처리하는 흐름)</h2>
+<p class="sub">커스텀 예외 이름과 JSON 응답 형태를 뺐습니다. 남긴 것은 예외가 발생한 뒤 스프링 안에서 무슨 일이 일어나는가입니다. 화살표 옆 문구가 각 단계의 동작입니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 720 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 예외가 발생하면 컨트롤러가 잡지 않아 디스패처 서블릿까지 전달되고, 디스패처 서블릿은 이 예외를 맡은 ExceptionHandler를 찾아 전역 예외 처리기의 메서드를 실행하며, 그 메서드가 반환한 값이 응답이 된다.">
+  <defs>
+    <marker id="v-warn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="v-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="190" y="20" width="340" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="360" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="360" y="69" text-anchor="middle" font-size="13.5" fill="#c2410c">예외 발생</text>
+  <line x1="360" y1="84" x2="360" y2="130" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#v-warn)"/>
+  <text x="376" y="112" font-size="13" fill="#c2410c">컨트롤러가 잡지 않고 지나보냅니다</text>
+  <rect x="190" y="134" width="340" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="360" y="161" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <text x="360" y="183" text-anchor="middle" font-size="13.5" fill="#6b7280">예외를 받습니다</text>
+  <line x1="360" y1="198" x2="360" y2="244" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#v-ar)"/>
+  <text x="376" y="226" font-size="13" fill="#4f46e5">이 예외를 맡은 메서드를 찾습니다</text>
+  <rect x="150" y="248" width="420" height="88" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="360" y="278" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="360" y="302" text-anchor="middle" font-size="13.5" fill="#3730a3">@ExceptionHandler가 붙은 메서드를 실행합니다</text>
+  <text x="360" y="324" text-anchor="middle" font-size="13.5" fill="#3730a3">반환한 값이 응답이 됩니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 전역 예외 처리 흐름</div>
+
+<hr>
+
+<h2>제안 4 (블로그식 전체 흐름)</h2>
+<p class="sub">요청 경로와 예외 경로를 한 장에 놓고, 디스패처 서블릿이 예외를 처리할 곳을 순서대로 찾아 내려가는 과정을 그렸습니다. 이번 챕터에서 만드는 부분만 색을 넣고 나머지는 흐리게 두었습니다.</p>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 1000 570" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트 요청이 디스패처 서블릿과 컨트롤러를 지나 서비스에 닿고, 서비스에서 예외가 발생하면 컨트롤러가 잡지 않아 디스패처 서블릿으로 전달된다. 디스패처 서블릿은 ExceptionHandlerExceptionResolver, ResponseStatusExceptionResolver, DefaultHandlerExceptionResolver를 순서대로 시도하고, 처리하지 못하면 BasicErrorController가 기본 오류 응답을 만든다. 첫 번째 리졸버가 ExceptionHandler를 찾으면 전역 예외 처리기의 메서드를 실행하고 그 반환값이 응답이 된다.">
+  <defs>
+    <marker id="g-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="g-warn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="g-mute" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <rect x="30" y="70" width="150" height="56" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="105" y="104" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="182" y1="98" x2="246" y2="98" stroke="#475569" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <rect x="250" y="70" width="200" height="56" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="350" y="104" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <line x1="452" y1="98" x2="516" y2="98" stroke="#475569" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <rect x="520" y="70" width="160" height="56" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="600" y="104" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <line x1="682" y1="98" x2="746" y2="98" stroke="#475569" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <rect x="750" y="70" width="200" height="56" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="850" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="850" y="113" text-anchor="middle" font-size="13" fill="#c2410c">예외 발생</text>
+  <path d="M850,68 L850,34 L352,34 L352,66" fill="none" stroke="#ff7849" stroke-width="1.8" stroke-dasharray="4,4" marker-end="url(#g-warn)"/>
+  <text x="601" y="26" text-anchor="middle" font-size="13" fill="#c2410c">컨트롤러가 잡지 않아 그대로 전달됩니다</text>
+  <line x1="350" y1="128" x2="350" y2="176" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#g-ar)"/>
+  <text x="366" y="156" font-size="13" fill="#4f46e5">예외를 처리할 곳을 순서대로 찾습니다</text>
+  <rect x="140" y="180" width="420" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="350" y="207" text-anchor="middle" font-size="13.5" font-weight="800" fill="#3730a3">ExceptionHandlerExceptionResolver</text>
+  <text x="350" y="230" text-anchor="middle" font-size="13" fill="#3730a3">이 예외를 맡은 @ExceptionHandler를 찾습니다</text>
+  <line x1="562" y1="214" x2="646" y2="214" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#g-ar)"/>
+  <text x="604" y="202" text-anchor="middle" font-size="13" font-weight="700" fill="#4f46e5">찾으면</text>
+  <rect x="650" y="180" width="320" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="810" y="207" text-anchor="middle" font-size="13.5" font-weight="800" fill="#3730a3">전역 예외 처리기의 메서드 실행</text>
+  <text x="810" y="230" text-anchor="middle" font-size="13" fill="#3730a3">반환한 값이 응답이 됩니다</text>
+  <line x1="350" y1="250" x2="350" y2="282" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <text x="366" y="271" font-size="12.5" fill="#94a3b8">찾지 못하면</text>
+  <rect x="140" y="286" width="420" height="54" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="350" y="318" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">ResponseStatusExceptionResolver</text>
+  <line x1="350" y1="342" x2="350" y2="368" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <text x="366" y="360" font-size="12.5" fill="#94a3b8">찾지 못하면</text>
+  <rect x="140" y="372" width="420" height="54" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="350" y="404" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">DefaultHandlerExceptionResolver</text>
+  <line x1="350" y1="428" x2="350" y2="454" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#g-mute)"/>
+  <text x="366" y="446" font-size="12.5" fill="#94a3b8">찾지 못하면</text>
+  <rect x="140" y="458" width="420" height="68" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="350" y="485" text-anchor="middle" font-size="13.5" font-weight="700" fill="#94a3b8">BasicErrorController</text>
+  <text x="350" y="508" text-anchor="middle" font-size="13" fill="#94a3b8">스프링이 만든 기본 오류 응답</text>
+  <text x="810" y="290" text-anchor="middle" font-size="13" font-weight="700" fill="#4f46e5">색이 들어간 두 칸이</text>
+  <text x="810" y="311" text-anchor="middle" font-size="13" font-weight="700" fill="#4f46e5">이번 챕터에서 만드는 부분입니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 스프링의 예외 처리 흐름</div>
+
+<hr>
+
+<h2>제안 5 (단계별로 쪼갠 흐름)</h2>
+<p class="sub">한 장에 몰아넣지 않고 세 단계로 나눴습니다. 각 그림은 한 가지 사실만 말하고, 그림 아래 문장이 그 단계를 설명합니다. 리졸버 클래스 이름은 넣지 않았습니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">1단계. 예외가 발생하지만 아무도 잡지 않습니다</h3>
+
+<div class="svg-figure">
+<svg viewBox="0 0 620 120" style="max-width:560px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="서비스에서 예외가 발생하고, 그 예외가 컨트롤러로 그대로 전달되지만 컨트롤러는 잡지 않는다.">
+  <defs><marker id="s1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+  <rect x="20" y="25" width="240" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="140" y="57" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="140" y="79" text-anchor="middle" font-size="13.5" fill="#c2410c">예외 발생</text>
+  <line x1="262" y1="60" x2="336" y2="60" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#s1)"/>
+  <rect x="340" y="25" width="240" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="460" y="57" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="460" y="79" text-anchor="middle" font-size="13.5" fill="#6b7280">잡지 않습니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 예외가 발생한 지점</div>
+<p>서비스가 게시글을 찾지 못하면 예외를 발생시킵니다. 컨트롤러는 이 예외를 잡는 코드를 갖고 있지 않으므로, 예외는 컨트롤러를 그대로 지나갑니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">2단계. 스프링이 예외를 넘겨받습니다</h3>
+
+<div class="svg-figure">
+<svg viewBox="0 0 620 120" style="max-width:560px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="컨트롤러를 지난 예외가 디스패처 서블릿에 도착하고, 디스패처 서블릿은 이 예외를 맡을 곳을 찾는다.">
+  <defs><marker id="s2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+  <rect x="20" y="25" width="240" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="140" y="66" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <line x1="262" y1="60" x2="336" y2="60" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#s2)"/>
+  <rect x="340" y="25" width="260" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="470" y="57" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <text x="470" y="79" text-anchor="middle" font-size="13.5" fill="#6b7280">맡을 곳을 찾습니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-5. 예외를 넘겨받는 지점</div>
+<p>요청을 가장 먼저 받은 디스패처 서블릿까지 예외가 올라옵니다. 디스패처 서블릿은 이 예외를 맡은 곳이 있는지 찾습니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">3단계. 전역 예외 처리기가 응답으로 바꿉니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 900 120" style="max-width:760px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="디스패처 서블릿이 찾은 전역 예외 처리기가 ExceptionHandler가 붙은 메서드를 실행하고, 그 반환값이 응답이 되어 클라이언트에게 전달된다.">
+  <defs><marker id="s3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <rect x="20" y="20" width="300" height="80" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="170" y="54" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="170" y="77" text-anchor="middle" font-size="13" fill="#3730a3">맡은 메서드를 실행합니다</text>
+  <line x1="322" y1="60" x2="376" y2="60" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s3)"/>
+  <rect x="380" y="20" width="220" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="490" y="54" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">응답</text>
+  <text x="490" y="77" text-anchor="middle" font-size="13" fill="#6b7280">상태 코드와 메시지</text>
+  <line x1="602" y1="60" x2="656" y2="60" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s3)"/>
+  <rect x="660" y="20" width="220" height="80" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="770" y="66" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">클라이언트</text>
+</svg>
+</div>
+<div class="caption">그림 3-6. 예외가 응답이 되는 지점</div>
+<p>디스패처 서블릿이 찾은 곳이 전역 예외 처리기입니다. 여기서 이 예외를 맡은 메서드가 실행되고, 그 메서드가 반환한 값이 응답이 되어 클라이언트에게 전달됩니다.</p>
+
+<hr>
+
+<h2>제안 6 (조사한 내용을 세 단계로)</h2>
+<p class="sub">3-1에 없는 두 가지, 트랜잭션 되돌림과 반환값이 응답으로 바뀌는 과정을 넣었습니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">1단계. 예외가 서비스를 벗어나면 트랜잭션이 되돌아갑니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 860 190" style="max-width:700px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Transactional 구간 안의 서비스에서 예외가 발생하고, 그 예외가 구간 밖으로 나가면서 트랜잭션의 변경이 되돌아간다. 예외는 컨트롤러로 전달되지만 컨트롤러는 잡지 않는다.">
+  <defs><marker id="t1" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker></defs>
+  <rect x="20" y="30" width="320" height="120" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="36" y="50" font-size="12.5" fill="#94a3b8">@Transactional 구간</text>
+  <rect x="45" y="62" width="270" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="180" y="87" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">서비스</text>
+  <text x="180" y="109" text-anchor="middle" font-size="13.5" fill="#c2410c">예외 발생</text>
+  <line x1="342" y1="93" x2="466" y2="93" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="4,4" marker-end="url(#t1)"/>
+  <text x="404" y="78" text-anchor="middle" font-size="12.5" fill="#c2410c">밖으로 나갑니다</text>
+  <text x="404" y="118" text-anchor="middle" font-size="12.5" font-weight="700" fill="#c2410c">변경을 되돌립니다</text>
+  <rect x="480" y="62" width="250" height="62" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="605" y="87" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="605" y="109" text-anchor="middle" font-size="13.5" fill="#6b7280">잡지 않습니다</text>
+  <text x="748" y="98" font-size="12.5" fill="#94a3b8">계속 올라갑니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 예외가 트랜잭션을 벗어나는 지점</div>
+<p>커스텀 예외는 <b>RuntimeException</b>을 상속합니다. 이런 예외가 <b>@Transactional</b> 메서드 밖으로 나가면 스프링이 트랜잭션을 되돌립니다. 게시글 수정이나 삭제 도중에 예외가 나도 그때까지의 변경이 데이터베이스에 반영되지 않습니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">2단계. 디스패처 서블릿이 맡은 메서드를 찾아 실행합니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 900 140" style="max-width:760px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="디스패처 서블릿이 이 예외를 맡은 메서드를 찾아, 전역 예외 처리기에서 해당 ExceptionHandler가 붙은 메서드를 실행한다.">
+  <defs><marker id="t2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <rect x="20" y="30" width="250" height="76" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="145" y="62" text-anchor="middle" font-size="15" font-weight="700" fill="#0f172a">디스패처 서블릿</text>
+  <text x="145" y="86" text-anchor="middle" font-size="13" fill="#6b7280">맡은 메서드를 찾습니다</text>
+  <line x1="272" y1="68" x2="346" y2="68" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#t2)"/>
+  <rect x="350" y="20" width="520" height="96" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="610" y="50" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="610" y="76" text-anchor="middle" font-size="13" fill="#3730a3">이 예외를 맡은 @ExceptionHandler 메서드를 실행합니다</text>
+  <text x="610" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">Resp.fail이 ResponseEntity를 반환합니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-5. 예외를 맡는 지점</div>
+<p>디스패처 서블릿은 이 예외를 맡은 메서드가 있는지 찾습니다. <b>@RestControllerAdvice</b>가 붙은 클래스에서 해당 예외를 맡은 메서드를 찾아 실행하고, 그 메서드는 <b>ResponseEntity</b>를 반환합니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">3단계. 반환값이 상태 코드와 응답 바디로 나뉩니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 900 230" style="max-width:760px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="메서드가 반환한 ResponseEntity가 두 갈래로 나뉜다. status 값은 HTTP 응답 상태 코드가 되고, body에 담긴 Resp 객체는 메시지 컨버터가 JSON 문자열로 바꾼다.">
+  <defs><marker id="t3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <rect x="20" y="80" width="240" height="76" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="140" y="112" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">ResponseEntity</text>
+  <text x="140" y="135" text-anchor="middle" font-size="13" fill="#3730a3">메서드가 반환한 값</text>
+  <path d="M262,108 C330,108 344,55 414,55" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#t3)"/>
+  <path d="M262,128 C330,128 344,178 414,178" fill="none" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#t3)"/>
+  <rect x="420" y="20" width="450" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="645" y="50" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">HTTP 응답 상태 코드</text>
+  <text x="645" y="74" text-anchor="middle" font-size="13" fill="#6b7280">status에 담긴 404가 그대로 쓰입니다</text>
+  <rect x="420" y="140" width="450" height="76" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="645" y="170" text-anchor="middle" font-size="14.5" font-weight="700" fill="#0f172a">응답 바디</text>
+  <text x="645" y="194" text-anchor="middle" font-size="13" fill="#6b7280">메시지 컨버터가 Resp를 JSON으로 바꿉니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-6. 응답이 만들어지는 지점</div>
+<p>스프링은 반환된 <b>ResponseEntity</b>를 둘로 나눠 씁니다. <code>status</code>에 담긴 값은 HTTP 응답의 상태 코드가 되고, 바디에 든 <b>Resp</b> 객체는 메시지 컨버터가 JSON 문자열로 바꿔 응답 바디에 담습니다. 컨트롤러가 정상 응답을 만들 때 거치는 경로와 같습니다.</p>
+
+<hr>
+
+<h2>제안 7 (경로가 아니라 데이터가 바뀌는 모습)</h2>
+<p class="sub">박스와 화살표로 지나가는 길을 그리는 대신, 각 지점에서 실제 값이 어떻게 되는지를 보여 줍니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">예외가 나면 쌓아 둔 SQL이 버려집니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 880 260" style="max-width:720px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="트랜잭션 안에서 UPDATE 문이 버퍼에 쌓여 있다가, 예외가 발생하면 그 SQL이 데이터베이스로 나가지 않고 버려져 테이블의 제목이 그대로 남는다.">
+  <rect x="20" y="30" width="380" height="200" rx="10" fill="#fff" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="6,4"/>
+  <text x="36" y="52" font-size="12.5" fill="#94a3b8">@Transactional 구간</text>
+  <text x="40" y="84" font-size="13" fill="#6b7280">1. 제목을 바꿉니다</text>
+  <rect x="40" y="96" width="340" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="54" y="118" font-family="Consolas, monospace" font-size="12.5" fill="#334155">UPDATE board_tb SET title = '수정' WHERE id = 1</text>
+  <text x="40" y="156" font-size="12.5" fill="#94a3b8">아직 데이터베이스로 나가지 않고 쌓여 있습니다</text>
+  <text x="40" y="188" font-size="13" font-weight="700" fill="#c2410c">2. 예외 발생</text>
+  <text x="40" y="212" font-size="12.5" fill="#c2410c">쌓아 둔 SQL을 버립니다</text>
+  <line x1="404" y1="130" x2="486" y2="130" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="4,4"/>
+  <text x="445" y="118" text-anchor="middle" font-size="12.5" fill="#94a3b8">보내지 않음</text>
+  <rect x="500" y="70" width="356" height="120" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="678" y="98" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">board_tb</text>
+  <line x1="516" y1="112" x2="840" y2="112" stroke="#e2e8f0" stroke-width="1.2"/>
+  <text x="530" y="136" font-family="Consolas, monospace" font-size="12.5" fill="#334155">id = 1 · title = '원래 제목'</text>
+  <text x="530" y="166" font-size="12.5" fill="#6b7280">바뀌지 않은 채 그대로 남습니다</text>
+</svg>
+</div>
+<div class="caption">그림 3-4. 예외가 났을 때의 데이터베이스</div>
+<p>커스텀 예외는 <b>RuntimeException</b>을 상속합니다. 이런 예외가 <b>@Transactional</b> 메서드 밖으로 나가면 스프링이 트랜잭션을 되돌립니다. 챕터 2에서 버퍼에 쌓였다가 트랜잭션이 성공할 때 나간다고 한 SQL이, 여기서는 나가지 않고 버려집니다.</p>
+
+<h3 style="font-size:16px;margin:36px 0 10px">반환한 값이 HTTP 응답으로 바뀝니다</h3>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 880 300" style="max-width:720px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="메서드가 반환한 ResponseEntity는 status가 404이고 body에 Resp 객체가 들어 있다. 스프링이 이것을 HTTP 응답으로 바꾸면 상태줄이 404 Not Found가 되고 바디는 JSON 문자열이 된다.">
+  <defs><marker id="d-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker></defs>
+  <text x="30" y="30" font-size="13" font-weight="700" fill="#3730a3">메서드가 반환한 값</text>
+  <rect x="20" y="42" width="400" height="106" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="38" y="70" font-family="Consolas, monospace" font-size="12.5" fill="#3730a3">ResponseEntity</text>
+  <text x="52" y="96" font-family="Consolas, monospace" font-size="12.5" fill="#3730a3">status : 404</text>
+  <text x="52" y="122" font-family="Consolas, monospace" font-size="12.5" fill="#3730a3">body : Resp(404, "게시글을 찾을 수 없습니다", null)</text>
+  <line x1="220" y1="152" x2="220" y2="196" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#d-ar)"/>
+  <text x="236" y="180" font-size="12.5" fill="#4f46e5">스프링이 HTTP 응답으로 바꿉니다</text>
+  <text x="30" y="222" font-size="13" font-weight="700" fill="#0f172a">클라이언트가 받는 응답</text>
+  <rect x="20" y="234" width="840" height="56" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="38" y="256" font-family="Consolas, monospace" font-size="12.5" font-weight="700" fill="#c2410c">HTTP/1.1 404 Not Found</text>
+  <text x="38" y="278" font-family="Consolas, monospace" font-size="12.5" fill="#334155">{"status":404,"msg":"게시글을 찾을 수 없습니다","body":null}</text>
+</svg>
+</div>
+<div class="caption">그림 3-5. 반환값과 실제 응답</div>
+<p><code>status</code>에 담긴 404는 응답의 상태 코드가 되고, 바디에 든 <b>Resp</b> 객체는 메시지 컨버터가 JSON 문자열로 바꿉니다. 컨트롤러가 정상 응답을 만들 때 거치는 경로와 같습니다.</p>

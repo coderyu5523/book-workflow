@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>5.1 본문 수정안</title><style>
+  body { margin:0; padding:36px 0 80px; background:#f7f8fa;
+         font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; color:#2d3748; }
+  .container { max-width:820px; margin:0 auto; padding:0 24px; }
+  .tag { display:inline-block; font-size:12px; font-weight:700; color:#fff; background:#94a3b8;
+         padding:3px 12px; border-radius:12px; margin:0 0 6px; }
+  .tag.fix { background:#4f46e5; }
+  .note { font-size:12.5px; color:#718096; margin:0 0 18px; line-height:1.7; }
+  h2 { color:#1a202c; font-size:22px; margin:28px 0 18px; padding-bottom:10px; border-bottom:2px solid #e2e8f0; font-weight:700; }
+  p.body { margin-bottom:16px; font-size:16px; color:#1a202c; line-height:1.85; }
+  .svg-figure { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:16px 20px; margin:20px 0; }
+  .svg-figure svg { width:100%; height:auto; max-width:720px; display:block; margin:0 auto; }
+  .caption { text-align:center; font-size:13px; color:#718096; font-style:italic; margin-top:10px; }
+  code { font-family:monospace; background:#f1f5f9; padding:1px 5px; border-radius:3px; font-size:0.9em; }
+  hr { border:0; border-top:1px dashed #cbd5e0; margin:48px 0 32px; }
+  .story { font-size:15px; color:#4a5568; line-height:1.85; background:#fff; border:1px solid #e2e8f0;
+           border-radius:10px; padding:14px 18px; margin:0 0 20px; }
+</style></head>
+<body><div class="container">
+
+<span class="tag">지금 상태</span>
+<p class="note">그림 5-1은 저 위 도입부(goal 앞)에 있고, 5.1 본문에는 그림 5-2만 있습니다.</p>
+<div class="story"><b>선배</b>: "JPA의 양방향 매핑을 쓰는 거예요. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요."</div>
+<h2>5.1 양방향 매핑</h2>
+<p class="body">먼저 게시글과 댓글의 관계를 알아보겠습니다. 하나의 게시글에는 여러 개의 댓글이 달릴 수 있습니다. 그리고 하나의 댓글은 하나의 게시글에만 속하므로, <b>게시글과 댓글은 1대N 관계입니다</b>.</p>
+<p class="body">데이터베이스는 댓글 쪽에 외래 키 하나만 두면 양쪽 조회가 다 가능하고, 자바에서도 매번 쿼리를 날려 댓글을 가져오면 됩니다. 하지만 JPA는 매번 쿼리를 짜는 대신, <code>board.getReplies()</code>처럼 자바 코드에서 연관 데이터를 바로 꺼내보는 편의성을 제공합니다.</p>
+<p class="body">이렇게 객체를 통해 데이터를 탐색하려면 게시글 객체 내부에도 댓글 목록(<b>List</b>)을 둬야 합니다. 그리고 이 리스트가 DB의 1대N 관계라는 것을 JPA에 알려주는 설정이 바로 <b>@OneToMany</b>입니다. 댓글의 <b>@ManyToOne</b>과 짝을 이뤄 서로를 연결해 주는 이 방식을 <b>양방향 매핑(Bidirectional Mapping)</b> 이라고 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 엔티티와 Reply 엔티티가 서로를 참조하는 그림. Board에는 @OneToMany가, Reply에는 @ManyToOne이 붙어 있다. Reply에서 Board로 향하는 화살표에 getBoard()가, Board에서 Reply로 향하는 화살표에 getReplies()가 적혀 있다.">
+  <defs>
+    <marker id="p1c5bi-l" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="p1c5bi-r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="60" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="170" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">@OneToMany</text>
+  <text x="170" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Board</text>
+
+  <rect x="440" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="550" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">@ManyToOne</text>
+  <text x="550" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Reply</text>
+
+  <line x1="436" y1="95" x2="288" y2="95" stroke="#ff7849" stroke-width="2" marker-end="url(#p1c5bi-l)"/>
+  <text x="362" y="82" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">getBoard()</text>
+
+  <line x1="284" y1="140" x2="432" y2="140" stroke="#4f46e5" stroke-width="2" marker-end="url(#p1c5bi-r)"/>
+  <text x="358" y="166" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">getReplies()</text>
+</svg>
+</div>
+<div class="caption">그림 5-2. 양방향 매핑</div>
+
+<hr>
+
+<span class="tag fix">수정안 A</span>
+<p class="note">그림 5-1을 5.1로 내리고, 선배 대사의 대비를 본문 세 단락으로 풀었습니다. 도입부는 대사에서 바로 goal로 넘어갑니다.</p>
+<div class="story"><b>선배</b>: "JPA의 양방향 매핑을 쓰는 거예요. 데이터베이스 테이블은 외래 키 하나로 양방향 조인이 가능하지만, 자바 객체는 참조하는 쪽으로만 갈 수 있는 일방통행이거든요. 그래서 양방향 매핑으로 게시글 객체 쪽에서도 댓글을 참조할 수 있게 열어주는 거예요."</div>
+<h2>5.1 양방향 매핑</h2>
+<p class="body">먼저 게시글과 댓글의 관계를 알아보겠습니다. 하나의 게시글에는 여러 개의 댓글이 달릴 수 있습니다. 그리고 하나의 댓글은 하나의 게시글에만 속하므로, <b>게시글과 댓글은 1대N 관계입니다</b>.</p>
+<p class="body">데이터베이스에서는 댓글 테이블에 외래 키 <code>board_id</code> 하나만 두면 충분합니다. 게시글에서 댓글을 찾을 때도, 댓글에서 게시글을 찾을 때도 같은 외래 키로 조인하기 때문입니다.</p>
+<p class="body">반면 자바 객체의 참조는 한 방향입니다. <b>Reply</b>에 <b>Board</b> 타입 필드를 두면 댓글에서 게시글을 꺼낼 수 있지만, 게시글 쪽에는 댓글을 가리키는 필드가 없습니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 테이블에서는 board_tb와 reply_tb가 나란히 놓이고 두 박스를 잇는 직선 화살표의 양끝에 화살촉이 달려 있어 어느 쪽에서든 조인할 수 있다. 오른쪽 자바 객체에서는 Board와 Reply가 나란히 놓이고, 위쪽 주황 점선 화살표가 Board에서 Reply로 향하며 양방향 매핑으로 새로 추가된 참조를 나타내고, 아래쪽 실선 화살표가 Reply의 board 필드에서 Board로 향한다.">
+  <defs>
+    <marker id="p2c5fig1-two" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto-start-reverse"><path d="M0,0 L0,7 L9,3.5 z" fill="#334155"/></marker>
+    <marker id="p2c5fig1-one" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#334155"/></marker>
+    <marker id="p2c5fig1-new" markerWidth="11" markerHeight="11" refX="9" refY="3.5" orient="auto"><path d="M0,0 L0,7 L9,3.5 z" fill="#ff7849"/></marker>
+  </defs>
+  <text x="240" y="32" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">테이블</text>
+  <text x="765" y="32" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">자바 객체</text>
+  <line x1="500" y1="48" x2="500" y2="268" stroke="#e2e8f0" stroke-width="2"/>
+  <rect x="30" y="70" width="170" height="96" rx="9" fill="#fff" stroke="#4f46e5" stroke-width="2.2"/>
+  <rect x="30" y="70" width="170" height="32" rx="9" fill="#eef2ff"/>
+  <rect x="30" y="94" width="170" height="8" fill="#eef2ff"/>
+  <text x="115" y="93" text-anchor="middle" font-size="18" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
+  <text x="48" y="130" font-size="16" font-family="monospace" fill="#475569">id</text>
+  <text x="48" y="156" font-size="16" font-family="monospace" fill="#475569">title</text>
+  <rect x="280" y="70" width="170" height="124" rx="9" fill="#fff" stroke="#ff7849" stroke-width="2.2"/>
+  <rect x="280" y="70" width="170" height="32" rx="9" fill="#fff4ed"/>
+  <rect x="280" y="94" width="170" height="8" fill="#fff4ed"/>
+  <text x="365" y="93" text-anchor="middle" font-size="18" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
+  <text x="298" y="130" font-size="16" font-family="monospace" fill="#475569">id</text>
+  <text x="298" y="156" font-size="16" font-family="monospace" fill="#475569">comment</text>
+  <text x="298" y="182" font-size="16" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
+  <path d="M200,132 H280" fill="none" stroke="#334155" stroke-width="2" marker-start="url(#p2c5fig1-two)" marker-end="url(#p2c5fig1-two)"/>
+  <text x="217" y="122" text-anchor="middle" font-size="15" font-weight="800" fill="#334155">1</text>
+  <text x="263" y="122" text-anchor="middle" font-size="15" font-weight="800" fill="#334155">N</text>
+  <text x="240" y="262" text-anchor="middle" font-size="16" fill="#475569">외래 키 하나로 양쪽 모두 조인합니다</text>
+  <rect x="550" y="70" width="190" height="150" rx="9" fill="#fff" stroke="#4f46e5" stroke-width="2.2"/>
+  <rect x="550" y="70" width="190" height="32" rx="9" fill="#eef2ff"/>
+  <rect x="550" y="94" width="190" height="8" fill="#eef2ff"/>
+  <text x="645" y="93" text-anchor="middle" font-size="18" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <text x="568" y="130" font-size="16" font-family="monospace" fill="#475569">id</text>
+  <text x="568" y="156" font-size="16" font-family="monospace" fill="#475569">title</text>
+  <rect x="558" y="168" width="174" height="32" rx="5" fill="#fff4ed" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="567" y="190" font-size="15" font-family="monospace" font-weight="800" fill="#c2410c">List&lt;Reply&gt; replies</text>
+  <rect x="820" y="70" width="160" height="124" rx="9" fill="#fff" stroke="#ff7849" stroke-width="2.2"/>
+  <rect x="820" y="70" width="160" height="32" rx="9" fill="#fff4ed"/>
+  <rect x="820" y="94" width="160" height="8" fill="#fff4ed"/>
+  <text x="900" y="93" text-anchor="middle" font-size="18" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="838" y="130" font-size="16" font-family="monospace" fill="#475569">id</text>
+  <text x="838" y="156" font-size="16" font-family="monospace" fill="#475569">comment</text>
+  <text x="838" y="182" font-size="16" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <path d="M740,124 H820" fill="none" stroke="#ff7849" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#p2c5fig1-new)"/>
+  <text x="780" y="114" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">양방향 매핑</text>
+  <path d="M820,164 H740" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#p2c5fig1-one)"/>
+  <text x="780" y="186" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#334155">board</text>
+  <text x="765" y="262" text-anchor="middle" font-size="16" fill="#475569">참조는 한 방향이라 반대쪽 필드를 추가합니다</text>
+</svg>
+</div>
+<div class="caption">그림 5-1. 테이블과 자바 객체의 차이</div>
+<p class="body">그래서 반대 방향도 쓰려면 게시글 쪽에도 필드를 만들어야 합니다. <b>Board</b>에 댓글 목록(<b>List</b>)을 선언하고 <b>@OneToMany</b>를 붙이면 <code>board.getReplies()</code>로 댓글을 꺼낼 수 있습니다. 댓글의 <b>@ManyToOne</b>과 짝을 이룬 이 방식을 <b>양방향 매핑(Bidirectional Mapping)</b> 이라고 합니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 엔티티와 Reply 엔티티가 서로를 참조하는 그림. Board에는 @OneToMany가, Reply에는 @ManyToOne이 붙어 있다. Reply에서 Board로 향하는 화살표에 getBoard()가, Board에서 Reply로 향하는 화살표에 getReplies()가 적혀 있다.">
+  <defs>
+    <marker id="p2c5bi-l" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="p2c5bi-r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+
+  <rect x="60" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="170" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">@OneToMany</text>
+  <text x="170" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Board</text>
+
+  <rect x="440" y="60" width="220" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <text x="550" y="98" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">@ManyToOne</text>
+  <text x="550" y="134" text-anchor="middle" font-size="19" font-weight="800" fill="#0f172a">Reply</text>
+
+  <line x1="436" y1="95" x2="288" y2="95" stroke="#ff7849" stroke-width="2" marker-end="url(#p2c5bi-l)"/>
+  <text x="362" y="82" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#c2410c">getBoard()</text>
+
+  <line x1="284" y1="140" x2="432" y2="140" stroke="#4f46e5" stroke-width="2" marker-end="url(#p2c5bi-r)"/>
+  <text x="358" y="166" text-anchor="middle" font-size="13" font-family="monospace" font-weight="700" fill="#3730a3">getReplies()</text>
+</svg>
+</div>
+<div class="caption">그림 5-2. 양방향 매핑</div>
+
+</div></body></html>

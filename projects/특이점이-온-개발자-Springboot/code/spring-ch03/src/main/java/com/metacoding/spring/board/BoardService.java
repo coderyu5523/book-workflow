@@ -34,7 +34,7 @@ public class BoardService {
     public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        // 더티 체킹
+        // 더티체킹
         board.setTitle(requestDTO.title());
         board.setContent(requestDTO.content());
         return new BoardResponse.DTO(board); // 수정된 게시글 반환

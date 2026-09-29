@@ -1,0 +1,93 @@
+<meta charset="utf-8"><title>2.5 3계층 그림 샘플</title>
+<style>
+body{max-width:820px;margin:0 auto;padding:40px 24px;background:#fff;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;}
+h2{margin:44px 0 8px;font-size:19px;}
+p{font-size:16px;line-height:1.8;margin:0 0 18px;}
+.sub{color:#64748b;font-size:14px;margin:0 0 22px;line-height:1.7;}
+.caption{margin-top:4px;margin-bottom:34px;color:#64748b;font-size:13px;font-style:italic;text-align:center;}
+.svg-figure{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;margin:20px 0;}
+.svg-figure svg{width:100%;height:auto;display:block;margin:0 auto;max-width:520px;}
+.svg-figure.wide svg{max-width:760px;}
+hr{border:0;border-top:1px dashed #cbd5e1;margin:56px 0;}
+.old{opacity:.55}
+</style>
+
+<h2>그림 2-18. 한 클래스에 섞인 코드</h2>
+<p class="sub">코드 줄을 빼고 뱃지만 남겼습니다. 한 사실만 말합니다. 성격이 다른 일이 한 클래스에 뒤섞여 있다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 320 210" style="max-width:330px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BoardAll.java 파일 상자 하나 안에 요청과 응답, 데이터베이스 접근, 비즈니스 로직이 순서 없이 섞여 있다.">
+  <text x="30" y="26" font-size="13" font-weight="800" fill="#0f172a">BoardAll.java</text>
+  <rect x="30" y="36" width="260" height="156" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <rect x="50" y="50" width="220" height="28" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.3"/>
+  <text x="160" y="69" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청과 응답</text>
+  <rect x="50" y="86" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
+  <text x="160" y="105" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
+  <rect x="50" y="122" width="220" height="28" rx="6" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="160" y="141" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">비즈니스 로직</text>
+  <rect x="50" y="158" width="220" height="28" rx="6" fill="#fff7ed" stroke="#ff7849" stroke-width="1.3"/>
+  <text x="160" y="177" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">데이터베이스 접근</text>
+</svg>
+</div>
+<div class="caption">그림 2-18. 한 클래스에 섞인 코드</div>
+
+<h2>그림 2-19. 계층으로 나눈 코드</h2>
+<p class="sub">왼쪽에서 요청이 들어와 세 층을 지나 데이터베이스에 닿고, 아래 점선으로 결과가 컨트롤러까지 돌아옵니다.</p>
+
+<div class="svg-figure wide">
+<svg viewBox="0 0 900 200" style="max-width:680px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에서 요청이 들어와 컨트롤러, 서비스, 리포지토리를 차례로 지나 오른쪽 데이터베이스에 닿는다. 응답은 같은 길을 거꾸로 되짚어 데이터베이스에서 리포지토리, 서비스, 컨트롤러 순서로 돌아온다.">
+  <defs>
+    <marker id="rt" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+    <marker id="bk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94a3b8"/></marker>
+  </defs>
+  <text x="46" y="78" text-anchor="middle" font-size="12" font-weight="700" fill="#475569">요청</text>
+  <line x1="14" y1="88" x2="82" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="82" y1="124" x2="14" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <text x="46" y="146" text-anchor="middle" font-size="12" font-weight="700" fill="#94a3b8">응답</text>
+  <rect x="90" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="185" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#3730a3">컨트롤러</text>
+  <text x="185" y="122" text-anchor="middle" font-size="12" fill="#64748b">요청과 응답</text>
+  <line x1="284" y1="88" x2="312" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="312" y1="124" x2="284" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <rect x="316" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#475569" stroke-width="1.9"/>
+  <text x="411" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">서비스</text>
+  <text x="411" y="122" text-anchor="middle" font-size="12" fill="#64748b">비즈니스 로직</text>
+  <line x1="510" y1="88" x2="538" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="538" y1="124" x2="510" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <rect x="542" y="56" width="190" height="94" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.9"/>
+  <text x="637" y="98" text-anchor="middle" font-size="15" font-weight="800" fill="#c2410c">리포지토리</text>
+  <text x="637" y="122" text-anchor="middle" font-size="12" fill="#64748b">데이터베이스 접근</text>
+  <line x1="736" y1="88" x2="766" y2="88" stroke="#475569" stroke-width="1.8" marker-end="url(#rt)"/>
+  <line x1="766" y1="124" x2="736" y2="124" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#bk)"/>
+  <ellipse cx="830" cy="70" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <path d="M774,70 L774,136" fill="none" stroke="#475569" stroke-width="1.8"/>
+  <path d="M886,70 L886,136" fill="none" stroke="#475569" stroke-width="1.8"/>
+  <ellipse cx="830" cy="136" rx="56" ry="12" fill="#fff" stroke="#475569" stroke-width="1.8"/>
+  <text x="830" y="110" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">데이터베이스</text>
+</svg>
+</div>
+<div class="caption">그림 2-19. 계층으로 나눈 코드</div>
+
+<hr>
+
+<h2 class="old">참고 · 지금 원고에 들어 있는 그림 2-19</h2>
+<p class="sub">파일 세 개가 쌓여 있을 뿐, 화살표도 데이터베이스도 없습니다.</p>
+<div class="svg-figure old">
+<svg viewBox="0 0 560 288" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="파일 세 개가 위아래로 놓여 있다.">
+  <rect x="44" y="20" width="472" height="76" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="68" y="50" font-size="13" font-weight="800" fill="#0f172a">BoardController.java</text>
+  <text x="68" y="76" font-size="12" font-family="monospace" fill="#334155">@GetMapping   @PostMapping</text>
+  <rect x="358" y="34" width="134" height="26" rx="5" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.4"/>
+  <text x="425" y="52" text-anchor="middle" font-size="12" font-weight="700" fill="#3730a3">요청 받기</text>
+  <rect x="44" y="106" width="472" height="76" rx="6" fill="#fff" stroke="#94a3b8" stroke-width="1.8"/>
+  <text x="68" y="136" font-size="13" font-weight="800" fill="#0f172a">BoardService.java</text>
+  <text x="68" y="162" font-size="12" font-family="monospace" fill="#334155">게시글목록()   게시글추가()</text>
+  <rect x="358" y="120" width="134" height="26" rx="5" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="425" y="138" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">흐름 정하기</text>
+  <rect x="44" y="192" width="472" height="76" rx="6" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="68" y="222" font-size="13" font-weight="800" fill="#0f172a">BoardRepository.java</text>
+  <text x="68" y="248" font-size="12" font-family="monospace" fill="#334155">em.find   em.persist</text>
+  <rect x="358" y="206" width="134" height="26" rx="5" fill="#fff7ed" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="425" y="224" text-anchor="middle" font-size="12" font-weight="700" fill="#c2410c">DB 다루기</text>
+</svg>
+</div>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>그림 2-24 전후 비교</title>
+
+<link rel="stylesheet" href="../styles/fonts.css">
+<link rel="stylesheet" href="../styles/tokens.css">
+
+<link rel="stylesheet" href="../tokens.css">
+
+<link rel="stylesheet" href="../styles/base.css">
+<link rel="stylesheet" href="../styles/components.css">
+<link rel="stylesheet" href="../styles/diagrams.css">
+<link rel="stylesheet" href="../styles/print.css" media="print">
+
+
+<style>
+body{background:#fff}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:1500px;margin:0 auto;padding:24px 16px}
+.cmp > div{min-width:0;border:1px solid #e2e8f0;border-radius:10px;padding:8px 24px 24px}
+.tag{display:inline-block;margin:16px 0 4px;padding:4px 12px;border-radius:999px;font-weight:700;font-size:14px}
+.tag.b{background:#f1f5f9;color:#475569}.tag.a{background:#eef2ff;color:#3730a3}
+.note{max-width:1500px;margin:24px auto 0;padding:0 16px;color:#475569;font-size:14px;line-height:1.7}
+@media (max-width:900px){.cmp{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="note"><b>변경점</b>: 그림 2-24 라벨 두 곳. 5번 "스냅샷과 비교해 update문 생성" → "flush() 시 스냅샷과 비교", 6번 "flush() / update문 전송" → "update문 전송". 본문 문장은 동일합니다.</div>
+<div class="cmp">
+<div><span class="tag b">변경 전 (현재 원고)</span>
+<h3>2.9.3 더티체킹</h3>
+<p>렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 <strong>영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다</strong>. 이후 엔티티의 값이 변경되면, <code>flush()</code> 시점에 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 만들어 데이터베이스로 내보냅니다. 이를 <strong>더티체킹(Dirty Checking)</strong> 이라고 합니다.</p>
+<p>수정할 게시글을 <code>find()</code>로 조회하면 영속화가 되며 이 상태를 스냅샷으로 남깁니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 find()로 수정할 게시글을 조회하면 캐시에 없으므로 select SQL이 데이터베이스로 나가고, 읽어 온 board가 영속성 컨텍스트에서 영속화된다.">
+  <defs>
+    <marker id="c2d1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
+  <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
+  <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
+  <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
+  <text x="469" y="62" text-anchor="middle" font-size="10.5" fill="#475569">2. select SQL</text>
+  <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2d1-a)"/>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">3. 영속화</text>
+</svg>
+</div>
+<div class="caption">그림 2-23. 수정할 게시글 조회와 영속화</div>
+<p>영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 <code>flush()</code> 시점에 이 차이를 감지해 UPDATE 문을 만들고, 데이터베이스로 내보냅니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속성 컨텍스트 안에서 영속 엔티티의 제목이 수정된다. 이후 flush 시점에 스냅샷과 비교해 만든 update 문이 버퍼를 거쳐 데이터베이스로 전송되어 반영된다.">
+  <defs>
+    <marker id="c2d2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="230" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="575" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="60" y="36" width="340" height="212" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="505" y="36" width="140" height="212" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="145" y="56" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="77" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <line x1="230" y1="92" x2="230" y2="118" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="242" y="109" font-size="10.5" fill="#475569">4. 데이터 수정</text>
+  <rect x="145" y="124" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="145" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <line x1="230" y1="160" x2="230" y2="186" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="242" y="177" font-size="10.5" fill="#475569">5. 스냅샷과 비교해 update문 생성</text>
+  <rect x="145" y="192" width="170" height="42" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="230" y="211" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
+  <text x="230" y="227" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
+  <line x1="315" y1="213" x2="503" y2="213" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a)"/>
+  <text x="409" y="205" text-anchor="middle" font-size="10.5" fill="#475569">6. flush()</text>
+  <text x="409" y="229" text-anchor="middle" font-size="10.5" fill="#64748b">update문 전송</text>
+  <text x="575" y="120" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <text x="575" y="142" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
+</svg>
+</div>
+<div class="caption">그림 2-24. 더티체킹</div>
+</div>
+<div><span class="tag a">변경 후</span>
+<h3>2.9.3 더티체킹</h3>
+<p>렌터카를 빌릴 때 직원이 차 상태를 사진으로 남겨 두었다가, 반납할 때 그 사진과 지금 차를 비교해서 달라진 곳을 찾아냅니다. 이와 같이 <strong>영속성 컨텍스트는 엔티티가 영속 상태가 되는 순간의 값을 스냅샷으로 찍어 둡니다</strong>. 이후 엔티티의 값이 변경되면, <code>flush()</code> 시점에 JPA가 스냅샷과 비교해 변경된 내용을 UPDATE 문으로 만들어 데이터베이스로 내보냅니다. 이를 <strong>더티체킹(Dirty Checking)</strong> 이라고 합니다.</p>
+<p>수정할 게시글을 <code>find()</code>로 조회하면 영속화가 되며 이 상태를 스냅샷으로 남깁니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 첫 단계. 리포지토리가 find()로 수정할 게시글을 조회하면 캐시에 없으므로 select SQL이 데이터베이스로 나가고, 읽어 온 board가 영속성 컨텍스트에서 영속화된다.">
+  <defs>
+    <marker id="c2d1-a-n" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
+  <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
+  <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a-n)"/>
+  <text x="189" y="62" text-anchor="middle" font-size="10.5" fill="#475569">1. find()</text>
+  <line x1="420" y1="70" x2="518" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a-n)"/>
+  <text x="469" y="62" text-anchor="middle" font-size="10.5" fill="#475569">2. select SQL</text>
+  <line x1="518" y1="103" x2="422" y2="103" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#c2d1-a-n)"/>
+  <text x="470" y="122" text-anchor="middle" font-size="10.5" fill="#64748b">3. 영속화</text>
+</svg>
+</div>
+<div class="caption">그림 2-23. 수정할 게시글 조회와 영속화</div>
+<p>영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 <code>flush()</code> 시점에 이 차이를 감지해 UPDATE 문을 만들고, 데이터베이스로 내보냅니다.</p>
+<div class="svg-figure">
+<svg viewBox="0 0 660 270" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="더티체킹 둘째 단계. 영속성 컨텍스트 안에서 영속 엔티티의 제목이 수정된다. 이후 flush 시점에 스냅샷과 비교해 만든 update 문이 버퍼를 거쳐 데이터베이스로 전송되어 반영된다.">
+  <defs>
+    <marker id="c2d2-a-n" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
+  </defs>
+  <text x="230" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="575" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="60" y="36" width="340" height="212" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="505" y="36" width="140" height="212" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="145" y="56" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="77" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
+  <line x1="230" y1="92" x2="230" y2="118" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a-n)"/>
+  <text x="242" y="109" font-size="10.5" fill="#475569">4. 데이터 수정</text>
+  <rect x="145" y="124" width="170" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <text x="230" y="145" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <line x1="230" y1="160" x2="230" y2="186" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a-n)"/>
+  <text x="242" y="177" font-size="10.5" fill="#475569">5. flush() 시 스냅샷과 비교</text>
+  <rect x="145" y="192" width="170" height="42" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="230" y="211" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">update SQL</text>
+  <text x="230" y="227" text-anchor="middle" font-size="10.5" fill="#64748b">버퍼</text>
+  <line x1="315" y1="213" x2="503" y2="213" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d2-a-n)"/>
+  <text x="409" y="205" text-anchor="middle" font-size="10.5" fill="#475569">6. update문 전송</text>
+  <text x="575" y="120" text-anchor="middle" font-size="11" fill="#3730a3">board(제목수정 1, 내용1)</text>
+  <text x="575" y="142" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
+</svg>
+</div>
+<div class="caption">그림 2-24. 더티체킹</div>
+</div>
+</div>
+</body>
+</html>
