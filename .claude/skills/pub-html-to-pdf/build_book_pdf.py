@@ -21,7 +21,7 @@ build_book_pdf.py — HTML 다이어그램이 많은 책(MSA·도커쿠버네티
   - chapters는 글롭이 아니라 명시 리스트(버전 핀 유지).
   - 물리 순서 관례: 맨 앞 2개 = 머릿말·프롤로그, 그다음 목차, 이후 챕터들, 끝에 에필로그·맺음말.
 
-데이터 파일(있으면 사용): book/dividers.json(챕터표지), book/colophon.json(판권지), assets/cover.jpg(표지)
+데이터 파일(있으면 사용): book/dividers.json(챕터표지), book/colophon.json(판권지), book/authors.json(지은이 소개), assets/cover.jpg(표지)
 """
 
 from __future__ import annotations
@@ -184,6 +184,54 @@ def _colophon_pdf(project: Path, build_dir: Path, pdf_dir: Path) -> "Path | None
     print("[>] 판권지 → PDF")
     render_pdf(cp_html, cp_pdf, pagedjs=False)
     return cp_pdf
+
+
+def _authors_pdf(project: Path, build_dir: Path, pdf_dir: Path) -> "Path | None":
+    """book/authors.json으로 지은이 소개 페이지 PDF를 만든다.
+    판권지 다음·머릿말 앞에 들어간다(번호 없음). 파일 없으면 생략."""
+    aj = project / "book" / "authors.json"
+    if not aj.exists():
+        return None
+    d = json.loads(aj.read_text(encoding="utf-8"))
+    blocks = ""
+    for a in d.get("authors", []):
+        career = "".join(f"<li>{c}</li>" for c in a.get("career", []))
+        books = ""
+        if a.get("books"):
+            items = "".join(f"<li>{b}</li>" for b in a["books"])
+            books = f'<div class="bk-h">저서</div><ul class="bk">{items}</ul>'
+        blocks += (f'<div class="author"><div class="name">{a.get("name", "")}</div>'
+                   f'<ul class="career">{career}</ul>{books}</div>')
+    css = (
+        "* { -webkit-print-color-adjust: exact !important;"
+        " print-color-adjust: exact !important; }"
+        "html,body { margin:0; font-family:var(--font-body,'Pretendard',sans-serif);"
+        " color:#1a202c; word-break:keep-all; overflow-wrap:break-word; }"
+        ".wrap { padding:24mm 24mm 20mm; box-sizing:border-box; }"
+        ".atitle { font-size:20px; font-weight:800; margin-bottom:12px; }"
+        ".rule { height:2px; width:58px; background:var(--color-accent,#4f46e5);"
+        " margin-bottom:26px; }"
+        ".author { margin-bottom:24px; }"
+        ".name { font-size:15px; font-weight:800; margin-bottom:8px; }"
+        "ul { list-style:none; margin:0; padding:0; }"
+        ".career li { font-size:12.5px; color:#334155; line-height:1.75; }"
+        ".bk-h { font-size:12px; font-weight:700; color:#64748b; margin:8px 0 3px; }"
+        ".bk li { font-size:12px; color:#475569; line-height:1.7; }")
+    html = (
+        '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">'
+        '<link rel="stylesheet" href="./styles/fonts.css">'
+        '<link rel="stylesheet" href="./styles/tokens.css">'
+        '<link rel="stylesheet" href="./tokens.css">'
+        f"<style>{css}</style></head><body><div class=\"wrap\">"
+        f'<div class="atitle">{d.get("title", "지은이 소개")}</div>'
+        '<div class="rule"></div>'
+        f"{blocks}</div></body></html>")
+    au_html = build_dir / "_authors.html"
+    au_html.write_text(html, encoding="utf-8")
+    au_pdf = pdf_dir / "_authors.pdf"
+    print("[>] 지은이 소개 → PDF")
+    render_pdf(au_html, au_pdf, pagedjs=False)
+    return au_pdf
 
 
 def _chapter_headings(html_path) -> list:
@@ -382,13 +430,16 @@ def main() -> int:
     print("[>] 목차 → PDF")
     render_pdf(toc_html_p, toc_pdf, pagedjs=False)
 
-    # 4) 물리 조립: 표지 + 판권지 + 머릿말 + 프롤로그 + 목차 + (챕터 파트들) + 에필로그 + 맺음말
+    # 4) 물리 조립: 표지 + 판권지 + 지은이 소개 + 머릿말 + 프롤로그 + 목차 + (챕터 파트들) + 에필로그 + 맺음말
     colophon = _colophon_pdf(project, build_dir, pdf_dir)
+    authors = _authors_pdf(project, build_dir, pdf_dir)
     phys = []
     if cover:
         phys.append((cover, False))
     if colophon:
         phys.append((colophon, False))        # 판권지(번호 없음)
+    if authors:
+        phys.append((authors, False))         # 지은이 소개(번호 없음)
     phys.append((rendered[0]["pdf"], True))   # 머릿말
     phys.append((rendered[1]["pdf"], True))   # 프롤로그
     phys.append((toc_pdf, False))             # 목차
