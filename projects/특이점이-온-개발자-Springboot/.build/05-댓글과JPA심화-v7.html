@@ -75,7 +75,7 @@ start/ch05/src/main/resources/
   <path d="M260,98 H460" fill="none" stroke="#334155" stroke-width="2" marker-start="url(#c5tbl-two)" marker-end="url(#c5tbl-two)"/>
   <text x="284" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">1</text>
   <text x="436" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">N</text>
-  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">외래 키 하나로 양쪽 모두 조인합니다</text>
+  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">외래 키 하나로 두 테이블을 조인합니다</text>
 </svg>
 </div>
 <div class="caption">그림 5-1. 테이블의 1:N 관계</div>
@@ -104,7 +104,7 @@ start/ch05/src/main/resources/
 </svg>
 </div>
 <div class="caption">그림 5-2. 자바 객체의 한 방향 참조</div>
-<p>따라서 게시글에서 댓글로 접근하려면 <strong>Board</strong> 객체에도 참조를 위한 필드를 추가해야 합니다. JPA에서는 이런 방식을 <strong>양방향 매핑(Bidirectional Mapping)</strong> 이라고 합니다. 외래 키 참조를 위해 사용된 <strong>@ManyToOne</strong>과 짝을 이루도록, 반대편 객체에 <strong>@OneToMany</strong>를 추가하여 서로를 참조하게 만드는 방식입니다.</p>
+<p>따라서 게시글에서 댓글로 접근하려면 <strong>Board</strong> 객체에도 참조를 위한 필드를 추가해야 합니다. JPA에서는 이런 방식을 <strong>양방향 매핑(Bidirectional Mapping)</strong> 이라고 합니다. <strong>Reply</strong>의 <strong>@ManyToOne</strong>과 짝을 이루도록 <strong>Board</strong>에 <strong>@OneToMany</strong>를 추가해 서로를 참조하게 만드는 방식입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 박스에는 replies 필드가, Reply 박스에는 board 필드가 있다. Board에서 Reply로 향하는 위쪽 화살표에는 OneToMany가, Reply에서 Board로 향하는 아래쪽 화살표에는 ManyToOne이 적혀 있다.">
   <defs>
@@ -164,7 +164,7 @@ start/ch05/src/main/resources/
 <span class="p">}</span></div>
 <h3>5.1.2 게시글에 댓글 목록 추가</h3>
 <p>양방향 매핑을 위해 <strong>Board</strong> 엔티티에 댓글 목록을 필드로 추가합니다.</p>
-<p>양방향 참조를 설정할 때는 <code>mappedBy</code> 속성을 사용합니다. 한쪽 어노테이션에 <code>mappedBy</code>를 설정하고 상대방의 필드 이름을 명시해 주기만 하면 두 객체의 매핑이 연결됩니다.</p>
+<p>양방향 참조를 설정할 때는 <code>mappedBy</code> 속성을 사용합니다. 한쪽 어노테이션의 <code>mappedBy</code>에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.</p>
 <p><code>board/Board.java</code>를 열어 아래와 같이 작성자 필드를 변경하고 댓글 목록 필드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/Board.java. 댓글 목록 추가와 작성자 필드 수정</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span>
@@ -180,7 +180,7 @@ start/ch05/src/main/resources/
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span><span class="w"> </span><span class="k">values</span><span class="p">(</span><span class="s1">&#39;comment4&#39;</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">now</span><span class="p">());</span></div>
 <h2>5.2 즉시 로딩과 지연 로딩</h2>
 <p>JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연관 데이터까지 함께 조회할 때 발생합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. <code>findAll()</code>로 게시글 전체를 조회할 때 JPA가 연관된 회원 엔티티까지 가져온다면, 게시글 수만큼 회원 조회 쿼리가 추가로 실행됩니다. 결국 쓰지 않는 데이터 때문에 서버와 데이터베이스에 부하를 줍니다.</p>
-<p>이러한 성능 저하를 막기 위해 JPA는 연관된 데이터를 <strong>조회하는 시점에 한 번에 가져올지</strong>, 아니면 <strong>실제로 사용하는 시점에 조회할지</strong>를 직접 지정할 수 있습니다.</p>
+<p>이러한 성능 저하를 막기 위해 JPA에서는 연관된 데이터를 <strong>조회하는 시점에 한 번에 가져올지</strong>, 아니면 <strong>실제로 사용하는 시점에 조회할지</strong>를 지정할 수 있습니다.</p>
 <h3>5.2.1 즉시 로딩</h3>
 <p><strong>즉시 로딩(Eager Loading)</strong> 은 특정 엔티티를 조회할 때 <strong>연관된 엔티티의 데이터까지 한 번에 가져오는 방식</strong>으로, <strong>@ManyToOne</strong> 어노테이션은 즉시 로딩이 기본 전략입니다. 그래서 <code>fetch</code> 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 <strong>Board</strong>의 <code>user</code> 필드에 채워 넣습니다.</p>
 <p>이러한 설정 때문에 <code>findAll()</code>로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 <strong>board_tb</strong>에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 <strong>user_tb</strong>를 조회하는 쿼리를 따로 실행하기 때문입니다.</p>
@@ -231,14 +231,14 @@ start/ch05/src/main/resources/
 </div>
 <h2>5.3 댓글 목록</h2>
 <p>이제 게시글 상세 화면에 댓글 목록을 추가해 보겠습니다.</p>
-<p>게시글 상세 화면에서는 게시글과 게시글 작성자 정보, 그리고 댓글과 댓글 작성자 정보를 함께 가져와야 합니다. 이때 게시글의 작성자는 항상 존재하므로 INNER JOIN을 사용합니다. 반면 <strong>댓글도 INNER JOIN을 사용하면 댓글이 없는 게시글은 조회되지 않으므로, LEFT OUTER JOIN을 사용해야 합니다</strong>.</p>
+<p>게시글 상세 화면에서는 게시글과 게시글 작성자 정보, 그리고 댓글과 댓글 작성자 정보를 함께 가져와야 합니다. 이때 게시글의 작성자는 항상 존재하므로 INNER JOIN을 사용합니다. 반면 <strong>댓글까지 INNER JOIN을 사용하면 댓글이 없는 게시글은 조회되지 않으므로, LEFT OUTER JOIN을 사용해야 합니다</strong>.</p>
 <h3>5.3.1 리포지토리</h3>
 <p>댓글 목록을 추가로 가져오기 위해 쿼리를 만들어 보겠습니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 메서드를 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user left join fetch b.replies r &quot;</span>
 <span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;left join fetch r.user where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReplies</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
-<p>게시글 상세 화면의 응답 데이터에는 댓글 목록과 각 댓글 작성자 정보가 모두 포함되어야 합니다. 만약 fetch 없이 일반 조인만 사용하면 댓글과 작성자 정보는 지연 로딩으로 조회되어, <strong>댓글과 작성자 정보를 실제로 사용하는 시점에 추가 쿼리가 실행</strong>됩니다. 따라서 댓글과 댓글 작성자 정보도 join fetch를 사용하여 게시글과 함께 한 번에 가져옵니다.</p>
+<p>게시글 상세 화면의 응답 데이터에는 댓글 목록과 각 댓글 작성자 정보가 모두 포함되어야 합니다. 만약 fetch 없이 일반 조인만 사용하면 댓글과 작성자 정보는 지연 로딩으로 조회되어, <strong>실제로 사용하는 시점에 추가 쿼리가 실행</strong>됩니다. 따라서 댓글과 댓글 작성자 정보도 join fetch를 사용하여 게시글과 함께 한 번에 가져옵니다.</p>
 <h3>5.3.2 응답 DTO</h3>
 <p>다음으로 데이터베이스에서 조회된 결과를 담을 수 있도록 DTO를 수정해 보겠습니다. 하나의 게시글에는 여러 개의 댓글이 있을 수 있으므로 DTO 내부에 <strong>List</strong> 타입의 DTO 필드를 추가하여 하나씩 담습니다.</p>
 <p><code>board/BoardResponse.java</code>의 <strong>DetailDTO</strong>를 아래와 같이 변경합니다.</p>
@@ -299,7 +299,7 @@ start/ch05/src/main/resources/
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\03_board-detail-with-replies.png" alt="" /><div class="caption">그림 5-6. 댓글이 담긴 상세 응답</div></div>
 <h2>5.4 댓글 추가</h2>
 <h3>5.4.1 리포지토리</h3>
-<p>댓글 추가 기능을 위해 Repository를 구현해야 합니다.</p>
+<p>댓글을 저장할 리포지토리를 작성합니다.</p>
 <p><code>reply/ReplyRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
@@ -384,7 +384,7 @@ start/ch05/src/main/resources/
 <span class="p">}</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\04_reply-save.png" alt="" /><div class="caption">그림 5-7. 댓글 추가 응답</div></div>
 <h2>5.5 댓글 삭제</h2>
-<p>댓글 삭제는 로그인 여부를 확인하고, 댓글 작성자와 요청자가 같은지 검증한 뒤 삭제합니다. 반환할 데이터가 없으므로 성공만 응답합니다.</p>
+<p>댓글 삭제는 로그인 여부를 확인하고, 댓글 작성자와 요청자가 같은지 검증한 뒤 삭제합니다.</p>
 <h3>5.5.1 서비스</h3>
 <p><code>reply/ReplyService.java</code>에 아래와 같이 메서드를 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> reply/ReplyService.java. 댓글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
@@ -410,7 +410,7 @@ start/ch05/src/main/resources/
 <span class="w">        </span><span class="n">replyService</span><span class="p">.</span><span class="na">댓글삭제</span><span class="p">(</span><span class="n">replyId</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>ssar로 로그인해 자신이 쓴 1번 댓글에 삭제를 요청합니다.</p>
+<p>ssar로 로그인해 자신이 쓴 1번 댓글의 삭제를 요청합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 댓글 삭제</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/replies/1</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\05_reply-delete.png" alt="" /><div class="caption">그림 5-8. 댓글 삭제 응답</div></div>
 <p>댓글 기능을 마지막으로 게시판 API에 필요한 기능을 모두 구현했습니다. 컨트롤러와 서비스, 리포지토리가 요청을 계층별로 처리하고, DTO가 요청과 응답의 데이터 형식을 정의하며, 전역 예외 처리가 실패 사유를 상태 코드와 함께 반환합니다. 그리고 필터가 식별한 요청자를 서비스가 작성자와 비교하므로, 게시글과 댓글은 작성자 본인만 변경할 수 있습니다.</p>
@@ -418,8 +418,8 @@ start/ch05/src/main/resources/
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
 <li><strong>객체는 참조 필드가 있어야 접근할 수 있으므로 양방향 매핑을 설정합니다.</strong> 테이블은 외래 키 하나로 두 테이블을 조인하지만, 객체는 게시글에 댓글 필드를 추가해야 게시글에서 댓글을 참조할 수 있습니다.</li>
-<li><strong>연관된 엔티티를 함께 조회할 때는 join fetch를 활용해 쿼리를 최적화합니다.</strong> 불필요한 데이터 조회를 막기 위해 평소에는 지연 로딩을 기본으로 하고, 게시글과 댓글을 동시에 화면에 반환해야 할 때만 조인으로 묶어서 한 번에 가져옵니다.</li>
-<li><strong>자식 데이터가 존재하지 않을 수 있는 관계에서는 LEFT OUTER JOIN을 사용합니다.</strong> INNER JOIN을 쓰면 댓글이 없는 게시글은 조회 결과에서 누락됩니다. 따라서 외부 조인으로 가져온 뒤, 게시글 응답 객체 내부에 댓글 목록을 중첩하여 반환합니다.</li>
+<li><strong>연관된 엔티티를 함께 조회할 때는 join fetch를 활용해 쿼리를 최적화합니다.</strong> 불필요한 데이터 조회를 막기 위해 평소에는 지연 로딩을 기본으로 하고, 게시글과 댓글을 함께 응답해야 할 때만 join fetch로 한 번에 가져옵니다.</li>
+<li><strong>댓글처럼 연관된 데이터가 없을 수도 있을 때는 LEFT OUTER JOIN을 사용합니다.</strong> INNER JOIN을 쓰면 댓글이 없는 게시글은 조회 결과에서 누락됩니다. 따라서 LEFT OUTER JOIN으로 가져온 뒤, 게시글 응답 DTO 안에 댓글 목록을 담아 반환합니다.</li>
 </ul>
 </div>
 
