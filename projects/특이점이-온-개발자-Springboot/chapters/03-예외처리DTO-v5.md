@@ -259,78 +259,119 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 ### 3.4.1 예외 처리 흐름
 
-요청을 처리하다 문제가 생기면 실패 사유를 담은 예외 객체가 만들어지고, 이 예외는 디스패처 서블릿까지 전달됩니다. 아래 그림은 서비스에서 게시글을 찾지 못해 **Exception404**가 발생한 경우입니다.
+스프링에서 요청을 처리하다 예외가 발생하면, 예외는 요청이 거쳐 온 순서를 거꾸로 되돌아가 디스패처 서블릿까지 전달됩니다. 디스패처 서블릿은 이 예외를 처리할 곳을 찾고, 찾지 못하면 예외를 톰캣까지 넘깁니다.
 
-<div class="svg-figure">
-<svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 디스패처 서블릿이 BoardController를, BoardController가 BoardService를 호출한다. 2. BoardService에서 조회 결과가 없어 Exception404가 발생한다. 3. 예외는 BoardService에서 BoardController를 거쳐 디스패처 서블릿까지 호출 경로를 거슬러 올라간다.">
+<div class="svg-figure svg-figure--wide">
+<svg viewBox="0 0 910 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 요청이 톰캣, 디스패처 서블릿, 컨트롤러를 거쳐 서비스까지 간다. 2. 서비스에서 예외가 발생한다. 3. 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 4. 디스패처 서블릿에 예외를 처리할 곳이 없으면 예외는 톰캣으로 전달된다.">
   <defs>
-    <marker id="c3e1-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
-    <marker id="c3e1-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f4-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f4-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f4-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <rect x="40" y="40" width="140" height="70" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
-  <text x="110" y="70" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">디스패처</text>
-  <text x="110" y="88" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">서블릿</text>
-  <rect x="310" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
-  <text x="380" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">BoardController</text>
-  <rect x="580" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="650" y="80" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">BoardService</text>
-  <line x1="184" y1="58" x2="306" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c3e1-g)"/>
-  <line x1="454" y1="58" x2="576" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c3e1-g)"/>
-  <text x="245" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
-  <text x="515" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
-  <rect x="598" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
-  <text x="650" y="138" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">2. 예외 발생</text>
-  <line x1="650" y1="110" x2="650" y2="122" stroke="#ff7849" stroke-width="1.6"/>
-  <line x1="576" y1="92" x2="454" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#c3e1-s)"/>
-  <line x1="306" y1="92" x2="184" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#c3e1-s)"/>
-  <text x="515" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
-  <text x="245" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="335" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">디스패처</text>
+  <text x="335" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">서블릿</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="815" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서비스</text>
+  <line x1="164" y1="58" x2="266" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <text x="215" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">1. 요청</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <line x1="815" y1="110" x2="815" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <rect x="763" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="815" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2. 예외 발생</text>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">3. 예외 전달</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="215" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">4. 톰캣으로 전달</text>
 </svg>
 </div>
 
-*그림 3-4. 예외 발생과 전달*
+*그림 3-4. 예외가 톰캣까지 전달되는 흐름*
 
-디스패처 서블릿까지 전달된 예외는 전역 예외 처리기로 넘어갑니다. **전역 예외 처리기(Global Exception Handler)** 는 모든 컨트롤러에서 발생한 예외를 한곳에서 처리하는 클래스입니다. 예외를 그대로 두면 클라이언트는 사유 없이 500 오류만 받으므로, 전역 예외 처리기에서 예외를 상태 코드와 실패 사유를 담은 응답으로 바꿉니다.
+톰캣은 스프링 바깥에 있는 서버라서 이 애플리케이션이 오류를 어떤 형식으로 응답해야 하는지 알지 못합니다. 그래서 톰캣은 애플리케이션이 오류 처리용으로 등록해 둔 주소로 요청을 다시 보내 오류 응답을 만들게 하고, 스프링 부트는 이 주소로 `/error`를 등록해 두었습니다. `/error` 요청은 스프링 부트의 기본 오류 컨트롤러가 받아 상태 코드 500과 기본 오류 정보를 담아 응답합니다.
 
-<div class="svg-figure">
-<svg viewBox="0 0 760 232" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4. 디스패처 서블릿이 Exception404를 GlobalExceptionHandler의 exApi404(Exception404 e)에 전달한다. exApi404는 Resp.fail(NOT_FOUND, e.getMessage())로 실패 응답을 만든다. 5. 이 실패 응답이 디스패처 서블릿으로 반환되고 6. 클라이언트에게 전달된다.">
+<div class="svg-figure svg-figure--wide">
+<svg viewBox="0 0 910 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5. 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. 6. 기본 오류 컨트롤러가 만든 500 응답이 디스패처 서블릿과 톰캣을 거쳐 클라이언트에게 돌아간다.">
   <defs>
-    <marker id="c3e3-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
-    <marker id="c3e3-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f5-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f5-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f5-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <rect x="20" y="30" width="120" height="68" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="80" y="69" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">클라이언트</text>
-  <line x1="236" y1="64" x2="144" y2="64" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#c3e3-i)"/>
-  <text x="190" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#4f46e5">6. 실패 응답</text>
-  <rect x="240" y="30" width="130" height="68" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
-  <text x="305" y="60" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">디스패처</text>
-  <text x="305" y="78" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">서블릿</text>
-  <line x1="374" y1="64" x2="476" y2="64" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="5,4" marker-end="url(#c3e3-s)"/>
-  <text x="425" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">4. 예외 전달</text>
-  <text x="425" y="55" text-anchor="middle" font-size="10" fill="#c2410c">Exception404</text>
-  <rect x="480" y="30" width="260" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="610" y="58" text-anchor="middle" font-size="12.5" font-weight="800" fill="#3730a3">GlobalExceptionHandler</text>
-  <text x="610" y="80" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11" fill="#4338ca">exApi404(Exception404 e)</text>
-  <line x1="610" y1="98" x2="610" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c3e3-i)"/>
-  <text x="620" y="119" font-size="11" font-weight="700" fill="#4f46e5">Resp.fail() 호출</text>
-  <rect x="470" y="134" width="280" height="84" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="610" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Resp</text>
-  <text x="610" y="176" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11" fill="#4338ca">fail(NOT_FOUND, e.getMessage())</text>
-  <text x="610" y="202" text-anchor="middle" font-size="10.5" fill="#334155">상태 코드 404와 예외 메시지를 공통 응답 형식에 담음</text>
-  <path d="M470,176 H305 V102" fill="none" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#c3e3-i)"/>
-  <text x="388" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#4f46e5">5. 실패 응답</text>
-  <line x1="80" y1="102" x2="80" y2="146" stroke="#cbd5e1" stroke-width="1.4"/>
-  <rect x="20" y="148" width="250" height="60" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="34" y="172" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">{ "status": 404, "body": null,</text>
-  <text x="34" y="192" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">  "msg": "게시글을 찾을 수 없습니다" }</text>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="335" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">디스패처</text>
+  <text x="575" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">서블릿</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+  <text x="815" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">기본 오류 컨트롤러</text>
+  <text x="815" y="89" text-anchor="middle" font-size="11" font-weight="400" fill="#334155">BasicErrorController</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f5-g)"/>
+  <text x="455" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">5. /error 다시 요청</text>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f5-g)"/>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 500 응답</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
 </svg>
 </div>
 
-*그림 3-5. 전역 예외 처리기의 응답*
+*그림 3-5. /error 재요청과 500 응답*
 
-이 응답은 디스패처 서블릿을 거쳐 클라이언트에게 전달됩니다.
+### 3.4.2 전역 예외 처리기
 
-### 3.4.2 커스텀 예외 만들기
+이 기본 흐름에서는 게시글을 찾지 못해 예외가 발생해도 클라이언트는 상태 코드 500과 기본 오류 정보만 받습니다. 실패 사유가 없으니 클라이언트는 요청이 왜 실패했는지 알 수 없습니다.
+
+그래서 디스패처 서블릿이 예외를 처리할 곳으로 찾을 수 있도록 전역 예외 처리기를 추가합니다. **전역 예외 처리기(Global Exception Handler)** 는 디스패처 서블릿까지 전달된 예외를 한곳에서 처리하는 클래스로, 예외를 상태 코드와 실패 사유를 담은 응답으로 바꿉니다.
+
+<div class="svg-figure svg-figure--wide">
+<svg viewBox="0 0 910 235" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 요청이 서비스까지 간다. 2. 서비스에서 예외가 발생한다. 3. 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 4. 디스패처 서블릿이 예외를 처리할 곳으로 전역 예외 처리기를 찾아 넘긴다. 5. 전역 예외 처리기가 상태 코드 404와 실패 사유를 담은 응답을 만들어 돌려준다. 6. 이 응답이 클라이언트에게 전달된다.">
+  <defs>
+    <marker id="f6-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f6-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f6-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="335" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">디스패처</text>
+  <text x="335" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서블릿</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="815" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서비스</text>
+  <line x1="164" y1="58" x2="266" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <text x="215" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">1. 요청</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <line x1="815" y1="110" x2="815" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <rect x="763" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="815" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2. 예외 발생</text>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">3. 예외 전달</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f6-s)"/>
+  <text x="215" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 404 응답</text>
+  <line x1="351" y1="112" x2="351" y2="170" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="359" y="148" font-size="11" font-weight="600" fill="#c2410c">4. 처리할 곳 찾기</text>
+  <line x1="319" y1="174" x2="319" y2="114" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f6-i)"/>
+  <text x="311" y="148" text-anchor="end" font-size="11" font-weight="600" fill="#4f46e5">5. 응답 반환</text>
+  <rect x="250" y="174" width="170" height="52" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="335" y="197" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">전역 예외 처리기</text>
+  <text x="335" y="215" text-anchor="middle" font-size="11" fill="#4338ca">404 + 실패 사유</text>
+</svg>
+</div>
+
+*그림 3-6. 전역 예외 처리기가 있을 때의 흐름*
+
+### 3.4.3 커스텀 예외 만들기
 
 먼저 게시글을 찾지 못했을 때 발생시킬 예외 **Exception404**를 만듭니다. 서비스에서 이 예외를 발생시키면 전역 예외 처리기가 받아, 상태 코드 404와 실패 사유를 담은 응답을 클라이언트에게 반환합니다.
 
@@ -356,7 +397,7 @@ public class Exception404 extends RuntimeException {
 | 404 | 찾을 수 없는 자원 | 없는 게시글 조회 |
 | 500 | 서버 내부 오류 | 앞의 네 가지에 해당하지 않는 나머지 예외 |
 
-### 3.4.3 전역 예외 처리
+### 3.4.4 전역 예외 처리기 만들기
 
 이제 앞에서 살펴본 전역 예외 처리기를 직접 만들어 보겠습니다. 클래스에 **@RestControllerAdvice**를 적용하면 그 클래스가 전역 예외 처리기가 됩니다. 이후 예외가 발생하면 디스패처 서블릿이 이 클래스에서 예외 타입에 맞는 메서드를 실행합니다.
 
@@ -495,7 +536,7 @@ GET http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH3/terminal/01_board-detail-dto.png)
-*그림 3-6. 상세 조회 응답*
+*그림 3-7. 상세 조회 응답*
 
 다음으로 예외를 발생시켜 보겠습니다. 더미 데이터에 없는 999번 게시글을 조회해 응답 결과를 확인합니다.
 
@@ -504,7 +545,7 @@ GET http://localhost:8080/api/boards/999
 ```
 
 ![](../assets/CH3/terminal/02_404-response.png)
-*그림 3-7. 404 응답*
+*그림 3-8. 404 응답*
 
 챕터 2에서는 엔티티를 직접 요청과 응답에 사용했지만, 이번 챕터에서는 DTO를 활용해 데이터를 전달하는 구조로 개선했습니다. 또한 예외 처리를 추가해, 문제가 발생하더라도 클라이언트가 상태 코드와 실패 사유를 응답으로 받을 수 있게 했습니다.
 

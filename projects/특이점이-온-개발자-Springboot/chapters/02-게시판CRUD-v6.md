@@ -283,12 +283,6 @@ REST API에는 다른 개발자가 주소만 보고도 어떤 자원을 다루�
 
 ### 2.2.1 프로젝트 생성
 
-:::tip
-**이 책의 실습 방식**
-
-본격적인 실습은 미리 준비해 둔 **start** 레포에서 진행합니다. 다만 프로젝트 생성 과정은 직접 눈으로 확인해 보는 것이 좋으므로 여기서는 프로젝트를 만드는 절차만 먼저 살펴보겠습니다.
-:::
-
 먼저 View > Extensions에서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장 프로그램에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
 
 ![](../assets/CH2/setup/03_spring-pack.png)
@@ -453,6 +447,8 @@ public class Board {
 insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
 insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
 ```
+
+### 2.4.4 프로젝트 실행
 
 터미널에 `./gradlew bootRun`을 입력해 스프링을 실행합니다.
 
