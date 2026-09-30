@@ -425,8 +425,8 @@ spring.jpa.properties.hibernate.format_sql=true
 @Entity
 @Table(name = "board_tb") // 이 클래스를 board_tb 테이블에 매핑한다
 public class Board {
-    @Id // 기본 키. DB가 자동으로 1씩 증가시켜 채운다
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id // 기본 키
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가
     private Integer id;
 
     private String title;
@@ -444,8 +444,10 @@ public class Board {
 실습을 위해 미리 넣어 두는 가상의 데이터를 **더미 데이터(Dummy Data)** 라고 합니다.
 
 ```sql [참고] resources/db/data.sql. 게시글 더미 데이터
-insert into board_tb (title, content, created_at) values ('title1', 'content1', now());
-insert into board_tb (title, content, created_at) values ('title2', 'content2', now());
+insert into board_tb (title, content, created_at)
+values ('title1', 'content1', now());
+insert into board_tb (title, content, created_at)
+values ('title2', 'content2', now());
 ```
 
 ### 2.4.4 프로젝트 실행
@@ -637,7 +639,8 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 `persist()`가 데이터베이스에 전달하는 SQL은 다음과 같습니다.
 
 ```sql
-insert into board_tb (content, created_at, title) values ('content3', now(), 'title3');
+insert into board_tb (content, created_at, title)
+values ('content3', now(), 'title3');
 ```
 
 ### 2.7.4 게시글 수정

@@ -1,6 +1,6 @@
 # 챕터 5. 댓글과 JPA 심화
 
-인증 게시판을 완성한 오픈이는 마지막으로 댓글 기능을 추가하기로 했습니다. 댓글은 게시글 상세 화면에서 게시글과 함께 조회되어야 하는데, 게시글 하나에 여러 개의 댓글이 포함되므로 둘 사이를 연결할 **외래키는 댓글 테이블이 가져야 합니다**. 데이터베이스는 외래키로 조인을 하면 양쪽 테이블의 데이터를 가져올 수 있지만, **JPA는 테이블이 아닌 객체 단위로 동작하기 때문에** 게시글->회원, 댓글->게시글 같이 **외래키를 가진 쪽에서 상대 쪽으로만 접근할 수 있습니다**. 그래서 현재 구조에서는 게시글에서 댓글 데이터를 조회할 수 없습니다.
+인증 게시판을 완성한 오픈이는 마지막으로 댓글 기능을 추가하기로 했습니다. 댓글은 게시글 상세 화면에서 게시글과 함께 조회되어야 하는데, 게시글 하나에 여러 개의 댓글이 포함되므로 둘 사이를 연결할 **외래키는 댓글 테이블이 가져야 합니다**. 데이터베이스는 외래키로 조인을 하면 양쪽 테이블의 데이터를 가져올 수 있지만, **JPA는 테이블이 아닌 객체 단위로 동작하기 때문에** 게시글->회원, 댓글->게시글 같이 **상대 객체를 필드로 가진 쪽에서만 접근할 수 있습니다**. 그래서 현재 구조에서는 게시글에서 댓글 데이터를 조회할 수 없습니다.
 
 *지금 구조에서는 게시글에서 댓글 정보를 가져올 수가 없는데, JPA를 안 쓰고 직접 SQL을 사용해야 하나?*
 
@@ -188,7 +188,8 @@ public class Reply {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY,
+            cascade = CascadeType.REMOVE)
     private List<Reply> replies = new ArrayList<>();
 ```
 
@@ -199,10 +200,14 @@ public class Reply {
 더미 데이터에는 댓글이 추가되어 있습니다.
 
 ```sql [참고] resources/db/data.sql. 댓글 더미 데이터
-insert into reply_tb(comment,board_id,user_id,created_at) values('comment1',1,1,now());
-insert into reply_tb(comment,board_id,user_id,created_at) values('comment2',1,1,now());
-insert into reply_tb(comment,board_id,user_id,created_at) values('comment3',1,2,now());
-insert into reply_tb(comment,board_id,user_id,created_at) values('comment4',2,2,now());
+insert into reply_tb(comment,board_id,user_id,created_at)
+values('comment1',1,1,now());
+insert into reply_tb(comment,board_id,user_id,created_at)
+values('comment2',1,1,now());
+insert into reply_tb(comment,board_id,user_id,created_at)
+values('comment3',1,2,now());
+insert into reply_tb(comment,board_id,user_id,created_at)
+values('comment4',2,2,now());
 ```
 ## 5.2 즉시 로딩과 지연 로딩
 
@@ -442,7 +447,8 @@ public class ReplyService {
     private final BoardRepository boardRepository;
 
     @Transactional
-    public ReplyResponse.DTO 댓글추가(ReplyRequest.SaveDTO requestDTO, User loginUser) {
+    public ReplyResponse.DTO 댓글추가(ReplyRequest.SaveDTO requestDTO,
+            User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
         if (loginUser == null) {
             throw new Exception401("로그인이 필요합니다");
@@ -450,7 +456,8 @@ public class ReplyService {
         // 2. 댓글을 달 게시글을 찾아 연결한다
         Board board = boardRepository.findById(requestDTO.boardId())
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
-        Reply savedReply = replyRepository.save(requestDTO.toEntity(loginUser, board));
+        Reply savedReply =
+                replyRepository.save(requestDTO.toEntity(loginUser, board));
         return new ReplyResponse.DTO(savedReply);
     }
 }

@@ -507,7 +507,8 @@
 <span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Object</span><span class="w"> </span><span class="n">instance</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">instances</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="n">Method</span><span class="o">[]</span><span class="w"> </span><span class="n">methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">instance</span><span class="p">.</span><span class="na">getClass</span><span class="p">().</span><span class="na">getDeclaredMethods</span><span class="p">();</span>
 <span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Method</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">                </span><span class="n">RequestMapping</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">method</span><span class="p">.</span><span class="na">getDeclaredAnnotation</span><span class="p">(</span><span class="n">RequestMapping</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
+<span class="w">                </span><span class="n">RequestMapping</span><span class="w"> </span><span class="n">rm</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                        </span><span class="n">method</span><span class="p">.</span><span class="na">getDeclaredAnnotation</span><span class="p">(</span><span class="n">RequestMapping</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
 <span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rm</span><span class="p">.</span><span class="na">uri</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">uri</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                    </span><span class="k">try</span><span class="w"> </span><span class="p">{</span>
 <span class="w">                        </span><span class="n">method</span><span class="p">.</span><span class="na">invoke</span><span class="p">(</span><span class="n">instance</span><span class="p">);</span>
@@ -608,7 +609,7 @@
     <marker id="c1rp-gr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
   <rect x="168" y="44" width="536" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="186" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣 (WAS)</text>
+  <text x="186" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣</text>
   <rect x="318" y="60" width="368" height="148" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
   <text x="334" y="78" font-size="12" font-weight="800" fill="#0f172a">스프링 컨테이너</text>
   <rect x="16" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
@@ -629,7 +630,8 @@
   <line x1="332" y1="146" x2="280" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
   <line x1="462" y1="126" x2="534" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
   <line x1="534" y1="146" x2="462" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <text x="498" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로 호출</text>
+  <text x="498" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로</text>
+  <text x="498" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">호출</text>
 </svg>
 </div>
 <div class="caption">그림 1-17. 요청 처리 흐름</div>
@@ -705,7 +707,7 @@
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
 <li><strong>프레임워크는 공통으로 필요한 뼈대를 미리 갖춘 틀입니다.</strong></li>
-<li><strong>스프링은 컴포넌트 스캔으로 클래스를 찾아 객체를 등록하고, 어노테이션을 읽어 실행할 대상을 결정합니다.</strong> 이처럼 개발자가 아닌 프레임워크가 리플렉션을 통해 알맞은 메서드를 찾아 실행하는 구조를 <strong>제어의 역전</strong>이라고 합니다.</li>
+<li><strong>스프링은 컴포넌트 스캔으로 클래스를 찾아 객체를 등록하고, 어노테이션을 읽어 실행할 대상을 결정합니다.</strong> 이처럼 개발자가 아닌 프레임워크가 알맞은 메서드를 찾아 실행하는 구조를 <strong>제어의 역전</strong>이라고 합니다.</li>
 <li><strong>스프링 컨테이너는 이렇게 생성한 객체(빈)를 보관하다가 필요한 곳에 주입해 줍니다.</strong> 개발자가 객체를 직접 만들지 않으므로, 코드 간의 결합도가 한결 낮아집니다.</li>
 <li><strong>클라이언트의 요청은 톰캣을 거쳐 디스패처 서블릿으로 전달됩니다.</strong> 디스패처 서블릿은 요청 주소를 분석해 담당 컨트롤러를 호출하며, 이때 알맞은 대상을 찾는 작업은 리플렉션이 처리합니다.</li>
 </ul>

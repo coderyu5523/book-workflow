@@ -485,12 +485,14 @@ public class Exception404 extends RuntimeException {
 
     @Transactional
     public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO) {
-        Board savedBoard = boardRepository.save(requestDTO.toEntity()); // DTO -> 엔티티
+        Board savedBoard =
+                boardRepository.save(requestDTO.toEntity()); // DTO -> 엔티티
         return new BoardResponse.DTO(savedBoard); // 저장된 게시글 반환
     }
 
     @Transactional
-    public BoardResponse.DTO 게시글수정(Integer boardId, BoardRequest.UpdateDTO requestDTO) {
+    public BoardResponse.DTO 게시글수정(Integer boardId,
+            BoardRequest.UpdateDTO requestDTO) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
         // 더티체킹
