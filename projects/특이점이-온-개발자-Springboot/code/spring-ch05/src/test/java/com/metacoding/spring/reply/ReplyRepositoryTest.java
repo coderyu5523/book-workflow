@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
 import com.metacoding.spring.board.*;
+import jakarta.persistence.EntityManager;
 
 @DataJpaTest
 public class ReplyRepositoryTest {
@@ -13,6 +14,8 @@ public class ReplyRepositoryTest {
     private ReplyRepository replyRepository;
     @Autowired
     private BoardRepository boardRepository;
+    @Autowired
+    private EntityManager em;
 
     @Test
     public void save_test() {
@@ -41,6 +44,7 @@ public class ReplyRepositoryTest {
 
         // when
         replyRepository.delete(reply);
+        em.flush();
 
         // eye
         Board board = boardRepository.findById(boardId).get();

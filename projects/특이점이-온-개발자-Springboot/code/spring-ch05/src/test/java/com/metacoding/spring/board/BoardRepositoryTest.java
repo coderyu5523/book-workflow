@@ -4,6 +4,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import com.metacoding.spring.user.User;
 import jakarta.persistence.EntityManager;
 
 @DataJpaTest
@@ -43,9 +44,11 @@ public class BoardRepositoryTest {
     @Test
     public void save_test() {
         // given
+        User user = em.find(User.class, 1); // 더미 데이터의 ssar
         Board board = Board.builder()
                 .title("title3")
                 .content("content3")
+                .user(user)
                 .build();
         // when
         boardRepository.save(board);
@@ -56,6 +59,7 @@ public class BoardRepositoryTest {
         System.out.println("Board ID: " + boards.get(2).getId());
         System.out.println("Board Title: " + boards.get(2).getTitle());
         System.out.println("Board Content: " + boards.get(2).getContent());
+        System.out.println("Board User: " + boards.get(2).getUser().getUsername());
     }
 
     @Test
@@ -67,6 +71,7 @@ public class BoardRepositoryTest {
         board.setTitle("title-update");
         board.setContent("Update-test");
         em.flush();
+        em.clear(); // 영속성 컨텍스트 초기화
         // eye
         Board result = boardRepository.findById(id).get();
         System.out.println("=======================");

@@ -67,6 +67,7 @@ public class BoardRepositoryTest {
         board.setTitle("title-update");
         board.setContent("Update-test");
         em.flush();
+        em.clear(); // 영속성 컨텍스트 초기화
         // eye
         Board result = boardRepository.findById(id).get();
         System.out.println("=======================");
