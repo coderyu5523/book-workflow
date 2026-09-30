@@ -851,7 +851,7 @@
 <span class="w">        </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="n">respDTO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글상세</span><span class="p">(</span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>이제 <strong>API 요청 시 JWT를 함께 보내야 합니다</strong>. 인증 탭에서 인증 유형을 Bearer로 선택 후 응답받은 JWT를 추가합니다.</p>
+<p>이제 <strong>API 요청 시 JWT를 함께 보내야 합니다</strong>. Hoppscotch의 인증 탭에서 인증 유형을 Bearer로 선택하면 요청을 보낼 때 JWT 앞에 Bearer가 자동으로 붙으므로, Bearer를 뺀 JWT만 추가합니다.</p>
 <div class="chapter-image"><img src="..\assets\CH4\setup\01_hoppscotch-bearer.png" alt="" /><div class="caption">그림 4-15. Hoppscotch의 Bearer 토큰 설정</div></div>
 <p>1번 게시글의 상세 조회 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
