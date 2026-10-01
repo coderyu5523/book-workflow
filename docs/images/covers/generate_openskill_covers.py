@@ -2,14 +2,18 @@
 """오픈스킬 IT 입문 시리즈 전자책 표지 생성 (Spring Boot · MSA · Docker & Kubernetes)
 
 사용법:
-    PYTHONUTF8=1 python docs/images/covers/generate_openskill_covers.py [출력폴더]
+    PYTHONUTF8=1 python docs/images/covers/generate_openskill_covers.py [출력폴더] [--book MSA]
 
 출력폴더를 주지 않으면 각 책의 projects/<책>/assets/cover.jpg 에 바로 저장한다.
+--book 을 주면 책 폴더 이름에 그 문자열이 들어간 책만 만든다.
+저자 표기는 각 책의 book/colophon.json(판권지) authors 를 따른다.
 엔진은 .claude/skills/pub-studio/references/scripts/cover_generator.py 를 쓴다.
 750×1110px, 72ppi JPEG.
 """
 from __future__ import annotations
 
+import argparse
+import json
 import math
 import sys
 from pathlib import Path
@@ -36,10 +40,16 @@ KX = cg.FRONT / 750.0                     # 750 좌표 -> 원본 가로
 KY = (cg.H - 2 * cg.BLEED) / 1110.0       # 1110 좌표 -> 원본 세로
 
 
-def _cfg():
+def _cfg(authors):
     return {"title": "", "subtitle": "", "cover_data": {
-        "series": "", "series_sub": "", "authors": "최주호, 류재성, 김주혁",
+        "series": "", "series_sub": "", "authors": authors,
         "publisher": "오픈스킬북스", "accent_color": GRAY}}
+
+
+def _authors(book):
+    """표지 저자 표기는 판권지(book/colophon.json)의 authors 를 그대로 쓴다."""
+    cj = ROOT / "projects" / book / "book" / "colophon.json"
+    return json.loads(cj.read_text(encoding="utf-8"))["authors"]
 
 
 # 엠블럼 (750×1110 좌표로 설계)
@@ -137,8 +147,8 @@ BOOKS = {
 }
 
 
-def render(spec):
-    img = cg._render_single(_cfg(), spec["main"], shadow_map=spec["shadow"])
+def render(spec, authors):
+    img = cg._render_single(_cfg(authors), spec["main"], shadow_map=spec["shadow"])
     draw_series(img)
     draw_subtitle(img, spec["subtitle"])
     spec["emblem"](img, band_center(img))
@@ -146,11 +156,17 @@ def render(spec):
 
 
 def main():
-    out_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else None
+    ap = argparse.ArgumentParser(description="오픈스킬 IT 입문 시리즈 전자책 표지 생성")
+    ap.add_argument("out_dir", nargs="?", type=Path,
+                    help="출력 폴더. 없으면 각 책 assets/cover.jpg 에 저장")
+    ap.add_argument("--book", help="책 폴더 이름의 일부(예: MSA). 없으면 세 권 모두")
+    args = ap.parse_args()
     for book, spec in BOOKS.items():
-        dst = (out_dir / f"{book}.jpg") if out_dir else ROOT / "projects" / book / "assets" / "cover.jpg"
+        if args.book and args.book not in book:
+            continue
+        dst = (args.out_dir / f"{book}.jpg") if args.out_dir else ROOT / "projects" / book / "assets" / "cover.jpg"
         dst.parent.mkdir(parents=True, exist_ok=True)
-        render(spec).save(dst, "JPEG", quality=92, dpi=(72, 72))
+        render(spec, _authors(book)).save(dst, "JPEG", quality=92, dpi=(72, 72))
         print(f"saved {dst} ({dst.stat().st_size // 1024}KB)")
 
 
