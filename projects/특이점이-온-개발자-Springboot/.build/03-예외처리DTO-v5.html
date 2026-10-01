@@ -71,7 +71,7 @@
 <p>이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 2 그대로입니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch03 디렉토리</div>start/ch03/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                    # [작성] 게시글 엔티티
+│   ├── Board.java                    # [참고] 게시글 엔티티
 │   ├── BoardController.java          # [작성] 게시글 컨트롤러
 │   ├── BoardRequest.java             # [작성] 게시글 요청 DTO
 │   ├── BoardRepository.java          # [작성] 게시글 리포지토리
@@ -111,8 +111,8 @@
 </div>
 <div class="caption">그림 3-2. 엔티티와 DTO가 담는 값</div>
 <h3>3.1.2 엔티티 생성자</h3>
-<p>데이터베이스에 저장되는 대상은 영속성 컨텍스트가 관리하는 엔티티입니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 엔티티로 변환하는 과정이 필요합니다. 이 변환을 위해 먼저 <strong>Board</strong> 클래스에 생성자를 추가합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span><span class="w"> </span><span class="c1">// 기본 생성자 추가</span>
+<p>데이터베이스에 저장되는 대상은 영속성 컨텍스트가 관리하는 엔티티입니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 <strong>Board</strong> 클래스의 생성자로 엔티티를 생성해야 합니다.</p>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/Board.java. 빌더로 생성할 수 있게</div><span class="nd">@NoArgsConstructor</span><span class="w"> </span><span class="c1">// 기본 생성자 추가</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
 <span class="nd">@Table</span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board_tb&quot;</span><span class="p">)</span>
@@ -127,7 +127,7 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>새로운 생성자를 직접 추가하면 자바가 자동으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, <strong>@NoArgsConstructor</strong> 어노테이션을 함께 붙여줍니다.</p>
+<p>클래스에 생성자를 새로 정의하면 자바가 자동으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, <strong>@NoArgsConstructor</strong> 어노테이션을 함께 붙입니다.</p>
 <div class="tip">
 <p><strong>빌더 패턴(Builder Pattern)이란?</strong></p>
 <p>객체를 생성할 때 매개변수 순서에 의존하지 않고, 어떤 필드에 어떤 값이 들어가는지 명시적으로 지정하는 패턴입니다. <strong>@Builder</strong>를 사용하면 복잡한 매개변수 순서를 외울 필요 없이, 원하는 필드에 값을 채워 넣을 수 있습니다.</p>
@@ -162,7 +162,7 @@
 <div class="caption">그림 3-3. 요청 데이터와 DTO</div>
 <p>다만 게시글 추가 요청을 받는 <strong>SaveDTO</strong>는 값만 담은 일반 객체라서, 그대로는 데이터베이스에 저장할 수 없습니다. 그래서 DTO 안에 엔티티로 바꾸는 <code>toEntity()</code>를 추가합니다.</p>
 <p><code>board/BoardRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/BoardRequest.java. 요청 DTO와 엔티티 변환</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/BoardRequest.java. 요청 DTO와 엔티티 변환</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardRequest</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">        </span><span class="c1">// DTO를 엔티티로 변환한다</span>
@@ -181,7 +181,7 @@
 <h2>3.2 응답 DTO</h2>
 <p>응답 DTO는 클라이언트에게 내보낼 값만 담는 클래스입니다. 서비스가 조회한 엔티티를 그대로 반환하지 않고, 이 클래스로 옮겨 담아 반환합니다.</p>
 <p><code>board/BoardResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardResponse.java. 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardResponse</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> board/BoardResponse.java. 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardResponse</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="c1">// 1. 공통 DTO. 엔티티를 받아 보여줄 값만 담는다</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DTO</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">content</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -203,7 +203,7 @@
 <h2>3.3 JpaRepository 적용</h2>
 <p>챕터 2에서는 리포지토리에 <strong>EntityManager</strong>를 주입받아 저장과 조회, 삭제 메서드를 직접 작성했습니다. 이 기본 동작들은 <strong>JpaRepository</strong>에 이미 들어 있어, 이 인터페이스를 상속하면 스프링이 대신 구현해 줍니다. 메서드를 작성하지 않아도 저장과 조회, 삭제 메서드를 호출할 수 있습니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 변경합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> board/BoardRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Board</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">BoardRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Board</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
 <p>리포지토리는 클래스가 아니라 인터페이스로 선언합니다. <code>JpaRepository</code>를 상속할 때 다룰 엔티티 타입과 기본 키 타입을 차례로 적습니다.</p>
 <p>리포지토리의 조회 메서드는 반환 타입을 <strong>Optional</strong>로 선언할 수 있습니다. <strong>Optional</strong>은 존재할 수도, 존재하지 않을 수도 있는 값을 감싸는 <strong>래퍼(Wrapper)</strong> 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 이렇게 선언하면 값이 없을 때 null 대신 빈 <strong>Optional</strong>이 반환되므로, 게시글을 찾지 못한 경우를 예외로 처리할 수 있습니다.</p>
@@ -352,7 +352,7 @@
 <h3>3.4.3 전역 예외 처리기 만들기</h3>
 <p>이제 앞에서 살펴본 전역 예외 처리기를 직접 만들어 보겠습니다. 클래스에 <strong>@RestControllerAdvice</strong>를 적용하면, 스프링은 해당 클래스를 전역 예외 처리기로 인식합니다. 이 클래스는 모든 컨트롤러에서 발생하는 예외를 한곳에서 모아 처리하고 JSON으로 응답합니다.</p>
 <p><code>core/handler/GlobalExceptionHandler.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> core/handler/GlobalExceptionHandler.java. 전역 예외 처리</div><span class="nd">@RestControllerAdvice</span>
 <span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">GlobalExceptionHandler</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="c1">// 1. 커스텀 예외는 저마다의 상태 코드로 바꾼다</span>
@@ -440,7 +440,7 @@
 <p>이제 서비스에서 예외 처리를 해보겠습니다.</p>
 <p><strong>BoardService</strong>가 DTO로 값을 주고받고, 게시글이 없으면 예외를 발생시키도록 변경합니다.</p>
 <p><code>board/BoardService.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">게시글목록</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">게시글목록</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findAll</span><span class="p">().</span><span class="na">stream</span><span class="p">()</span>
 <span class="w">                </span><span class="p">.</span><span class="na">map</span><span class="p">(</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="p">::</span><span class="k">new</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">toList</span><span class="p">();</span>
@@ -480,7 +480,7 @@
 <h3>3.5.2 컨트롤러</h3>
 <p>컨트롤러도 엔티티 대신 DTO로 값을 주고받도록 변경합니다.</p>
 <p><code>board/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 7</span> board/BoardController.java. 요청·응답 타입을 DTO로</div><span class="w">    </span><span class="nd">@GetMapping</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 6</span> board/BoardController.java. 요청·응답 타입을 DTO로</div><span class="w">    </span><span class="nd">@GetMapping</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">findAll</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">List</span><span class="o">&lt;</span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="o">&gt;</span><span class="w"> </span><span class="n">respDTOList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글목록</span><span class="p">();</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTOList</span><span class="p">);</span>

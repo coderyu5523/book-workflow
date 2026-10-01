@@ -67,7 +67,7 @@ cd start/ch03
 ```text ch03 디렉토리
 start/ch03/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                    # [작성] 게시글 엔티티
+│   ├── Board.java                    # [참고] 게시글 엔티티
 │   ├── BoardController.java          # [작성] 게시글 컨트롤러
 │   ├── BoardRequest.java             # [작성] 게시글 요청 DTO
 │   ├── BoardRepository.java          # [작성] 게시글 리포지토리
@@ -116,9 +116,9 @@ start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.2 엔티티 생성자
 
-데이터베이스에 저장되는 대상은 영속성 컨텍스트가 관리하는 엔티티입니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 엔티티로 변환하는 과정이 필요합니다. 이 변환을 위해 먼저 **Board** 클래스에 생성자를 추가합니다.
+데이터베이스에 저장되는 대상은 영속성 컨텍스트가 관리하는 엔티티입니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 **Board** 클래스의 생성자로 엔티티를 생성해야 합니다.
 
-```java [실습 1] board/Board.java. 빌더로 생성할 수 있게
+```java [참고] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor // 기본 생성자 추가
 @Data
 @Entity
@@ -136,7 +136,7 @@ public class Board {
 }
 ```
 
-새로운 생성자를 직접 추가하면 자바가 자동으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, **@NoArgsConstructor** 어노테이션을 함께 붙여줍니다.
+클래스에 생성자를 새로 정의하면 자바가 자동으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, **@NoArgsConstructor** 어노테이션을 함께 붙입니다.
 
 :::tip
 **빌더 패턴(Builder Pattern)이란?**
@@ -180,7 +180,7 @@ public class Board {
 
 `board/BoardRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 2] board/BoardRequest.java. 요청 DTO와 엔티티 변환
+```java [실습 1] board/BoardRequest.java. 요청 DTO와 엔티티 변환
 public class BoardRequest {
     public record SaveDTO(String title, String content) {
 
@@ -206,7 +206,7 @@ public class BoardRequest {
 
 `board/BoardResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 3] board/BoardResponse.java. 응답 DTO
+```java [실습 2] board/BoardResponse.java. 응답 DTO
 public class BoardResponse {
 
     // 1. 공통 DTO. 엔티티를 받아 보여줄 값만 담는다
@@ -235,7 +235,7 @@ public class BoardResponse {
 
 `board/BoardRepository.java`를 열어 아래와 같이 변경합니다.
 
-```java [실습 4] board/BoardRepository.java. JpaRepository 상속
+```java [실습 3] board/BoardRepository.java. JpaRepository 상속
 public interface BoardRepository extends JpaRepository<Board, Integer> {
 }
 ```
@@ -392,7 +392,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 `core/handler/GlobalExceptionHandler.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 5] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
+```java [실습 4] core/handler/GlobalExceptionHandler.java. 전역 예외 처리
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -470,7 +470,7 @@ public class Exception404 extends RuntimeException {
 
 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 6] board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외
+```java [실습 5] board/BoardService.java. 주고받는 타입을 DTO로, 없으면 예외
     public List<BoardResponse.DTO> 게시글목록() {
         return boardRepository.findAll().stream()
                 .map(BoardResponse.DTO::new)
@@ -517,7 +517,7 @@ public class Exception404 extends RuntimeException {
 
 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 7] board/BoardController.java. 요청·응답 타입을 DTO로
+```java [실습 6] board/BoardController.java. 요청·응답 타입을 DTO로
     @GetMapping
     public ResponseEntity<?> findAll() {
         List<BoardResponse.DTO> respDTOList = boardService.게시글목록();

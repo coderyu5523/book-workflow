@@ -69,7 +69,7 @@ cd start/ch02
 ```text ch02 디렉토리
 start/ch02/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                # [작성] 게시글 엔티티
+│   ├── Board.java                # [참고] 게시글 엔티티
 │   ├── BoardController.java      # [작성] 게시글 컨트롤러
 │   ├── BoardRepository.java      # [작성] 게시글 리포지토리
 │   └── BoardService.java         # [작성] 게시글 서비스
@@ -416,11 +416,9 @@ spring.jpa.properties.hibernate.format_sql=true
 
 ### 2.4.2 엔티티
 
-이어서 게시글을 표현하는 **엔티티(Entity)** 를 만들어 보겠습니다. 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
+이어서 게시글을 표현하는 **엔티티(Entity)** 를 살펴보겠습니다. 엔티티란 데이터베이스의 테이블과 매핑되는 자바 클래스를 말합니다. 즉, 엔티티 클래스로 생성한 객체 하나가 데이터베이스 테이블의 한 행(Row)이 됩니다.
 
-`board/Board.java`를 열어 아래와 같이 작성합니다.
-
-```java [실습 1] board/Board.java. 게시글 엔티티
+```java [참고] board/Board.java. 게시글 엔티티
 @Data // 롬복(Lombok). 게터·세터·toString을 컴파일 시점에 대신 만든다
 @Entity
 @Table(name = "board_tb") // 이 클래스를 board_tb 테이블에 매핑한다
@@ -573,9 +571,9 @@ public record Resp<T>(Integer status, String msg, T body) {
 
 먼저 데이터베이스에 접근하는 리포지토리를 만들어 보겠습니다. 리포지토리가 데이터베이스에 접근할 때 사용하는 도구가 **EntityManager**입니다. 이 객체는 스프링이 미리 빈(Bean)으로 등록해 두므로, 직접 만들 필요 없이 생성자로 주입받아 사용하면 됩니다.
 
-`board/BoardRepository.java`를 열어 아래와 같이 작성합니다.
+`board/BoardRepository.java`를 열어 아래 코드를 확인합니다.
 
-```java [실습 2] board/BoardRepository.java. 리포지토리 골격
+```java [참고] board/BoardRepository.java. 리포지토리 골격
 @RequiredArgsConstructor
 @Repository // 스프링이 빈으로 등록한다
 public class BoardRepository {
@@ -590,9 +588,9 @@ public class BoardRepository {
 
 **EntityManager**의 `find()`는 기본 키(PK)로 엔티티 한 건을 조회하는 메서드입니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 `find()`가 조건에 맞는 **Board** 엔티티 한 건을 반환합니다.
 
-`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardRepository.java`의 `findById()`를 아래와 같이 작성합니다.
 
-```java [실습 3] board/BoardRepository.java. 기본 키로 한 건 조회
+```java [실습 1] board/BoardRepository.java. 기본 키로 한 건 조회
     public Board findById(int boardId) {
         return em.find(Board.class, boardId);
     }
@@ -608,9 +606,9 @@ select id, content, created_at, title from board_tb where id = 1;
 
 **EntityManager**에는 전체 목록을 한 번에 조회하는 전용 메서드가 없습니다. 따라서 전체 데이터를 가져오려면 **JPQL(Java Persistence Query Language)** 을 사용해 직접 쿼리를 작성해서 실행해야 합니다.
 
-`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardRepository.java`의 `findAll()`을 아래와 같이 작성합니다.
 
-```java [실습 4] board/BoardRepository.java. JPQL로 전체 조회
+```java [실습 2] board/BoardRepository.java. JPQL로 전체 조회
     public List<Board> findAll() {
         return em.createQuery("select b from Board b", Board.class).getResultList();
     }
@@ -628,9 +626,9 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 
 데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티 객체를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
 
-`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardRepository.java`의 `save()`를 아래와 같이 작성합니다.
 
-```java [실습 5] board/BoardRepository.java. 새 게시글 저장
+```java [실습 3] board/BoardRepository.java. 새 게시글 저장
     public void save(Board board) {
         em.persist(board);
     }
@@ -651,9 +649,9 @@ JPA에는 데이터를 수정하는 메서드가 없습니다. 조회해 온 엔
 
 게시글을 삭제할 때는 `remove()` 메서드를 사용합니다. 이 메서드에 삭제할 엔티티를 넘겨주면 JPA가 이를 삭제 대상으로 표시하고, 데이터베이스에 삭제 쿼리를 전달합니다.
 
-`board/BoardRepository.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardRepository.java`의 `delete()`를 아래와 같이 작성합니다.
 
-```java [실습 6] board/BoardRepository.java. 게시글 삭제
+```java [실습 4] board/BoardRepository.java. 게시글 삭제
     public void delete(Board board) {
         em.remove(board);
     }
@@ -1011,9 +1009,9 @@ Given-When-Then 패턴은 사용자 관점에서 시스템이 **어떤 행위**�
 
 이제 given-when-eye 형식에 맞춰 실제 테스트를 만들어 보겠습니다.
 
-테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 둡니다. `board` 패키지의 `BoardRepositoryTest.java`를 열어 아래와 같이 작성합니다.
+테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 작성합니다. `board` 패키지의 `BoardRepositoryTest.java`를 열어 아래 코드를 확인합니다.
 
-```java [실습 7] BoardRepositoryTest.java. 테스트 클래스 골격
+```java [참고] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class) // 검증할 BoardRepository를 빈으로 등록한다
 @DataJpaTest // 데이터베이스 연결과 EntityManager를 등록한다
 public class BoardRepositoryTest {
@@ -1030,7 +1028,7 @@ public class BoardRepositoryTest {
 
 먼저 게시글 한 건 조회입니다. 테스트 메서드를 아래와 같이 작성합니다.
 
-```java [실습 8] BoardRepositoryTest.java. 한 건 조회
+```java [실습 5] BoardRepositoryTest.java. 한 건 조회
     @Test
     public void findById_test() {
         // given
@@ -1051,7 +1049,7 @@ public class BoardRepositoryTest {
 
 전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
-```java [실습 9] BoardRepositoryTest.java. 전체 조회
+```java [실습 6] BoardRepositoryTest.java. 전체 조회
     @Test
     public void findAll_test() {
         // given
@@ -1071,7 +1069,7 @@ public class BoardRepositoryTest {
 
 저장 테스트는 `save()`를 호출한 뒤, `findAll()`로 목록을 조회해 새 게시글이 추가되었는지 확인합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
-```java [실습 10] BoardRepositoryTest.java. 저장
+```java [실습 7] BoardRepositoryTest.java. 저장
     @Test
     public void save_test() {
         // given
@@ -1097,7 +1095,7 @@ public class BoardRepositoryTest {
 
 실제 서비스에서는 트랜잭션이 끝날 때 JPA가 `flush()`를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 `flush()`를 직접 호출합니다. 그리고 `clear()`를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
-```java [실습 11] BoardRepositoryTest.java. 수정과 더티체킹
+```java [실습 8] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
     public void update_test() {
         // given
@@ -1121,7 +1119,7 @@ public class BoardRepositoryTest {
 
 게시글 삭제 테스트를 아래와 같이 작성합니다.
 
-```java [실습 12] BoardRepositoryTest.java. 삭제
+```java [실습 9] BoardRepositoryTest.java. 삭제
     @Test
     public void delete_test() {
         // given
@@ -1154,7 +1152,7 @@ public class BoardRepositoryTest {
 
 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 13] board/BoardService.java. 게시글 목록
+```java [실습 10] board/BoardService.java. 게시글 목록
 @RequiredArgsConstructor
 @Service // 스프링이 빈으로 등록한다
 public class BoardService {
@@ -1173,7 +1171,7 @@ public class BoardService {
 
 `board/BoardController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 14] board/BoardController.java. 게시글 목록
+```java [실습 11] board/BoardController.java. 게시글 목록
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/boards") // 공통 주소
@@ -1220,9 +1218,9 @@ GET http://localhost:8080/api/boards
 
 ### 2.12.1 서비스
 
-게시글 상세 조회는 기본 키로 게시글 한 건을 가져옵니다. 서비스에서 리포지토리의 `findById()`를 호출하도록 `board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+게시글 상세 조회는 기본 키로 게시글 한 건을 가져옵니다. 서비스에서 리포지토리의 `findById()`를 호출하도록 `board/BoardService.java`의 `게시글상세()`를 아래와 같이 작성합니다.
 
-```java [실습 15] board/BoardService.java. 게시글 상세
+```java [실습 12] board/BoardService.java. 게시글 상세
     public Board 게시글상세(Integer boardId) {
         return boardRepository.findById(boardId);
     }
@@ -1232,9 +1230,9 @@ GET http://localhost:8080/api/boards
 
 컨트롤러는 URL 경로에 포함된 게시글 번호를 추출하여 서비스로 전달합니다. 경로 변수인 `{boardId}` 값은 **@PathVariable**을 사용해 가져옵니다.
 
-`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardController.java`의 `findById()`를 아래와 같이 작성합니다.
 
-```java [실습 16] board/BoardController.java. 게시글 상세
+```java [실습 13] board/BoardController.java. 게시글 상세
     @GetMapping("/{boardId}")
     public ResponseEntity<?> findById(@PathVariable("boardId") Integer boardId) {
         Board responseBoard = boardService.게시글상세(boardId);
@@ -1257,9 +1255,9 @@ GET http://localhost:8080/api/boards/1
 
 게시글 추가는 데이터를 변경하는 작업입니다. 중간에 오류가 발생하더라도 데이터에 잘못 반영되지 않도록, 메서드 전체를 하나의 트랜잭션으로 묶어 처리합니다.
 
-`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardService.java`의 `게시글추가()`를 아래와 같이 작성합니다.
 
-```java [실습 17] board/BoardService.java. 게시글 추가
+```java [실습 14] board/BoardService.java. 게시글 추가
     @Transactional
     public Board 게시글추가(Board requestBoard) {
         boardRepository.save(requestBoard);
@@ -1273,9 +1271,9 @@ GET http://localhost:8080/api/boards/1
 
 클라이언트의 요청이 들어오면 디스패처 서블릿이 담당 컨트롤러 메서드를 찾아 호출합니다. 이때 매개변수에 **@RequestBody**가 있으면, 스프링이 요청 바디에 담긴 JSON 데이터를 자바 객체로 변환해 전달합니다.
 
-`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardController.java`의 `save()`를 아래와 같이 작성합니다.
 
-```java [실습 18] board/BoardController.java. 게시글 추가
+```java [실습 15] board/BoardController.java. 게시글 추가
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Board requestBoard) {
         Board responseBoard = boardService.게시글추가(requestBoard);
@@ -1315,9 +1313,9 @@ POST http://localhost:8080/api/boards
 
 `게시글수정()`은 URL에 담긴 게시글 번호와 요청 바디로 들어온 값을 함께 전달받습니다.
 
-`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardService.java`의 `게시글수정()`을 아래와 같이 작성합니다.
 
-```java [실습 19] board/BoardService.java. 더티체킹으로 수정
+```java [실습 16] board/BoardService.java. 더티체킹으로 수정
     @Transactional
     public Board 게시글수정(Integer boardId, Board requestBoard) {
         // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
@@ -1333,9 +1331,9 @@ POST http://localhost:8080/api/boards
 
 ### 2.14.2 컨트롤러
 
-`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardController.java`의 `update()`를 아래와 같이 작성합니다.
 
-```java [실습 20] board/BoardController.java. 게시글 수정
+```java [실습 17] board/BoardController.java. 게시글 수정
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId,
                                     @RequestBody Board requestBoard) {
@@ -1364,9 +1362,9 @@ PUT http://localhost:8080/api/boards/1
 
 `게시글삭제()`는 삭제할 게시글을 먼저 조회한 뒤, 조회한 엔티티를 리포지토리에 전달합니다.
 
-`board/BoardService.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardService.java`의 `게시글삭제()`를 아래와 같이 작성합니다.
 
-```java [실습 21] board/BoardService.java. 게시글 삭제
+```java [실습 18] board/BoardService.java. 게시글 삭제
     @Transactional
     public void 게시글삭제(Integer boardId) {
         Board board = boardRepository.findById(boardId);
@@ -1376,9 +1374,9 @@ PUT http://localhost:8080/api/boards/1
 
 ### 2.15.2 컨트롤러
 
-`board/BoardController.java`에 아래와 같이 메서드를 추가합니다.
+`board/BoardController.java`의 `deleteById()`를 아래와 같이 작성합니다.
 
-```java [실습 22] board/BoardController.java. 게시글 삭제
+```java [실습 19] board/BoardController.java. 게시글 삭제
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
         boardService.게시글삭제(boardId);

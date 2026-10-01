@@ -1,0 +1,22 @@
+package com.metacoding.spring.board;
+
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Data
+@Entity
+@Table(name = "board_tb")
+public class Board {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가
+    private Integer id;
+    private String title;
+    private String content;
+
+    @CreationTimestamp // 자동으로 현재 시간 저장
+    private LocalDateTime createdAt;
+}

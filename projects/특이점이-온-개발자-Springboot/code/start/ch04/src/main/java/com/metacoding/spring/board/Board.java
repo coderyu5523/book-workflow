@@ -1,0 +1,38 @@
+package com.metacoding.spring.board;
+
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.metacoding.spring.user.User; // 추가
+import jakarta.persistence.*;
+import lombok.*;
+
+@NoArgsConstructor
+@Data
+@Entity
+@Table(name = "board_tb")
+public class Board {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가
+    private Integer id;
+    private String title;
+    private String content;
+
+    @CreationTimestamp // 자동으로 현재 시간 저장
+    private LocalDateTime createdAt;
+
+    @ManyToOne // 다대일 관계 설정 (기본 전략은 즉시 로딩)
+    private User user; // 객체를 직접 참조
+
+    @Builder
+    public Board(Integer id, String title, String content,
+            LocalDateTime createdAt, User user) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.createdAt = createdAt;
+        this.user = user;
+    }
+
+}

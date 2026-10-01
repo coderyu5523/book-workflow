@@ -1,0 +1,12 @@
+package com.metacoding.spring.board;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
+
+public interface BoardRepository extends JpaRepository<Board, Integer> {
+
+    @Query("select b from Board b join fetch b.user where b.id = :boardId")
+    Optional<Board> findByIdJoinUser(@Param("boardId") Integer boardId);
+}

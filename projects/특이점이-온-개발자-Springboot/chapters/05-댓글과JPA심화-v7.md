@@ -31,14 +31,14 @@ cd start/ch05
 ```text ch05 디렉토리
 start/ch05/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                        # [작성] 게시글 엔티티
+│   ├── Board.java                        # [참고] 게시글 엔티티
 │   ├── BoardRepository.java              # [작성] 게시글 리포지토리
 │   ├── BoardResponse.java                # [작성] 게시글 응답 DTO
 │   └── BoardService.java                 # [작성] 게시글 서비스
 └── reply/
-    ├── Reply.java                        # [작성] 댓글 엔티티
+    ├── Reply.java                        # [참고] 댓글 엔티티
     ├── ReplyController.java              # [작성] 댓글 컨트롤러
-    ├── ReplyRepository.java              # [작성] 댓글 리포지토리
+    ├── ReplyRepository.java              # [참고] 댓글 리포지토리
     ├── ReplyRequest.java                 # [작성] 댓글 요청 DTO
     ├── ReplyResponse.java                # [작성] 댓글 응답 DTO
     └── ReplyService.java                 # [작성] 댓글 서비스
@@ -138,11 +138,9 @@ start/ch05/src/main/resources/
 
 ### 5.1.1 댓글 엔티티
 
-먼저 댓글 엔티티부터 정의합니다. 댓글 작성자 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 추가합니다.
+댓글 엔티티는 댓글 작성자 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 가집니다.
 
-`reply/Reply.java`를 열어 아래와 같이 작성합니다.
-
-```java [실습 1] reply/Reply.java. 댓글 엔티티
+```java [참고] reply/Reply.java. 댓글 엔티티
 @NoArgsConstructor
 @Data
 @Entity
@@ -178,13 +176,9 @@ public class Reply {
 
 ### 5.1.2 게시글에 댓글 목록 추가
 
-양방향 매핑을 위해 **Board** 엔티티에 댓글 목록을 필드로 추가합니다.
+양방향 매핑을 위해서는 **Board** 엔티티에 댓글 목록 필드가 필요하고, 이때 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션의 `mappedBy`에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.
 
-양방향 참조를 설정할 때는 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션의 `mappedBy`에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.
-
-`board/Board.java`를 열어 아래와 같이 작성자 필드를 변경하고 댓글 목록 필드를 추가합니다.
-
-```java [실습 2] board/Board.java. 댓글 목록 추가와 작성자 필드 수정
+```java [참고] board/Board.java. 댓글 목록 추가와 작성자 필드 수정
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -292,7 +286,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 3] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
+```java [실습 1] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user left join fetch b.replies r "
             + "left join fetch r.user where b.id = :boardId")
     Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);
@@ -306,7 +300,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
-```java [실습 4] board/BoardResponse.java. 상세에 댓글 목록 추가
+```java [실습 2] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -359,7 +353,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
-```java [실습 5] board/BoardService.java. 상세 조회를 join fetch로 교체
+```java [실습 3] board/BoardService.java. 상세 조회를 join fetch로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
@@ -380,11 +374,11 @@ GET http://localhost:8080/api/boards/1
 
 ### 5.4.1 리포지토리
 
-댓글을 저장할 리포지토리를 작성합니다.
+댓글을 저장할 리포지토리를 살펴보겠습니다.
 
-`reply/ReplyRepository.java`를 열어 아래와 같이 작성합니다.
+`reply/ReplyRepository.java`를 열어 아래 코드를 확인합니다.
 
-```java [실습 6] reply/ReplyRepository.java. JpaRepository 상속
+```java [참고] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 }
 ```
@@ -395,7 +389,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 7] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 4] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -417,7 +411,7 @@ public class ReplyRequest {
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 8] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 5] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -438,7 +432,7 @@ public class ReplyResponse {
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 9] reply/ReplyService.java. 댓글 저장
+```java [실습 6] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
 @Service
 public class ReplyService {
@@ -469,7 +463,7 @@ public class ReplyService {
 
 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 10] reply/ReplyController.java. 댓글 작성 엔드포인트
+```java [실습 7] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/replies")
@@ -507,9 +501,9 @@ POST http://localhost:8080/api/replies
 
 ### 5.5.1 서비스
 
-`reply/ReplyService.java`에 아래와 같이 메서드를 추가합니다.
+`reply/ReplyService.java`의 `댓글삭제()`를 아래와 같이 작성합니다.
 
-```java [실습 11] reply/ReplyService.java. 댓글 삭제
+```java [실습 8] reply/ReplyService.java. 댓글 삭제
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
@@ -528,9 +522,9 @@ POST http://localhost:8080/api/replies
 
 ### 5.5.2 컨트롤러
 
-`reply/ReplyController.java`에 아래와 같이 메서드를 추가합니다.
+`reply/ReplyController.java`의 `deleteById()`를 아래와 같이 작성합니다.
 
-```java [실습 12] reply/ReplyController.java. 댓글 삭제 엔드포인트
+```java [실습 9] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {
