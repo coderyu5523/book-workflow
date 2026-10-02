@@ -132,7 +132,7 @@
 </div>
 <div class="caption">그림 1-2. 순수 자바와 프레임워크의 차이</div>
 <p>프레임워크에서는 개발의 출발선이 달라집니다. 번거로운 초기 과정을 건너뛰고 곧바로 핵심 기능을 구현할 수 있습니다. 웹 개발에 필수적인 로그인이나 데이터베이스 연동도 검증된 형태로 제공되어 개발 시간이 크게 줄어듭니다.</p>
-<p>또한, 프레임워크는 코드를 배치하는 규칙을 정해둡니다. 일관된 규칙이 적용된 덕분에 다른 사람이 작업한 프로젝트를 열어봐도 전체적인 구조와 역할을 쉽게 파악할 수 있습니다.</p>
+<p>또한 프레임워크가 제시하는 표준적인 구조를 바탕으로 작업하기 때문에, 다른 사람이 만든 프로젝트를 열어봐도 전체적인 구조와 역할을 쉽게 파악할 수 있습니다.</p>
 <h3>1.1.2 제어의 역전</h3>
 <p>프레임워크의 가장 큰 특징은 코드의 호출 방향이 뒤바뀐다는 점입니다. 순수 자바만으로 개발할 때는 개발자가 전체 흐름을 통제하며 필요한 기능을 직접 호출합니다. 하지만 프레임워크 환경에서는 그 반대입니다. 개발자가 정해진 규칙에 맞춰 코드를 준비해 두면, 프레임워크가 필요한 시점에 개발자의 코드를 호출합니다.</p>
 <div class="svg-figure">
@@ -150,11 +150,9 @@
   <circle cx="122" cy="144" r="2" fill="#4f46e5"/>
   <circle cx="122" cy="152" r="2" fill="#4f46e5"/>
   <text x="122" y="176" text-anchor="middle" font-size="8" fill="#3730a3">호출</text>
-  <line x1="136" y1="130" x2="238" y2="120" stroke="#4f46e5" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#c1ioc-ar)"/>
-  <rect x="244" y="96" width="96" height="66" rx="5" fill="#fff" stroke="#475569" stroke-width="1.7"/>
-  <rect x="252" y="104" width="80" height="42" rx="2" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.2"/>
-  <text x="292" y="130" text-anchor="middle" font-size="12" fill="#334155">내 코드</text>
-  <line x1="284" y1="162" x2="300" y2="162" stroke="#475569" stroke-width="4"/>
+  <line x1="136" y1="130" x2="238" y2="130" stroke="#4f46e5" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#c1ioc-ar)"/>
+  <rect x="244" y="108" width="96" height="44" rx="5" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <text x="292" y="135" text-anchor="middle" font-size="11" fill="#334155">내 코드</text>
   <text x="200" y="222" text-anchor="middle" font-size="11" font-weight="700" fill="#334155">개발자가 호출한다</text>
   <rect x="444" y="98" width="60" height="64" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
   <text x="474" y="128" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">프레임</text>
@@ -172,7 +170,7 @@
 </div>
 <div class="caption">그림 1-3. 호출 방향의 역전</div>
 <p>이처럼 프로그램의 실행 주도권이 개발자에서 프레임워크로 뒤바뀌는 현상을 <strong>제어의 역전(IoC, Inversion of Control)</strong> 이라고 합니다.</p>
-<p>스프링 역시 이 원칙을 따릅니다. 요청을 받아 담당 코드로 넘기는 일부터 필요한 객체를 만들어 연결하는 일까지, 애플리케이션이 돌아가는 데 필요한 공통 작업을 스프링이 전담합니다. 덕분에 개발자는 핵심 기능에만 집중할 수 있습니다.</p>
+<p>스프링 역시 이 원칙을 따릅니다. 요청을 받아 담당 코드로 넘기는 일부터 필요한 객체를 생성하는 일까지, 애플리케이션이 돌아가는 데 필요한 공통 작업을 스프링이 전담합니다. 덕분에 개발자는 핵심 기능에만 집중할 수 있습니다.</p>
 <h3>1.1.3 리플렉션</h3>
 <p>주도권이 프레임워크로 넘어갔다는 것은, 개발자가 작성한 코드를 스프링이 대신 실행해 준다는 뜻입니다. 하지만 여기에는 큰 문제가 있습니다.</p>
 <p>보통의 자바 프로그램에서는 개발자가 호출할 대상을 코드에 직접 명시합니다. 자신이 만든 클래스이므로 이름을 정확히 알고 있고, <code>new</code> 키워드로 객체를 생성해 필요한 메서드를 호출하면 됩니다.</p>
@@ -223,12 +221,14 @@
 </div>
 <div class="caption">그림 1-5. 스프링의 메서드 탐색</div>
 <p>이 문제를 해결하는 기술이 <strong>리플렉션(Reflection)</strong> 입니다. 리플렉션은 프로그램이 실행되는 도중(런타임)에 클래스와 메서드 정보를 읽고, 객체를 생성하거나 메서드를 호출할 수 있는 자바 기능입니다.</p>
-<h2>1.2 자바 프로젝트 생성</h2>
+<h2>1.2 리플렉션 구현</h2>
+<p>리플렉션이 실제로 어떻게 동작하는지 자바 코드로 직접 확인해 보겠습니다. 가장 단순한 형태의 코드부터 시작해 한 단계씩 기능을 확장해 나갑니다.</p>
+<h3>1.2.1 자바 프로젝트 생성</h3>
 <div class="tip">
 <p><strong>이 책의 실습 방식</strong></p>
 <p>본격적인 실습은 미리 준비해 둔 <strong>start</strong> 레포의 <strong>ch01</strong> 폴더에서 진행합니다. 여기서는 자바 프로젝트를 만들고 실행하는 절차만 먼저 살펴보겠습니다.</p>
 </div>
-<p>먼저 자바를 다룰 확장 프로그램을 설치합니다. 상단 메뉴에서 View &gt; Extensions를 선택합니다.</p>
+<p>이 책은 IDE로 Cursor를 사용합니다. 먼저 자바를 다룰 확장 프로그램을 설치합니다. 상단 메뉴에서 View &gt; Extensions를 선택합니다.</p>
 <div class="chapter-image"><img src="..\assets\CH2\setup\01_extensions-menu.png" alt="" /><div class="caption">그림 1-6. Extensions 메뉴 선택</div></div>
 <p>검색창에 java를 넣어 Extension Pack for Java를 설치합니다.</p>
 <div class="chapter-image"><img src="..\assets\CH2\setup\02_java-pack.png" alt="" /><div class="caption">그림 1-7. Extension Pack for Java</div></div>
@@ -243,9 +243,7 @@
 <p>main 메서드 위에 표시되는 Run을 누르면 프로그램이 실행되고, 콘솔에 Hello, World!가 출력됩니다.</p>
 <div class="chapter-image"><img src="..\assets\CH1\setup\02_run-button.png" alt="" /><div class="caption">그림 1-9. main 메서드의 Run 버튼</div></div>
 <p>start 레포의 <code>ch01</code>처럼 한 프로젝트 안에 main 메서드가 여러 개 있으면, 실습하는 폴더의 <code>App.java</code>에서 Run을 누릅니다.</p>
-<h2>1.3 리플렉션 구현</h2>
-<p>리플렉션이 실제로 어떻게 동작하는지 자바 코드로 직접 확인해 보겠습니다. 가장 단순한 형태의 코드부터 시작해 한 단계씩 기능을 확장해 나갑니다.</p>
-<h3>1.3.1 if-else 라우팅</h3>
+<h3>1.2.2 if-else 라우팅</h3>
 <p>가장 기본적인 요청 처리 방식은 들어온 요청 주소를 if 문으로 비교하여 알맞은 메서드를 직접 호출하는 것입니다. 먼저 게시글을 다루는 <strong>BoardController</strong>에 등록(insert), 수정(update), 삭제(delete) 메서드를 작성하겠습니다. 각 메서드는 호출될 때 콘솔에 자신의 이름을 출력합니다.</p>
 <p><code>ex01/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> ex01/BoardController.java. 요청을 처리할 컨트롤러</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">BoardController</span><span class="w"> </span><span class="p">{</span>
@@ -290,7 +288,7 @@
 <span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span>
 <span class="p">}</span></div>
 <p>컨트롤러에 <code>select()</code> 메서드를 추가했지만, 정작 main 메서드에는 /select 주소를 처리할 분기문이 없습니다. 이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다. 이처럼 컨트롤러뿐만 아니라 main 메서드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
-<h3>1.3.2 어노테이션과 리플렉션</h3>
+<h3>1.2.3 어노테이션과 리플렉션</h3>
 <p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 어노테이션과 리플렉션입니다.</p>
 <p>main 메서드에서 주소를 비교하는 대신, 각 메서드 위에 담당할 주소를 표식으로 붙여 둡니다. 클래스나 메서드에 붙이는 이 표식을 <strong>어노테이션(Annotation)</strong> 이라고 합니다.</p>
 <p>프로그램이 실행되면 리플렉션이 컨트롤러의 메서드를 모두 확인해 이 표식을 읽고, 요청 주소와 일치하는 메서드를 찾아 호출합니다.</p>
@@ -407,7 +405,7 @@
 <p>이제 main 메서드에 컨트롤러의 메서드 이름이 없어도, 리플렉션이 실행 중에 어노테이션을 읽어 요청 주소와 맞는 메서드를 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\02_reflection.png" alt="" /><div class="caption">그림 1-12. 리플렉션 실행 결과</div></div>
 <p>따라서 새 메서드에는 어노테이션만 추가하면 되고, main 메서드는 고치지 않아도 됩니다.</p>
-<h3>1.3.3 컴포넌트 스캔</h3>
+<h3>1.2.4 컴포넌트 스캔</h3>
 <p>현재 구조는 main 메서드에서 개발자가 직접 컨트롤러 객체를 생성하고 있습니다. 컨트롤러가 하나일 때는 괜찮지만, 게시판이나 회원처럼 기능이 늘어나면 매번 객체 생성 코드를 추가해야 합니다. 객체 생성을 개발자가 직접 관리하면 컨트롤러가 늘어날 때마다 main 메서드를 계속 수정해야 합니다.</p>
 <p>이를 극복하려면 개발자가 직접 객체를 만드는 대신, 프로그램 실행 중에 <strong>어노테이션이 붙은 클래스를 찾아 자동으로 객체를 생성</strong>하는 구조가 필요합니다. 이러한 기능을 <strong>컴포넌트 스캔(Component Scan)</strong> 이라고 부릅니다.</p>
 <div class="svg-figure">
@@ -525,8 +523,8 @@
 <p>실행하면 콘솔에 <code>ex03</code> 폴더 안의 파일 이름이 하나씩 출력되고, 그중 <strong>@Controller</strong>가 붙은 클래스가 객체로 등록됩니다. 이어서 <code>findUri()</code>가 등록된 객체에서 주소가 /delete인 <code>delete()</code>를 찾아 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\03_component-scan.png" alt="" /><div class="caption">그림 1-14. 컴포넌트 스캔 실행 결과</div></div>
 <p>이제 개발자는 클래스에는 <strong>@Controller</strong>를, 메서드에는 <strong>@RequestMapping</strong>을 추가하면 됩니다. 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 대신 처리합니다.</p>
-<h2>1.4 객체 생성과 연결</h2>
-<h3>1.4.1 빈과 컨테이너</h3>
+<h2>1.3 객체 생성과 연결</h2>
+<h3>1.3.1 빈과 컨테이너</h3>
 <p>스프링 프레임워크의 가장 핵심적인 역할은 개발자 대신 객체를 생성하고 관리하는 것입니다. 애플리케이션이 실행되면 스프링은 컴포넌트 스캔을 통해 어노테이션이 붙은 클래스를 찾고, 리플렉션을 활용해 자동으로 객체를 생성합니다.</p>
 <p>이때 만들어진 객체들을 모아두고 관리하는 전용 공간을 <strong>스프링 컨테이너(Spring Container)</strong>, 컨테이너 안에 보관된 객체를 <strong>빈(Bean)</strong> 이라고 부릅니다.</p>
 <div class="svg-figure">
@@ -567,7 +565,7 @@
 </svg>
 </div>
 <div class="caption">그림 1-15. 스프링 컨테이너와 빈</div>
-<h3>1.4.2 의존성 주입</h3>
+<h3>1.3.2 의존성 주입</h3>
 <p>그렇다면 이렇게 만들어진 빈들은 어떻게 서로 기능을 주고받을까요? 한 객체가 다른 객체의 기능을 필요로 할 때, 그 객체에 <strong>의존성을 가진다</strong>고 합니다. 이때 필요한 객체를 직접 생성해서 쓰면 객체 간의 결합도가 높아져, 나중에 코드를 고치거나 테스트하기가 매우 까다로워집니다.</p>
 <p>스프링은 이 문제를 <strong>의존성 주입(Dependency Injection)</strong> 으로 해결합니다. 개발자가 필요한 객체를 직접 만들지 않고 코드에 선언만 해두면, 컨테이너가 실행될 때 알맞은 빈을 찾아 넣어 주는 방식입니다.</p>
 <div class="svg-figure">
@@ -600,7 +598,7 @@
 </div>
 <div class="caption">그림 1-16. 컨테이너의 빈 주입</div>
 <p>스프링 컨테이너가 객체를 만들고 주입하는 일을 대신 처리합니다. 덕분에 개발자는 필요한 빈을 선언만 하면 되고, 코드의 결합도 역시 낮아집니다.</p>
-<h2>1.5 스프링의 요청 흐름</h2>
+<h2>1.4 스프링의 요청 흐름</h2>
 <p>요청이 서버에 도착해서 컨트롤러에 전달되기까지 어떤 단계를 거치는지 따라가 보겠습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트의 요청이 아파치 웹 서버와 톰캣을 지나 필터를 거친 뒤, 스프링 컨테이너의 디스패처 서블릿이 컨트롤러를 리플렉션으로 호출하고, 응답은 같은 경로를 거꾸로 지난다.">
@@ -641,7 +639,7 @@
 <li><strong>디스패처 서블릿</strong>. 필터를 무사히 통과한 요청은 <strong>디스패처 서블릿(DispatcherServlet)</strong> 으로 들어옵니다. 디스패처 서블릿은 스프링으로 들어오는 모든 요청을 맨 앞에서 가로챈 뒤, 요청 주소(URL)를 분석하여 이를 담당할 가장 적절한 컨트롤러를 찾아 길을 안내해 줍니다.</li>
 <li><strong>컨트롤러 호출</strong>. 어떤 주소를 어떤 컨트롤러에 연결할지 실행 중에 찾아내는 일은 스프링이 리플렉션으로 대신 처리합니다. 따라서 개발자는 컨트롤러 코드만 작성해 두면 됩니다.</li>
 </ol>
-<h2>1.6 학습 지도</h2>
+<h2>1.5 학습 지도</h2>
 <p>이 책의 학습 여정은 다섯 챕터로 이어집니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="산 등반으로 본 학습 여정. 챕터 2 게시판 만들기에서 시작해 챕터 5 댓글 추가 정상까지 네 캠프를 차례로 오른다.">
