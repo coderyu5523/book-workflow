@@ -31,7 +31,6 @@ public class App {
                 }
             }
         }
-        System.out.println("--------------------------------");
         findUri(instances,"/delete");
     }
    

@@ -223,10 +223,11 @@
 <p>이 문제를 해결하는 기술이 <strong>리플렉션(Reflection)</strong> 입니다. 리플렉션은 프로그램이 실행되는 도중(런타임)에 클래스와 메서드 정보를 읽고, 객체를 생성하거나 메서드를 호출할 수 있는 자바 기능입니다.</p>
 <h2>1.2 리플렉션 구현</h2>
 <p>리플렉션이 실제로 어떻게 동작하는지 자바 코드로 직접 확인해 보겠습니다. 가장 단순한 형태의 코드부터 시작해 한 단계씩 기능을 확장해 나갑니다.</p>
+<p>실습 전 자바 프로젝트 생성 방법을 알아보겠습니다.</p>
 <h3>1.2.1 자바 프로젝트 생성</h3>
 <div class="tip">
 <p><strong>이 책의 실습 방식</strong></p>
-<p>본격적인 실습은 미리 준비해 둔 <strong>start</strong> 레포의 <strong>ch01</strong> 폴더에서 진행합니다. 여기서는 자바 프로젝트를 만들고 실행하는 절차만 먼저 살펴보겠습니다.</p>
+<p>실제 실습은 GitHub에서 제공하는 <strong>start</strong> 레포에서 진행하므로, 프로젝트 생성 과정은 가볍게 참고만 하시면 됩니다. 단, 코드 실행을 위해 아래의 <strong>Extension Pack for Java</strong>는 설치해야 합니다.</p>
 </div>
 <p>이 책은 IDE로 Cursor를 사용합니다. 먼저 자바를 다룰 확장 프로그램을 설치합니다. 상단 메뉴에서 View &gt; Extensions를 선택합니다.</p>
 <div class="chapter-image"><img src="..\assets\CH2\setup\01_extensions-menu.png" alt="" /><div class="caption">그림 1-6. Extensions 메뉴 선택</div></div>
@@ -242,7 +243,7 @@
 <span class="p">}</span></div>
 <p>main 메서드 위에 표시되는 Run을 누르면 프로그램이 실행되고, 콘솔에 Hello, World!가 출력됩니다.</p>
 <div class="chapter-image"><img src="..\assets\CH1\setup\02_run-button.png" alt="" /><div class="caption">그림 1-9. main 메서드의 Run 버튼</div></div>
-<p>start 레포의 <code>ch01</code>처럼 한 프로젝트 안에 main 메서드가 여러 개 있으면, 실습하는 폴더의 <code>App.java</code>에서 Run을 누릅니다.</p>
+<p>start 레포의 <code>ch01</code>처럼 한 프로젝트 안에 main 메서드가 여러 개 있으면, 실습하는 폴더의 <code>App.java</code>에서 Run을 눌러 프로젝트를 실행합니다.</p>
 <h3>1.2.2 if-else 라우팅</h3>
 <p>가장 기본적인 요청 처리 방식은 들어온 요청 주소를 if 문으로 비교하여 알맞은 메서드를 직접 호출하는 것입니다. 먼저 게시글을 다루는 <strong>BoardController</strong>에 등록(insert), 수정(update), 삭제(delete) 메서드를 작성하겠습니다. 각 메서드는 호출될 때 콘솔에 자신의 이름을 출력합니다.</p>
 <p><code>ex01/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
@@ -268,7 +269,7 @@
 <span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/insert&quot;</span><span class="p">;</span>
 <span class="w">        </span><span class="n">BoardController</span><span class="w"> </span><span class="n">boardController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardController</span><span class="p">();</span>
 
-<span class="w">        </span><span class="c1">// TODO: uri에 맞는 메서드를 직접 호출한다</span>
+<span class="w">        </span><span class="c1">// uri에 맞는 메서드를 직접 호출한다</span>
 <span class="w">        </span><span class="c1">// 1. 주소가 /insert면 insert() 호출</span>
 <span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="na">equals</span><span class="p">(</span><span class="s">&quot;/insert&quot;</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
 <span class="w">            </span><span class="n">boardController</span><span class="p">.</span><span class="na">insert</span><span class="p">();</span>
@@ -289,7 +290,7 @@
 <span class="p">}</span></div>
 <p>컨트롤러에 <code>select()</code> 메서드를 추가했지만, 정작 main 메서드에는 /select 주소를 처리할 분기문이 없습니다. 이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다. 이처럼 컨트롤러뿐만 아니라 main 메서드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
 <h3>1.2.3 어노테이션과 리플렉션</h3>
-<p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 어노테이션과 리플렉션입니다.</p>
+<p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 <strong>어노테이션</strong>과 <strong>리플렉션</strong>입니다.</p>
 <p>main 메서드에서 주소를 비교하는 대신, 각 메서드 위에 담당할 주소를 표식으로 붙여 둡니다. 클래스나 메서드에 붙이는 이 표식을 <strong>어노테이션(Annotation)</strong> 이라고 합니다.</p>
 <p>프로그램이 실행되면 리플렉션이 컨트롤러의 메서드를 모두 확인해 이 표식을 읽고, 요청 주소와 일치하는 메서드를 찾아 호출합니다.</p>
 <div class="svg-figure">
@@ -384,7 +385,7 @@
 <span class="w">        </span><span class="n">String</span><span class="w"> </span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/update&quot;</span><span class="p">;</span>
 <span class="w">        </span><span class="n">BoardController</span><span class="w"> </span><span class="n">boardController</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">BoardController</span><span class="p">();</span>
 
-<span class="w">        </span><span class="c1">// TODO: 어노테이션을 읽어 uri가 일치하는 메서드를 실행한다</span>
+<span class="w">        </span><span class="c1">// 어노테이션을 읽어 uri가 일치하는 메서드를 실행한다</span>
 <span class="w">        </span><span class="c1">// 1. 컨트롤러가 가진 모든 메서드를 꺼낸다</span>
 <span class="w">        </span><span class="n">Method</span><span class="o">[]</span><span class="w"> </span><span class="n">methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardController</span><span class="p">.</span><span class="na">getClass</span><span class="p">().</span><span class="na">getDeclaredMethods</span><span class="p">();</span>
 <span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">Method</span><span class="w"> </span><span class="n">method</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="n">methods</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -470,7 +471,7 @@
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> ex03/App.java. 폴더를 뒤져 @Controller 클래스를 등록하고 주소로 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
 <span class="w">            </span><span class="kd">throws</span><span class="w"> </span><span class="n">URISyntaxException</span><span class="p">,</span><span class="w"> </span><span class="n">ReflectiveOperationException</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="c1">// TODO: ex03 폴더를 뒤져 @Controller 클래스만 객체로 만든다</span>
+<span class="w">        </span><span class="c1">// ex03 폴더를 뒤져 @Controller 클래스만 객체로 만든다</span>
 <span class="w">        </span><span class="c1">// 1. ex03 폴더의 실제 경로를 찾는다</span>
 <span class="w">        </span><span class="n">ClassLoader</span><span class="w"> </span><span class="n">classLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Thread</span><span class="p">.</span><span class="na">currentThread</span><span class="p">().</span><span class="na">getContextClassLoader</span><span class="p">();</span>
 <span class="w">        </span><span class="n">URL</span><span class="w"> </span><span class="n">packageUrl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">classLoader</span><span class="p">.</span><span class="na">getResource</span><span class="p">(</span><span class="s">&quot;com/reflection/ex03&quot;</span><span class="p">);</span>
@@ -493,8 +494,6 @@
 <span class="w">                </span><span class="p">}</span>
 <span class="w">            </span><span class="p">}</span>
 <span class="w">        </span><span class="p">}</span>
-
-<span class="w">        </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;--------------------------------&quot;</span><span class="p">);</span>
 
 <span class="w">        </span><span class="c1">// 4. 보관한 객체에서 주소에 맞는 메서드를 찾아 실행한다</span>
 <span class="w">        </span><span class="n">findUri</span><span class="p">(</span><span class="n">instances</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;/delete&quot;</span><span class="p">);</span>
@@ -522,11 +521,11 @@
 <p><code>getDeclaredConstructor().newInstance()</code>는 클래스의 기본 생성자를 찾아 객체를 만듭니다. 리플렉션으로 클래스와 생성자를 다루는 동안 생기는 예외는 <strong>ReflectiveOperationException</strong> 하나로 묶어 선언했습니다.</p>
 <p>실행하면 콘솔에 <code>ex03</code> 폴더 안의 파일 이름이 하나씩 출력되고, 그중 <strong>@Controller</strong>가 붙은 클래스가 객체로 등록됩니다. 이어서 <code>findUri()</code>가 등록된 객체에서 주소가 /delete인 <code>delete()</code>를 찾아 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\03_component-scan.png" alt="" /><div class="caption">그림 1-14. 컴포넌트 스캔 실행 결과</div></div>
-<p>이제 개발자는 클래스에는 <strong>@Controller</strong>를, 메서드에는 <strong>@RequestMapping</strong>을 추가하면 됩니다. 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 대신 처리합니다.</p>
+<p>이제 개발자는 클래스와 메서드에 어노테이션만 추가하면 됩니다. 그러면 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 대신 처리합니다. 이러한 기능이 스프링에 내장되어 있어서 개발자는 그대로 사용하기만 하면 됩니다.</p>
 <h2>1.3 객체 생성과 연결</h2>
 <h3>1.3.1 빈과 컨테이너</h3>
-<p>스프링 프레임워크의 가장 핵심적인 역할은 개발자 대신 객체를 생성하고 관리하는 것입니다. 애플리케이션이 실행되면 스프링은 컴포넌트 스캔을 통해 어노테이션이 붙은 클래스를 찾고, 리플렉션을 활용해 자동으로 객체를 생성합니다.</p>
-<p>이때 만들어진 객체들을 모아두고 관리하는 전용 공간을 <strong>스프링 컨테이너(Spring Container)</strong>, 컨테이너 안에 보관된 객체를 <strong>빈(Bean)</strong> 이라고 부릅니다.</p>
+<p>스프링 프레임워크의 가장 핵심적인 역할은 <strong>개발자 대신 객체를 생성하고 관리</strong>하는 것입니다. 애플리케이션이 실행되면 스프링은 컴포넌트 스캔을 통해 어노테이션이 붙은 클래스를 찾고, 리플렉션을 활용해 자동으로 객체를 생성합니다.</p>
+<p>이때 스프링은 만들어진 객체를 <strong>스프링 컨테이너(Spring Container)</strong> 라는 공간에 두고 관리합니다. 이 컨테이너에서 관리하는 객체를 <strong>빈(Bean)</strong> 이라고 합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 660 290" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="어노테이션이 붙은 클래스가 컴포넌트 스캔과 리플렉션을 거쳐, 스프링 컨테이너 안에 빈으로 담겨 있다.">
   <defs>
@@ -566,7 +565,7 @@
 </div>
 <div class="caption">그림 1-15. 스프링 컨테이너와 빈</div>
 <h3>1.3.2 의존성 주입</h3>
-<p>그렇다면 이렇게 만들어진 빈들은 어떻게 서로 기능을 주고받을까요? 한 객체가 다른 객체의 기능을 필요로 할 때, 그 객체에 <strong>의존성을 가진다</strong>고 합니다. 이때 필요한 객체를 직접 생성해서 쓰면 객체 간의 결합도가 높아져, 나중에 코드를 고치거나 테스트하기가 매우 까다로워집니다.</p>
+<p>한 객체가 다른 객체의 기능을 필요로 할 때, 그 객체에 <strong>의존성을 가진다</strong>고 합니다. 이때 필요한 객체를 직접 생성해서 쓰면 객체 간의 결합도가 높아져, 나중에 코드를 고치거나 테스트하기가 매우 까다로워집니다. 그렇다면 스프링에서는 생성된 빈들의 기능을 어떻게 주고받을까요?</p>
 <p>스프링은 이 문제를 <strong>의존성 주입(Dependency Injection)</strong> 으로 해결합니다. 개발자가 필요한 객체를 직접 만들지 않고 코드에 선언만 해두면, 컨테이너가 실행될 때 알맞은 빈을 찾아 넣어 주는 방식입니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="빈 A가 필요한 클래스 B를 선언해 두면, 스프링 컨테이너가 관리하는 C·D·B 클래스 빈 가운데 알맞은 B를 찾아 빈 A에 주입한다.">
@@ -597,39 +596,39 @@
 </svg>
 </div>
 <div class="caption">그림 1-16. 컨테이너의 빈 주입</div>
-<p>스프링 컨테이너가 객체를 만들고 주입하는 일을 대신 처리합니다. 덕분에 개발자는 필요한 빈을 선언만 하면 되고, 코드의 결합도 역시 낮아집니다.</p>
+<p>빈 A는 필요한 객체 B를 선언만 하고, 직접 생성과 주입은 스프링 컨테이너가 합니다. 만약 B를 만드는 방식이 달라지거나 다른 객체로 바뀌더라도 A의 코드를 고칠 필요가 없게 되고, 자연스럽게 객체 간의 결합도 역시 낮아집니다.</p>
 <h2>1.4 스프링의 요청 흐름</h2>
 <p>요청이 서버에 도착해서 컨트롤러에 전달되기까지 어떤 단계를 거치는지 따라가 보겠습니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트의 요청이 아파치 웹 서버와 톰캣을 지나 필터를 거친 뒤, 스프링 컨테이너의 디스패처 서블릿이 컨트롤러를 리플렉션으로 호출하고, 응답은 같은 경로를 거꾸로 지난다.">
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트의 요청이 톰캣의 필터를 거쳐 스프링으로 넘어가면, 디스패처 서블릿이 컨트롤러를 리플렉션으로 호출하고, 응답은 같은 경로를 거꾸로 지난다.">
   <defs>
     <marker id="c1rp-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c1rp-gr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <rect x="168" y="44" width="536" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="186" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣</text>
-  <rect x="318" y="60" width="368" height="148" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
-  <text x="334" y="78" font-size="12" font-weight="800" fill="#0f172a">스프링 컨테이너</text>
+  <rect x="150" y="44" width="130" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="166" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣</text>
+  <rect x="330" y="44" width="374" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="346" y="66" font-size="12" font-weight="800" fill="#0f172a">스프링</text>
   <rect x="16" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="61" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">클라이언트</text>
-  <rect x="186" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="231" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">필터</text>
-  <rect x="338" y="88" width="120" height="102" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="398" y="133" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">디스패처</text>
-  <text x="398" y="152" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">서블릿</text>
-  <rect x="538" y="88" width="120" height="102" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="598" y="133" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="598" y="152" text-anchor="middle" font-size="10" fill="#6b7280">빈 · 내 코드</text>
-  <line x1="110" y1="126" x2="180" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="180" y1="146" x2="110" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <text x="137" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">요청</text>
-  <text x="137" y="162" text-anchor="middle" font-size="10" font-weight="700" fill="#6b7280">응답</text>
-  <line x1="280" y1="126" x2="332" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="332" y1="146" x2="280" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <line x1="462" y1="126" x2="534" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="534" y1="146" x2="462" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <text x="498" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로</text>
-  <text x="498" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">호출</text>
+  <rect x="170" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="215" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">필터</text>
+  <rect x="352" y="88" width="120" height="102" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="412" y="133" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">디스패처</text>
+  <text x="412" y="152" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">서블릿</text>
+  <rect x="560" y="88" width="120" height="102" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="620" y="133" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="620" y="152" text-anchor="middle" font-size="10" fill="#6b7280">빈 · 내 코드</text>
+  <line x1="110" y1="126" x2="164" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="164" y1="146" x2="110" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <text x="128" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">요청</text>
+  <text x="128" y="162" text-anchor="middle" font-size="10" font-weight="700" fill="#6b7280">응답</text>
+  <line x1="264" y1="126" x2="346" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="346" y1="146" x2="264" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <line x1="476" y1="126" x2="554" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="554" y1="146" x2="476" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <text x="515" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로</text>
+  <text x="515" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">호출</text>
 </svg>
 </div>
 <div class="caption">그림 1-17. 요청 처리 흐름</div>
