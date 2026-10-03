@@ -20,9 +20,9 @@
 <body>
 <div class="container">
 <h1>챕터 2. 게시판 CRUD</h1>
-<p>다음 날 저녁, 오픈이는 노트북을 열고 스프링으로 새 프로젝트를 만들어 보기로 했습니다. 스프링이 표식을 읽어 알맞은 코드를 찾아 실행한다는 원리까지는 이해했습니다.</p>
-<p>이제 남은 건 그 원리 위에서 직접 기능을 만드는 일이었습니다. 첫 번째 목표는 게시판이었습니다.</p>
-<p><strong>스프링으로 게시판의 기본 기능을 만들어 보자.</strong></p>
+<p>오픈이는 컴포넌트 스캔으로 대상을 찾고 리플렉션으로 메서드를 호출하는 스프링의 동작 방식을 이해했습니다. 이제 남은 건 기능을 만들어보는 일이었습니다.</p>
+<p>다음 날 저녁, 새 프로젝트를 만들기 위해 노트북을 열었습니다. 첫 번째 목표는 게시판이었습니다.</p>
+<p class="thought">스프링으로 게시판의 기본 기능을 만들어 보자.</p>
 <div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2 한눈에 보기. 클라이언트가 게시글에 대한 다섯 가지 요청(목록·상세·작성·수정·삭제)을 컨트롤러로 보내면, 컨트롤러가 서비스로, 서비스가 리포지토리로 넘기고, 리포지토리가 H2 데이터베이스의 board_tb 테이블을 다룬 뒤 결과가 JSON으로 되돌아온다.">
   <defs>
@@ -99,15 +99,15 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 <tbody>
 <tr>
 <td><strong>Board</strong></td>
-<td>게시글 한 건을 담는 클래스입니다. 데이터베이스의 게시글 표 한 줄에 대응합니다.</td>
+<td>게시글 데이터를 담는 클래스입니다. 데이터베이스의 게시글 테이블과 연결됩니다.</td>
 </tr>
 <tr>
 <td><strong>BoardRepository</strong></td>
-<td>게시글을 데이터베이스에 저장하고, 데이터베이스에서 조회하고 삭제합니다.</td>
+<td>게시글 데이터의 데이터베이스 접근을 담당합니다.</td>
 </tr>
 <tr>
 <td><strong>BoardService</strong></td>
-<td>목록, 상세, 작성, 수정, 삭제의 처리 흐름을 담당합니다.</td>
+<td>비즈니스 로직을 담당합니다.</td>
 </tr>
 <tr>
 <td><strong>BoardController</strong></td>
@@ -121,10 +121,10 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 </table>
 </div>
 <h2>2.1 REST API</h2>
-<p><strong>REST API(Representational State Transfer API)</strong> 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 주소(URI)로 원하는 대상을 가리키고, HTTP 메서드로 그 대상에 할 작업을 나타냅니다.</p>
-<p>이때 주소가 가리키는 것을 <strong>자원(Resource)</strong> 이라고 합니다. 예를 들어 게시판 서버라면 게시글 목록과 1번 게시글이 각각 자원이고, <code>/boards</code>와 <code>/boards/1</code>이 그 주소가 됩니다.</p>
-<h3>2.1.1 REST API 탄생 배경</h3>
-<p>REST API가 왜 지금의 모습이 되었는지, 웹의 발전 과정을 세 단계로 살펴보겠습니다.</p>
+<p><strong>REST API(Representational State Transfer API)</strong> 는 서버와 클라이언트가 데이터를 주고받는 방식입니다. 클라이언트는 원하는 대상의 주소(URI)로 요청을 보내고, 그 대상에 어떤 행위를 할지를 HTTP 메서드로 정합니다.</p>
+<p>이때 주소가 가리키는 것을 <strong>자원(Resource)</strong> 이라고 합니다. 예를 들어 이 책에서는 1번 게시글을 조회할 때 클라이언트가 <code>/api/boards/1</code> 주소에 GET 메서드로 요청을 보냅니다.</p>
+<h3>2.1.1 API 서버의 등장</h3>
+<p>API 서버가 어떻게 자리 잡게 되었는지, 웹 서버가 발전해 온 과정을 세 단계로 살펴보겠습니다.</p>
 <p>초창기의 웹 서버는 미리 만들어 둔 문서나 이미지 같은 정적 자원을 그대로 돌려주는 역할만 했습니다. 브라우저가 특정 주소를 요청하면, 서버는 그 주소에 있는 파일을 찾아 보내주었습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="브라우저와 서버가 마주 보고 있다. 브라우저가 서버로 요청을 보내면, 서버는 문서나 이미지 같은 정적 자원을 그대로 돌려준다.">
@@ -142,7 +142,7 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 </svg>
 </div>
 <div class="caption">그림 2-2. 초창기 서버의 정적 응답</div>
-<p>이후 인터넷이 발전하면서 서버는 단순한 파일 전달을 넘어 WAS(웹 애플리케이션 서버) 형태로 진화했습니다. 요청이 들어올 때마다 서버가 상황에 맞는 HTML 화면을 새로 만들어 응답하기 시작했습니다. 하지만 이때까지만 해도 서버가 만든 HTML 화면을 받아보는 대상은 오직 <strong>웹 브라우저</strong>뿐이었습니다.</p>
+<p>인터넷이 발전하면서 정적인 파일을 반환하던 기존의 방식을 넘어, 동적인 결과를 생성하는 WAS(웹 애플리케이션 서버)가 등장했습니다. WAS는 사용자의 데이터나 상황에 따라 매번 다른 HTML 문서를 실시간으로 만들어 응답했고, 브라우저는 전달받은 HTML을 화면에 렌더링했습니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 760 230" style="max-width:520px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="같은 자리의 브라우저와 서버. 브라우저가 요청을 보내면 서버가 HTML 화면을 만들어 동적 자원으로 돌려준다.">
   <defs>
@@ -183,19 +183,20 @@ start/ch02/src/test/java/com/metacoding/spring/board/
   <line x1="208" y1="273" x2="422" y2="200" stroke="#4f46e5" stroke-width="2.2" marker-start="url(#c2mul-b)" marker-end="url(#c2mul-a)"/>
 </svg>
 </div>
-<div class="caption">그림 2-4. REST API로 자원에 접근하는 여러 기기</div>
-<p>결국 서버는 무거운 화면(HTML) 대신 <strong>데이터</strong> 그 자체만 전달하는 방향으로 변화했습니다. 서버가 HTML이 아닌 JSON이나 XML 같은 데이터를 반환하고, 클라이언트가 이를 받아 화면을 구성하고 로직을 처리하는 방식이 REST API입니다.</p>
-<p>REST API 방식을 활용하면 브라우저뿐 아니라 스마트폰, TV, IoT 기기, 다른 서버에서도 자원에 접근할 수 있어, 다양한 플랫폼에서 활용 가능한 서버로 확장할 수 있습니다.</p>
+<div class="caption">그림 2-4. 하나의 서버를 함께 사용하는 여러 기기</div>
+<p>결국 서버는 무거운 화면(HTML) 대신 <strong>데이터</strong> 그 자체만 전달하는 방향으로 변화했습니다. 서버는 HTML이 아닌 JSON 같은 데이터를 반환하고, 화면 구성은 데이터를 받은 클라이언트가 맡습니다. 이렇게 데이터만 응답하는 서버를 <strong>API 서버</strong>라고 하며, API 서버를 만드는 방식 중 가장 널리 쓰이는 것이 REST API입니다.</p>
+<p>그 결과 브라우저뿐 아니라 스마트폰, TV, IoT 기기, 다른 서버도 하나의 API 서버를 함께 사용할 수 있습니다.</p>
 <h3>2.1.2 JSON</h3>
-<p>그렇다면 서버는 어떤 형식으로 데이터를 넘겨줄까요? 가장 널리 쓰이는 표준 형식은 JSON입니다.</p>
-<p><strong>JSON(JavaScript Object Notation)</strong> 은 데이터를 <strong>키(Key)</strong> 와 <strong>값(Value)</strong> 의 쌍으로 묶어 표현하는 텍스트 형식입니다. 구조가 단순해서 기계뿐만 아니라 사람도 읽고 이해하기 쉽습니다. 게시글 한 건을 JSON으로 표현하면 이런 모습입니다.</p>
+<p>REST API에서 데이터를 전송할 때 가장 널리 쓰이는 형식은 JSON입니다.</p>
+<p><strong>JSON(JavaScript Object Notation)</strong> 은 데이터를 <strong>키(Key)</strong> 와 <strong>값(Value)</strong> 의 쌍으로 묶어 표현하는 텍스트 형식입니다. 다음은 1번 게시글 데이터를 JSON 형태로 표현한 예시입니다.</p>
 <div class="code-block highlight" data-lang="json"><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;첫 번째 게시글&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;안녕하세요&quot;</span>
+<span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;title1&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;content1&quot;</span>
 <span class="p">}</span></div>
+<p>JSON은 구조가 단순해서 기계뿐만 아니라 사람도 읽고 이해하기 쉽고, 용량도 작아 데이터 전송에 주로 사용됩니다.</p>
 <h3>2.1.3 메서드와 주소</h3>
-<p>REST API의 핵심은 <strong>무엇을(주소)</strong>, <strong>어떻게(메서드)</strong> 할 것인가를 명확하게 나누는 데 있습니다. 주소(URI)가 조작할 대상(자원)을 가리킨다면, 그 대상에 어떤 작업을 할지는 HTTP 메서드가 결정합니다.</p>
+<p>REST API의 핵심은 <strong>무엇을(주소)</strong>, <strong>어떻게(메서드)</strong> 할 것인가를 명확하게 나누는 데 있습니다.</p>
 <p>게시판을 예로 들면, 게시글이라는 자원을 다룰 때 주로 다음 네 가지 메서드를 사용합니다.</p>
 <table>
 <thead>
@@ -228,7 +229,6 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 </tr>
 </tbody>
 </table>
-<p>이처럼 <strong>행위(어떻게)</strong> 를 HTTP 메서드로 분리하면 주소에는 <strong>자원(무엇을)</strong> 만 남습니다.</p>
 <p>REST API에는 다른 개발자가 주소만 보고도 어떤 자원을 다루는지 알 수 있도록 자원 이름을 짓는 몇 가지 권장 규칙이 있습니다.</p>
 <table>
 <thead>
@@ -271,7 +271,7 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 <p>먼저 HTTP 요청의 세 부분은 <strong>요청 라인(Request Line)</strong>, <strong>헤더(Header)</strong>, <strong>바디(Body)</strong> 입니다.</p>
 <ul>
 <li><strong>요청 라인</strong>: HTTP 메서드와 주소가 들어갑니다.</li>
-<li><strong>헤더</strong>: 바디에 담긴 데이터의 형식(<code>Content-Type</code>) 등 서버가 참고할 부가 정보가 담깁니다.</li>
+<li><strong>헤더</strong>: 바디에 담긴 데이터의 형식(<code>application/json</code> 등)과 같이 서버가 참고할 부가 정보가 담깁니다.</li>
 <li><strong>바디</strong>: 서버로 보낼 실제 데이터가 담깁니다.</li>
 </ul>
 <div class="svg-figure">
@@ -281,8 +281,8 @@ start/ch02/src/test/java/com/metacoding/spring/board/
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
   <text x="84" y="140" font-size="10.8" fill="#334155">Content-Type: application/json</text>
   <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="10.8" fill="#334155">{ "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "안녕하세요" }</text>
+  <text x="84" y="216" font-size="10.8" fill="#334155">{ "title": "title3",</text>
+  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "content3" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="530" y="66" font-size="11.7" font-weight="700" fill="#0f172a">요청 라인</text>
@@ -299,17 +299,17 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 <ul>
 <li><strong>응답 라인</strong>: 요청이 성공했는지(200 OK), 아니면 문제가 생겼는지를 나타내는 <strong>상태 코드(Status Code)</strong> 가 들어갑니다.</li>
 <li><strong>헤더</strong>: 클라이언트에게 돌려주는 데이터의 형식 등 부가 정보가 담깁니다.</li>
-<li><strong>바디</strong>: 클라이언트가 요청한 실제 데이터가 담깁니다. 게시글 하나를 요청했다면 앞에서 본 JSON이 이 바디에 담겨 옵니다.</li>
+<li><strong>바디</strong>: 요청을 처리한 결과 데이터가 담깁니다. 앞의 게시글 작성 요청이라면 저장된 게시글이 JSON으로 담겨 옵니다.</li>
 </ul>
 <div class="svg-figure">
-<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 게시글 하나를 담은 JSON이 들어 있다.">
+<svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="응답 메시지. 맨 위 응답 라인에 상태 코드 200 OK가 있고, 가운데 헤더에 Content-Type이, 아래 바디에 저장된 게시글을 담은 JSON이 들어 있다.">
   <rect x="60" y="26" width="420" height="248" rx="8" fill="#fff" stroke="#475569" stroke-width="1.8"/>
   <text x="84" y="68" font-size="13.3" font-weight="800" fill="#c2410c">200 OK</text>
   <line x1="60" y1="96" x2="480" y2="96" stroke="#cbd5e1" stroke-width="1.4"/>
   <text x="84" y="140" font-size="10.8" fill="#334155">Content-Type: application/json</text>
   <line x1="60" y1="176" x2="480" y2="176" stroke="#cbd5e1" stroke-width="1.4"/>
-  <text x="84" y="216" font-size="10.8" fill="#334155">{ "id": 1, "title": "첫 번째 게시글",</text>
-  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "안녕하세요" }</text>
+  <text x="84" y="216" font-size="10.8" fill="#334155">{ "id": 3, "title": "title3",</text>
+  <text x="84" y="242" font-size="10.8" fill="#334155">  "content": "content3" }</text>
   <path d="M496,32 L508,32 L508,90 L496,90" fill="none" stroke="#94a3b8" stroke-width="1.4"/>
   <line x1="508" y1="61" x2="520" y2="61" stroke="#94a3b8" stroke-width="1.4"/>
   <text x="530" y="66" font-size="11.7" font-weight="700" fill="#0f172a">응답 라인</text>
@@ -323,7 +323,7 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 </div>
 <div class="caption">그림 2-6. HTTP 응답의 구조</div>
 <h2>2.2 프로젝트 생성과 구조</h2>
-<p>스프링은 자바 기반의 웹 애플리케이션 프레임워크이고, 스프링 부트(Spring Boot)는 그 스프링을 쉽고 빠르게 사용할 수 있도록 초기 설정을 자동화해 주는 도구입니다. 필요한 라이브러리를 묶어서 제공하고 내장 서버도 들어 있어, 개발자는 명령 한 줄로 서버를 실행하고 기능부터 만들면 됩니다.</p>
+<p>스프링은 자바 기반의 웹 애플리케이션 프레임워크이고, 스프링 부트(Spring Boot)는 스프링을 쉽고 빠르게 사용할 수 있도록 초기 설정을 자동화해 주는 도구입니다. 필요한 라이브러리를 제공하고 톰캣 같은 WAS까지 내장하고 있어, 개발자는 복잡한 환경 설정 없이 핵심 기능 구현에만 집중할 수 있습니다.</p>
 <h3>2.2.1 프로젝트 생성</h3>
 <p>먼저 View &gt; Extensions에서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장 프로그램에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.</p>
 <div class="chapter-image"><img src="..\assets\CH2\setup\03_spring-pack.png" alt="" /><div class="caption">그림 2-7. Spring Boot Extension Pack</div></div>

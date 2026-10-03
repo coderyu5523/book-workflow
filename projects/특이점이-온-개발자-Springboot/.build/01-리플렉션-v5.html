@@ -292,7 +292,7 @@
 <h3>1.2.3 어노테이션과 리플렉션</h3>
 <p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 <strong>어노테이션</strong>과 <strong>리플렉션</strong>입니다.</p>
 <p>main 메서드에서 주소를 비교하는 대신, 각 메서드 위에 담당할 주소를 표식으로 붙여 둡니다. 클래스나 메서드에 붙이는 이 표식을 <strong>어노테이션(Annotation)</strong> 이라고 합니다.</p>
-<p>프로그램이 실행되면 리플렉션이 컨트롤러의 메서드를 모두 확인해 이 표식을 읽고, 요청 주소와 일치하는 메서드를 찾아 호출합니다.</p>
+<p>프로그램이 실행되면 리플렉션이 컨트롤러의 메서드를 모두 확인해 어노테이션을 읽고, 요청 주소와 일치하는 메서드를 찾아 호출합니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 32 760 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="if문과 리플렉션의 비교. if문은 등록된 주소 슬래시 insert, 슬래시 delete, 슬래시 update만 알아 요청 슬래시 insert는 실행하지만 등록 안 된 슬래시 select는 실행하지 못한다. 리플렉션은 메서드에 붙은 어노테이션을 읽어 슬래시 insert는 물론 처음 보는 슬래시 select도 실행한다.">
   <defs>
@@ -600,35 +600,35 @@
 <h2>1.4 스프링의 요청 흐름</h2>
 <p>요청이 서버에 도착해서 컨트롤러에 전달되기까지 어떤 단계를 거치는지 따라가 보겠습니다.</p>
 <div class="svg-figure">
-<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트의 요청이 톰캣의 필터를 거쳐 스프링으로 넘어가면, 디스패처 서블릿이 컨트롤러를 리플렉션으로 호출하고, 응답은 같은 경로를 거꾸로 지난다.">
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="클라이언트의 요청이 톰캣 안에서 필터를 거쳐 스프링으로 넘어가면, 디스패처 서블릿이 컨트롤러를 리플렉션으로 호출하고, 응답은 같은 경로를 거꾸로 지난다.">
   <defs>
     <marker id="c1rp-ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c1rp-gr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
   </defs>
-  <rect x="150" y="44" width="130" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="166" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣</text>
-  <rect x="330" y="44" width="374" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="346" y="66" font-size="12" font-weight="800" fill="#0f172a">스프링</text>
+  <rect x="168" y="44" width="536" height="180" rx="10" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="186" y="66" font-size="12" font-weight="800" fill="#0f172a">톰캣</text>
+  <rect x="318" y="60" width="368" height="148" rx="10" fill="#fff" stroke="#cbd5e1" stroke-width="1.6"/>
+  <text x="334" y="78" font-size="12" font-weight="800" fill="#0f172a">스프링</text>
   <rect x="16" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
   <text x="61" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">클라이언트</text>
-  <rect x="170" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="215" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">필터</text>
-  <rect x="352" y="88" width="120" height="102" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
-  <text x="412" y="133" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">디스패처</text>
-  <text x="412" y="152" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">서블릿</text>
-  <rect x="560" y="88" width="120" height="102" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="620" y="133" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">컨트롤러</text>
-  <text x="620" y="152" text-anchor="middle" font-size="10" fill="#6b7280">빈 · 내 코드</text>
-  <line x1="110" y1="126" x2="164" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="164" y1="146" x2="110" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <text x="128" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">요청</text>
-  <text x="128" y="162" text-anchor="middle" font-size="10" font-weight="700" fill="#6b7280">응답</text>
-  <line x1="264" y1="126" x2="346" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="346" y1="146" x2="264" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <line x1="476" y1="126" x2="554" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
-  <line x1="554" y1="146" x2="476" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
-  <text x="515" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로</text>
-  <text x="515" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">호출</text>
+  <rect x="186" y="80" width="90" height="110" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="231" y="140" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">필터</text>
+  <rect x="338" y="88" width="120" height="102" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="398" y="133" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">디스패처</text>
+  <text x="398" y="152" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">서블릿</text>
+  <rect x="538" y="88" width="120" height="102" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="598" y="133" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">컨트롤러</text>
+  <text x="598" y="152" text-anchor="middle" font-size="10" fill="#6b7280">빈 · 내 코드</text>
+  <line x1="110" y1="126" x2="180" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="180" y1="146" x2="110" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <text x="137" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">요청</text>
+  <text x="137" y="162" text-anchor="middle" font-size="10" font-weight="700" fill="#6b7280">응답</text>
+  <line x1="280" y1="126" x2="332" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="332" y1="146" x2="280" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <line x1="462" y1="126" x2="534" y2="126" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c1rp-ar)"/>
+  <line x1="534" y1="146" x2="462" y2="146" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#c1rp-gr)"/>
+  <text x="498" y="104" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">리플렉션으로</text>
+  <text x="498" y="117" text-anchor="middle" font-size="10" font-weight="700" fill="#3730a3">호출</text>
 </svg>
 </div>
 <div class="caption">그림 1-17. 요청 처리 흐름</div>
@@ -636,10 +636,10 @@
 <ol>
 <li><strong>톰캣과 필터</strong>. 톰캣(Tomcat)은 자바 코드를 실행해 동적인 결과를 만들어 내는 <strong>웹 애플리케이션 서버(WAS)</strong> 입니다. 클라이언트가 보낸 통신 요청을 스프링이 이해할 수 있는 객체로 변환해 전달하고, 스프링이 만든 최종 결과를 다시 응답하는 출입문 역할을 합니다. 요청은 스프링으로 넘어가기 전에 먼저 필터(Filter)를 거치는데, 필터에서는 인증이나 인코딩처럼 애플리케이션 전반에 공통으로 필요한 작업을 미리 걸러내어 처리합니다.</li>
 <li><strong>디스패처 서블릿</strong>. 필터를 무사히 통과한 요청은 <strong>디스패처 서블릿(DispatcherServlet)</strong> 으로 들어옵니다. 디스패처 서블릿은 스프링으로 들어오는 모든 요청을 맨 앞에서 가로챈 뒤, 요청 주소(URL)를 분석하여 이를 담당할 가장 적절한 컨트롤러를 찾아 길을 안내해 줍니다.</li>
-<li><strong>컨트롤러 호출</strong>. 어떤 주소를 어떤 컨트롤러에 연결할지 실행 중에 찾아내는 일은 스프링이 리플렉션으로 대신 처리합니다. 따라서 개발자는 컨트롤러 코드만 작성해 두면 됩니다.</li>
+<li><strong>컨트롤러 호출</strong>. 디스패처 서블릿은 찾아낸 컨트롤러의 메서드를 리플렉션으로 호출합니다. 컨트롤러가 반환한 결과는 요청이 지나온 경로를 거꾸로 거쳐 클라이언트에 전달됩니다.</li>
 </ol>
 <h2>1.5 학습 지도</h2>
-<p>이 책의 학습 여정은 다섯 챕터로 이어집니다.</p>
+<p>앞으로의 학습 여정은 네 챕터로 이어집니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="산 등반으로 본 학습 여정. 챕터 2 게시판 만들기에서 시작해 챕터 5 댓글 추가 정상까지 네 캠프를 차례로 오른다.">
   <defs>
@@ -674,14 +674,14 @@
   <text x="278" y="312" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">2</text>
   <text x="294" y="312" font-size="14" font-weight="700" fill="#6b7280">챕터 3</text>
   <text x="294" y="333" font-size="17" font-weight="800" fill="#0f172a">예외 처리</text>
-  <text x="350" y="356" text-anchor="middle" font-size="13" fill="#6b7280">없는 게시글도 안전하게</text>
+  <text x="350" y="356" text-anchor="middle" font-size="13" fill="#6b7280">응답 형식 정리</text>
   <line x1="580" y1="196" x2="580" y2="206" stroke="#cbd5e1" stroke-width="1.2"/>
   <rect x="490" y="206" width="180" height="78" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.4"/>
   <circle cx="508" cy="228" r="9" fill="#ff7849"/>
   <text x="508" y="232" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">3</text>
   <text x="524" y="232" font-size="14" font-weight="700" fill="#6b7280">챕터 4</text>
   <text x="524" y="253" font-size="17" font-weight="800" fill="#0f172a">로그인 추가</text>
-  <text x="580" y="276" text-anchor="middle" font-size="13" fill="#6b7280">본인 게시글만 관리</text>
+  <text x="580" y="276" text-anchor="middle" font-size="13" fill="#6b7280">인증과 인가 처리</text>
   <line x1="840" y1="106" x2="840" y2="116" stroke="#cbd5e1" stroke-width="1.2"/>
   <rect x="740" y="116" width="200" height="78" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
   <circle cx="758" cy="138" r="9" fill="#ff7849"/>
@@ -704,9 +704,9 @@
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
 <li><strong>프레임워크는 공통으로 필요한 뼈대를 미리 갖춘 틀입니다.</strong></li>
-<li><strong>스프링은 컴포넌트 스캔으로 클래스를 찾아 객체를 등록하고, 어노테이션을 읽어 실행할 대상을 결정합니다.</strong> 이처럼 개발자가 아닌 프레임워크가 알맞은 메서드를 찾아 실행하는 구조를 <strong>제어의 역전</strong>이라고 합니다.</li>
+<li><strong>스프링은 컴포넌트 스캔으로 클래스를 찾아 객체를 등록하고, 어노테이션을 읽어 실행할 대상을 결정합니다.</strong> 이처럼 실행 주도권이 개발자가 아닌 프레임워크에 있는 구조를 <strong>제어의 역전</strong>이라고 합니다.</li>
 <li><strong>스프링 컨테이너는 이렇게 생성한 객체(빈)를 보관하다가 필요한 곳에 주입해 줍니다.</strong> 개발자가 객체를 직접 만들지 않으므로, 코드 간의 결합도가 한결 낮아집니다.</li>
-<li><strong>클라이언트의 요청은 톰캣을 거쳐 디스패처 서블릿으로 전달됩니다.</strong> 디스패처 서블릿은 요청 주소를 분석해 담당 컨트롤러를 호출하며, 이때 알맞은 대상을 찾는 작업은 리플렉션이 처리합니다.</li>
+<li><strong>클라이언트의 요청은 톰캣을 거쳐 디스패처 서블릿으로 전달됩니다.</strong> 디스패처 서블릿은 요청 주소를 분석해 담당 컨트롤러를 찾고, 그 메서드를 리플렉션으로 호출합니다.</li>
 </ul>
 </div>
 
