@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="UTF-8"><title>디스패처 서블릿 그림 레퍼런스</title>
+<style>
+body{max-width:980px;margin:0 auto;padding:32px 24px 80px;font-family:"Pretendard","Malgun Gothic",sans-serif;color:#0f172a;background:#fff}
+h2{font-size:18px;margin:36px 0 6px}
+p{font-size:14.5px;line-height:1.75;color:#475569;margin:0 0 12px}
+.card{border:1px solid #cbd5e1;border-radius:10px;padding:14px;background:#fff}
+.card img{max-width:100%;display:block;margin:0 auto}
+.src{font-size:12.5px;color:#64748b;margin-top:8px}
+</style></head><body>
+<h2>A. 번호 흐름 + "스프링이 제공 / 개발자가 작성" 색 구분 (TERASOLUNA 가이드)</h2>
+<p>디스패처 서블릿을 중심에 두고 ①요청부터 ⑧응답까지 번호로 잇습니다. 파란색은 스프링이 제공하는 부분, 보라색은 개발자가 작성하는 부분으로 칠해 "무엇을 대신해 주고 무엇을 내가 쓰는지"를 한 장에 보여 줍니다.</p>
+<div class="card"><img src="ref-ds-terasoluna.png" alt=""><div class="src">TERASOLUNA Server Framework for Java (5.x) Development Guideline, 2.2 Overview of Spring MVC Architecture</div></div>
+<h2>B. 프런트 컨트롤러 그림 (스프링 공식 문서 3.0)</h2>
+<p>v8의 그림 1-18이 이 방식입니다. 프런트 컨트롤러(디스패처 서블릿)가 컨트롤러에 요청을 넘기고, 컨트롤러가 만든 모델을 뷰 템플릿에 넘겨 응답을 렌더링합니다.</p>
+<div class="card"><img src="ref-mvc-spring.png" alt=""><div class="src">Spring Framework 3.0 Reference, 15.2 The DispatcherServlet</div></div>
+<h2>C. 프런트 컨트롤러 도입 전 / 후 비교 (Core J2EE Patterns 계열)</h2>
+<p>도입 전에는 요청마다 따로 받는 처리 코드가 인증·로깅 같은 공통 처리를 각자 반복하고, 도입 후에는 모든 요청이 하나의 입구를 거쳐 공통 처리를 한 번 한 뒤 알맞은 컨트롤러로 나뉩니다. 디스패처 서블릿이 "왜 한 곳에서 모든 요청을 받는지"를 보여 줄 때 쓰는 방식입니다. (원본 그림은 작아서 설명만 둡니다.)</p>
+</body></html>

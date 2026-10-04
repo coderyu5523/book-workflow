@@ -659,6 +659,11 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 
 <span class="w">    </span><span class="c1">// 아래 절에서 메서드를 하나씩 채운다</span>
 <span class="p">}</span></div>
+<div class="tip">
+<p><strong>의존성 주입 방법</strong></p>
+<p>이 책에서는 의존성을 주입받을 때 final 필드와 @RequiredArgsConstructor를 조합하는 방식을 사용합니다.</p>
+<p>@RequiredArgsConstructor는 final 필드를 매개변수로 받는 생성자를 자동으로 만들어 주고, 스프링은 객체를 생성할 때 이 생성자를 통해 필요한 빈을 전달합니다. 이렇게 생성자로 의존성을 주입받으면 필요한 객체가 누락되었을 때 실행 전 컴파일 단계에서 곧바로 오류를 발견할 수 있습니다. 또한 주입된 객체는 final 특성상 도중에 값이 바뀌지 않으므로 안전하게 사용할 수 있습니다.</p>
+</div>
 <h3>2.6.1 게시글 한 건 조회</h3>
 <p><strong>EntityManager</strong>의 <code>find()</code>는 기본 키(PK)로 엔티티 한 건을 조회하는 메서드입니다. 첫 번째 인자에는 조회할 엔티티의 클래스 타입을, 두 번째 인자에는 찾으려는 기본 키 값을 넣어줍니다. 그러면 <code>find()</code>가 조건에 맞는 <strong>Board</strong> 엔티티 한 건을 반환합니다.</p>
 <p><code>board/BoardRepository.java</code>의 <code>findById()</code>를 아래와 같이 작성합니다.</p>
@@ -686,7 +691,7 @@ start/ch02/src/test/java/com/metacoding/spring/board/
 <div class="code-block highlight" data-lang="sql"><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;content3&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="s1">&#39;title3&#39;</span><span class="p">);</span></div>
 <h3>2.6.4 게시글 수정</h3>
-<p>JPA에는 데이터를 수정하는 메서드가 없습니다. 조회해 온 엔티티 객체의 값만 변경하면 변경 내용이 데이터베이스에 자동으로 반영됩니다. 이를 더티체킹(변경 감지)이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.</p>
+<p>JPA에는 데이터를 수정하는 메서드가 없습니다. 대신 조회해 온 엔티티 객체의 값만 변경하면 변경 내용이 데이터베이스에 자동으로 반영됩니다. 이를 <strong>더티체킹(변경 감지)</strong> 이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.</p>
 <h3>2.6.5 게시글 삭제</h3>
 <p>게시글을 삭제할 때는 <code>remove()</code> 메서드를 사용합니다. 이 메서드에 삭제할 엔티티를 넘겨주면 JPA가 이를 삭제 대상으로 표시하고, 데이터베이스에 삭제 쿼리를 전달합니다.</p>
 <p><code>board/BoardRepository.java</code>의 <code>delete()</code>를 아래와 같이 작성합니다.</p>
