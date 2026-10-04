@@ -605,12 +605,6 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 | 서비스(Service) | 리포지토리를 호출해 요청에 필요한 **비즈니스 로직**을 수행합니다 |
 | 리포지토리(Repository) | 엔티티를 데이터베이스에서 조회하고 저장·수정·삭제합니다 |
 
-:::tip
-**Spring MVC와 JSON 응답**
-
-스프링에서 웹 요청을 다루는 기술을 **Spring MVC**라고 부릅니다. 본래는 화면(View), 요청 처리(Controller), 데이터(Model)를 나누는 전통적인 웹 개발 방식에서 유래한 이름입니다. 하지만 이 책에서는 별도의 화면 없이 데이터만 제공하는 API 서버를 만듭니다. 따라서 View 계층 없이, 컨트롤러가 반환한 자바 객체가 JSON 문자열로 변환되어 응답 바디에 담깁니다.
-:::
-
 ## 2.5 공통 응답
 
 `core` 폴더는 프로젝트에 필요한 설정 파일, 도구 파일 등을 모아 놓은 폴더입니다.
@@ -736,9 +730,9 @@ delete from board_tb where id = 2;
 
 ## 2.7 JPQL
 
-JPQL은 데이터베이스 테이블이 아닌 자바 엔티티와 필드 이름을 기준으로 작성하는 JPA 전용 쿼리 언어입니다. 작성된 JPQL은 실행 시점에 JPA가 SQL로 번역하여 데이터베이스에 전달합니다. SELECT, UPDATE, DELETE는 지원하지만 INSERT는 지원하지 않으므로, 새로운 데이터를 추가할 때는 앞서 살펴본 `persist()` 메서드를 사용합니다.
+JPQL은 데이터베이스 테이블이 아닌 자바 엔티티와 필드 이름을 기준으로 작성하는 JPA 전용 쿼리 언어입니다. 작성된 JPQL은 실행 시점에 JPA가 SQL로 번역하여 데이터베이스에 전달합니다.
 
-JPQL은 테이블 이름 대신 엔티티 이름을 적고, 별칭을 사용해 대상을 가리키는 형태로 작성합니다. 앞서 전체 조회에 사용한 쿼리가 바로 이 형태입니다.
+JPQL은 테이블 이름 대신 엔티티 이름을 적고, 별칭을 사용해 대상을 가리키는 형태로 작성합니다. 기본 조회 문법은 다음과 같습니다.
 
 ```java
 select b from Board b
@@ -766,7 +760,7 @@ delete from Board b where b.id = :id
 
 ## 2.8 영속성 컨텍스트
 
-JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티티를 별도 공간에 보관하고 관리합니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. `persist()`로 저장하거나 `find()`로 조회한 엔티티는 영속성 컨텍스트에 보관되는데, 이 상태를 **영속 상태**라고 합니다.
+JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티티를 별도 공간에 보관하고 관리합니다. 이 공간을 **영속성 컨텍스트(Persistence Context)** 라고 부릅니다. **EntityManager**를 통해 저장하거나 조회한 엔티티는 영속성 컨텍스트에 보관되는데, 이 상태를 **영속 상태**라고 합니다.
 
 영속성 컨텍스트의 특징은 크게 세 가지입니다.
 
@@ -805,12 +799,6 @@ JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티
 </div>
 
 *그림 2-20. 첫 조회와 영속화*
-
-처음 조회할 때 전달되는 SQL은 다음과 같습니다.
-
-```sql
-select * from board_tb where id = 1;
-```
 
 반면 같은 게시글을 다시 조회할 때는 데이터베이스를 거치지 않습니다. 영속성 컨텍스트에 보관된 엔티티를 바로 반환하기 때문에, **한 트랜잭션 안에서** 여러 번 조회하더라도 SELECT 쿼리는 최초 한 번만 실행됩니다.
 
@@ -851,45 +839,71 @@ select * from board_tb where id = 1;
 
 우리는 마트에서 물건을 고를 때마다 계산하지 않고, 장바구니에 담은 후 한 번에 결제합니다. 이와 같이 영속성 컨텍스트는 **데이터를 변경하는 SQL을 곧바로 실행하지 않고 내부의 임시 공간(버퍼)에 모은 뒤 한 번에 데이터베이스로 전송합니다**. 이런 방식을 **쓰기 지연(Write Behind)** 이라고 합니다.
 
-`persist()`나 `remove()` 같은 메서드가 실행되면 JPA는 쿼리문을 버퍼에 저장한 후 트랜잭션이 성공하는 시점에 데이터베이스로 전달합니다.
+예를 들어 1번과 2번 게시글을 `remove()`로 삭제하면, JPA는 DELETE 문을 곧바로 전송하지 않고 버퍼에 쌓아 둡니다. 이 시점에 데이터베이스에는 두 게시글이 그대로 남아 있습니다.
 
-<div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 960 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="영속성 컨텍스트의 쓰기 지연. 리포지토리가 persist()로 새 엔티티를 넘기면 영속성 컨텍스트가 그것을 영속 객체로 만들고, insert 문을 곧장 DB로 보내지 않고 버퍼에 저장한다. 이후 flush 시점에 버퍼의 insert 문이 DB로 전송된다.">
+<div class="svg-figure">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="쓰기 지연 첫 단계. 리포지토리가 remove()로 board1과 board2를 차례로 삭제하면 delete SQL이 데이터베이스로 가지 않고 영속성 컨텍스트의 버퍼에 쌓인다. 데이터베이스에는 board1과 board2가 그대로 남아 있다.">
   <defs>
-    <marker id="c2wb-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c2wb1-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="120" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#0f172a">리포지토리</text>
-  <text x="480" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
-  <text x="840" y="34" text-anchor="middle" font-size="16.1" font-weight="800" fill="#0f172a">데이터베이스</text>
-  <rect x="40" y="54" width="160" height="200" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <rect x="340" y="54" width="280" height="200" rx="8" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
-  <rect x="380" y="74" width="200" height="44" rx="7" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="480" y="101" text-anchor="middle" font-size="14.8" fill="#3730a3">board(제목3) 영속 객체</text>
-  <rect x="380" y="176" width="200" height="46" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
-  <text x="480" y="198" text-anchor="middle" font-size="14.8" font-weight="700" fill="#475569">insert SQL</text>
-  <text x="480" y="214" text-anchor="middle" font-size="13.4" fill="#6b7280">버퍼</text>
-  <line x1="480" y1="118" x2="480" y2="174" stroke="#4f46e5" stroke-width="1.6" marker-end="url(#c2wb-a)"/>
-  <text x="600" y="150" text-anchor="middle" font-size="13.4" fill="#4f46e5">2. 버퍼에 insert문 저장</text>
-  <rect x="760" y="54" width="160" height="200" rx="8" fill="#fff" stroke="#475569" stroke-width="1.5"/>
-  <text x="840" y="140" text-anchor="middle" font-size="14.8" fill="#334155">board(제목1)</text>
-  <text x="840" y="162" text-anchor="middle" font-size="14.8" fill="#334155">board(제목2)</text>
-  <text x="840" y="184" text-anchor="middle" font-size="14.8" fill="#3730a3">board(제목3)</text>
-  <line x1="200" y1="96" x2="338" y2="96" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="269" y="88" text-anchor="middle" font-size="13.4" fill="#4f46e5">1. persist()</text>
-  <text x="269" y="114" text-anchor="middle" font-size="13.4" fill="#6b7280">board(제목3, 내용3)</text>
-  <line x1="580" y1="199" x2="758" y2="199" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#c2wb-a)"/>
-  <text x="669" y="191" text-anchor="middle" font-size="13.4" fill="#4f46e5">3. flush()</text>
-  <text x="669" y="216" text-anchor="middle" font-size="13.4" fill="#6b7280">insert 문 전송</text>
+  <text x="80" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">리포지토리</text>
+  <text x="330" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="20" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="240" y="36" width="180" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="252" y="48" width="156" height="104" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="330" y="62" text-anchor="middle" font-size="10.5" font-weight="700" fill="#64748b">버퍼</text>
+  <rect x="264" y="68" width="132" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="330" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">delete SQL</text>
+  <text x="330" y="96" text-anchor="middle" font-size="10" fill="#64748b">board(제목1)</text>
+  <rect x="264" y="108" width="132" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="330" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">delete SQL</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10" fill="#64748b">board(제목2)</text>
+  <line x1="140" y1="85" x2="262" y2="85" stroke="#475569" stroke-width="1.5" marker-end="url(#c2wb1-a)"/>
+  <text x="190" y="77" text-anchor="middle" font-size="10.5" fill="#475569">1. remove()</text>
+  <line x1="140" y1="125" x2="262" y2="125" stroke="#475569" stroke-width="1.5" marker-end="url(#c2wb1-a)"/>
+  <text x="190" y="117" text-anchor="middle" font-size="10.5" fill="#475569">2. remove()</text>
+  <text x="580" y="84" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
+  <text x="580" y="104" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
+  <text x="580" y="124" text-anchor="middle" font-size="11" fill="#334155">board(제목3, 내용3)</text>
+  <text x="580" y="152" text-anchor="middle" font-size="10" fill="#94a3b8">변경 없음</text>
 </svg>
 </div>
 
-*그림 2-22. 쓰기 지연*
+*그림 2-22. 버퍼에 쌓이는 DELETE 문*
 
-`persist()`로 저장한 게시글은 `flush()` 시점에 다음 SQL로 데이터베이스에 저장됩니다.
+이후 트랜잭션이 성공하면 JPA가 버퍼에 쌓인 DELETE 문을 한 번에 데이터베이스로 전송합니다.
 
-```sql
-insert into board_tb (title, content, created_at) values ('제목3', '내용3', now());
-```
+<div class="svg-figure">
+<svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="쓰기 지연 둘째 단계. 트랜잭션이 성공하면 flush()가 버퍼에 쌓인 delete SQL을 한 번에 데이터베이스로 전송하고, board1과 board2가 삭제된다.">
+  <defs>
+    <marker id="c2wb2-a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <text x="185" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#3730a3">영속성 컨텍스트</text>
+  <text x="580" y="22" text-anchor="middle" font-size="12.6" font-weight="800" fill="#0f172a">데이터베이스</text>
+  <rect x="60" y="36" width="250" height="146" rx="9" fill="#f8fafc" stroke="#4f46e5" stroke-width="1.6"/>
+  <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
+  <rect x="107" y="48" width="156" height="104" rx="7" fill="#fff" stroke="#94a3b8" stroke-width="1.4"/>
+  <text x="185" y="62" text-anchor="middle" font-size="10.5" font-weight="700" fill="#64748b">버퍼</text>
+  <rect x="119" y="68" width="132" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="185" y="82" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">delete SQL</text>
+  <text x="185" y="96" text-anchor="middle" font-size="10" fill="#64748b">board(제목1)</text>
+  <rect x="119" y="108" width="132" height="34" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="185" y="122" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">delete SQL</text>
+  <text x="185" y="136" text-anchor="middle" font-size="10" fill="#64748b">board(제목2)</text>
+  <line x1="263" y1="100" x2="518" y2="100" stroke="#4f46e5" stroke-width="2.2" marker-end="url(#c2wb2-a)"/>
+  <text x="415" y="92" text-anchor="middle" font-size="10.5" font-weight="700" fill="#4f46e5">3. 트랜잭션 성공 시 flush()</text>
+  <text x="415" y="116" text-anchor="middle" font-size="10.5" fill="#64748b">delete SQL 함께 전송</text>
+  <text x="580" y="94" text-anchor="middle" font-size="11" fill="#94a3b8">board(제목1, 내용1)</text>
+  <line x1="528" y1="90" x2="632" y2="90" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="580" y="114" text-anchor="middle" font-size="11" fill="#94a3b8">board(제목2, 내용2)</text>
+  <line x1="528" y1="110" x2="632" y2="110" stroke="#94a3b8" stroke-width="1.2"/>
+  <text x="580" y="134" text-anchor="middle" font-size="11" fill="#334155">board(제목3, 내용3)</text>
+</svg>
+</div>
+
+*그림 2-23. 쓰기 지연*
 
 :::tip
 **flush()란?**
@@ -931,7 +945,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 </svg>
 </div>
 
-*그림 2-23. 수정할 게시글 조회와 영속화*
+*그림 2-24. 수정할 게시글 조회와 영속화*
 
 영속화된 엔티티의 값을 바꾸면 스냅샷과 달라집니다. 영속성 컨텍스트는 `flush()` 시점에 이 차이를 감지해 UPDATE 문을 만들고, 데이터베이스로 내보냅니다.
 
@@ -962,7 +976,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 </svg>
 </div>
 
-*그림 2-24. 더티체킹*
+*그림 2-25. 더티체킹*
 
 ## 2.9 단위 테스트
 
@@ -1031,7 +1045,7 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 </svg>
 </div>
 
-*그림 2-25. 단위 테스트가 필요한 이유*
+*그림 2-26. 단위 테스트가 필요한 이유*
 
 자바에서는 이러한 단위 테스트 실행을 **JUnit**이 담당합니다. 테스트 메서드 위에 **@Test** 어노테이션만 추가하면 해당 메서드를 개별적으로 실행할 수 있습니다.
 
@@ -1039,14 +1053,12 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
 
 단위 테스트 코드는 일반적으로 **given-when-then**이라는 세 단계로 나누어 작성합니다. 테스트에 필요한 데이터를 준비하는 **given**, 검증할 대상 메서드를 호출하는 **when**, 그리고 실행 결과가 기대한 대로 나왔는지 확인하는 **then** 순서입니다.
 
-본래 마지막 then 단계에서는 테스트 도구를 사용해 예상값과 실제 결괏값을 코드로 비교하고 검증합니다. 하지만 이 책에서는 편의상 검증 코드 대신, 실행 결과를 콘솔에 출력해 눈으로 확인하는 **eye** 단계를 사용합니다.
-
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 900 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-eye 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, eye는 실행 결과를 화면에 찍어 눈으로 확인하는 단계다. 원래 then은 코드로 결과를 검증하지만 학습 단계에서는 eye로 대체한다.">
+<svg viewBox="0 0 900 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="given-when-then 세 단계. given은 테스트에 필요한 환경과 데이터를 준비하는 단계, when은 검증 대상 기능을 실제로 호출해 실행하는 단계, then은 예상값과 실제 결괏값을 비교해 검증하는 단계다.">
   <defs>
     <marker id="c2gwt-a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
   </defs>
-  <text x="450" y="34" text-anchor="middle" font-size="18.9" font-weight="800" fill="#0f172a">given → when → eye</text>
+  <text x="450" y="34" text-anchor="middle" font-size="18.9" font-weight="800" fill="#0f172a">given → when → then</text>
   <rect x="40" y="66" width="240" height="110" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
   <text x="160" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#3730a3">given</text>
   <text x="160" y="124" text-anchor="middle" font-size="13.8" fill="#334155">준비</text>
@@ -1057,18 +1069,19 @@ insert into board_tb (title, content, created_at) values ('제목3', '내용3', 
   <text x="450" y="124" text-anchor="middle" font-size="13.8" fill="#334155">실행</text>
   <text x="450" y="146" text-anchor="middle" font-size="13.8" fill="#475569">검증 대상 기능을</text>
   <text x="450" y="162" text-anchor="middle" font-size="13.8" fill="#475569">호출한다</text>
-  <rect x="620" y="66" width="240" height="110" rx="10" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
-  <text x="740" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#c2410c">eye</text>
-  <text x="740" y="124" text-anchor="middle" font-size="13.8" fill="#334155">확인</text>
-  <text x="740" y="146" text-anchor="middle" font-size="13.8" fill="#475569">결과를 출력해</text>
-  <text x="740" y="162" text-anchor="middle" font-size="13.8" fill="#475569">눈으로 본다</text>
+  <rect x="620" y="66" width="240" height="110" rx="10" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.7"/>
+  <text x="740" y="98" text-anchor="middle" font-size="17.6" font-weight="800" fill="#3730a3">then</text>
+  <text x="740" y="124" text-anchor="middle" font-size="13.8" fill="#334155">검증</text>
+  <text x="740" y="146" text-anchor="middle" font-size="13.8" fill="#475569">예상값과 결괏값을</text>
+  <text x="740" y="162" text-anchor="middle" font-size="13.8" fill="#475569">비교한다</text>
   <line x1="280" y1="121" x2="328" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
   <line x1="570" y1="121" x2="618" y2="121" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2gwt-a)"/>
-  <text x="740" y="200" text-anchor="middle" font-size="12.6" fill="#6b7280">학습 단계에서는 then 대신 eye를 사용합니다</text>
 </svg>
 </div>
 
-*그림 2-26. given-when-eye 세 단계*
+*그림 2-27. given-when-then 세 단계*
+
+본래 마지막 then 단계에서는 테스트 도구를 사용해 예상값과 실제 결괏값을 코드로 비교하고 검증합니다. 하지만 이 책에서는 편의상 검증 코드 대신, 실행 결과를 콘솔에 출력해 눈으로 확인하는 **eye** 단계를 사용합니다.
 
 :::tip
 **행위 주도 개발(Behavior Driven Development)**
@@ -1080,7 +1093,7 @@ Given-When-Then 패턴은 사용자 관점에서 시스템이 **어떤 행위**�
 
 이제 given-when-eye 형식에 맞춰 실제 테스트를 만들어 보겠습니다.
 
-테스트 코드는 `src/test/java` 아래에 `src/main/java`와 같은 패키지 구조로 작성합니다. `board` 패키지의 `BoardRepositoryTest.java`를 열어 아래 코드를 확인합니다.
+**BoardRepository**를 검증하는 `BoardRepositoryTest.java`는 `src/test/java` 아래, 같은 `board` 패키지에 있습니다. 이 파일을 열어 아래 코드를 확인합니다.
 
 ```java [참고] BoardRepositoryTest.java. 테스트 클래스 골격
 @Import(BoardRepository.class) // 검증할 BoardRepository를 빈으로 등록한다
@@ -1096,6 +1109,12 @@ public class BoardRepositoryTest {
     // 테스트 메서드를 하나씩 채운다
 }
 ```
+
+:::tip
+**테스트 클래스의 의존성 주입**
+
+이 책은 **final** 필드와 **@RequiredArgsConstructor**를 사용해 생성자로 의존성을 주입받습니다. 하지만 테스트 클래스의 객체는 스프링이 아니라 JUnit이 생성하므로, 스프링은 기본적으로 테스트 클래스의 생성자에 빈을 전달하지 않습니다. 그래서 테스트에서는 필드에 **@Autowired**를 추가해, JUnit이 테스트 객체를 생성한 뒤 스프링이 필드에 빈을 주입하도록 합니다.
+:::
 
 먼저 게시글 한 건 조회입니다. 테스트 메서드를 아래와 같이 작성합니다.
 
@@ -1115,8 +1134,11 @@ public class BoardRepositoryTest {
 
 테스트 메서드 왼쪽의 실행 버튼을 누르면 해당 테스트만 실행됩니다.
 
+![](../assets/CH2/setup/09_test-run-button.png)
+*그림 2-28. 테스트 실행 버튼*
+
 ![](../assets/CH2/terminal/07_test-findbyid.png)
-*그림 2-27. 한 건 조회 실행 결과*
+*그림 2-29. 한 건 조회 실행 결과*
 
 전체 게시글 조회는 결과가 여러 개의 엔티티로 반환되므로, 이를 담기 위해 List 타입을 사용합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
@@ -1136,7 +1158,7 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/08_test-findall.png)
-*그림 2-28. 전체 조회 실행 결과*
+*그림 2-30. 전체 조회 실행 결과*
 
 저장 테스트는 `save()`를 호출한 뒤, `findAll()`로 목록을 조회해 새 게시글이 추가되었는지 확인합니다. 테스트 메서드를 아래와 같이 작성합니다.
 
@@ -1160,11 +1182,11 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/09_test-save.png)
-*그림 2-29. 저장 실행 결과*
+*그림 2-31. 저장 실행 결과*
 
 수정 테스트에서는 update 메서드 없이 더티체킹으로 값을 수정합니다.
 
-실제 서비스에서는 트랜잭션이 끝날 때 JPA가 `flush()`를 실행하지만, 테스트에서는 검증하는 시점에 트랜잭션이 아직 끝나지 않았으므로 `flush()`를 직접 호출합니다. 그리고 `clear()`를 활용해 영속성 컨텍스트를 비운 후, 데이터베이스의 값을 조회합니다. 테스트 메서드를 아래와 같이 작성합니다.
+테스트는 트랜잭션이 끝나기 전에 결과를 확인하므로 `flush()`를 직접 호출해 데이터베이스에 반영해야 합니다. 그리고 `clear()`로 영속성 컨텍스트를 비운 뒤 데이터베이스에서 다시 조회합니다.
 
 ```java [실습 8] BoardRepositoryTest.java. 수정과 더티체킹
     @Test
@@ -1175,7 +1197,7 @@ public class BoardRepositoryTest {
         Board board = boardRepository.findById(id);
         board.setTitle("title-update");
         board.setContent("Update-test");
-        em.flush();
+        em.flush(); // 변경 내용을 데이터베이스에 강제로 반영한다
         em.clear(); // 영속성 컨텍스트를 강제로 비운다
         // eye
         Board result = boardRepository.findById(id);
@@ -1186,7 +1208,7 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/10_test-update.png)
-*그림 2-30. 수정 실행 결과*
+*그림 2-32. 수정 실행 결과*
 
 게시글 삭제 테스트를 아래와 같이 작성합니다.
 
@@ -1207,7 +1229,7 @@ public class BoardRepositoryTest {
 ```
 
 ![](../assets/CH2/terminal/11_test-delete.png)
-*그림 2-31. 삭제 실행 결과*
+*그림 2-33. 삭제 실행 결과*
 
 이렇게 단위 테스트로 리포지토리만 따로 검증하면 서버를 실행하지 않아도 기능이 의도대로 동작하는지 확인할 수 있습니다.
 
@@ -1219,7 +1241,7 @@ public class BoardRepositoryTest {
 
 ### 2.10.1 서비스
 
-먼저 서비스를 작성합니다. 서비스는 리포지토리를 주입받고, `게시글목록()`에서 리포지토리의 `findAll()`을 호출해 결과를 반환합니다.
+서비스 계층을 작성해 보겠습니다. 서비스는 컨트롤러와 리포지토리 사이에서 비즈니스 로직을 처리하며, 데이터 작업 시 리포지토리를 호출합니다. 게시글 목록은 따로 처리할 로직이 없어 리포지토리의 조회 결과를 그대로 반환합니다.
 
 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
@@ -1260,7 +1282,7 @@ public class BoardController {
 
 ### 2.10.3 API 요청
 
-애플리케이션을 실행합니다.
+터미널에 아래의 명령어를 입력해 애플리케이션을 실행합니다.
 
 ```bash [터미널] 애플리케이션 실행
 ./gradlew bootRun
@@ -1269,12 +1291,12 @@ public class BoardController {
 서버를 실행했으니, 이제 API를 호출해 잘 동작하는지 확인해 보겠습니다. 이 책에서는 브라우저에서 API를 호출하는 도구인 **Hoppscotch**(https://hoppscotch.io/)를 사용합니다.
 
 ![](../assets/CH2/setup/07_hoppscotch-home.png)
-*그림 2-32. Hoppscotch 화면*
+*그림 2-34. Hoppscotch 화면*
 
-Hoppscotch는 브라우저 보안 때문에 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, 설정 > Interceptor에서 이 확장 프로그램을 선택합니다.
+Hoppscotch는 브라우저 보안 때문에 localhost로 바로 요청을 보내지 못합니다. 그래서 요청을 대신 전달해 주는 **Hoppscotch Browser Extension**을 Chrome 웹 스토어에서 설치하고, **설정 > Interceptor**에서 확장 프로그램을 선택합니다.
 
 ![](../assets/CH2/setup/08_hoppscotch-interceptor.png)
-*그림 2-33. Browser Extension 인터셉터 설정*
+*그림 2-35. Browser Extension 인터셉터 설정*
 
 확장 프로그램을 설치했다면 게시글 목록 API를 호출합니다.
 
@@ -1283,7 +1305,7 @@ GET http://localhost:8080/api/boards
 ```
 
 ![](../assets/CH2/terminal/01_api-response.png)
-*그림 2-34. 게시글 목록 응답*
+*그림 2-36. 게시글 목록 응답*
 
 ## 2.11 게시글 상세
 
@@ -1318,7 +1340,7 @@ GET http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/02_board-detail.png)
-*그림 2-35. 게시글 상세 응답*
+*그림 2-37. 게시글 상세 응답*
 
 ## 2.12 게시글 추가
 
@@ -1361,10 +1383,10 @@ GET http://localhost:8080/api/boards/1
 
 예를 들어 게시글을 작성했을 때 처리 결과를 돌려주지 않으면, 변경된 내용을 확인하기 위해 사용자가 직접 새로고침을 하거나 서버에 데이터를 다시 요청해야 합니다. 반면 완성된 데이터를 바로 응답받으면 추가적인 통신 없이 화면을 업데이트할 수 있습니다.
 
-결과적으로 불필요한 네트워크 낭비를 막고 사용자 경험을 높이기 위해 데이터를 반환하는 것이 좋습니다.
+결과적으로 불필요한 네트워크 낭비를 막고 사용자 경험을 높이기 위해 데이터를 응답하는 것이 좋습니다.
 :::
 
-본문 탭에서 컨텐츠 종류를 application/json으로 선택한 뒤, 제목과 내용을 담아 게시글 추가 API를 호출합니다.
+Hoppscotch의 본문 탭에서 컨텐츠 종류를 application/json으로 선택한 뒤, 제목과 내용을 담아 게시글 추가 API를 호출합니다.
 
 ```json [Hoppscotch] 게시글 추가
 POST http://localhost:8080/api/boards
@@ -1376,7 +1398,7 @@ POST http://localhost:8080/api/boards
 ```
 
 ![](../assets/CH2/terminal/03_board-save.png)
-*그림 2-36. 게시글 추가 응답*
+*그림 2-38. 게시글 추가 응답*
 
 ## 2.13 게시글 수정
 
@@ -1391,7 +1413,7 @@ POST http://localhost:8080/api/boards
     public Board 게시글수정(Integer boardId, Board requestBoard) {
         // 1. 수정할 게시글을 조회해 영속 상태로 가져온다
         Board board = boardRepository.findById(boardId);
-        // 2. 값만 바꾼다. save() 호출이 없다
+        // 2. 데이터 수정
         board.setTitle(requestBoard.getTitle());
         board.setContent(requestBoard.getContent());
         return board;
@@ -1425,7 +1447,7 @@ PUT http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/04_board-update.png)
-*그림 2-37. 게시글 수정 응답*
+*그림 2-39. 게시글 수정 응답*
 
 ## 2.14 게시글 삭제
 
@@ -1464,7 +1486,7 @@ DELETE http://localhost:8080/api/boards/1
 ```
 
 ![](../assets/CH2/terminal/05_board-delete.png)
-*그림 2-38. 게시글 삭제 응답*
+*그림 2-40. 게시글 삭제 응답*
 
 실습이 끝난 서버는 종료합니다.
 
@@ -1475,7 +1497,7 @@ DELETE http://localhost:8080/api/boards/1
 :::remember
 **이것만은 기억하자**
 
-- **JPA는 객체와 테이블 사이를 연결합니다.** 테이블이 아니라 엔티티와 필드 이름으로 JPQL을 작성하면 JPA가 이를 SQL로 번역해 데이터베이스에 전달합니다.
+- **JPA는 객체와 테이블 사이를 연결합니다.** 객체를 저장·조회·수정·삭제하면 JPA가 알맞은 SQL을 생성해 실행하고, 조회한 데이터는 다시 객체에 담아 반환합니다.
 - **영속성 컨텍스트는 조회한 엔티티를 트랜잭션 동안 관리합니다.** 같은 엔티티를 다시 조회하면 캐시에 있는 것을 반환하고, 변경 쿼리는 버퍼에 모았다가 `flush()` 시점에 내보냅니다.
 - **애플리케이션은 컨트롤러, 서비스, 리포지토리 세 계층으로 나눕니다.** 컨트롤러는 요청을 받고, 서비스는 트랜잭션 내에서 비즈니스 로직을 처리하며, 리포지토리는 데이터베이스를 다룹니다.
 :::
