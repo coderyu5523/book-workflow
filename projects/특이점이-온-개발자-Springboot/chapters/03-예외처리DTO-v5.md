@@ -1,6 +1,6 @@
 # 챕터 3. 예외 처리와 DTO
 
-게시판 기본 기능을 완성한 오픈이는 다음 날 뿌듯한 마음으로 선배에게 결과물을 보여주었습니다. 선배는 게시글 목록과 상세 조회 기능을 차례로 확인하더니, 이번에는 게시글 번호를 999로 바꿔 다시 조회했습니다. 그러자 상태 코드는 여전히 200(성공)을 반환했지만, 정작 응답에 담긴 게시글 데이터는 null이었습니다.
+게시판 기본 기능을 완성한 오픈이는 다음 날 뿌듯한 마음으로 선배에게 결과물을 보여주었습니다. 선배는 게시글 목록과 상세 조회 기능을 차례로 확인하더니, 이번에는 게시글 번호를 999로 바꿔 다시 조회했습니다. 그러자 상태 코드는 여전히 200(성공)이었지만, 정작 응답에 담긴 게시글 데이터는 null이었습니다.
 
 *데이터베이스에 없는 게시글인데 오류가 나지 않고 왜 성공으로 응답하지?*
 
@@ -85,11 +85,11 @@ start/ch03/src/main/java/com/metacoding/spring/
 
 ## 3.1 요청 DTO
 
-챕터 2의 컨트롤러는 요청을 **Board** 엔티티로 직접 받고, 응답할 때도 엔티티를 그대로 반환합니다. 하지만 실무에서는 엔티티를 요청이나 응답에 직접 사용하지 않습니다. 엔티티는 데이터베이스의 테이블 구조와 동일해서, 그대로 사용할 경우 응답에 불필요한 데이터가 노출되거나 테이블 구조가 변경될 때 예상치 못한 오류가 발생할 수 있기 때문입니다. 따라서 클라이언트와 주고받을 때는 필요한 데이터만 담아서 전달할 전용 객체를 사용해야 합니다.
+챕터 2의 컨트롤러는 요청을 **Board** 엔티티로 직접 받고, 응답할 때도 엔티티를 그대로 반환합니다. 하지만 **실무에서는 엔티티를 요청이나 응답에 직접 사용하지 않습니다**. 엔티티는 데이터베이스의 테이블 구조와 동일해서, 그대로 사용할 경우 응답에 불필요한 데이터가 노출되거나 테이블 구조가 변경될 때 예상치 못한 오류가 발생할 수 있기 때문입니다. 따라서 클라이언트와 주고받을 때는 **필요한 데이터만 담아서 전달할 전용 객체**를 사용해야 합니다.
 
 ### 3.1.1 DTO
 
-계층 사이에서 데이터 전달만을 목적으로 하는 객체를 **DTO(Data Transfer Object)** 라고 합니다. 컨트롤러와 서비스처럼 서로 다른 계층 사이에서 필요한 값만 담아 전달합니다. DTO를 사용하면 요청으로 받을 값과 응답으로 보낼 값을 필요한 형태로 정할 수 있습니다.
+계층 사이에서 데이터 전달만을 목적으로 하는 객체를 **DTO(Data Transfer Object)** 라고 합니다. 컨트롤러와 서비스처럼 서로 다른 계층이 필요한 데이터만 주고받을 때 사용하며, 이를 통해 요청과 응답 데이터를 원하는 형태로 구성할 수 있습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽 Board 엔티티는 id, title, content, createdAt 네 값을 담고 있고, 오른쪽 DTO는 boardId, title, content 세 값만 담고 있다. 화살표가 왼쪽에서 오른쪽으로 이어지며 필요한 값만 담는다고 적혀 있다.">
@@ -112,11 +112,11 @@ start/ch03/src/main/java/com/metacoding/spring/
 </svg>
 </div>
 
-*그림 3-2. 엔티티와 DTO가 담는 값*
+*그림 3-2. 엔티티와 DTO의 비교*
 
 ### 3.1.2 엔티티 생성자
 
-데이터베이스에 저장되는 대상은 영속성 컨텍스트가 관리하는 엔티티입니다. 따라서 요청으로 받은 DTO를 데이터베이스에 저장하려면 **Board** 클래스의 생성자로 엔티티를 생성해야 합니다.
+요청으로 전달받은 DTO 데이터를 JPA를 통해 저장하려면 엔티티로 변환하는 과정이 필요합니다. 따라서 **Board** 클래스에 DTO의 값으로 엔티티를 만드는 생성자를 추가합니다.
 
 ```java [참고] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor // 기본 생성자 추가
@@ -136,7 +136,7 @@ public class Board {
 }
 ```
 
-클래스에 생성자를 새로 정의하면 자바가 자동으로 제공하던 기본 생성자가 사라집니다. 하지만 JPA 엔티티는 기본 생성자가 반드시 있어야 하므로, **@NoArgsConstructor** 어노테이션을 함께 붙입니다.
+생성자 위에 **@Builder**를 붙이면 빌더 패턴으로 객체를 생성할 수 있으며, 이 빌더는 주로 요청 DTO를 엔티티로 변환할 때 쓰입니다. 클래스에 생성자를 직접 정의하면 자바가 자동으로 만들어 주던 기본 생성자가 사라집니다. JPA 엔티티는 기본 생성자가 반드시 필요하므로 **@NoArgsConstructor**를 붙여 기본 생성자를 추가합니다.
 
 :::tip
 **빌더 패턴(Builder Pattern)이란?**
@@ -176,12 +176,13 @@ public class Board {
 
 *그림 3-3. 요청 데이터와 DTO*
 
-다만 게시글 추가 요청을 받는 **SaveDTO**는 값만 담은 일반 객체라서, 그대로는 데이터베이스에 저장할 수 없습니다. 그래서 DTO 안에 엔티티로 바꾸는 `toEntity()`를 추가합니다.
+게시글 추가와 수정을 위한 **SaveDTO**와 **UpdateDTO**를 정의합니다. 이 중 **SaveDTO**는 JPA가 관리할 수 있는 엔티티로 변환하도록 내부에 `toEntity()`를 추가합니다.
 
 `board/BoardRequest.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 1] board/BoardRequest.java. 요청 DTO와 엔티티 변환
 public class BoardRequest {
+    // 게시글 추가 요청 DTO
     public record SaveDTO(String title, String content) {
 
         // DTO를 엔티티로 변환한다
@@ -193,6 +194,7 @@ public class BoardRequest {
         }
     }
 
+    // 게시글 수정 요청 DTO
     public record UpdateDTO(String title, String content) {
     }
 }
@@ -202,14 +204,14 @@ public class BoardRequest {
 
 ## 3.2 응답 DTO
 
-응답 DTO는 클라이언트에게 내보낼 값만 담는 클래스입니다. 서비스가 조회한 엔티티를 그대로 반환하지 않고, 이 클래스로 옮겨 담아 반환합니다.
+응답 DTO는 클라이언트에게 응답할 값을 담는 클래스입니다. 서비스가 처리한 결과를 이 클래스에 담습니다.
 
 `board/BoardResponse.java`를 열어 아래와 같이 작성합니다.
 
 ```java [실습 2] board/BoardResponse.java. 응답 DTO
 public class BoardResponse {
 
-    // 1. 공통 DTO. 엔티티를 받아 보여줄 값만 담는다
+    // 1. 공통 DTO. 엔티티를 받아 보여줄 값을 담는다
     public record DTO(Integer boardId, String title, String content) {
 
         public DTO(Board board) {
@@ -231,9 +233,9 @@ public class BoardResponse {
 
 ## 3.3 JpaRepository 적용
 
-챕터 2에서는 리포지토리에 **EntityManager**를 주입받아 저장과 조회, 삭제 메서드를 직접 작성했습니다. 이 기본 동작들은 **JpaRepository**에 이미 들어 있어, 이 인터페이스를 상속하면 스프링이 대신 구현해 줍니다. 메서드를 작성하지 않아도 저장과 조회, 삭제 메서드를 호출할 수 있습니다.
+챕터 2에서는 **EntityManager**를 주입받아 저장, 조회, 삭제 메서드를 직접 구현했습니다. 하지만 **Spring Data JPA**의 **JpaRepository** 인터페이스를 상속하면 이 과정을 더 쉽게 할 수 있습니다. 기본 메서드가 이미 정의되어 있고 스프링이 알아서 구현체를 만들어 주므로, 코드를 직접 작성하지 않고도 바로 호출해 사용할 수 있습니다.
 
-`board/BoardRepository.java`를 열어 아래와 같이 변경합니다.
+`board/BoardRepository.java`를 열어 **JpaRepository**를 상속하도록 아래와 같이 변경합니다.
 
 ```java [실습 3] board/BoardRepository.java. JpaRepository 상속
 public interface BoardRepository extends JpaRepository<Board, Integer> {
@@ -248,10 +250,10 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 | 메서드 | 하는 일 |
 |---|---|
-| **save(엔티티)** | 저장하고 저장된 엔티티를 반환합니다 |
-| **findById(기본 키)** | 기본 키로 한 건을 조회해 **Optional**에 담아 반환합니다 |
-| **findAll()** | 전체를 **List**로 반환합니다 |
-| **delete(엔티티)** | 삭제합니다 |
+| `save(엔티티)` | 엔티티를 데이터베이스에 저장하고, 저장된 엔티티를 반환합니다 |
+| `findById(기본 키)` | 기본 키로 엔티티 한 건을 조회해 **Optional**에 담아 반환합니다 |
+| `findAll()` | 테이블의 모든 엔티티를 조회해 **List**로 반환합니다 |
+| `delete(엔티티)` | 엔티티를 데이터베이스에서 삭제합니다 |
 
 ## 3.4 예외 처리 추가
 
@@ -300,7 +302,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 예외를 넘겨받은 톰캣은 오류 응답을 만들기 위해 스프링 부트에 설정된 `/error` 주소로 요청을 다시 보냅니다. 그러면 스프링 부트의 **기본 오류 컨트롤러(BasicErrorController)** 가 이를 받아 기본 오류 정보를 담아 응답합니다.
 
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 910 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5. 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. 6. 기본 오류 컨트롤러가 만든 500 응답이 디스패처 서블릿과 톰캣을 거쳐 클라이언트에게 돌아간다.">
+<svg viewBox="0 0 910 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5. 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. 6. 기본 오류 컨트롤러가 만든 오류 응답이 디스패처 서블릿과 톰캣을 거쳐 클라이언트에게 돌아간다.">
   <defs>
     <marker id="f5-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
     <marker id="f5-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
@@ -320,7 +322,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
   <text x="455" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">5. /error 다시 요청</text>
   <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f5-g)"/>
   <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
-  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 500 응답</text>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 오류 응답</text>
   <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
   <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
 </svg>
@@ -331,12 +333,12 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 :::tip
 **기본 오류 컨트롤러(BasicErrorController)란?**
 
-스프링 부트가 기본으로 제공하는 오류 처리 컨트롤러로, **/error** 주소를 담당합니다. 웹 브라우저의 요청에는 기본 오류 화면(HTML)을, API 요청에는 발생 시각, 상태 코드, 요청 주소 같은 기본 오류 정보를 담은 JSON을 반환합니다. 상태 코드에는 톰캣이 전달한 값이 그대로 들어가므로, 처리되지 않은 예외라면 500, 주소에 맞는 컨트롤러가 없는 요청이라면 404가 됩니다.
+스프링 부트가 기본으로 제공하는 오류 처리 컨트롤러로, **/error** 주소를 담당합니다. 웹 브라우저의 요청에는 기본 오류 화면(HTML)을, API 요청에는 발생 시각, 상태 코드, 요청 주소 같은 기본 오류 정보를 담은 JSON으로 응답합니다.
 :::
 
 ### 3.4.2 전역 예외 처리기
 
-이 기본 흐름에서는 예외 발생 시 반환할 응답을 서버가 직접 제어하기 어렵습니다. 기본 오류 컨트롤러가 정해진 형식으로만 응답을 생성하므로, 게시글을 찾지 못한 경우에도 상태 코드 500이 반환되며 정확한 실패 사유도 담기지 않기 때문입니다.
+이 기본 흐름에서는 예외 발생 시 응답을 서버가 직접 제어하기 어렵습니다. 기본 오류 컨트롤러가 정해진 형식으로만 응답을 생성하므로, 게시글을 찾지 못한 경우에도 상태 코드 500으로 응답하며 정확한 실패 사유도 담기지 않기 때문입니다.
 
 그래서 예외가 톰캣까지 넘어가기 전에 처리될 수 있도록, 스프링 내부에 **전역 예외 처리기(Global Exception Handler)** 를 추가합니다. 전역 예외 처리기는 디스패처 서블릿으로 전달된 예외를 한곳에서 전담하는 클래스로, 발생한 예외를 서버가 지정한 상태 코드와 실패 사유가 담긴 응답으로 바꾸어 줍니다.
 
@@ -371,7 +373,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
   <line x1="351" y1="112" x2="351" y2="170" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
   <text x="359" y="148" font-size="11" font-weight="600" fill="#c2410c">4. 예외 객체 전달</text>
   <line x1="319" y1="174" x2="319" y2="114" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f6-i)"/>
-  <text x="311" y="148" text-anchor="end" font-size="11" font-weight="600" fill="#4f46e5">5. 응답 반환</text>
+  <text x="311" y="148" text-anchor="end" font-size="11" font-weight="600" fill="#4f46e5">5. 응답 생성</text>
   <rect x="250" y="174" width="170" height="52" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
   <text x="335" y="197" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">전역 예외 처리기</text>
   <text x="335" y="215" text-anchor="middle" font-size="11" fill="#4338ca">상태 코드 + 실패 사유</text>
@@ -436,7 +438,7 @@ public class GlobalExceptionHandler {
 
 전역 예외 처리기가 상황에 맞게 응답하려면, 예외가 어떤 상황에서 발생했는지 구분할 수 있어야 합니다. 기본으로 제공되는 예외만으로는 이를 세밀하게 구별하기 어렵기 때문에, 개발자가 특정 상황에 맞는 예외를 만들어 사용하는데 이를 **커스텀 예외(Custom Exception)** 라고 부릅니다.
 
-서비스에서 커스텀 예외가 발생하면, 이 예외 객체는 디스패처 서블릿을 거쳐 전역 예외 처리기로 전달됩니다. 전역 예외 처리기는 이를 상태 코드와 실패 사유를 담은 응답으로 바꿔 클라이언트에게 반환합니다.
+서비스에서 커스텀 예외가 발생하면, 이 예외 객체는 디스패처 서블릿을 거쳐 전역 예외 처리기로 전달됩니다. 전역 예외 처리기는 예외에 맞는 상태 코드와 실패 사유를 담아 클라이언트에게 응답합니다.
 
 예를 들어 **Exception404**는 게시글처럼 찾는 자원이 없을 때 발생시킬 예외 클래스입니다.
 
@@ -448,7 +450,7 @@ public class Exception404 extends RuntimeException {
 }
 ```
 
-**RuntimeException**을 상속받아 구현하면, 예외를 발생시키는 메서드와 그 메서드를 호출하는 메서드 모두 `try-catch`나 `throws` 같은 예외 처리 코드를 작성하지 않아도 됩니다. 같은 경로에 있는 **Exception400**, **Exception401**, **Exception403**, **Exception500** 클래스 역시 이름만 다르고 구조는 동일합니다.
+**RuntimeException**을 상속받으면 컴파일러가 예외 처리를 강제하지 않습니다. 따라서 예외가 발생하는 곳이나 호출하는 곳마다 매번 `try-catch`나 `throws` 구문을 작성할 필요가 없어 코드가 깔끔해집니다. 같은 패키지에 있는 **Exception400**, **Exception401**, **Exception403**, **Exception500** 클래스 역시 이름만 다를 뿐 구조는 이와 동일합니다.
 
 이 책에서 사용하는 상태 코드는 다음과 같습니다.
 
@@ -464,9 +466,7 @@ public class Exception404 extends RuntimeException {
 
 ### 3.5.1 서비스
 
-이제 서비스에서 예외 처리를 해보겠습니다.
-
-**BoardService**가 DTO로 값을 주고받고, 게시글이 없으면 예외를 발생시키도록 변경합니다.
+이제 서비스에서 예외 처리를 해보겠습니다. **BoardService**가 DTO로 값을 주고받고, 게시글이 없으면 예외를 발생시키도록 변경합니다.
 
 `board/BoardService.java`를 열어 아래와 같이 작성합니다.
 
@@ -549,6 +549,8 @@ public class Exception404 extends RuntimeException {
         return Resp.ok(null);
     }
 ```
+
+게시글 추가, 수정의 경우 매개변수에 **@RequestBody**를 붙여 요청 DTO를 전달받습니다. 그러면 스프링은 요청 바디의 JSON 데이터를 읽고, 요청 데이터와 동일한 이름을 가진 DTO 필드에 자동으로 값을 채워 줍니다.
 
 이제 프로젝트를 실행해 결과를 확인해 보겠습니다. 먼저 1번 게시글을 조회하면 게시글 데이터가 정상적으로 응답됩니다.
 

@@ -322,7 +322,7 @@ start/ch05/src/main/resources/
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <h3>5.4.3 응답 DTO</h3>
-<p>댓글을 추가한 결과를 응답으로 반환할 <strong>DTO</strong>도 정의합니다.</p>
+<p>댓글을 추가한 결과를 응답에 사용할 <strong>DTO</strong>도 정의합니다.</p>
 <p><code>reply/ReplyResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> reply/ReplyResponse.java. 댓글 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyResponse</span><span class="w"> </span><span class="p">{</span>
 
@@ -417,7 +417,7 @@ start/ch05/src/main/resources/
 <p>ssar로 로그인해 자신이 쓴 1번 댓글의 삭제를 요청합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 댓글 삭제</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/replies/1</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\05_reply-delete.png" alt="" /><div class="caption">그림 5-8. 댓글 삭제 응답</div></div>
-<p>댓글 기능을 마지막으로 게시판 API에 필요한 기능을 모두 구현했습니다. 컨트롤러와 서비스, 리포지토리가 요청을 계층별로 처리하고, DTO가 요청과 응답의 데이터 형식을 정의하며, 전역 예외 처리가 실패 사유를 상태 코드와 함께 반환합니다. 그리고 필터가 식별한 요청자를 서비스가 작성자와 비교하므로, 게시글과 댓글은 작성자 본인만 변경할 수 있습니다.</p>
+<p>댓글 기능을 마지막으로 게시판 API에 필요한 기능을 모두 구현했습니다. 컨트롤러와 서비스, 리포지토리가 요청을 계층별로 처리하고, DTO가 요청과 응답의 데이터 형식을 정의하며, 전역 예외 처리가 실패 사유를 상태 코드와 함께 응답합니다. 그리고 필터가 식별한 요청자를 서비스가 작성자와 비교하므로, 게시글과 댓글은 작성자 본인만 변경할 수 있습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
