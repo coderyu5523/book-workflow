@@ -1,0 +1,140 @@
+<!doctype html><meta charset="utf-8">
+<title>3.4 재구성 시안</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 48px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin:10px 0 28px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px} h2{font-size:20px;margin:30px 0 16px} h3{font-size:16.5px;margin:30px 0 14px;color:#0f172a}
+p{line-height:1.95;font-size:15px;margin:0 0 16px}
+.note{font-size:12.5px;color:#64748b;line-height:1.75;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin:0 0 24px}
+.tip{border:1px solid #fed7aa;background:#fff7ed;border-radius:8px;padding:14px 18px;margin:0 0 22px;font-size:14px;line-height:1.85}
+.svg-figure{margin-top:8px}
+</style>
+<div class="wrap">
+<h1>3.4 예외 처리 추가 — 재구성 시안</h1>
+<div class="note">
+구조: 3.4.1 스프링의 기본 흐름(그림 2장) → 3.4.2 전역 예외 처리기(그림 1장) → 3.4.3 커스텀 예외 만들기(기존 3.4.2) → 3.4.4 전역 예외 처리기 만들기(기존 3.4.3 "전역 예외 처리", 새 3.4.2와 제목이 겹쳐 이름만 바꿈).<br>
+그림 번호: 새 3-4·3-5·3-6이 기존 3-4·3-5를 대신하고, 기존 3-6(상세 조회 응답)·3-7(404 응답)은 3-7·3-8로 밀립니다. 본문에 그림 번호를 직접 부르는 곳은 없어 캡션만 바뀝니다.<br>
+기존 그림 3-5(exApi404·Resp.fail 코드 상자)는 뺍니다. 같은 내용을 3.4.4 코드와 3.5 실행 결과가 보여 줍니다.
+</div>
+
+<h2>3.4 예외 처리 추가</h2>
+<p>스프링에서 예외가 어떻게 처리되는지 흐름부터 알아보겠습니다.</p>
+
+<h3>3.4.1 예외 처리 흐름</h3>
+<p>스프링에서 요청을 처리하다 예외가 발생하면, 예외는 요청이 거쳐 온 순서를 거꾸로 되돌아가 디스패처 서블릿까지 전달됩니다. 디스패처 서블릿은 이 예외를 처리할 곳을 찾고, 찾지 못하면 예외를 톰캣까지 넘깁니다.</p>
+<div class="svg-figure"><svg viewBox="0 20 870 165" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="① 요청이 서비스까지 간다. ② 서비스에서 예외가 발생한다. ③ 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. ④ 디스패처 서블릿에 예외를 처리할 곳이 없으면 예외는 필터를 거쳐 톰캣으로 전달된다.">
+  <defs>
+    <marker id="f4-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748b"/></marker>
+    <marker id="f4-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f4-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="20"  y="56" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="70"  y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="166" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="216" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="312" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="362" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">필터</text>
+  <rect x="458" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.8"/>
+  <text x="508" y="79" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">디스패처</text>
+  <text x="508" y="95" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">서블릿</text>
+  <rect x="604" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="654" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="800" y="86" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">서비스</text>
+  <line x1="70" y1="44" x2="796" y2="44" stroke="#64748b" stroke-width="1.8" marker-end="url(#f4-g)"/>
+  <text x="300" y="38" text-anchor="middle" font-size="11.5" font-weight="800" fill="#475569">① 요청</text>
+  <rect x="752" y="112" width="96" height="22" rx="11" fill="#ff7849"/>
+  <text x="800" y="127" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">② 예외 발생</text>
+  <path d="M800,134 V150 H536 V112" fill="none" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="668" y="168" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c2410c">③ 예외 전달</text>
+  <path d="M480,108 V150 H216 V112" fill="none" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="346" y="168" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c2410c">④ 처리할 곳이 없으면 톰캣으로 전달</text>
+</svg></div>
+<p class="cap">그림 3-4. 예외가 톰캣까지 전달되는 흐름</p>
+
+<p>톰캣은 스프링 바깥에 있는 서버라서 이 애플리케이션이 오류를 어떤 형식으로 응답해야 하는지 알지 못합니다. 그래서 톰캣은 애플리케이션이 오류 처리용으로 등록해 둔 주소로 요청을 다시 보내 오류 응답을 만들게 하고, 스프링 부트는 이 주소로 /error를 등록해 두었습니다. /error 요청은 스프링 부트의 기본 오류 컨트롤러가 받아 상태 코드 500과 기본 오류 정보를 담아 응답합니다.</p>
+<div class="svg-figure"><svg viewBox="0 212 870 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="⑤ 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 필터와 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. ⑥ 기본 오류 컨트롤러가 만든 500 응답이 클라이언트에게 돌아간다.">
+  <defs>
+    <marker id="a2-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748b"/></marker>
+    <marker id="a2-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  
+  <!-- ④ /error 다시 요청 (위: 가는 방향) -->
+  <line x1="216" y1="236" x2="666" y2="236" stroke="#64748b" stroke-width="1.8" marker-end="url(#a2-g)"/>
+  <text x="440" y="230" text-anchor="middle" font-size="11.5" font-weight="800" fill="#475569">⑤ /error 다시 요청</text>
+  <!-- 박스 -->
+  <rect x="20"  y="248" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="70"  y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="166" y="248" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="216" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="312" y="248" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="362" y="278" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">필터</text>
+  <rect x="458" y="248" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="508" y="271" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">디스패처</text>
+  <text x="508" y="287" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">서블릿</text>
+  <rect x="604" y="248" width="150" height="50" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+  <text x="679" y="271" text-anchor="middle" font-size="12" font-weight="800" fill="#334155">기본 오류 컨트롤러</text>
+  <text x="679" y="287" text-anchor="middle" font-size="9.5" fill="#64748b">BasicErrorController</text>
+  <!-- ⑤ 500 응답 (아래: 돌아오는 방향) -->
+  <path d="M679,298 V316 H70 V302" fill="none" stroke="#64748b" stroke-width="1.9" marker-end="url(#a2-g)"/>
+  <text x="380" y="334" text-anchor="middle" font-size="11.5" font-weight="800" fill="#475569">⑥ 500 응답</text>
+  <!-- 응답 JSON -->
+  <rect x="20" y="348" width="440" height="56" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="34" y="371" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">{ "timestamp": "…", "status": 500,</text>
+  <text x="34" y="391" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">  "error": "Internal Server Error", "path": "/api/boards/999" }</text>
+</svg></div>
+<p class="cap">그림 3-5. /error 재요청과 500 응답</p>
+
+
+<h3>3.4.2 전역 예외 처리기</h3>
+<p>이 기본 흐름에서는 게시글을 찾지 못해 예외가 발생해도 클라이언트는 상태 코드 500과 기본 오류 정보만 받습니다. 실패 사유가 없으니 클라이언트는 요청이 왜 실패했는지 알 수 없습니다.</p>
+<p>그래서 디스패처 서블릿이 예외를 처리할 곳으로 찾을 수 있도록 전역 예외 처리기를 추가합니다. <b>전역 예외 처리기(Global Exception Handler)</b> 는 디스패처 서블릿까지 전달된 예외를 한곳에서 처리하는 클래스로, 예외를 상태 코드와 실패 사유를 담은 응답으로 바꿉니다.</p>
+<div class="svg-figure"><svg viewBox="0 20 870 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="① 요청이 서비스까지 간다. ② 서비스에서 예외가 발생한다. ③ 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. ④ 디스패처 서블릿이 예외를 처리할 곳으로 전역 예외 처리기를 찾아 넘긴다. ⑤ 전역 예외 처리기가 상태 코드 404와 실패 사유를 담은 응답을 만들어 돌려준다. ⑥ 이 응답이 필터와 톰캣을 거쳐 클라이언트에게 전달된다.">
+  <defs>
+    <marker id="f6-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#64748b"/></marker>
+    <marker id="f6-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f6-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="20"  y="56" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="70"  y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="166" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="216" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="312" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="362" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">필터</text>
+  <rect x="458" y="56" width="100" height="50" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="508" y="79" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">디스패처</text>
+  <text x="508" y="95" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">서블릿</text>
+  <rect x="604" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="654" y="86" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="56" width="100" height="50" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="800" y="86" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">서비스</text>
+  <line x1="70" y1="44" x2="796" y2="44" stroke="#64748b" stroke-width="1.8" marker-end="url(#f6-g)"/>
+  <text x="300" y="38" text-anchor="middle" font-size="11.5" font-weight="800" fill="#475569">① 요청</text>
+  <rect x="752" y="112" width="96" height="22" rx="11" fill="#ff7849"/>
+  <text x="800" y="127" text-anchor="middle" font-size="10.5" font-weight="800" fill="#fff">② 예외 발생</text>
+  <path d="M800,134 V150 H548 V112" fill="none" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="668" y="168" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c2410c">③ 예외 전달</text>
+  <line x1="518" y1="108" x2="518" y2="200" stroke="#ff7849" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="526" y="186" font-size="11.5" font-weight="800" fill="#c2410c">④ 처리할 곳 찾기</text>
+  <rect x="428" y="202" width="160" height="46" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="508" y="222" text-anchor="middle" font-size="12" font-weight="800" fill="#3730a3">전역 예외 처리기</text>
+  <text x="508" y="239" text-anchor="middle" font-size="10.5" fill="#4338ca">404 + 실패 사유</text>
+  <path d="M484,202 V110" fill="none" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#f6-i)"/>
+  <text x="476" y="186" text-anchor="end" font-size="11.5" font-weight="800" fill="#4f46e5">⑤ 응답 반환</text>
+  <path d="M458,100 H440 V150 H70 V112" fill="none" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#f6-i)"/>
+  <text x="256" y="168" text-anchor="middle" font-size="11.5" font-weight="800" fill="#4f46e5">⑥ 404 응답</text>
+  <rect x="20" y="262" width="380" height="50" rx="8" fill="#fff" stroke="#cbd5e1" stroke-width="1.4"/>
+  <text x="34" y="283" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">{ "status": 404, "msg": "게시글을 찾을 수 없습니다",</text>
+  <text x="34" y="301" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">  "body": null }</text>
+</svg></div>
+<p class="cap">그림 3-6. 전역 예외 처리기가 있을 때의 흐름</p>
+
+<div class="tip"><b>필터에서 발생한 예외</b><br>필터는 디스패처 서블릿보다 먼저 실행되므로, 필터에서 발생한 예외는 전역 예외 처리기로 전달되지 않고 그림 3-4·3-5처럼 처리됩니다.<br><span style="color:#94a3b8;font-size:12.5px">(선택: 넣을지 정해 주세요)</span></div>
+
+<h3>3.4.3 커스텀 예외 만들기</h3>
+<p style="color:#94a3b8">(기존 3.4.2 본문 그대로)</p>
+<h3>3.4.4 전역 예외 처리기 만들기</h3>
+<p style="color:#94a3b8">(기존 3.4.3 본문 그대로 — "이제 앞에서 살펴본 전역 예외 처리기를 직접 만들어 보겠습니다."로 시작)</p>
+</div>

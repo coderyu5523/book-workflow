@@ -1,0 +1,107 @@
+<!doctype html><meta charset="utf-8">
+<title>3.4.1 시안 — 예외 메시지 흐름 맞추기</title>
+<style>
+body{font-family:'Pretendard','Malgun Gothic',sans-serif;background:#f8fafc;margin:0;padding:32px;color:#1e293b}
+.wrap{max-width:900px;margin:0 auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:34px 44px}
+.cap{text-align:center;font-style:italic;color:#475569;font-size:13px;margin:10px 0 26px}
+svg{width:100%;height:auto;display:block}
+h1{font-size:19px;margin:0 0 6px}
+h2{font-size:17px;margin:44px 0 14px;color:#0f172a;border-top:2px solid #cbd5e1;padding-top:26px}
+h3{font-size:15px;margin:26px 0 12px;color:#334155}
+p{line-height:1.9;font-size:15px;margin:0 0 16px}
+.note{font-size:12.5px;color:#64748b;margin:0 0 22px;line-height:1.7}
+.chg{background:#fff7ed;border-bottom:2px solid #ff7849}
+.svg-figure{margin-top:22px}
+</style>
+<div class="wrap">
+<h1>3.4.1 예외 처리 흐름 — 시안 (A안)</h1>
+<p class="note">실패 사유가 예외에 담기는 곳(그림 3-4 ②) → 꺼내는 곳(그림 3-5 e.getMessage()) → 응답(JSON msg)이 이어지게 맞춘 시안입니다. 용어는 챕터 전체가 쓰는 "실패 사유"로 통일했습니다. 주황 밑줄이 바뀐 부분입니다.</p>
+
+<h2>시안</h2>
+<h3>3.4.1 예외 처리 흐름</h3>
+
+<p><span class="chg">요청을 처리하는 도중 컨트롤러나 서비스에서 문제가 생기면 실패 사유를 담은 예외가 발생합니다. 이 예외를 그 자리에서 처리하지 않으면, 아래 그림처럼 호출된 순서를 거꾸로 거쳐 디스패처 서블릿까지 전달됩니다.</span></p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 214" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 디스패처 서블릿이 BoardController를, BoardController가 BoardService를 호출한다. 2. BoardService에서 게시글을 찾지 못해 '게시글을 찾을 수 없습니다'라는 실패 사유를 담은 Exception404가 발생한다. 3. 예외는 BoardService에서 BoardController를 거쳐 디스패처 서블릿까지 호출 경로를 거슬러 올라간다.">
+  <defs>
+    <marker id="s1-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="s1-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="40" y="40" width="140" height="70" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="110" y="70" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">디스패처</text>
+  <text x="110" y="88" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">서블릿</text>
+  <rect x="310" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="380" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">BoardController</text>
+  <rect x="580" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="650" y="80" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">BoardService</text>
+  <line x1="184" y1="58" x2="306" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#s1-g)"/>
+  <line x1="454" y1="58" x2="576" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#s1-g)"/>
+  <text x="245" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
+  <text x="515" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
+  <rect x="598" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="650" y="138" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">2. 예외 발생</text>
+  <line x1="650" y1="110" x2="650" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <!-- 추가: 예외에 담긴 메시지 -->
+  <line x1="650" y1="146" x2="650" y2="156" stroke="#ff7849" stroke-width="1.4"/>
+  <rect x="540" y="156" width="210" height="48" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <text x="645" y="175" text-anchor="middle" font-size="11.5" font-weight="800" fill="#c2410c">Exception404</text>
+  <text x="645" y="194" text-anchor="middle" font-size="10.5" fill="#334155">실패 사유: 게시글을 찾을 수 없습니다</text>
+  <line x1="576" y1="92" x2="454" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#s1-s)"/>
+  <line x1="306" y1="92" x2="184" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#s1-s)"/>
+  <text x="515" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
+  <text x="245" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
+</svg>
+</div>
+<p class="cap"><span class="chg">그림 3-4. 게시글을 찾지 못해 발생한 예외의 전달</span></p>
+
+<p>디스패처 서블릿까지 전달된 예외는 전역 예외 처리기로 넘어갑니다. <b>전역 예외 처리기(Global Exception Handler)</b> 는 모든 컨트롤러에서 발생한 예외를 한곳에서 처리하는 클래스입니다. 예외를 그대로 두면 클라이언트는 사유 없이 500 오류만 받으므로, 전역 예외 처리기에서 예외를 상태 코드와 실패 사유를 담은 응답으로 바꿉니다.</p>
+
+<div class="svg-figure">
+<svg viewBox="0 0 760 246" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="4. 디스패처 서블릿이 Exception404를 GlobalExceptionHandler의 exApi404(Exception404 e)에 전달한다. exApi404는 Resp.fail(NOT_FOUND, e.getMessage())로 실패 응답을 만든다. 5. 이 실패 응답이 디스패처 서블릿으로 반환되고 6. 클라이언트에게 전달된다.">
+  <defs>
+    <marker id="s2-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="s2-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="20" y="30" width="120" height="68" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="80" y="69" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">클라이언트</text>
+  <line x1="236" y1="64" x2="144" y2="64" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#s2-i)"/>
+  <text x="190" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#4f46e5">6. 실패 응답</text>
+  <rect x="240" y="30" width="130" height="68" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="305" y="60" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">디스패처</text>
+  <text x="305" y="78" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">서블릿</text>
+  <line x1="374" y1="64" x2="476" y2="64" stroke="#ff7849" stroke-width="1.9" stroke-dasharray="5,4" marker-end="url(#s2-s)"/>
+  <text x="425" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">4. 예외 전달</text>
+  <text x="425" y="55" text-anchor="middle" font-size="10" fill="#c2410c">Exception404</text>
+  <rect x="480" y="30" width="260" height="68" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.9"/>
+  <text x="610" y="58" text-anchor="middle" font-size="12.5" font-weight="800" fill="#3730a3">GlobalExceptionHandler</text>
+  <text x="610" y="80" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11" fill="#4338ca">exApi404(Exception404 e)</text>
+  <line x1="610" y1="98" x2="610" y2="130" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#s2-i)"/>
+  <text x="620" y="119" font-size="11" font-weight="700" fill="#4f46e5">Resp.fail() 호출</text>
+  <rect x="470" y="134" width="280" height="84" rx="8" fill="#fff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="610" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#0f172a">Resp</text>
+  <text x="610" y="176" text-anchor="middle" font-family="Consolas, 'D2Coding', monospace" font-size="11" fill="#4338ca">fail(NOT_FOUND, e.getMessage())</text>
+  <text x="610" y="202" text-anchor="middle" font-size="10.5" fill="#334155">상태 코드 404와 실패 사유를 공통 응답 형식에 담음</text>
+  <path d="M470,176 H305 V102" fill="none" stroke="#4f46e5" stroke-width="1.9" marker-end="url(#s2-i)"/>
+  <text x="388" y="168" text-anchor="middle" font-size="11" font-weight="700" fill="#4f46e5">5. 실패 응답</text>
+  <line x1="80" y1="102" x2="80" y2="146" stroke="#cbd5e1" stroke-width="1.4"/>
+  <!-- 변경: 실제 출력 순서 status → msg → body -->
+  <rect x="20" y="148" width="250" height="80" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.4"/>
+  <text x="34" y="172" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">{ "status": 404,</text>
+  <text x="34" y="192" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">  "msg": "게시글을 찾을 수 없습니다",</text>
+  <text x="34" y="212" font-family="Consolas, 'D2Coding', monospace" font-size="10.5" fill="#334155">  "body": null }</text>
+</svg>
+</div>
+<p class="cap">그림 3-5. 전역 예외 처리기의 응답</p>
+
+<p>이 응답은 디스패처 서블릿을 거쳐 클라이언트에게 전달됩니다.</p>
+
+<h2>바뀐 곳 정리</h2>
+<p class="note">
+1. 본문 첫 단락: 호출 순서 설명·예시 문장 삭제. 일반 흐름 두 문장 — 어디서든 발생(컨트롤러나 서비스) + 실패 사유를 담음 + 그 자리에서 처리하지 않으면 거꾸로 거쳐 디스패처까지. 예시는 "아래 그림처럼"으로 그림에 넘김<br>
+2. 그림 3-4: ② 배지 아래 점선 상자 "Exception404 / 실패 사유: 게시글을 찾을 수 없습니다" 추가 (서비스 코드 new Exception404("게시글을 찾을 수 없습니다")와 같은 값)<br>
+3. 그림 3-4 캡션: "예외 발생과 전달" → "게시글을 찾지 못해 발생한 예외의 전달" (예시 상황은 캡션이 맡음)<br>
+4. 셋째 단락: 원문 그대로 ("상태 코드와 실패 사유를 담은 응답")<br>
+5. 그림 3-5: "예외 메시지" → "실패 사유" (챕터 용어와 통일), JSON을 status → msg → body 순서로 (그림 3-7 실제 응답과 같음)
+</p>
+</div>

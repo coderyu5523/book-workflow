@@ -1,0 +1,117 @@
+<!doctype html><meta charset="utf-8"><title>3.4 그림 스타일 시안</title>
+<link rel="stylesheet" href="../styles/fonts.css"><link rel="stylesheet" href="../styles/tokens.css"><link rel="stylesheet" href="../styles/base.css"><link rel="stylesheet" href="../styles/components.css">
+<style>body{padding:32px;max-width:900px;margin:0 auto} .note{font-size:13px;color:#64748b;line-height:1.7}</style>
+<h2>기준: 기존 그림 스타일 (원래 그림 3-4)</h2>
+<div class="svg-figure"><svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 디스패처 서블릿이 BoardController를, BoardController가 BoardService를 호출한다. 2. BoardService에서 조회 결과가 없어 Exception404가 발생한다. 3. 예외는 BoardService에서 BoardController를 거쳐 디스패처 서블릿까지 호출 경로를 거슬러 올라간다.">
+  <defs>
+    <marker id="c3e1-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="c3e1-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+  </defs>
+  <rect x="40" y="40" width="140" height="70" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="2"/>
+  <text x="110" y="70" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">디스패처</text>
+  <text x="110" y="88" text-anchor="middle" font-size="12.5" font-weight="800" fill="#c2410c">서블릿</text>
+  <rect x="310" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="380" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="#334155">BoardController</text>
+  <rect x="580" y="40" width="140" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.8"/>
+  <text x="650" y="80" text-anchor="middle" font-size="12" font-weight="800" fill="#c2410c">BoardService</text>
+  <line x1="184" y1="58" x2="306" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c3e1-g)"/>
+  <line x1="454" y1="58" x2="576" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#c3e1-g)"/>
+  <text x="245" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
+  <text x="515" y="48" text-anchor="middle" font-size="11" font-weight="700" fill="#64748b">1. 호출</text>
+  <rect x="598" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="650" y="138" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">2. 예외 발생</text>
+  <line x1="650" y1="110" x2="650" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <line x1="576" y1="92" x2="454" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#c3e1-s)"/>
+  <line x1="306" y1="92" x2="184" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#c3e1-s)"/>
+  <text x="515" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
+  <text x="245" y="110" text-anchor="middle" font-size="11" font-weight="700" fill="#c2410c">3. Exception404</text>
+</svg></div>
+<p class="note">박스 3~4개, 넓은 간격, 직선 화살표, 라벨은 화살표 바로 위·아래 "1. 호출" 형식, 예외 발생은 알약 배지.</p>
+<h2>시안</h2>
+<div class="svg-figure svg-figure--wide"><svg viewBox="0 0 910 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 요청이 톰캣, 디스패처 서블릿, 컨트롤러를 거쳐 서비스까지 간다. 2. 서비스에서 예외가 발생한다. 3. 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 4. 디스패처 서블릿에 예외를 처리할 곳이 없으면 예외는 톰캣으로 전달된다.">
+  <defs>
+    <marker id="f4-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f4-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f4-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="335" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">디스패처</text>
+  <text x="335" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">서블릿</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="815" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서비스</text>
+  <line x1="164" y1="58" x2="266" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <text x="215" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">1. 요청</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f4-g)"/>
+  <line x1="815" y1="110" x2="815" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <rect x="763" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="815" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2. 예외 발생</text>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">3. 예외 전달</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f4-s)"/>
+  <text x="215" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">4. 톰캣으로 전달</text>
+</svg></div><p class="note" style="text-align:center">그림 3-4. 예외가 톰캣까지 전달되는 흐름</p>
+<div class="svg-figure svg-figure--wide"><svg viewBox="0 0 910 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5. 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. 6. 기본 오류 컨트롤러가 만든 500 응답이 디스패처 서블릿과 톰캣을 거쳐 클라이언트에게 돌아간다.">
+  <defs>
+    <marker id="f5-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f5-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f5-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="335" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">톰캣</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">디스패처</text>
+  <text x="575" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">서블릿</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.6"/>
+  <text x="815" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">기본 오류 컨트롤러</text>
+  <text x="815" y="89" text-anchor="middle" font-size="11" font-weight="400" fill="#334155">BasicErrorController</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f5-g)"/>
+  <text x="455" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">5. /error 다시 요청</text>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f5-g)"/>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 500 응답</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f5-s)"/>
+</svg></div><p class="note" style="text-align:center">그림 3-5. /error 재요청과 500 응답</p>
+<div class="svg-figure svg-figure--wide"><svg viewBox="0 0 910 235" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="1. 요청이 서비스까지 간다. 2. 서비스에서 예외가 발생한다. 3. 예외가 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 4. 디스패처 서블릿이 예외를 처리할 곳으로 전역 예외 처리기를 찾아 넘긴다. 5. 전역 예외 처리기가 상태 코드 404와 실패 사유를 담은 응답을 만들어 돌려준다. 6. 이 응답이 클라이언트에게 전달된다.">
+  <defs>
+    <marker id="f6-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
+    <marker id="f6-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
+    <marker id="f6-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+  </defs>
+  <rect x="30" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
+  <text x="95" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">클라이언트</text>
+  <rect x="270" y="40" width="130" height="70" rx="8" fill="#fff7ed" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="335" y="71" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">디스패처</text>
+  <text x="335" y="89" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서블릿</text>
+  <rect x="510" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.6"/>
+  <text x="575" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">컨트롤러</text>
+  <rect x="750" y="40" width="130" height="70" rx="8" fill="#fff" stroke="#ff7849" stroke-width="1.6"/>
+  <text x="815" y="80" text-anchor="middle" font-size="13" font-weight="700" fill="#c2410c">서비스</text>
+  <line x1="164" y1="58" x2="266" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <text x="215" y="48" text-anchor="middle" font-size="11" font-weight="600" fill="#64748b">1. 요청</text>
+  <line x1="404" y1="58" x2="506" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <line x1="644" y1="58" x2="746" y2="58" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#f6-g)"/>
+  <line x1="815" y1="110" x2="815" y2="122" stroke="#ff7849" stroke-width="1.6"/>
+  <rect x="763" y="122" width="104" height="24" rx="12" fill="#ff7849"/>
+  <text x="815" y="138" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">2. 예외 발생</text>
+  <line x1="746" y1="92" x2="644" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="695" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">3. 예외 전달</text>
+  <line x1="506" y1="92" x2="404" y2="92" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <line x1="266" y1="92" x2="164" y2="92" stroke="#ff7849" stroke-width="2" marker-end="url(#f6-s)"/>
+  <text x="215" y="110" text-anchor="middle" font-size="11" font-weight="600" fill="#c2410c">6. 404 응답</text>
+  <line x1="351" y1="112" x2="351" y2="170" stroke="#ff7849" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#f6-s)"/>
+  <text x="359" y="148" font-size="11" font-weight="600" fill="#c2410c">4. 처리할 곳 찾기</text>
+  <line x1="319" y1="174" x2="319" y2="114" stroke="#4f46e5" stroke-width="1.7" marker-end="url(#f6-i)"/>
+  <text x="311" y="148" text-anchor="end" font-size="11" font-weight="600" fill="#4f46e5">5. 응답 반환</text>
+  <rect x="250" y="174" width="170" height="52" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.8"/>
+  <text x="335" y="197" text-anchor="middle" font-size="13" font-weight="700" fill="#3730a3">전역 예외 처리기</text>
+  <text x="335" y="215" text-anchor="middle" font-size="11" fill="#4338ca">404 + 실패 사유</text>
+</svg></div><p class="note" style="text-align:center">그림 3-6. 전역 예외 처리기가 있을 때의 흐름</p>
