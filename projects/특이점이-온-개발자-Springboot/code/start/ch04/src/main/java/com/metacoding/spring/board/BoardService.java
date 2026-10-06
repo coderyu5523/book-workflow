@@ -26,7 +26,7 @@ public class BoardService {
         return new BoardResponse.DetailDTO(board);
     }
 
-    // TODO : 실습 13 - 로그인 확인 후 작성자와 함께 저장
+    // TODO : 실습 13 - 로그인 확인 후 회원과 함께 저장
     @Transactional
     public BoardResponse.DTO 게시글추가(BoardRequest.SaveDTO requestDTO) {
         Board savedBoard = boardRepository.save(requestDTO.toEntity()); // DTO -> 엔티티

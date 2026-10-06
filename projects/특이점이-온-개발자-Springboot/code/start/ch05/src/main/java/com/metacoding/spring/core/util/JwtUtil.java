@@ -10,7 +10,6 @@ import com.metacoding.spring.user.User;
 public class JwtUtil {
     public static final String HEADER = "Authorization";
     public static final String TOKEN_PREFIX = "Bearer ";
-    // 실제 서비스에서는 외부 설정으로 분리한다
     public static final String SECRET = "메타코딩시크릿키";
     public static final Duration EXPIRATION_TIME = Duration.ofDays(7);
 

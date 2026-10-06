@@ -129,7 +129,7 @@ start/ch05/src/main/resources/
 </div>
 <div class="caption">그림 5-3. 양방향 매핑</div>
 <h3>5.1.1 댓글 엔티티</h3>
-<p>댓글 엔티티는 댓글 작성자 정보와 댓글이 포함된 게시글 정보를 위해 <strong>User</strong> 엔티티와 <strong>Board</strong> 엔티티를 필드로 가집니다.</p>
+<p>댓글 엔티티는 댓글을 작성한 회원 정보와 댓글이 포함된 게시글 정보를 위해 <strong>User</strong> 엔티티와 <strong>Board</strong> 엔티티를 필드로 가집니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> reply/Reply.java. 댓글 엔티티</div><span class="nd">@NoArgsConstructor</span>
 <span class="nd">@Data</span>
 <span class="nd">@Entity</span>
@@ -163,7 +163,7 @@ start/ch05/src/main/resources/
 <span class="p">}</span></div>
 <h3>5.1.2 게시글에 댓글 목록 추가</h3>
 <p>양방향 매핑을 위해서는 <strong>Board</strong> 엔티티에 댓글 목록 필드가 필요하고, 이때 <code>mappedBy</code> 속성을 사용합니다. 한쪽 어노테이션의 <code>mappedBy</code>에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/Board.java. 댓글 목록 추가와 작성자 필드 수정</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/Board.java. 댓글 목록 추가와 회원 필드 수정</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span>
 
 <span class="w">    </span><span class="nd">@OneToMany</span><span class="p">(</span><span class="n">mappedBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">,</span>
@@ -210,7 +210,7 @@ start/ch05/src/main/resources/
 <h3>5.2.2 지연 로딩</h3>
 <p>이러한 문제를 해결하기 위해 사용하는 방식이 <strong>지연 로딩(Lazy Loading)</strong> 입니다.</p>
 <p>지연 로딩은 <strong>기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식</strong>입니다. <strong>@ManyToOne</strong>의 <code>fetch</code> 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title">board/Board.java. 작성자 조회를 지연 로딩으로</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title">board/Board.java. 회원 조회를 지연 로딩으로</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span></div>
 <p>LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 외래 키(<code>user_id</code>)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.</p>
 <div class="terminal-log">
@@ -237,7 +237,7 @@ start/ch05/src/main/resources/
 <h3>5.3.1 리포지토리</h3>
 <p>댓글 목록을 추가로 가져오기 위해 쿼리를 만들어 보겠습니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 메서드를 작성합니다.</p>
-<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user left join fetch b.replies r &quot;</span>
+<div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> board/BoardRepository.java. 회원과 댓글을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user left join fetch b.replies r &quot;</span>
 <span class="w">            </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;left join fetch r.user where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUserAndReplies</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
 <p>게시글 상세 화면의 응답 데이터에는 댓글 목록과 각 댓글 작성자 정보가 모두 포함되어야 합니다. 만약 fetch 없이 일반 조인만 사용하면 댓글과 작성자 정보는 지연 로딩으로 조회되어, <strong>실제로 사용하는 시점에 추가 쿼리가 실행</strong>됩니다. 따라서 댓글과 댓글 작성자 정보도 join fetch를 사용하여 게시글과 함께 한 번에 가져옵니다.</p>

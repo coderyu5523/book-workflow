@@ -138,7 +138,7 @@ start/ch05/src/main/resources/
 
 ### 5.1.1 댓글 엔티티
 
-댓글 엔티티는 댓글 작성자 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 가집니다.
+댓글 엔티티는 댓글을 작성한 회원 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 가집니다.
 
 ```java [참고] reply/Reply.java. 댓글 엔티티
 @NoArgsConstructor
@@ -178,7 +178,7 @@ public class Reply {
 
 양방향 매핑을 위해서는 **Board** 엔티티에 댓글 목록 필드가 필요하고, 이때 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션의 `mappedBy`에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.
 
-```java [참고] board/Board.java. 댓글 목록 추가와 작성자 필드 수정
+```java [참고] board/Board.java. 댓글 목록 추가와 회원 필드 수정
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -244,7 +244,7 @@ JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연�
 
 지연 로딩은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. **@ManyToOne**의 `fetch` 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.
 
-```java board/Board.java. 작성자 조회를 지연 로딩으로
+```java board/Board.java. 회원 조회를 지연 로딩으로
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 ```
@@ -286,7 +286,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 1] board/BoardRepository.java. 작성자와 댓글을 함께 가져오는 조회
+```java [실습 1] board/BoardRepository.java. 회원과 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user left join fetch b.replies r "
             + "left join fetch r.user where b.id = :boardId")
     Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);

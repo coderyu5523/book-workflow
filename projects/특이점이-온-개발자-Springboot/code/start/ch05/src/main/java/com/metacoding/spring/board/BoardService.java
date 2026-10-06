@@ -32,7 +32,7 @@ public class BoardService {
         if (loginUser == null) {
             throw new Exception401("로그인이 필요합니다");
         }
-        Board savedBoard = boardRepository.save(requestDTO.toEntity(loginUser)); // DTO -> 엔티티 (작성자 연결)
+        Board savedBoard = boardRepository.save(requestDTO.toEntity(loginUser)); // DTO -> 엔티티 (회원 연결)
         return new BoardResponse.DTO(savedBoard);
     }
 
