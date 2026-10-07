@@ -22,28 +22,28 @@ public class BoardController {
         return Resp.ok(respDTOList);
     }
 
-    // TODO : 실습 11 - 상세 요청에서 로그인 유저 꺼내기
+    // TODO : 실습 12 - 상세 요청에서 로그인 유저 꺼내기
     @GetMapping("/{boardId}")
     public ResponseEntity<?> findById(@PathVariable("boardId") Integer boardId) {
         BoardResponse.DetailDTO respDTO = boardService.게시글상세(boardId);
         return Resp.ok(respDTO);
     }
 
-    // TODO : 실습 14 - 추가 요청에서 로그인 유저 꺼내기
+    // TODO : 실습 15 - 추가 요청에서 로그인 유저 꺼내기
     @PostMapping
     public ResponseEntity<?> save(@RequestBody BoardRequest.SaveDTO requestDTO) {
         BoardResponse.DTO respDTO = boardService.게시글추가(requestDTO);
         return Resp.ok(respDTO);
     }
 
-    // TODO : 실습 16 - 수정 요청에서 로그인 유저 꺼내기
+    // TODO : 실습 17 - 수정 요청에서 로그인 유저 꺼내기
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId, @RequestBody BoardRequest.UpdateDTO requestDTO) {
         BoardResponse.DTO respDTO = boardService.게시글수정(boardId, requestDTO);
         return Resp.ok(respDTO);
     }
 
-    // TODO : 실습 18 - 삭제 요청에서 로그인 유저 꺼내기
+    // TODO : 실습 19 - 삭제 요청에서 로그인 유저 꺼내기
     @DeleteMapping("/{boardId}")
     public ResponseEntity<?> deleteById(@PathVariable("boardId") Integer boardId) {
         boardService.게시글삭제(boardId);

@@ -7,5 +7,5 @@ import org.springframework.data.repository.query.Param;
 
 public interface BoardRepository extends JpaRepository<Board, Integer> {
 
-    // TODO : 실습 8 - 회원을 join fetch로 함께 가져오는 findByIdJoinUser()
+    // TODO : 실습 9 - 회원을 join fetch로 함께 가져오는 findByIdJoinUser()
 }

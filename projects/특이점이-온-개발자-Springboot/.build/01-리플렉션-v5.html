@@ -462,9 +462,6 @@
 
 <span class="w">    </span><span class="nd">@RequestMapping</span><span class="p">(</span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/select&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">select</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
-
-<span class="w">    </span><span class="nd">@RequestMapping</span><span class="p">(</span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/create&quot;</span><span class="p">)</span>
-<span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">create</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;create 호출됨&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span></div>
 <p>이제 핵심이 되는 main 메서드를 살펴보겠습니다. 코드를 보면 직접 객체를 생성하는 구문은 어디에도 없습니다. 대신 <code>ex03</code> 폴더의 실제 경로를 찾아 그 안의 클래스 파일을 하나씩 확인하고, <strong>@Controller</strong> 어노테이션이 붙은 클래스만 찾아 객체로 생성합니다.</p>
 <p><code>ex03/App.java</code>를 열어 아래와 같이 작성합니다.</p>

@@ -6,7 +6,7 @@ public class BoardRequest {
 
     public record SaveDTO(String title, String content) {
 
-        // TODO : 실습 12 - toEntity에 회원 추가
+        // TODO : 실습 13 - toEntity에 회원 추가
         public Board toEntity() {
             return Board.builder()
                     .title(title)

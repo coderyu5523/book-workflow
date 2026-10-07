@@ -18,8 +18,5 @@ public class UserService {
         return null;
     }
 
-    public String 로그인(UserRequest.LoginDTO requestDTO) {
-        // TODO : 실습 6 - 로그인
-        return null;
-    }
+    // TODO : 실습 7 - 로그인
 }

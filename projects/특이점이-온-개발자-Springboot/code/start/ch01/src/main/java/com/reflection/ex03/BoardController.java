@@ -19,8 +19,4 @@ public class BoardController {
     public void select(){
         System.out.println("select 호출됨");
     }
-    @RequestMapping(uri = "/create")
-    public void create(){
-        System.out.println("create 호출됨");
-    }
 }

@@ -17,9 +17,5 @@ public class UserController {
         return null;
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody UserRequest.LoginDTO requestDTO) {
-        // TODO : 실습 7 - 로그인 엔드포인트
-        return null;
-    }
+    // TODO : 실습 8 - 로그인 엔드포인트
 }

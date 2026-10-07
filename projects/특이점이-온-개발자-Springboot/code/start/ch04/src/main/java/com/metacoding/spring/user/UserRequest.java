@@ -10,6 +10,5 @@ public class UserRequest {
         }
     }
 
-    public record LoginDTO(String username, String password) {
-    }
+    // TODO : 실습 6 - 로그인 요청 DTO
 }
