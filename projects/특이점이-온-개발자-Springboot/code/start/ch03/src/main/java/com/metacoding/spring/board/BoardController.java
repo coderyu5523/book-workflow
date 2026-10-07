@@ -14,28 +14,28 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    // TODO : 실습 6 - 응답 타입을 List<BoardResponse.DTO>로 변경
+    // TODO : 실습 6 - 요청·응답 타입을 DTO로
     @GetMapping
     public ResponseEntity<?> findAll() {
         List<Board> responseBoardList = boardService.게시글목록();
         return Resp.ok(responseBoardList);
     }
 
-    // TODO : 실습 6 - 응답 타입을 BoardResponse.DetailDTO로 변경
+    // TODO : 실습 6 - 요청·응답 타입을 DTO로
     @GetMapping("/{boardId}")
     public ResponseEntity<?> findById(@PathVariable("boardId") Integer boardId) {
         Board responseBoard = boardService.게시글상세(boardId);
         return Resp.ok(responseBoard);
     }
 
-    // TODO : 실습 6 - 요청 타입을 BoardRequest.SaveDTO, 응답 타입을 BoardResponse.DTO로 변경
+    // TODO : 실습 6 - 요청·응답 타입을 DTO로
     @PostMapping
     public ResponseEntity<?> save(@RequestBody Board requestBoard) {
         Board responseBoard = boardService.게시글추가(requestBoard);
         return Resp.ok(responseBoard);
     }
 
-    // TODO : 실습 6 - 요청 타입을 BoardRequest.UpdateDTO, 응답 타입을 BoardResponse.DTO로 변경
+    // TODO : 실습 6 - 요청·응답 타입을 DTO로
     @PutMapping("/{boardId}")
     public ResponseEntity<?> update(@PathVariable("boardId") Integer boardId, @RequestBody Board requestBoard) {
         Board responseBoard = boardService.게시글수정(boardId, requestBoard);

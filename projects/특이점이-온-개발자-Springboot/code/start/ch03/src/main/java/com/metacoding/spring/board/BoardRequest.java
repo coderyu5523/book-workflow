@@ -5,7 +5,7 @@ public class BoardRequest {
     public record SaveDTO(String title, String content) {
 
         public Board toEntity() {
-            // TODO : 실습 1 - 엔티티로 변환
+            // TODO : 실습 1 - 요청 DTO와 엔티티 변환
             return null;
         }
     }

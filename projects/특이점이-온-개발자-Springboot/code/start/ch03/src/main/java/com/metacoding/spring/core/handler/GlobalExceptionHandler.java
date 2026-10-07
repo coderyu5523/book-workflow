@@ -11,37 +11,37 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception400.class)
     public ResponseEntity<?> exApi400(Exception400 e) {
-        // TODO : 실습 4 - 400 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 
     @ExceptionHandler(Exception401.class)
     public ResponseEntity<?> exApi401(Exception401 e) {
-        // TODO : 실습 4 - 401 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 
     @ExceptionHandler(Exception403.class)
     public ResponseEntity<?> exApi403(Exception403 e) {
-        // TODO : 실습 4 - 403 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 
     @ExceptionHandler(Exception404.class)
     public ResponseEntity<?> exApi404(Exception404 e) {
-        // TODO : 실습 4 - 404 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 
     @ExceptionHandler(Exception500.class)
     public ResponseEntity<?> exApi500(Exception500 e) {
-        // TODO : 실습 4 - 500 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> exUnKnown(Exception e) {
-        // TODO : 실습 4 - 나머지 예외는 500 실패 응답
+        // TODO : 실습 4 - 전역 예외 처리
         return null;
     }
 }

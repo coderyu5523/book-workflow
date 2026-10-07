@@ -12,6 +12,6 @@ public class App {
     }
 
     public static void findUri(List<Object> instances, String uri) {
-        // TODO : 실습 8 - 주소가 일치하는 메서드 호출
+        // TODO : 실습 8 - 폴더를 뒤져 @Controller 클래스를 등록하고 주소로 호출
     }
 }

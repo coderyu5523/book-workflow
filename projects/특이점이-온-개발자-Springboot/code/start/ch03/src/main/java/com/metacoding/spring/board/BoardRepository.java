@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-// TODO : 실습 3 - JpaRepository<Board, Integer>를 상속하는 인터페이스로 변경 (아래 어노테이션·필드·메서드는 모두 삭제)
+// TODO : 실습 3 - JpaRepository 상속
 @RequiredArgsConstructor
 @Repository
 public class BoardRepository {

@@ -34,6 +34,6 @@ public class BoardResponse {
                             && loginUser.getId().equals(board.getUser().getId()));
         }
 
-        // TODO : 실습 2 - 댓글 하나를 담는 ReplyDTO
+        // TODO : 실습 2 - 상세에 댓글 목록 추가
     }
 }

@@ -10,6 +10,6 @@ public class UserResponse {
             String email,
             LocalDateTime createdAt) {
 
-        // TODO : 실습 3 - 엔티티를 받는 생성자
+        // TODO : 실습 3 - 회원가입 응답 DTO
     }
 }

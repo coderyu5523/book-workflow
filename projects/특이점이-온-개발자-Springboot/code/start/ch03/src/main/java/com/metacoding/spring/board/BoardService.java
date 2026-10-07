@@ -13,31 +13,31 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
 
-    // TODO : 실습 5 - 반환 타입을 List<BoardResponse.DTO>로 변경
+    // TODO : 실습 5 - 주고받는 타입을 DTO로, 없으면 예외
     public List<Board> 게시글목록() {
         return boardRepository.findAll();
     }
 
-    // TODO : 실습 5 - 반환 타입을 BoardResponse.DetailDTO로 변경, 게시글이 없으면 예외
+    // TODO : 실습 5 - 주고받는 타입을 DTO로, 없으면 예외
     public Board 게시글상세(Integer boardId) {
         return boardRepository.findById(boardId);
     }
 
-    // TODO : 실습 5 - BoardRequest.SaveDTO를 받아 저장하고 BoardResponse.DTO 반환
+    // TODO : 실습 5 - 주고받는 타입을 DTO로, 없으면 예외
     @Transactional
     public Board 게시글추가(Board requestBoard) {
         boardRepository.save(requestBoard);
         return requestBoard; // 저장된 게시글 반환 (REST)
     }
 
-    // TODO : 실습 5 - 게시글이 없으면 예외
+    // TODO : 실습 5 - 주고받는 타입을 DTO로, 없으면 예외
     @Transactional
     public void 게시글삭제(Integer boardId) {
         Board board = boardRepository.findById(boardId);
         boardRepository.delete(board);
     }
 
-    // TODO : 실습 5 - BoardRequest.UpdateDTO를 받아 수정하고 BoardResponse.DTO 반환, 게시글이 없으면 예외
+    // TODO : 실습 5 - 주고받는 타입을 DTO로, 없으면 예외
     @Transactional
     public Board 게시글수정(Integer boardId, Board requestBoard) {
         Board board = boardRepository.findById(boardId);
