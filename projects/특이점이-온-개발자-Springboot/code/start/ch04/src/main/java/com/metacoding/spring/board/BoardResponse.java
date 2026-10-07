@@ -12,10 +12,16 @@ public class BoardResponse {
     }
 
     // TODO : 실습 10 - 상세 응답에 작성자와 본인 여부 추가
-    public record DetailDTO(Integer boardId, String title, String content) {
+    public record DetailDTO(
+            Integer boardId,
+            String title,
+            String content) {
 
         public DetailDTO(Board board) {
-            this(board.getId(), board.getTitle(), board.getContent());
+            this(
+                    board.getId(),
+                    board.getTitle(),
+                    board.getContent());
         }
     }
 }
