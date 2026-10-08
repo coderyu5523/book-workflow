@@ -21,7 +21,7 @@ public class App {
         for(File file : files){  
             System.out.println("파일명: " + file.getName());
             if(file.getName().endsWith(".class")){  // 이름의 끝이 .class 면 실행
-                String className = "com.reflection.ex03"+"."+file.getName().replace(".class",""); // .class 를 공백으로 처리 .CLASS가 있으면 NEW 를 못함
+                String className = "com.reflection.ex03." + file.getName().replace(".class", ""); // .class 를 공백으로 처리 .CLASS가 있으면 NEW 를 못함
                 Class<?> cls = Class.forName(className);  
                 // 어노테이션이 있는지 확인
                 if (cls.isAnnotationPresent(Controller.class)){ 

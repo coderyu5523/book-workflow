@@ -691,7 +691,7 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 
 ### 2.6.3 게시글 저장
 
-데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티 객체를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
+데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
 
 `board/BoardRepository.java`의 `save()`를 아래와 같이 작성합니다.
 
@@ -710,7 +710,7 @@ values ('content3', now(), 'title3');
 
 ### 2.6.4 게시글 수정
 
-JPA에는 데이터를 수정하는 메서드가 없습니다. 대신 조회해 온 엔티티 객체의 값만 변경하면 변경 내용이 데이터베이스에 자동으로 반영됩니다. 이를 **더티체킹(변경 감지)** 이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.
+JPA에는 데이터를 수정하는 메서드가 없습니다. 대신 조회해 온 엔티티의 값만 변경하면 변경 내용이 데이터베이스에 자동으로 반영됩니다. 이를 **더티체킹(변경 감지)** 이라 부르며, 자세한 원리는 뒤에서 다루겠습니다.
 
 ### 2.6.5 게시글 삭제
 
@@ -786,7 +786,7 @@ JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티
   <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 엔티티</text>
   <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
   <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c1-a)"/>
@@ -817,7 +817,7 @@ JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티
   <rect x="520" y="36" width="120" height="146" rx="9" fill="#fff" stroke="#475569" stroke-width="1.5"/>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 엔티티</text>
   <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
   <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2c2-a)"/>
@@ -935,7 +935,7 @@ JPA의 **EntityManager**는 SQL을 데이터베이스에 보내기 전에 엔티
   <text x="330" y="66" text-anchor="middle" font-size="11.5" font-weight="700" fill="#475569">캐시 miss</text>
   <rect x="256" y="86" width="148" height="34" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
   <text x="330" y="107" text-anchor="middle" font-size="11" fill="#3730a3">board(제목1, 내용1)</text>
-  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 객체</text>
+  <text x="330" y="136" text-anchor="middle" font-size="10.5" fill="#64748b">영속화된 엔티티</text>
   <text x="580" y="98" text-anchor="middle" font-size="11" fill="#334155">board(제목1, 내용1)</text>
   <text x="580" y="118" text-anchor="middle" font-size="11" fill="#334155">board(제목2, 내용2)</text>
   <line x1="140" y1="70" x2="238" y2="70" stroke="#475569" stroke-width="1.5" marker-end="url(#c2d1-a)"/>
@@ -1499,7 +1499,7 @@ DELETE http://localhost:8080/api/boards/1
 :::remember
 **이것만은 기억하자**
 
-- **JPA는 객체와 테이블 사이를 연결합니다.** 객체를 저장·조회·수정·삭제하면 JPA가 알맞은 SQL을 생성해 실행하고, 조회한 데이터는 다시 객체에 담아 반환합니다.
+- **JPA는 객체와 테이블 사이를 연결합니다.** 엔티티를 저장·조회·수정·삭제하면 JPA가 알맞은 SQL을 생성해 실행하고, 조회한 데이터는 다시 엔티티에 담아 반환합니다.
 - **영속성 컨텍스트는 조회한 엔티티를 트랜잭션 동안 관리합니다.** 같은 엔티티를 다시 조회하면 캐시에 있는 것을 반환하고, 변경 쿼리는 버퍼에 모았다가 `flush()` 시점에 내보냅니다.
 - **애플리케이션은 컨트롤러, 서비스, 리포지토리 세 계층으로 나눕니다.** 컨트롤러는 요청을 받고, 서비스는 트랜잭션 내에서 비즈니스 로직을 처리하며, 리포지토리는 데이터베이스를 다룹니다.
 :::
