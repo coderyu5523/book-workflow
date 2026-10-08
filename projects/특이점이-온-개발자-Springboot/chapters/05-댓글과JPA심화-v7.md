@@ -1,12 +1,14 @@
 # 챕터 5. 댓글과 JPA 심화
 
-인증 게시판을 완성한 오픈이는 마지막으로 댓글 기능을 추가하기로 했습니다. 댓글은 게시글 상세 화면에서 게시글과 함께 조회되어야 하는데, 게시글 하나에 여러 개의 댓글이 포함되므로 둘 사이를 연결할 **외래키는 댓글 테이블이 가져야 합니다**. 데이터베이스는 외래키로 조인을 하면 양쪽 테이블의 데이터를 가져올 수 있지만, **JPA는 테이블이 아닌 객체 단위로 동작하기 때문에** 게시글->회원, 댓글->게시글 같이 **상대 객체를 필드로 가진 쪽에서만 접근할 수 있습니다**. 그래서 현재 구조에서는 게시글에서 댓글 데이터를 조회할 수 없습니다.
+인증 게시판을 완성한 오픈이는 마지막으로 댓글 기능을 추가하기로 했습니다. 댓글은 게시글 상세 화면에서 게시글과 함께 조회되어야 하는데, 게시글 하나에 여러 개의 댓글이 포함되므로 둘 사이를 연결할 **외래키는 댓글 테이블이 가져야 합니다**.
+
+이때 데이터베이스는 외래키로 조인을 하면 양쪽 테이블의 데이터를 가져올 수 있지만, **JPA는 테이블이 아닌 객체 단위로 동작하기 때문에** 게시글->회원, 댓글->게시글 같이 **상대 객체를 필드로 가진 쪽에서만 접근할 수 있습니다**. 그래서 현재 구조에서는 게시글에서 댓글 데이터를 조회할 수 없습니다.
 
 *지금 구조에서는 게시글에서 댓글 정보를 가져올 수가 없는데, JPA를 안 쓰고 직접 SQL을 사용해야 하나?*
 
 오픈이는 선배에게 지금까지 만든 코드를 보여 주며 고민을 이야기했습니다. 선배는 게시글과 댓글 객체를 차례로 살펴보더니 말했습니다.
 
-**선배**: "실무에서는 크게 두 가지 방법을 써요. **첫 번째는 쿼리를 두 번으로 나눠서 조회하는 거예요**. 먼저 게시글과 게시글 작성자를 조회하고, 그다음 추가로 이 게시글에 있는 댓글과 댓글 작성자를 가져오는 거죠. 그리고 두 데이터를 DTO에서 합치는 방식이에요."
+**선배**: "실무에서는 크게 두 가지 방법을 써요. **첫 번째는 쿼리를 두 번으로 나눠서 조회하는 거예요**. 먼저 게시글을 기준으로 회원 정보를 조회하고, 그다음 댓글을 기준으로 댓글 작성자 정보를 추가로 가져오는 거죠. 그리고 두 데이터를 DTO에서 합치는 방식이에요."
 
 **오픈이**: "그럼 두 번째 방법은요?"
 
@@ -26,7 +28,7 @@ cd start/ch05
 
 ### 2. 파일 구조
 
-이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 4 그대로입니다.
+이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.
 
 ```text ch05 디렉토리
 start/ch05/src/main/java/com/metacoding/spring/
@@ -55,27 +57,57 @@ start/ch05/src/main/resources/
 관계형 데이터베이스에서는 외래 키가 어느 쪽에 있든 두 테이블을 조인하여 연관된 데이터를 가져올 수 있습니다. 예를 들어 외래 키가 댓글 테이블에 있으면, 조인으로 게시글과 댓글 데이터를 한 번에 조회할 수 있습니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="board_tb와 reply_tb가 나란히 놓이고 두 박스를 잇는 직선의 양끝에 화살촉이 달려 있다. reply_tb에만 board_id 외래 키가 있다.">
+<svg viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="board_tb 테이블과 reply_tb 테이블의 1대 N 관계. 두 테이블을 잇는 직선의 양끝에 화살촉이 달려 있다. 1번 게시글 한 행에 board_id가 1인 comment1, comment2, comment3 세 댓글이 대응한다.">
   <defs>
-    <marker id="c5tbl-two" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
+    <marker id="c5tbl-two" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
   </defs>
-  <rect x="60" y="50" width="200" height="96" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="60" y="50" width="200" height="30" rx="10" fill="#eef2ff"/>
-  <rect x="60" y="72" width="200" height="8" fill="#eef2ff"/>
-  <text x="160" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#3730a3">board_tb</text>
-  <text x="80" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
-  <text x="80" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
-  <rect x="460" y="50" width="200" height="124" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
-  <rect x="460" y="50" width="200" height="30" rx="10" fill="#fff4ed"/>
-  <rect x="460" y="72" width="200" height="8" fill="#fff4ed"/>
-  <text x="560" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#7b341e">reply_tb</text>
-  <text x="480" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
-  <text x="480" y="130" font-size="13" font-family="monospace" fill="#475569">comment</text>
-  <text x="480" y="154" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">board_id</text>
-  <path d="M260,98 H460" fill="none" stroke="#334155" stroke-width="2" marker-start="url(#c5tbl-two)" marker-end="url(#c5tbl-two)"/>
-  <text x="284" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">1</text>
-  <text x="436" y="88" text-anchor="middle" font-size="13" font-weight="800" fill="#334155">N</text>
-  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">외래 키 하나로 두 테이블을 조인합니다</text>
+  <text x="165" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">board_tb 테이블</text>
+  <rect x="75" y="80" width="60" height="36" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <rect x="135" y="80" width="120" height="36" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="105" y="103" text-anchor="middle" font-size="12.5" font-weight="700" font-family="ui-monospace, Consolas, monospace" fill="#334155">id</text>
+  <text x="195" y="103" text-anchor="middle" font-size="12.5" font-weight="700" font-family="ui-monospace, Consolas, monospace" fill="#334155">title</text>
+  <rect x="75" y="116" width="60" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="135" y="116" width="120" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <text x="105" y="139" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">1</text>
+  <text x="195" y="139" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">title1</text>
+  <rect x="75" y="152" width="60" height="36" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="135" y="152" width="120" height="36" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="105" y="175" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#475569">2</text>
+  <text x="195" y="175" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#475569">title2</text>
+  <text x="590" y="32" text-anchor="middle" font-size="14" font-weight="800" fill="#0f172a">reply_tb 테이블</text>
+  <rect x="455" y="44" width="50" height="36" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <rect x="505" y="44" width="110" height="36" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <rect x="615" y="44" width="110" height="36" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1.3"/>
+  <text x="480" y="67" text-anchor="middle" font-size="12.5" font-weight="700" font-family="ui-monospace, Consolas, monospace" fill="#334155">id</text>
+  <text x="560" y="67" text-anchor="middle" font-size="12.5" font-weight="700" font-family="ui-monospace, Consolas, monospace" fill="#334155">comment</text>
+  <text x="670" y="67" text-anchor="middle" font-size="12.5" font-weight="700" font-family="ui-monospace, Consolas, monospace" fill="#334155">board_id</text>
+  <rect x="455" y="80" width="50" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="505" y="80" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="615" y="80" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <text x="480" y="103" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">1</text>
+  <text x="560" y="103" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">comment1</text>
+  <text x="670" y="103" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">1</text>
+  <rect x="455" y="116" width="50" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="505" y="116" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="615" y="116" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <text x="480" y="139" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">2</text>
+  <text x="560" y="139" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">comment2</text>
+  <text x="670" y="139" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">1</text>
+  <rect x="455" y="152" width="50" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="505" y="152" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <rect x="615" y="152" width="110" height="36" fill="#eef2ff" stroke="#c7d2fe" stroke-width="1.2"/>
+  <text x="480" y="175" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">3</text>
+  <text x="560" y="175" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">comment3</text>
+  <text x="670" y="175" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#3730a3">1</text>
+  <rect x="455" y="188" width="50" height="36" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="505" y="188" width="110" height="36" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <rect x="615" y="188" width="110" height="36" fill="#fff" stroke="#cbd5e1" stroke-width="1.2"/>
+  <text x="480" y="211" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#475569">4</text>
+  <text x="560" y="211" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#475569">comment4</text>
+  <text x="670" y="211" text-anchor="middle" font-size="12.5" font-family="ui-monospace, Consolas, monospace" fill="#475569">2</text>
+  <line x1="261" y1="134" x2="449" y2="134" stroke="#475569" stroke-width="2" marker-start="url(#c5tbl-two)" marker-end="url(#c5tbl-two)"/>
+  <text x="287" y="124" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">1</text>
+  <text x="423" y="124" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a">N</text>
 </svg>
 </div>
 
@@ -109,28 +141,33 @@ start/ch05/src/main/resources/
 
 *그림 5-2. 자바 객체의 한 방향 참조*
 
-따라서 게시글에서 댓글로 접근하려면 **Board** 객체에도 참조를 위한 필드를 추가해야 합니다. JPA에서는 이런 방식을 **양방향 매핑(Bidirectional Mapping)** 이라고 합니다. **Reply**의 **@ManyToOne**과 짝을 이루도록 **Board**에 **@OneToMany**를 추가해 서로를 참조하게 만드는 방식입니다.
+JPA에서는 이를 해결하기 위해 **양방향 매핑(Bidirectional Mapping)** 을 사용합니다. **Board** 엔티티에 댓글 목록 필드를 추가하고 **@OneToMany**를 설정해, **Reply**의 **@ManyToOne**과 서로 참조하도록 연결하는 방식입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 720 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board 박스에는 replies 필드가, Reply 박스에는 board 필드가 있다. Board에서 Reply로 향하는 위쪽 화살표에는 OneToMany가, Reply에서 Board로 향하는 아래쪽 화살표에는 ManyToOne이 적혀 있다.">
+<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Board에는 OneToMany가 설정된 replies 필드가, Reply에는 ManyToOne이 설정된 board 필드가 있다. Reply에서 Board로 향하는 위쪽 화살표에는 board가, Board에서 Reply로 향하는 아래쪽 화살표에는 replies가 적혀 있어 서로를 참조한다.">
   <defs>
-    <marker id="c5bi-l" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
-    <marker id="c5bi-r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
+    <marker id="c5bi-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
   </defs>
-  <rect x="30" y="40" width="230" height="100" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
-  <rect x="30" y="40" width="230" height="32" rx="10" fill="#eef2ff"/>
-  <rect x="30" y="64" width="230" height="8" fill="#eef2ff"/>
-  <text x="145" y="63" text-anchor="middle" font-size="16" font-weight="800" fill="#3730a3">Board</text>
-  <text x="145" y="112" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#475569">List&lt;Reply&gt; replies</text>
-  <rect x="460" y="40" width="230" height="100" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
-  <rect x="460" y="40" width="230" height="32" rx="10" fill="#fff4ed"/>
-  <rect x="460" y="64" width="230" height="8" fill="#fff4ed"/>
-  <text x="575" y="63" text-anchor="middle" font-size="16" font-weight="800" fill="#7b341e">Reply</text>
-  <text x="575" y="112" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#475569">Board board</text>
-  <path d="M260,80 H456" fill="none" stroke="#4f46e5" stroke-width="2" marker-end="url(#c5bi-r)"/>
-  <text x="358" y="70" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#4f46e5">@OneToMany</text>
-  <path d="M460,120 H264" fill="none" stroke="#ff7849" stroke-width="2" marker-end="url(#c5bi-l)"/>
-  <text x="360" y="142" text-anchor="middle" font-size="14" font-family="monospace" font-weight="700" fill="#c2410c">@ManyToOne</text>
+  <rect x="60" y="50" width="200" height="148" rx="10" fill="#fff" stroke="#4f46e5" stroke-width="2"/>
+  <rect x="60" y="50" width="200" height="30" rx="10" fill="#eef2ff"/>
+  <rect x="60" y="72" width="200" height="8" fill="#eef2ff"/>
+  <text x="160" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#3730a3">Board</text>
+  <text x="80" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="80" y="130" font-size="13" font-family="monospace" fill="#475569">title</text>
+  <text x="80" y="154" font-size="13" font-family="monospace" font-weight="600" fill="#4f46e5">@OneToMany</text>
+  <text x="80" y="178" font-size="13" font-family="monospace" font-weight="800" fill="#3730a3">List&lt;Reply&gt; replies</text>
+  <rect x="460" y="50" width="200" height="148" rx="10" fill="#fff" stroke="#ff7849" stroke-width="2"/>
+  <rect x="460" y="50" width="200" height="30" rx="10" fill="#fff4ed"/>
+  <rect x="460" y="72" width="200" height="8" fill="#fff4ed"/>
+  <text x="560" y="71" text-anchor="middle" font-size="15" font-family="monospace" font-weight="800" fill="#7b341e">Reply</text>
+  <text x="480" y="106" font-size="13" font-family="monospace" fill="#475569">id</text>
+  <text x="480" y="130" font-size="13" font-family="monospace" fill="#475569">comment</text>
+  <text x="480" y="154" font-size="13" font-family="monospace" font-weight="600" fill="#c2410c">@ManyToOne</text>
+  <text x="480" y="178" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
+  <path d="M460,104 H260" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#c5bi-one)"/>
+  <text x="360" y="94" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#334155">board</text>
+  <path d="M260,146 H460" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#c5bi-one)"/>
+  <text x="360" y="168" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#334155">replies</text>
 </svg>
 </div>
 
@@ -138,7 +175,7 @@ start/ch05/src/main/resources/
 
 ### 5.1.1 댓글 엔티티
 
-댓글 엔티티는 댓글을 작성한 회원 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 가집니다.
+먼저 댓글 엔티티가 필요합니다. 댓글 엔티티는 댓글을 작성한 회원 정보와 댓글이 포함된 게시글 정보를 위해 **User** 엔티티와 **Board** 엔티티를 필드로 가집니다.
 
 ```java [참고] reply/Reply.java. 댓글 엔티티
 @NoArgsConstructor
@@ -176,22 +213,22 @@ public class Reply {
 
 ### 5.1.2 게시글에 댓글 목록 추가
 
-양방향 매핑을 위해서는 **Board** 엔티티에 댓글 목록 필드가 필요하고, 이때 `mappedBy` 속성을 사용합니다. 한쪽 어노테이션의 `mappedBy`에 상대 엔티티의 필드 이름을 지정하면 두 객체가 같은 외래 키로 매핑됩니다.
+다음으로 **Board** 엔티티에 **@OneToMany**를 사용해 양방향 매핑을 설정합니다. 그리고 `mappedBy` 속성에 상대 엔티티인 **Reply**의 `board` 필드를 지정하면 두 엔티티가 매핑됩니다.
 
 ```java [참고] board/Board.java. 댓글 목록 추가와 회원 필드 수정
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
     @OneToMany(mappedBy = "board", fetch = FetchType.LAZY,
-            cascade = CascadeType.REMOVE)
+            cascade = CascadeType.REMOVE) // 게시글을 삭제할 때 연관된 댓글도 함께 삭제한다
     private List<Reply> replies = new ArrayList<>();
 ```
 
-`cascade = CascadeType.REMOVE`를 설정하면 게시글을 삭제할 때 연관된 댓글도 함께 삭제됩니다. 두 필드에 함께 적은 `fetch`는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.
+두 필드에 함께 적은 `fetch`는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.
 
 ### 5.1.3 더미 데이터
 
-더미 데이터에는 댓글이 추가되어 있습니다.
+준비된 더미 데이터에는 1번 게시글에 3개, 2번 게시글에 1개의 댓글이 포함되어 있습니다.
 
 ```sql [참고] resources/db/data.sql. 댓글 더미 데이터
 insert into reply_tb(comment,board_id,user_id,created_at)
@@ -205,13 +242,15 @@ values('comment4',2,2,now());
 ```
 ## 5.2 즉시 로딩과 지연 로딩
 
-JPA로 개발할 때의 대표적인 성능 문제는 당장 필요 없는 연관 데이터까지 함께 조회할 때 발생합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. `findAll()`로 게시글 전체를 조회할 때 JPA가 연관된 회원 엔티티까지 가져온다면, 게시글 수만큼 회원 조회 쿼리가 추가로 실행됩니다. 결국 쓰지 않는 데이터 때문에 서버와 데이터베이스에 부하를 줍니다.
+지금까지는 연관관계를 매핑해 객체끼리 연결하는 방법을 알아보았습니다. 이번에는 JPA의 심화 내용으로, 연관된 엔티티를 조회하는 시점을 결정하는 로딩 전략을 알아보겠습니다.
 
-이러한 성능 저하를 막기 위해 JPA에서는 연관된 데이터를 **조회하는 시점에 한 번에 가져올지**, 아니면 **실제로 사용하는 시점에 조회할지**를 지정할 수 있습니다.
+객체 참조는 편리하지만, 당장 필요 없는 연관 데이터까지 데이터베이스에서 함께 조회하게 만들어 성능 저하의 주된 원인이 되곤 합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. JPA는 기본적으로 게시글 목록을 조회할 때, 화면에 필요하지 않더라도 추가 쿼리를 실행해 회원 정보를 함께 가져옵니다.
+
+이러한 성능 저하를 막기 위해 연관된 데이터를 **조회하는 시점**에 같이 가져올지, 아니면 **실제 사용하는 시점**에 조회할지에 대한 전략이 필요합니다.
 
 ### 5.2.1 즉시 로딩
 
-**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 한 번에 가져오는 방식**으로, **@ManyToOne** 어노테이션은 즉시 로딩이 기본 전략입니다. 그래서 `fetch` 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
+**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 같이 가져오는 방식**으로, **@ManyToOne** 어노테이션은 **즉시 로딩이 기본 전략**입니다. 그래서 `fetch` 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
 
 이러한 설정 때문에 `findAll()`로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
 
@@ -361,7 +400,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
     }
 ```
 
-ssar로 로그인해 게시글 상세 API를 호출하면 결과를 확인할 수 있습니다.
+코드 작성이 완료되면 프로젝트를 실행 후 챕터 4에서 사용한 ssar의 JWT로 API 요청을 보냅니다. (JWT가 만료됐다면 ssar로 다시 로그인해 발급받습니다.)
 
 ```json [Hoppscotch] 게시글 상세 조회
 GET http://localhost:8080/api/boards/1
@@ -370,13 +409,13 @@ GET http://localhost:8080/api/boards/1
 ![](../assets/CH5/terminal/03_board-detail-with-replies.png)
 *그림 5-6. 댓글이 담긴 상세 응답*
 
+게시글 상세 응답에 댓글 목록이 함께 담긴 것을 확인할 수 있습니다.
+
 ## 5.4 댓글 추가
 
 ### 5.4.1 리포지토리
 
-댓글을 저장할 리포지토리를 살펴보겠습니다.
-
-`reply/ReplyRepository.java`를 열어 아래 코드를 확인합니다.
+먼저 댓글을 저장할 리포지토리를 살펴보겠습니다. `reply/ReplyRepository.java`를 열어 아래 코드를 확인합니다.
 
 ```java [참고] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
@@ -385,7 +424,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 ### 5.4.2 요청 DTO
 
-**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 JWT를 확인해 요청 객체에 담아 둔 로그인 회원 정보를 사용합니다.
+**SaveDTO**는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 JWT를 통해 요청 객체에 담아 둔 로그인 회원 정보를 사용합니다.
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 

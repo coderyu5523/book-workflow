@@ -62,7 +62,7 @@ cd start/ch03
 
 ### 2. 파일 구조
 
-이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 2 그대로입니다.
+이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.
 
 ```text ch03 디렉토리
 start/ch03/src/main/java/com/metacoding/spring/

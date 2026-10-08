@@ -66,6 +66,8 @@ cd start/ch02
 
 ### 2. 파일 구조
 
+이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.
+
 ```text ch02 디렉토리
 start/ch02/src/main/java/com/metacoding/spring/
 ├── board/

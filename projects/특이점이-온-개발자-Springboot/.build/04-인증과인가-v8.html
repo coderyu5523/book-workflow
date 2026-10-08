@@ -71,7 +71,7 @@
 <span class="nb">cd</span><span class="w"> </span>start/ch04</div>
 <p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch04</code> 폴더에서 확인할 수 있습니다.</p>
 <h3>2. 파일 구조</h3>
-<p>이번 챕터에서 새로 만들거나 고치는 파일만 표시합니다. 나머지는 챕터 3 그대로입니다.</p>
+<p>이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch04 디렉토리</div>start/ch04/src/main/
 ├── java/com/metacoding/spring/
 │   ├── board/
@@ -813,7 +813,7 @@
 <h2>4.6 회원가입</h2>
 <p>이제 하나씩 기능을 만들어 보겠습니다. 회원가입 기능은 클라이언트가 입력한 회원 정보를 데이터베이스에 저장한 뒤, 저장된 회원 정보를 응답합니다.</p>
 <h3>4.6.1 리포지토리</h3>
-<p>먼저 리포지토리를 작성해 보겠습니다. <strong>JpaRepository</strong>를 상속하고, 유저네임으로 회원을 조회하는 메서드를 추가합니다.</p>
+<p>먼저 리포지토리를 작성해 보겠습니다. <strong>JpaRepository</strong>를 상속한 <strong>UserRepository</strong>에 유저네임으로 회원을 조회하는 메서드를 추가합니다.</p>
 <p><code>user/UserRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 1</span> user/UserRepository.java. 유저네임으로 조회</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">UserRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">User</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 
