@@ -343,7 +343,7 @@ start/ch05/src/main/resources/
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> reply/ReplyRepository.java. JpaRepository 상속</div><span class="kd">public</span><span class="w"> </span><span class="kd">interface</span> <span class="nc">ReplyRepository</span><span class="w"> </span><span class="kd">extends</span><span class="w"> </span><span class="n">JpaRepository</span><span class="o">&lt;</span><span class="n">Reply</span><span class="p">,</span><span class="w"> </span><span class="n">Integer</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
 <span class="p">}</span></div>
 <h3>5.4.2 요청 DTO</h3>
-<p><strong>SaveDTO</strong>는 댓글 내용과 대상 게시글의 번호를 받고, 작성자 정보는 필터가 JWT를 통해 요청 객체에 담아 둔 로그인 회원 정보를 사용합니다.</p>
+<p><strong>SaveDTO</strong>는 댓글 내용과 대상 게시글 번호를 받습니다. 댓글 작성자는 필터가 요청 객체에 담아 둔 로그인 회원으로 저장합니다.</p>
 <p><code>reply/ReplyRequest.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 4</span> reply/ReplyRequest.java. 댓글 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyRequest</span><span class="w"> </span><span class="p">{</span>
 
@@ -359,7 +359,7 @@ start/ch05/src/main/resources/
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <h3>5.4.3 응답 DTO</h3>
-<p>댓글을 추가한 결과를 응답에 사용할 <strong>DTO</strong>도 정의합니다.</p>
+<p>댓글 추가 후 응답에 사용할 <strong>DTO</strong>를 정의합니다.</p>
 <p><code>reply/ReplyResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 5</span> reply/ReplyResponse.java. 댓글 응답 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">ReplyResponse</span><span class="w"> </span><span class="p">{</span>
 
@@ -416,7 +416,7 @@ start/ch05/src/main/resources/
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="n">respDTO</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>ssar로 로그인해 1번 게시글에 댓글을 답니다.</p>
+<p>작성이 끝나면 프로젝트 실행 후 ssar로 1번 게시글에 댓글을 추가해 보겠습니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 댓글 작성</div><span class="err">POST</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/replies</span>
 
 <span class="p">{</span>
@@ -451,14 +451,15 @@ start/ch05/src/main/resources/
 <span class="w">        </span><span class="n">replyService</span><span class="p">.</span><span class="na">댓글삭제</span><span class="p">(</span><span class="n">replyId</span><span class="p">,</span><span class="w"> </span><span class="n">loginUser</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>ssar로 로그인해 자신이 쓴 1번 댓글의 삭제를 요청합니다.</p>
+<p>작성이 끝나면 프로젝트 실행 후 ssar로 자신이 쓴 1번 댓글을 삭제해 보겠습니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 댓글 삭제</div><span class="err">DELETE</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/replies/1</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH5\terminal\05_reply-delete.png" alt="" /><div class="caption">그림 5-8. 댓글 삭제 응답</div></div>
-<p>댓글 기능을 마지막으로 게시판 API에 필요한 기능을 모두 구현했습니다. 컨트롤러와 서비스, 리포지토리가 요청을 계층별로 처리하고, DTO가 요청과 응답의 데이터 형식을 정의하며, 전역 예외 처리가 실패 사유를 상태 코드와 함께 응답합니다. 그리고 필터가 식별한 요청자를 서비스가 작성자와 비교하므로, 게시글과 댓글은 작성자 본인만 변경할 수 있습니다.</p>
+<p>댓글이 정상적으로 삭제되었습니다.</p>
+<p>댓글 기능을 끝으로 게시판 API에 필요한 모든 기능을 구현했습니다. 요청은 컨트롤러, 서비스, 리포지토리 계층을 거쳐 처리되며, 데이터는 DTO를 통해 안전하게 주고받습니다. 예외가 발생하면 전역 예외 처리기가 상태 코드와 실패 사유를 응답합니다. 또한, 필터에서 식별한 요청자 정보로 권한을 검증하여 게시글과 댓글은 작성자 본인만 제어할 수 있도록 구성했습니다.</p>
 <div class="remember">
 <p><strong>이것만은 기억하자</strong></p>
 <ul>
-<li><strong>객체는 참조 필드가 있어야 접근할 수 있으므로 양방향 매핑을 설정합니다.</strong> 테이블은 외래 키 하나로 두 테이블을 조인하지만, 객체는 게시글에 댓글 필드를 추가해야 게시글에서 댓글을 참조할 수 있습니다.</li>
+<li><strong>연관된 엔티티를 양쪽에서 참조하려면 양방향 매핑을 설정합니다.</strong> 테이블은 외래 키 하나로 두 테이블을 조인하지만, 객체는 게시글에 댓글 필드를 추가해야 게시글에서 댓글을 참조할 수 있습니다.</li>
 <li><strong>연관된 엔티티를 함께 조회할 때는 join fetch를 활용해 쿼리를 최적화합니다.</strong> 불필요한 데이터 조회를 막기 위해 평소에는 지연 로딩을 기본으로 하고, 게시글과 댓글을 함께 응답해야 할 때만 join fetch로 한 번에 가져옵니다.</li>
 <li><strong>댓글처럼 연관된 데이터가 없을 수도 있을 때는 LEFT OUTER JOIN을 사용합니다.</strong> INNER JOIN을 쓰면 댓글이 없는 게시글은 조회 결과에서 누락됩니다. 따라서 LEFT OUTER JOIN으로 가져온 뒤, 게시글 응답 DTO 안에 댓글 목록을 담아 반환합니다.</li>
 </ul>
