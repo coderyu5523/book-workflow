@@ -26,7 +26,7 @@
 <p>선배가 말을 이어갔습니다.</p>
 <div class="dialogue"><span class="speaker">선배</span>: "그리고 지금은 서버가 엔티티를 그대로 응답하는 구조라서 사용자에게 불필요한 정보까지 전달되고, 보안에도 취약해요. 그래서 <strong>DTO라는 데이터 전송을 위한 객체</strong>를 만들고, 이 DTO 타입으로 요청을 받고 응답해야 해요."</div>
 <div class="svg-figure">
-<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 붙은 전역 예외 처리기가 예외를 JSON 응답으로 바꿔 클라이언트에게 돌려준다.">
+<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 표시된 전역 예외 처리기가 예외를 JSON 응답으로 바꿔 클라이언트에게 돌려준다.">
   <defs>
     <marker id="c3f-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
     <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
@@ -127,7 +127,7 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>생성자 위에 <strong>@Builder</strong>를 붙이면 빌더 패턴으로 객체를 생성할 수 있으며, 이 빌더는 주로 요청 DTO를 엔티티로 변환할 때 쓰입니다. 클래스에 생성자를 직접 정의하면 자바가 자동으로 만들어 주던 기본 생성자가 사라집니다. JPA 엔티티는 기본 생성자가 반드시 필요하므로 <strong>@NoArgsConstructor</strong>를 붙여 기본 생성자를 추가합니다.</p>
+<p>생성자 위에 <strong>@Builder</strong>를 표시하면 빌더 패턴으로 객체를 생성할 수 있으며, 이 빌더는 주로 요청 DTO를 엔티티로 변환할 때 쓰입니다. 클래스에 생성자를 직접 정의하면 자바가 자동으로 만들어 주던 기본 생성자가 사라집니다. JPA 엔티티는 기본 생성자가 반드시 필요하므로 <strong>@NoArgsConstructor</strong>를 표시해 기본 생성자를 추가합니다.</p>
 <div class="tip">
 <p><strong>빌더 패턴(Builder Pattern)이란?</strong></p>
 <p>객체를 생성할 때 매개변수 순서에 의존하지 않고, 어떤 필드에 어떤 값이 들어가는지 명시적으로 지정하는 패턴입니다. <strong>@Builder</strong>를 사용하면 복잡한 매개변수 순서를 외울 필요 없이, 원하는 필드에 값을 채워 넣을 수 있습니다.</p>
@@ -511,7 +511,7 @@
 <span class="w">        </span><span class="n">boardService</span><span class="p">.</span><span class="na">게시글삭제</span><span class="p">(</span><span class="n">boardId</span><span class="p">);</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Resp</span><span class="p">.</span><span class="na">ok</span><span class="p">(</span><span class="kc">null</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>게시글 추가, 수정의 경우 매개변수에 <strong>@RequestBody</strong>를 붙여 요청 DTO를 전달받습니다. 그러면 스프링은 요청 바디의 JSON 데이터를 읽고, 요청 데이터와 동일한 이름을 가진 DTO 필드에 자동으로 값을 채워 줍니다.</p>
+<p>게시글 추가, 수정의 경우 매개변수에 <strong>@RequestBody</strong>를 표시해 요청 DTO를 전달받습니다. 그러면 스프링은 요청 바디의 JSON 데이터를 읽고, 요청 데이터와 동일한 이름을 가진 DTO 필드에 자동으로 값을 채워 줍니다.</p>
 <p>이제 프로젝트를 실행해 결과를 확인해 보겠습니다. 먼저 1번 게시글을 조회하면 게시글 데이터가 정상적으로 응답됩니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH3\terminal\01_board-detail-dto.png" alt="" /><div class="caption">그림 3-7. 상세 조회 응답</div></div>

@@ -11,7 +11,7 @@
 **선배**: "그리고 지금은 서버가 엔티티를 그대로 응답하는 구조라서 사용자에게 불필요한 정보까지 전달되고, 보안에도 취약해요. 그래서 **DTO라는 데이터 전송을 위한 객체**를 만들고, 이 DTO 타입으로 요청을 받고 응답해야 해요."
 
 <div class="svg-figure">
-<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 붙은 전역 예외 처리기가 예외를 JSON 응답으로 바꿔 클라이언트에게 돌려준다.">
+<svg viewBox="0 0 1000 296" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="예외가 발생하면 어디서 받는가. 요청은 클라이언트에서 디스패처 서블릿, 컨트롤러, 서비스를 거쳐 리포지토리로 간다. 서비스에서 예외가 발생하면 컨트롤러를 거쳐 디스패처 서블릿까지 전달된다. 디스패처 서블릿은 예외 처리를 전역 예외 처리기에 맡기고, RestControllerAdvice가 표시된 전역 예외 처리기가 예외를 JSON 응답으로 바꿔 클라이언트에게 돌려준다.">
   <defs>
     <marker id="c3f-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
     <marker id="c3f-s" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#ff7849"/></marker>
@@ -136,7 +136,7 @@ public class Board {
 }
 ```
 
-생성자 위에 **@Builder**를 붙이면 빌더 패턴으로 객체를 생성할 수 있으며, 이 빌더는 주로 요청 DTO를 엔티티로 변환할 때 쓰입니다. 클래스에 생성자를 직접 정의하면 자바가 자동으로 만들어 주던 기본 생성자가 사라집니다. JPA 엔티티는 기본 생성자가 반드시 필요하므로 **@NoArgsConstructor**를 붙여 기본 생성자를 추가합니다.
+생성자 위에 **@Builder**를 표시하면 빌더 패턴으로 객체를 생성할 수 있으며, 이 빌더는 주로 요청 DTO를 엔티티로 변환할 때 쓰입니다. 클래스에 생성자를 직접 정의하면 자바가 자동으로 만들어 주던 기본 생성자가 사라집니다. JPA 엔티티는 기본 생성자가 반드시 필요하므로 **@NoArgsConstructor**를 표시해 기본 생성자를 추가합니다.
 
 :::tip
 **빌더 패턴(Builder Pattern)이란?**
@@ -550,7 +550,7 @@ public class Exception404 extends RuntimeException {
     }
 ```
 
-게시글 추가, 수정의 경우 매개변수에 **@RequestBody**를 붙여 요청 DTO를 전달받습니다. 그러면 스프링은 요청 바디의 JSON 데이터를 읽고, 요청 데이터와 동일한 이름을 가진 DTO 필드에 자동으로 값을 채워 줍니다.
+게시글 추가, 수정의 경우 매개변수에 **@RequestBody**를 표시해 요청 DTO를 전달받습니다. 그러면 스프링은 요청 바디의 JSON 데이터를 읽고, 요청 데이터와 동일한 이름을 가진 DTO 필드에 자동으로 값을 채워 줍니다.
 
 이제 프로젝트를 실행해 결과를 확인해 보겠습니다. 먼저 1번 게시글을 조회하면 게시글 데이터가 정상적으로 응답됩니다.
 

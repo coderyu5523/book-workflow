@@ -463,7 +463,7 @@ spring.sql.init.data-locations=classpath:db/data.sql
 # 테이블이 만들어진 뒤에 위 파일을 실행한다
 spring.jpa.defer-datasource-initialization=true
 
-# 스프링 실행 시 @Entity가 붙은 클래스를 테이블로 자동 생성한다
+# 스프링 실행 시 @Entity가 표시된 클래스를 테이블로 자동 생성한다
 spring.jpa.hibernate.ddl-auto=create
 
 # JPA가 만든 SQL을 콘솔에 보기 좋게 출력한다
