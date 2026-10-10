@@ -58,7 +58,7 @@ git clone https://github.com/metacoding-06-springboot-v1/start.git
 cd start/ch03
 ```
 
-완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 `ch03` 폴더에서 확인할 수 있습니다.
+완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 **ch03** 폴더에서 확인할 수 있습니다.
 
 ### 2. 파일 구조
 
@@ -176,7 +176,7 @@ public class Board {
 
 *그림 3-3. 요청 데이터와 DTO*
 
-게시글 추가와 수정을 위한 **SaveDTO**와 **UpdateDTO**를 정의합니다. 이 중 **SaveDTO**는 JPA가 관리할 수 있는 엔티티로 변환하도록 내부에 `toEntity()`를 추가합니다.
+게시글 추가와 수정을 위한 **SaveDTO**와 **UpdateDTO**를 정의합니다. 이 중 **SaveDTO**는 JPA가 관리할 수 있는 엔티티로 변환하도록 내부에 **toEntity** 메서드를 추가합니다.
 
 `board/BoardRequest.java`를 열어 아래와 같이 작성합니다.
 
@@ -200,7 +200,7 @@ public class BoardRequest {
 }
 ```
 
-`record`는 데이터 전달을 목적으로 하는 특수 클래스입니다. 필드만 선언하면 생성자와 getter 같은 메서드를 자동으로 만들어 줍니다.
+**record**는 데이터 전달을 목적으로 하는 특수 클래스입니다. 필드만 선언하면 생성자와 getter 같은 메서드를 자동으로 만들어 줍니다.
 
 ## 3.2 응답 DTO
 
@@ -242,7 +242,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 }
 ```
 
-리포지토리는 클래스가 아니라 인터페이스로 선언합니다. `JpaRepository`를 상속할 때 다룰 엔티티 타입과 기본 키 타입을 차례로 적습니다.
+리포지토리는 클래스가 아니라 인터페이스로 선언합니다. **JpaRepository**를 상속할 때 다룰 엔티티 타입과 기본 키 타입을 차례로 적습니다.
 
 리포지토리의 조회 메서드는 반환 타입을 **Optional**로 선언할 수 있습니다. **Optional**은 존재할 수도, 존재하지 않을 수도 있는 값을 감싸는 **래퍼(Wrapper)** 클래스로, 주로 null로 인한 에러를 방지하기 위해 사용됩니다. 이렇게 선언하면 값이 없을 때 null 대신 빈 **Optional**이 반환되므로, 게시글을 찾지 못한 경우를 예외로 처리할 수 있습니다.
 
@@ -250,10 +250,10 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 | 메서드 | 하는 일 |
 |---|---|
-| `save(엔티티)` | 엔티티를 데이터베이스에 저장하고, 저장된 엔티티를 반환합니다 |
-| `findById(기본 키)` | 기본 키로 엔티티 한 건을 조회해 **Optional**에 담아 반환합니다 |
-| `findAll()` | 테이블의 모든 엔티티를 조회해 **List**로 반환합니다 |
-| `delete(엔티티)` | 엔티티를 데이터베이스에서 삭제합니다 |
+| **save** | 엔티티를 데이터베이스에 저장하고, 저장된 엔티티를 반환합니다 |
+| **findById** | 기본 키로 엔티티 한 건을 조회해 **Optional**에 담아 반환합니다 |
+| **findAll** | 테이블의 모든 엔티티를 조회해 **List**로 반환합니다 |
+| **delete** | 엔티티를 데이터베이스에서 삭제합니다 |
 
 ## 3.4 예외 처리 추가
 
@@ -299,7 +299,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
 
 *그림 3-4. 예외가 톰캣까지 전달되는 흐름*
 
-예외를 넘겨받은 톰캣은 오류 응답을 만들기 위해 스프링 부트에 설정된 `/error` 주소로 요청을 다시 보냅니다. 그러면 스프링 부트의 **기본 오류 컨트롤러(BasicErrorController)** 가 이를 받아 기본 오류 정보를 담아 응답합니다.
+예외를 넘겨받은 톰캣은 오류 응답을 만들기 위해 스프링 부트에 설정된 /error 주소로 요청을 다시 보냅니다. 그러면 스프링 부트의 **기본 오류 컨트롤러(BasicErrorController)** 가 이를 받아 기본 오류 정보를 담아 응답합니다.
 
 <div class="svg-figure svg-figure--wide">
 <svg viewBox="0 0 910 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="5. 톰캣이 서버 내부에서 /error 주소로 요청을 다시 보내 디스패처 서블릿을 거쳐 스프링 부트의 기본 오류 컨트롤러에 도착한다. 6. 기본 오류 컨트롤러가 만든 오류 응답이 디스패처 서블릿과 톰캣을 거쳐 클라이언트에게 돌아간다.">
@@ -450,7 +450,7 @@ public class Exception404 extends RuntimeException {
 }
 ```
 
-**RuntimeException**을 상속받으면 컴파일러가 예외 처리를 강제하지 않습니다. 따라서 예외가 발생하는 곳이나 호출하는 곳마다 매번 `try-catch`나 `throws` 구문을 작성할 필요가 없어 코드가 깔끔해집니다. 같은 패키지에 있는 **Exception400**, **Exception401**, **Exception403**, **Exception500** 클래스 역시 이름만 다를 뿐 구조는 이와 동일합니다.
+**RuntimeException**을 상속받으면 컴파일러가 예외 처리를 강제하지 않습니다. 따라서 예외가 발생하는 곳이나 호출하는 곳마다 매번 **try-catch**나 **throws** 구문을 작성할 필요가 없어 코드가 깔끔해집니다. 같은 패키지에 있는 **Exception400**, **Exception401**, **Exception403**, **Exception500** 클래스 역시 이름만 다를 뿐 구조는 이와 동일합니다.
 
 이 책에서 사용하는 상태 코드는 다음과 같습니다.
 
@@ -509,7 +509,7 @@ public class Exception404 extends RuntimeException {
     }
 ```
 
-리포지토리가 반환한 **Optional**에서 값을 꺼낼 때는 `orElseThrow()`를 사용합니다. 이 메서드는 값이 있으면 그 값을 반환하고, 비어 있으면 인자로 전달한 예외를 발생시킵니다.
+리포지토리가 반환한 **Optional**에서 값을 꺼낼 때는 **orElseThrow**를 사용합니다. 이 메서드는 값이 있으면 그 값을 반환하고, 비어 있으면 인자로 전달한 예외를 발생시킵니다.
 
 ### 3.5.2 컨트롤러
 

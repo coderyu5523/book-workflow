@@ -24,7 +24,7 @@ git clone https://github.com/metacoding-06-springboot-v1/start.git
 cd start/ch05
 ```
 
-완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 `ch05` 폴더에서 확인할 수 있습니다.
+완성 코드는 final 레포(`https://github.com/metacoding-06-springboot-v1/final`)의 **ch05** 폴더에서 확인할 수 있습니다.
 
 ### 2. 파일 구조
 
@@ -213,7 +213,7 @@ public class Reply {
 
 ### 5.1.2 게시글에 댓글 목록 추가
 
-다음으로 **Board** 엔티티에 **@OneToMany**를 사용해 양방향 매핑을 설정합니다. 그리고 `mappedBy` 속성에 상대 엔티티인 **Reply**의 `board` 필드를 지정하면 두 엔티티가 매핑됩니다.
+다음으로 **Board** 엔티티에 **@OneToMany**를 사용해 양방향 매핑을 설정합니다. 그리고 **mappedBy** 속성에 상대 엔티티인 **Reply**의 **board** 필드를 지정하면 두 엔티티가 매핑됩니다.
 
 ```java [참고] board/Board.java. 댓글 목록 추가와 회원 필드 수정
     @ManyToOne(fetch = FetchType.LAZY)
@@ -224,7 +224,7 @@ public class Reply {
     private List<Reply> replies = new ArrayList<>();
 ```
 
-두 필드에 함께 적은 `fetch`는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.
+두 필드에 함께 적은 **fetch**는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.
 
 ### 5.1.3 더미 데이터
 
@@ -250,9 +250,9 @@ values('comment4',2,2,now());
 
 ### 5.2.1 즉시 로딩
 
-**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 같이 가져오는 방식**으로, **@ManyToOne** 어노테이션은 **즉시 로딩이 기본 전략**입니다. 그래서 `fetch` 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 `user` 필드에 채워 넣습니다.
+**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 같이 가져오는 방식**으로, **@ManyToOne** 어노테이션은 **즉시 로딩이 기본 전략**입니다. 그래서 **fetch** 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 **user** 필드에 채워 넣습니다.
 
-이러한 설정 때문에 `findAll()`로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
+이러한 설정 때문에 **findAll** 메서드로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -281,14 +281,14 @@ values('comment4',2,2,now());
 
 이러한 문제를 해결하기 위해 사용하는 방식이 **지연 로딩(Lazy Loading)** 입니다.
 
-지연 로딩은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. **@ManyToOne**의 `fetch` 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.
+지연 로딩은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. **@ManyToOne**의 **fetch** 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.
 
 ```java board/Board.java. 회원 조회를 지연 로딩으로
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 ```
 
-LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 외래 키(`user_id`)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.
+LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 외래 키(**user_id**)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.
 
 <div class="terminal-log">
   <div class="tl-chrome">
@@ -388,7 +388,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 ### 5.3.3 서비스
 
-**BoardService**의 상세 메서드는 `findByIdJoinUser()` 대신 `findByIdJoinUserAndReplies()`를 호출합니다.
+**BoardService**의 상세 메서드는 **findByIdJoinUser** 대신 **findByIdJoinUserAndReplies**를 호출합니다.
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
@@ -540,7 +540,7 @@ POST http://localhost:8080/api/replies
 
 ### 5.5.1 서비스
 
-`reply/ReplyService.java`의 `댓글삭제()`를 아래와 같이 작성합니다.
+`reply/ReplyService.java`의 **댓글삭제** 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 8] reply/ReplyService.java. 댓글 삭제
     @Transactional
@@ -561,7 +561,7 @@ POST http://localhost:8080/api/replies
 
 ### 5.5.2 컨트롤러
 
-`reply/ReplyController.java`의 `deleteById()`를 아래와 같이 작성합니다.
+`reply/ReplyController.java`의 **deleteById** 메서드를 아래와 같이 작성합니다.
 
 ```java [실습 9] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")

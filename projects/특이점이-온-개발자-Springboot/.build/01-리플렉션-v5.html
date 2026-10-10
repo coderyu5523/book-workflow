@@ -83,7 +83,7 @@
 <h3>2. 소스 코드 클론</h3>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 레포 클론</div>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metacoding-06-springboot-v1/start.git
 <span class="nb">cd</span><span class="w"> </span>start/ch01</div>
-<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch01</code> 폴더에서 확인할 수 있습니다.</p>
+<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <strong>ch01</strong> 폴더에서 확인할 수 있습니다.</p>
 <h3>3. 파일 구조</h3>
 <p>이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch01 디렉토리</div>start/ch01/src/main/java/com/reflection/
@@ -179,7 +179,7 @@
 <p>스프링 역시 이 원칙을 따릅니다. 요청을 받아 담당 코드로 넘기는 일부터 필요한 객체를 생성하는 일까지, 애플리케이션이 돌아가는 데 필요한 공통 작업을 스프링이 전담합니다. 덕분에 개발자는 핵심 기능에만 집중할 수 있습니다.</p>
 <h3>1.1.3 리플렉션</h3>
 <p>주도권이 프레임워크로 넘어갔다는 것은, 개발자가 작성한 코드를 스프링이 대신 실행해 준다는 뜻입니다. 하지만 여기에는 큰 문제가 있습니다.</p>
-<p>보통의 자바 프로그램에서는 개발자가 호출할 대상을 코드에 직접 명시합니다. 자신이 만든 클래스이므로 이름을 정확히 알고 있고, <code>new</code> 키워드로 객체를 생성해 필요한 메서드를 호출하면 됩니다.</p>
+<p>보통의 자바 프로그램에서는 개발자가 호출할 대상을 코드에 직접 명시합니다. 자신이 만든 클래스이므로 이름을 정확히 알고 있고, <strong>new</strong> 키워드로 객체를 생성해 필요한 메서드를 호출하면 됩니다.</p>
 <div class="svg-figure">
 <svg viewBox="0 0 580 205" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="개발자가 쓴 코드에 BoardController와 insert 이름이 그대로 적혀 있고, 그 이름으로 BoardController의 insert 메서드를 직접 호출한다." style="max-width:480px">
   <defs>
@@ -249,7 +249,7 @@
 <span class="p">}</span></div>
 <p>main 메서드 위에 표시되는 Run을 누르면 프로그램이 실행되고, 콘솔에 Hello, World!가 출력됩니다.</p>
 <div class="chapter-image"><img src="..\assets\CH1\setup\02_run-button.png" alt="" /><div class="caption">그림 1-9. main 메서드의 Run 버튼</div></div>
-<p>start 레포의 <code>ch01</code>에는 세 개의 실습 폴더가 있고, 폴더마다 main 메서드가 있습니다. 실습하는 폴더의 <code>App.java</code>에서 Run을 눌러 실행합니다.</p>
+<p>start 레포의 <strong>ch01</strong>에는 세 개의 실습 폴더가 있고, 폴더마다 main 메서드가 있습니다. 실습하는 폴더의 <strong>App.java</strong>에서 Run을 눌러 실행합니다.</p>
 <h3>1.2.2 if-else 라우팅</h3>
 <p>가장 기본적인 요청 처리 방식은 들어온 요청 주소를 if 문으로 비교하여 알맞은 메서드를 직접 호출하는 것입니다. 먼저 게시글을 다루는 <strong>BoardController</strong>에 등록(insert), 수정(update), 삭제(delete) 메서드를 작성하겠습니다. 각 메서드는 호출될 때 콘솔에 자신의 이름을 출력합니다.</p>
 <p><code>ex01/BoardController.java</code>를 열어 아래와 같이 작성합니다.</p>
@@ -288,13 +288,13 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><code>uri</code>가 /insert이므로 실행하면 main 메서드가 <code>insert()</code>를 호출합니다.</p>
+<p><strong>uri</strong>가 /insert이므로 실행하면 main 메서드가 <strong>insert</strong> 메서드를 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\01_if-routing.png" alt="" /><div class="caption">그림 1-10. if 문 라우팅 실행 결과</div></div>
-<p>여기서 만약 게시글을 조회하는 <code>select()</code> 메서드를 하나 더 추가한다면 어떨까요?</p>
+<p>여기서 만약 게시글을 조회하는 <strong>select</strong> 메서드를 하나 더 추가한다면 어떨까요?</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> ex01/BoardController.java. 메서드 추가</div><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">select</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span>
 <span class="p">}</span></div>
-<p>컨트롤러에 <code>select()</code> 메서드를 추가했지만, 정작 main 메서드에는 /select 주소를 처리할 분기문이 없습니다. <strong>이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다</strong>. 이처럼 컨트롤러뿐만 아니라 main 메서드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
+<p>컨트롤러에 <strong>select</strong> 메서드를 추가했지만, 정작 main 메서드에는 /select 주소를 처리할 분기문이 없습니다. <strong>이 방식은 새로운 메서드를 추가할 때마다 매번 else if 문을 추가해야 합니다</strong>. 이처럼 컨트롤러뿐만 아니라 main 메서드까지 함께 수정해야 한다는 점이 이 구조의 가장 큰 한계입니다.</p>
 <h3>1.2.3 어노테이션과 리플렉션</h3>
 <p>앞서 확인한 한계를 극복하려면, main 메서드를 매번 수정하지 않고도 프로그램이 실행 중에 알맞은 메서드를 찾아 실행하는 구조가 필요합니다. 이때 사용하는 것이 <strong>어노테이션</strong>과 <strong>리플렉션</strong>입니다.</p>
 <p><strong>어노테이션(Annotation)</strong> 은 클래스나 메서드 위에 <strong>@이름</strong> 형태로 정보를 담아 두는 자바 문법입니다. 본래는 <strong>어노테이션을 정의하고, 코드에 표시하고, 리플렉션으로 읽어</strong> 내는 세 단계로 동작합니다. 하지만 스프링에서는 복잡한 정의와 읽기를 프레임워크가 대신하므로, <strong>개발자는 필요한 곳에 표시만 하면 됩니다</strong>.</p>
@@ -480,7 +480,7 @@
 <span class="w">    </span><span class="nd">@RequestMapping</span><span class="p">(</span><span class="n">uri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;/select&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">select</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">System</span><span class="p">.</span><span class="na">out</span><span class="p">.</span><span class="na">println</span><span class="p">(</span><span class="s">&quot;select 호출됨&quot;</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>다음으로 main 메서드를 살펴보겠습니다. 이제 main 메서드에는 객체를 직접 생성하는 코드가 없습니다. 대신 <code>ex03</code> 폴더의 실제 경로를 찾아 그 안의 클래스 파일을 하나씩 확인하고, <strong>@Controller</strong> 어노테이션이 표시된 클래스만 찾아 객체로 생성합니다.</p>
+<p>다음으로 main 메서드를 살펴보겠습니다. 이제 main 메서드에는 객체를 직접 생성하는 코드가 없습니다. 대신 <strong>ex03</strong> 폴더의 실제 경로를 찾아 그 안의 클래스 파일을 하나씩 확인하고, <strong>@Controller</strong> 어노테이션이 표시된 클래스만 찾아 객체로 생성합니다.</p>
 <p><code>ex03/App.java</code>를 열어 아래와 같이 작성합니다. 작성할 때는 final 레포의 완성 코드를 참고해 주세요.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> ex03/App.java. 폴더를 뒤져 @Controller 클래스를 등록하고 주소로 호출</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">App</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">String</span><span class="o">[]</span><span class="w"> </span><span class="n">args</span><span class="p">)</span>
@@ -533,7 +533,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>실행하면 콘솔에 <code>ex03</code> 폴더 안의 파일 이름이 하나씩 출력되고, 그중 <strong>@Controller</strong>가 표시된 클래스가 객체로 등록됩니다. 이어서 <code>findUri()</code>가 등록된 객체에서 주소가 /delete인 <code>delete()</code>를 찾아 호출합니다.</p>
+<p>실행하면 콘솔에 <strong>ex03</strong> 폴더 안의 파일 이름이 하나씩 출력되고, 그중 <strong>@Controller</strong>가 표시된 클래스가 객체로 등록됩니다. 이어서 <strong>findUri</strong> 메서드가 등록된 객체에서 주소가 /delete인 <strong>delete</strong> 메서드를 찾아 호출합니다.</p>
 <div class="chapter-image terminal"><img src="..\assets\CH1\terminal\03_component-scan.png" alt="" /><div class="caption">그림 1-14. 컴포넌트 스캔 실행 결과</div></div>
 <p>이제 개발자는 클래스와 메서드에 어노테이션만 추가하면 됩니다. 그러면 객체를 만드는 일도, 메서드를 찾아 호출하는 일도 프로그램이 대신 처리합니다. 이러한 기능이 스프링에 내장되어 있어서 개발자는 그대로 사용하기만 하면 됩니다.</p>
 <h2>1.3 객체 생성과 연결</h2>

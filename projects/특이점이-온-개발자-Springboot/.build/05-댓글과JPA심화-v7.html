@@ -32,7 +32,7 @@
 <h3>1. 소스 코드 클론</h3>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 레포 클론</div>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metacoding-06-springboot-v1/start.git
 <span class="nb">cd</span><span class="w"> </span>start/ch05</div>
-<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch05</code> 폴더에서 확인할 수 있습니다.</p>
+<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <strong>ch05</strong> 폴더에서 확인할 수 있습니다.</p>
 <h3>2. 파일 구조</h3>
 <p>이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch05 디렉토리</div>start/ch05/src/main/java/com/metacoding/spring/
@@ -198,14 +198,14 @@ start/ch05/src/main/resources/
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
 <h3>5.1.2 게시글에 댓글 목록 추가</h3>
-<p>다음으로 <strong>Board</strong> 엔티티에 <strong>@OneToMany</strong>를 사용해 양방향 매핑을 설정합니다. 그리고 <code>mappedBy</code> 속성에 상대 엔티티인 <strong>Reply</strong>의 <code>board</code> 필드를 지정하면 두 엔티티가 매핑됩니다.</p>
+<p>다음으로 <strong>Board</strong> 엔티티에 <strong>@OneToMany</strong>를 사용해 양방향 매핑을 설정합니다. 그리고 <strong>mappedBy</strong> 속성에 상대 엔티티인 <strong>Reply</strong>의 <strong>board</strong> 필드를 지정하면 두 엔티티가 매핑됩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> board/Board.java. 댓글 목록 추가와 회원 필드 수정</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span>
 
 <span class="w">    </span><span class="nd">@OneToMany</span><span class="p">(</span><span class="n">mappedBy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;board&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">,</span>
 <span class="w">            </span><span class="n">cascade</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CascadeType</span><span class="p">.</span><span class="na">REMOVE</span><span class="p">)</span><span class="w"> </span><span class="c1">// 게시글을 삭제할 때 연관된 댓글도 함께 삭제한다</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">List</span><span class="o">&lt;</span><span class="n">Reply</span><span class="o">&gt;</span><span class="w"> </span><span class="n">replies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">ArrayList</span><span class="o">&lt;&gt;</span><span class="p">();</span></div>
-<p>두 필드에 함께 적은 <code>fetch</code>는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.</p>
+<p>두 필드에 함께 적은 <strong>fetch</strong>는 연관된 데이터를 언제 가져올지 정하는 속성입니다. 자세한 내용은 다음 절에서 설명합니다.</p>
 <h3>5.1.3 더미 데이터</h3>
 <p>준비된 더미 데이터에는 1번 게시글에 3개, 2번 게시글에 1개의 댓글이 포함되어 있습니다.</p>
 <div class="code-block highlight" data-lang="sql"><div class="cb-title"><span class="badge reference">참고</span> resources/db/data.sql. 댓글 더미 데이터</div><span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">reply_tb</span><span class="p">(</span><span class="k">comment</span><span class="p">,</span><span class="n">board_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">created_at</span><span class="p">)</span>
@@ -221,8 +221,8 @@ start/ch05/src/main/resources/
 <p>객체 참조는 편리하지만, 당장 필요 없는 연관 데이터까지 데이터베이스에서 함께 조회하게 만들어 성능 저하의 주된 원인이 되곤 합니다. 회원 정보가 필요하지 않은 게시글 목록 화면을 예로 들어 보겠습니다. JPA는 기본적으로 게시글 목록을 조회할 때, 화면에 필요하지 않더라도 추가 쿼리를 실행해 회원 정보를 함께 가져옵니다.</p>
 <p>이러한 성능 저하를 막기 위해 연관된 데이터를 <strong>조회하는 시점</strong>에 같이 가져올지, 아니면 <strong>실제 사용하는 시점</strong>에 조회할지에 대한 전략이 필요합니다.</p>
 <h3>5.2.1 즉시 로딩</h3>
-<p><strong>즉시 로딩(Eager Loading)</strong> 은 특정 엔티티를 조회할 때 <strong>연관된 엔티티의 데이터까지 같이 가져오는 방식</strong>으로, <strong>@ManyToOne</strong> 어노테이션은 <strong>즉시 로딩이 기본 전략</strong>입니다. 그래서 <code>fetch</code> 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 <strong>Board</strong>의 <code>user</code> 필드에 채워 넣습니다.</p>
-<p>이러한 설정 때문에 <code>findAll()</code>로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 <strong>board_tb</strong>에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 <strong>user_tb</strong>를 조회하는 쿼리를 따로 실행하기 때문입니다.</p>
+<p><strong>즉시 로딩(Eager Loading)</strong> 은 특정 엔티티를 조회할 때 <strong>연관된 엔티티의 데이터까지 같이 가져오는 방식</strong>으로, <strong>@ManyToOne</strong> 어노테이션은 <strong>즉시 로딩이 기본 전략</strong>입니다. 그래서 <strong>fetch</strong> 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 <strong>Board</strong>의 <strong>user</strong> 필드에 채워 넣습니다.</p>
+<p>이러한 설정 때문에 <strong>findAll</strong> 메서드로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 <strong>board_tb</strong>에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 <strong>user_tb</strong>를 조회하는 쿼리를 따로 실행하기 때문입니다.</p>
 <div class="terminal-log">
   <div class="tl-chrome">
     <div class="tl-traffic"><span></span><span></span><span></span></div>
@@ -246,10 +246,10 @@ start/ch05/src/main/resources/
 <div class="caption">그림 5-4. 즉시 로딩으로 목록을 조회할 때의 쿼리</div>
 <h3>5.2.2 지연 로딩</h3>
 <p>이러한 문제를 해결하기 위해 사용하는 방식이 <strong>지연 로딩(Lazy Loading)</strong> 입니다.</p>
-<p>지연 로딩은 <strong>기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식</strong>입니다. <strong>@ManyToOne</strong>의 <code>fetch</code> 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.</p>
+<p>지연 로딩은 <strong>기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식</strong>입니다. <strong>@ManyToOne</strong>의 <strong>fetch</strong> 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title">board/Board.java. 회원 조회를 지연 로딩으로</div><span class="w">    </span><span class="nd">@ManyToOne</span><span class="p">(</span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FetchType</span><span class="p">.</span><span class="na">LAZY</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">private</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">;</span></div>
-<p>LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 외래 키(<code>user_id</code>)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.</p>
+<p>LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 외래 키(<strong>user_id</strong>)만 가져옵니다. 그리고 회원 정보가 필요한 시점에 외래 키를 사용해 쿼리를 실행합니다.</p>
 <div class="terminal-log">
   <div class="tl-chrome">
     <div class="tl-traffic"><span></span><span></span><span></span></div>
@@ -326,7 +326,7 @@ start/ch05/src/main/resources/
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>5.3.3 서비스</h3>
-<p><strong>BoardService</strong>의 상세 메서드는 <code>findByIdJoinUser()</code> 대신 <code>findByIdJoinUserAndReplies()</code>를 호출합니다.</p>
+<p><strong>BoardService</strong>의 상세 메서드는 <strong>findByIdJoinUser</strong> 대신 <strong>findByIdJoinUserAndReplies</strong>를 호출합니다.</p>
 <p><code>board/BoardService.java</code>를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 3</span> board/BoardService.java. 상세 조회를 join fetch로 교체</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findByIdJoinUserAndReplies</span><span class="p">(</span><span class="n">boardId</span><span class="p">)</span>
@@ -427,7 +427,7 @@ start/ch05/src/main/resources/
 <h2>5.5 댓글 삭제</h2>
 <p>댓글 삭제는 로그인 여부를 확인하고, 댓글 작성자와 요청자가 같은지 검증한 뒤 삭제합니다.</p>
 <h3>5.5.1 서비스</h3>
-<p><code>reply/ReplyService.java</code>의 <code>댓글삭제()</code>를 아래와 같이 작성합니다.</p>
+<p><code>reply/ReplyService.java</code>의 <strong>댓글삭제</strong> 메서드를 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 8</span> reply/ReplyService.java. 댓글 삭제</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">댓글삭제</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">replyId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>
@@ -443,7 +443,7 @@ start/ch05/src/main/resources/
 <span class="w">        </span><span class="n">replyRepository</span><span class="p">.</span><span class="na">delete</span><span class="p">(</span><span class="n">reply</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>5.5.2 컨트롤러</h3>
-<p><code>reply/ReplyController.java</code>의 <code>deleteById()</code>를 아래와 같이 작성합니다.</p>
+<p><code>reply/ReplyController.java</code>의 <strong>deleteById</strong> 메서드를 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> reply/ReplyController.java. 댓글 삭제 엔드포인트</div><span class="w">    </span><span class="nd">@DeleteMapping</span><span class="p">(</span><span class="s">&quot;/{replyId}&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">ResponseEntity</span><span class="o">&lt;?&gt;</span><span class="w"> </span><span class="nf">deleteById</span><span class="p">(</span>
 <span class="w">            </span><span class="n">HttpServletRequest</span><span class="w"> </span><span class="n">request</span><span class="p">,</span><span class="w"> </span><span class="nd">@PathVariable</span><span class="p">(</span><span class="s">&quot;replyId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">replyId</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>

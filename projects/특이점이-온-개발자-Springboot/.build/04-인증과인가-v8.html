@@ -69,7 +69,7 @@
 <h3>1. 소스 코드 클론</h3>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 레포 클론</div>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metacoding-06-springboot-v1/start.git
 <span class="nb">cd</span><span class="w"> </span>start/ch04</div>
-<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch04</code> 폴더에서 확인할 수 있습니다.</p>
+<p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <strong>ch04</strong> 폴더에서 확인할 수 있습니다.</p>
 <h3>2. 파일 구조</h3>
 <p>이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch04 디렉토리</div>start/ch04/src/main/
@@ -688,7 +688,7 @@
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">createdAt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createdAt</span><span class="p">;</span>
 <span class="w">        </span><span class="k">this</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">user</span><span class="p">;</span><span class="w"> </span><span class="c1">// 회원 필드 추가</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>회원 엔티티를 외래 키로 매핑해 두면, 게시글을 조회할 때 JPA가 연관된 회원 정보까지 <code>user</code> 필드에 자동으로 채워 넣습니다. 덕분에 두 테이블을 조인하는 쿼리를 직접 작성하지 않아도 게시글 엔티티에서 회원 엔티티를 참조해 회원 정보를 조회할 수 있습니다.</p>
+<p>회원 엔티티를 외래 키로 매핑해 두면, 게시글을 조회할 때 JPA가 연관된 회원 정보까지 <strong>user</strong> 필드에 자동으로 채워 넣습니다. 덕분에 두 테이블을 조인하는 쿼리를 직접 작성하지 않아도 게시글 엔티티에서 회원 엔티티를 참조해 회원 정보를 조회할 수 있습니다.</p>
 <div class="tip">
 <p><strong>외래 키 컬럼명 생성 규칙</strong></p>
 <p>JPA가 만드는 외래 키 컬럼명은 <strong>게시글 엔티티에 추가한 필드명(user)</strong> 과 <strong>회원 테이블의 기본 키(id)</strong> 를 언더스코어로 합친 <strong>user_id</strong>입니다. 컬럼명을 직접 정하려면 JoinColumn 어노테이션을 사용합니다.</p>
@@ -705,7 +705,7 @@
 <span class="k">insert</span><span class="w"> </span><span class="k">into</span><span class="w"> </span><span class="n">board_tb</span><span class="w"> </span><span class="p">(</span><span class="n">title</span><span class="p">,</span><span class="w"> </span><span class="n">content</span><span class="p">,</span><span class="w"> </span><span class="n">created_at</span><span class="p">,</span><span class="w"> </span><span class="n">user_id</span><span class="p">)</span>
 <span class="k">values</span><span class="w"> </span><span class="p">(</span><span class="s1">&#39;title2&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;content2&#39;</span><span class="p">,</span><span class="w"> </span><span class="n">now</span><span class="p">(),</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span></div>
 <h2>4.5 core 폴더 살펴보기</h2>
-<p>회원 인증에 필요한 JWT 발급과 검증 로직은 <code>core</code> 폴더에 구현되어 있습니다. 각 클래스가 담당하는 구체적인 역할은 다음과 같습니다.</p>
+<p>회원 인증에 필요한 JWT 발급과 검증 로직은 <strong>core</strong> 폴더에 구현되어 있습니다. 각 클래스가 담당하는 구체적인 역할은 다음과 같습니다.</p>
 <table>
 <thead>
 <tr>
@@ -758,7 +758,7 @@
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">User</span><span class="p">.</span><span class="na">builder</span><span class="p">().</span><span class="na">id</span><span class="p">(</span><span class="n">userId</span><span class="p">).</span><span class="na">username</span><span class="p">(</span><span class="n">username</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p>JWT 발급과 검증에는 <code>build.gradle</code>에 추가해 둔 <strong>com.auth0:java-jwt</strong> 라이브러리를 사용합니다.</p>
+<p>JWT 발급과 검증에는 <strong>build.gradle</strong>에 추가해 둔 <strong>com.auth0:java-jwt</strong> 라이브러리를 사용합니다.</p>
 <h3>4.5.2 JwtProvider</h3>
 <p><strong>JwtProvider</strong>는 요청 헤더에서 JWT를 추출해 <strong>JwtUtil</strong>로 검증하며, 토큰이 유효할 경우 안에 담긴 회원 정보를 가져옵니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge reference">참고</span> core/util/JwtProvider.java. 토큰 추출과 유저 복원</div><span class="nd">@Component</span>
@@ -821,11 +821,11 @@
 <span class="p">}</span></div>
 <div class="tip">
 <p><strong>메서드 이름과 조회 조건</strong></p>
-<p>findBy 뒤에 엔티티의 필드 이름을 붙이면 Spring Data JPA가 select 문을 자동으로 생성합니다. <strong>findByUsername()</strong> 은 매개변수로 받은 값과 <strong>username</strong>이 일치하는 회원을 조회합니다.</p>
+<p>findBy 뒤에 엔티티의 필드 이름을 붙이면 Spring Data JPA가 select 문을 자동으로 생성합니다. <strong>findByUsername</strong> 메서드는 매개변수로 받은 값과 <strong>username</strong>이 일치하는 회원을 조회합니다.</p>
 </div>
 <h3>4.6.2 요청 DTO</h3>
 <p>다음으로 클라이언트가 입력한 값을 전달받을 DTO를 만들어 보겠습니다.</p>
-<p><code>user/UserRequest.java</code>의 <code>toEntity()</code>를 아래와 같이 작성합니다.</p>
+<p><code>user/UserRequest.java</code>의 <strong>toEntity</strong> 메서드를 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 2</span> user/UserRequest.java. 회원가입 요청 DTO</div><span class="kd">public</span><span class="w"> </span><span class="kd">class</span> <span class="nc">UserRequest</span><span class="w"> </span><span class="p">{</span>
 
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">SaveDTO</span><span class="p">(</span><span class="n">String</span><span class="w"> </span><span class="n">username</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">password</span><span class="p">,</span><span class="w"> </span><span class="n">String</span><span class="w"> </span><span class="n">email</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -839,7 +839,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="p">}</span></div>
-<p><strong>SaveDTO</strong>는 유저네임과 비밀번호, 이메일을 받습니다. 요청 데이터를 엔티티로 변환해 저장할 수 있도록, 내부 클래스에 <code>toEntity()</code> 메서드를 추가합니다.</p>
+<p><strong>SaveDTO</strong>는 유저네임과 비밀번호, 이메일을 받습니다. 요청 데이터를 엔티티로 변환해 저장할 수 있도록, 내부 클래스에 <strong>toEntity</strong> 메서드를 추가합니다.</p>
 <h3>4.6.3 응답 DTO</h3>
 <p>이어서 회원 정보 응답에 사용할 DTO를 만들어 보겠습니다. 비밀번호를 제외한 회원 정보만 필드로 선언합니다.</p>
 <p><code>user/UserResponse.java</code>를 열어 아래와 같이 작성합니다.</p>
@@ -924,7 +924,7 @@
 <span class="w">        </span><span class="p">}</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">JwtUtil</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="n">user</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p>유저네임과 비밀번호가 일치하면 <code>JwtUtil.create()</code>로 생성한 JWT를 반환합니다.</p>
+<p>유저네임과 비밀번호가 일치하면 <strong>JwtUtil.create</strong>로 생성한 JWT를 반환합니다.</p>
 <h3>4.7.3 컨트롤러</h3>
 <p>컨트롤러는 서비스가 반환한 JWT를 응답합니다.</p>
 <p><code>user/UserController.java</code>에 아래와 같이 메서드를 추가합니다.</p>
@@ -948,7 +948,7 @@
 <h3>4.8.1 JPQL 조인문</h3>
 <p>이처럼 게시글과 회원 등 둘 이상의 테이블을 함께 조회해야 할 때는 <strong>조인(JOIN)</strong> 을 사용합니다. 조인은 두 테이블의 행을 옆으로 이어 붙여 한 번의 조회로 가져오는 방법이며, 어떤 행끼리 결합할지는 조건으로 지정합니다. SQL 문법에서는 조건을 ON 절에 명시하지만, <strong>JPQL은 연관관계 필드 이름만 명시하면 됩니다</strong>.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="n">u</span></div>
-<p><strong>Board</strong>에 <code>user</code> 필드를 추가해 두었으므로, JPQL에서 <code>b.user</code>처럼 필드 이름만으로 회원 엔티티를 조인할 수 있습니다.</p>
+<p><strong>Board</strong>에 <strong>user</strong> 필드를 추가해 두었으므로, JPQL에서 <strong>b.user</strong>처럼 필드 이름만으로 회원 엔티티를 조인할 수 있습니다.</p>
 <p>조인은 조건이 일치하는 데이터만 가져올 것인지, 아니면 한쪽 테이블을 기준으로 조건이 일치하지 않는 데이터까지 포함할 것인지에 따라 종류가 구분됩니다. 우리가 알아볼 것은 다음 두 종류입니다.</p>
 <table>
 <thead>
@@ -971,18 +971,18 @@
 </tr>
 </tbody>
 </table>
-<p>만약 회원 정보가 없는 게시글까지 조회하려면 <code>left join</code>을 사용합니다.</p>
+<p>만약 회원 정보가 없는 게시글까지 조회하려면 <strong>left join</strong>을 사용합니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">left</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span><span class="w"> </span><span class="n">u</span></div>
-<p>JPQL의 SELECT 절에는 보통 <strong>기준이 되는 FROM 절의 엔티티만 명시</strong>합니다. 반환 타입을 하나로 유지해 코드를 간결하게 만들고, 연관된 데이터는 객체 참조로 꺼내 쓸 수 있기 때문입니다. 하지만 일반 조인만으로는 <strong>연관된 회원의 실제 데이터를 함께 가져오지 않습니다</strong>. 게시글 테이블의 외래 키(<code>user_id</code>)만 읽어온 상태이므로, 회원 필드의 <strong>다른 값을 채우기 위한 추가 쿼리가 발생</strong>합니다.</p>
+<p>JPQL의 SELECT 절에는 보통 <strong>기준이 되는 FROM 절의 엔티티만 명시</strong>합니다. 반환 타입을 하나로 유지해 코드를 간결하게 만들고, 연관된 데이터는 객체 참조로 꺼내 쓸 수 있기 때문입니다. 하지만 일반 조인만으로는 <strong>연관된 회원의 실제 데이터를 함께 가져오지 않습니다</strong>. 게시글 테이블의 외래 키(<strong>user_id</strong>)만 읽어온 상태이므로, 회원 필드의 <strong>다른 값을 채우기 위한 추가 쿼리가 발생</strong>합니다.</p>
 <p>이러한 추가 쿼리 문제를 해결하기 위해 사용하는 것이 바로 <strong>FETCH</strong> 키워드입니다. 조인문에 FETCH를 붙이면 추가 쿼리 없이 연관된 엔티티까지 한 번에 조회할 수 있습니다.</p>
 <div class="code-block highlight" data-lang="java"><span class="n">select</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">from</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="n">join</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="na">user</span></div>
 <h3>4.8.2 리포지토리</h3>
-<p>게시글 상세에서 사용할 조회 메서드를 만들어 보겠습니다. <code>findBy</code> 규칙으로는 조인 방식까지 지정할 수 없으므로, <strong>@Query</strong>에 JPQL을 직접 작성합니다.</p>
+<p>게시글 상세에서 사용할 조회 메서드를 만들어 보겠습니다. <strong>findBy</strong> 규칙으로는 조인 방식까지 지정할 수 없으므로, <strong>@Query</strong>에 JPQL을 직접 작성합니다.</p>
 <p><code>board/BoardRepository.java</code>를 열어 아래와 같이 작성합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 9</span> board/BoardRepository.java. 회원을 함께 가져오는 조회</div><span class="w">    </span><span class="nd">@Query</span><span class="p">(</span><span class="s">&quot;select b from Board b join fetch b.user where b.id = :boardId&quot;</span><span class="p">)</span>
 <span class="w">    </span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">Board</span><span class="o">&gt;</span><span class="w"> </span><span class="nf">findByIdJoinUser</span><span class="p">(</span><span class="nd">@Param</span><span class="p">(</span><span class="s">&quot;boardId&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">);</span></div>
 <h3>4.8.3 응답 DTO</h3>
-<p><code>board/BoardResponse.java</code>를 열어 <strong>DetailDTO</strong>에 작성자의 아이디와 유저네임, 그리고 <code>isOwner</code>를 아래와 같이 추가합니다.</p>
+<p><code>board/BoardResponse.java</code>를 열어 <strong>DetailDTO</strong>에 작성자의 아이디와 유저네임, 그리고 <strong>isOwner</strong>를 아래와 같이 추가합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 10</span> board/BoardResponse.java. 상세 응답에 작성자와 본인 여부 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kd">record</span> <span class="nc">DetailDTO</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span>
 <span class="w">            </span><span class="n">String</span><span class="w"> </span><span class="n">title</span><span class="p">,</span>
@@ -1003,9 +1003,9 @@
 <span class="w">                            </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">loginUser</span><span class="p">.</span><span class="na">getId</span><span class="p">().</span><span class="na">equals</span><span class="p">(</span><span class="n">board</span><span class="p">.</span><span class="na">getUser</span><span class="p">().</span><span class="na">getId</span><span class="p">()));</span>
 <span class="w">        </span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span></div>
-<p><code>isOwner</code>는 요청을 보낸 사용자가 게시글의 작성자인지 판별하는 값입니다. 비로그인 상태이거나 작성자가 본인이 아니라면 false를 반환하며, 이 값을 기준으로 화면에서 수정 및 삭제 버튼의 활성화 여부를 정할 수 있습니다.</p>
+<p><strong>isOwner</strong>는 요청을 보낸 사용자가 게시글의 작성자인지 판별하는 값입니다. 비로그인 상태이거나 작성자가 본인이 아니라면 false를 반환하며, 이 값을 기준으로 화면에서 수정 및 삭제 버튼의 활성화 여부를 정할 수 있습니다.</p>
 <h3>4.8.4 서비스</h3>
-<p><code>board/BoardService.java</code>를 열어 게시글 조회를 <code>findByIdJoinUser()</code>로 교체하고, 로그인 유저를 매개변수로 받도록 아래와 같이 변경합니다.</p>
+<p><code>board/BoardService.java</code>를 열어 게시글 조회를 <strong>findByIdJoinUser</strong> 메서드로 교체하고, 로그인 유저를 매개변수로 받도록 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 11</span> board/BoardService.java. 상세 조회에 fetch 조인과 본인 여부</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DetailDTO</span><span class="w"> </span><span class="nf">게시글상세</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="n">Board</span><span class="w"> </span><span class="n">board</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">boardRepository</span><span class="p">.</span><span class="na">findByIdJoinUser</span><span class="p">(</span><span class="n">boardId</span><span class="p">)</span>
 <span class="w">                </span><span class="p">.</span><span class="na">orElseThrow</span><span class="p">(()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">Exception404</span><span class="p">(</span><span class="s">&quot;게시글을 찾을 수 없습니다&quot;</span><span class="p">));</span>
@@ -1027,14 +1027,14 @@
 <p>1번 게시글의 상세 조회 API를 호출합니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/1</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\02_board-detail-with-user.png" alt="" /><div class="caption">그림 4-16. 상세 조회 응답의 isOwner</div></div>
-<p>같은 JWT로 cos가 작성한 2번 게시글을 조회하면 요청자와 작성자가 다르므로 <code>isOwner</code>는 false입니다.</p>
+<p>같은 JWT로 cos가 작성한 2번 게시글을 조회하면 요청자와 작성자가 다르므로 <strong>isOwner</strong>는 false입니다.</p>
 <div class="code-block highlight" data-lang="json"><div class="cb-title"><span class="badge">Hoppscotch</span> 다른 회원의 게시글 상세 조회</div><span class="err">GET</span><span class="w"> </span><span class="err">h</span><span class="kc">tt</span><span class="err">p</span><span class="p">:</span><span class="c1">//localhost:8080/api/boards/2</span></div>
 <div class="chapter-image terminal"><img src="..\assets\CH4\terminal\08_board-detail-other-user.png" alt="" /><div class="caption">그림 4-17. 다른 회원 게시글의 상세 조회 응답</div></div>
-<p><code>isOwner</code> 값으로 수정·삭제 버튼의 활성화 여부를 제어할 수 있습니다.</p>
+<p><strong>isOwner</strong> 값으로 수정·삭제 버튼의 활성화 여부를 제어할 수 있습니다.</p>
 <h2>4.9 게시글 추가</h2>
 <p>게시글 추가 기능은 로그인 여부를 확인한 뒤, 로그인한 회원 정보와 함께 게시글을 저장하고 저장된 게시글을 응답합니다.</p>
 <h3>4.9.1 요청 DTO</h3>
-<p><code>board/BoardRequest.java</code>를 열어 <code>toEntity()</code>가 <code>user</code>를 받도록 아래와 같이 변경합니다.</p>
+<p><code>board/BoardRequest.java</code>를 열어 <strong>toEntity</strong> 메서드가 <strong>user</strong>를 받도록 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 13</span> board/BoardRequest.java. toEntity에 회원 추가</div><span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">Board</span><span class="w"> </span><span class="nf">toEntity</span><span class="p">(</span><span class="n">User</span><span class="w"> </span><span class="n">user</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Board</span><span class="p">.</span><span class="na">builder</span><span class="p">()</span>
 <span class="w">                </span><span class="p">.</span><span class="na">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
@@ -1043,7 +1043,7 @@
 <span class="w">                </span><span class="p">.</span><span class="na">build</span><span class="p">();</span>
 <span class="w">    </span><span class="p">}</span></div>
 <h3>4.9.2 서비스</h3>
-<p>로그인을 확인한 뒤 회원 정보와 함께 게시글을 저장하도록 <code>board/BoardService.java</code>의 <code>게시글추가()</code>를 아래와 같이 변경합니다.</p>
+<p>로그인을 확인한 뒤 회원 정보와 함께 게시글을 저장하도록 <code>board/BoardService.java</code>의 <strong>게시글추가</strong> 메서드를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 14</span> board/BoardService.java. 로그인 확인 후 회원과 함께 저장</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글추가</span><span class="p">(</span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">SaveDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span>
 <span class="w">            </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1087,7 +1087,7 @@
 <h2>4.10 게시글 수정</h2>
 <h3>4.10.1 서비스</h3>
 <p>게시글을 수정하기 전에 현재 사용자와 게시글 작성자가 일치하는지 검증해야 합니다. 수정은 앞 챕터와 동일하게 더티체킹으로 진행합니다.</p>
-<p><code>board/BoardService.java</code>의 <code>게시글수정()</code>을 아래와 같이 변경합니다.</p>
+<p><code>board/BoardService.java</code>의 <strong>게시글수정</strong> 메서드를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 16</span> board/BoardService.java. 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="n">BoardResponse</span><span class="p">.</span><span class="na">DTO</span><span class="w"> </span><span class="nf">게시글수정</span><span class="p">(</span>
 <span class="w">            </span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">BoardRequest</span><span class="p">.</span><span class="na">UpdateDTO</span><span class="w"> </span><span class="n">requestDTO</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -1136,7 +1136,7 @@
 <h2>4.11 게시글 삭제</h2>
 <p>삭제도 대상 게시글의 작성자와 요청자의 일치 여부를 검증합니다. 검증을 통과하면 게시글을 삭제하고, 반환할 데이터가 없으므로 성공 응답만 보냅니다.</p>
 <h3>4.11.1 서비스</h3>
-<p><code>board/BoardService.java</code>의 <code>게시글삭제()</code>를 아래와 같이 변경합니다.</p>
+<p><code>board/BoardService.java</code>의 <strong>게시글삭제</strong> 메서드를 아래와 같이 변경합니다.</p>
 <div class="code-block highlight" data-lang="java"><div class="cb-title"><span class="badge">실습 18</span> board/BoardService.java. 삭제의 로그인 확인과 소유자 검증</div><span class="w">    </span><span class="nd">@Transactional</span>
 <span class="w">    </span><span class="kd">public</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">게시글삭제</span><span class="p">(</span><span class="n">Integer</span><span class="w"> </span><span class="n">boardId</span><span class="p">,</span><span class="w"> </span><span class="n">User</span><span class="w"> </span><span class="n">loginUser</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">        </span><span class="c1">// 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다</span>

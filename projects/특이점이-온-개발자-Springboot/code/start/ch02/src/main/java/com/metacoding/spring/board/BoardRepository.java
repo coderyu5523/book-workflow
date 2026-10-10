@@ -13,17 +13,17 @@ public class BoardRepository {
     private final EntityManager em;
 
     public Board findById(int boardId) {
-        // TODO : 실습 1 - 기본 키로 한 건 조회
+        // TODO : 실습 1 - 게시글 상세
         return null;
     }
 
     public List<Board> findAll() {
-        // TODO : 실습 2 - JPQL로 전체 조회
+        // TODO : 실습 2 - JPQL로 게시글 목록 조회
         return null;
     }
 
     public void save(Board board) {
-        // TODO : 실습 3 - 새 게시글 저장
+        // TODO : 실습 3 - 게시글 추가
     }
 
     public void delete(Board board) {

@@ -19,26 +19,26 @@ public class BoardRepositoryTest {
 
     @Test
     public void findById_test() {
-        // TODO : 실습 5 - 한 건 조회
+        // TODO : 실습 5 - 게시글 상세
     }
 
     @Test
     public void findAll_test() {
-        // TODO : 실습 6 - 전체 조회
+        // TODO : 실습 6 - 게시글 목록
     }
 
     @Test
     public void save_test() {
-        // TODO : 실습 7 - 저장
+        // TODO : 실습 7 - 게시글 추가
     }
 
     @Test
     public void update_test() {
-        // TODO : 실습 8 - 수정과 더티체킹
+        // TODO : 실습 8 - 게시글 수정
     }
 
     @Test
     public void delete_test() {
-        // TODO : 실습 9 - 삭제
+        // TODO : 실습 9 - 게시글 삭제
     }
 }
