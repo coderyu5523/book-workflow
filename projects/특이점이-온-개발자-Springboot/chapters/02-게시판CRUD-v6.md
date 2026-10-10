@@ -7,7 +7,7 @@
 *스프링으로 게시판의 기본 기능을 만들어 보자.*
 
 <div class="svg-figure svg-figure--wide">
-<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2 한눈에 보기. 클라이언트가 게시글에 대한 다섯 가지 요청(목록·상세·작성·수정·삭제)을 컨트롤러로 보내면, 컨트롤러가 서비스로, 서비스가 리포지토리로 넘기고, 리포지토리가 H2 데이터베이스의 board_tb 테이블을 다룬 뒤 결과가 JSON으로 되돌아온다.">
+<svg viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="챕터 2 한눈에 보기. 클라이언트가 게시글에 대한 다섯 가지 요청(목록·상세·작성·수정·삭제)을 컨트롤러로 보내면, 컨트롤러가 서비스로, 서비스가 리포지토리로 넘기고, 리포지토리가 데이터베이스의 board_tb 테이블을 다룬 뒤 결과가 JSON으로 되돌아온다.">
   <defs>
     <marker id="c2ov-i" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#4f46e5"/></marker>
     <marker id="c2ov-b" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/></marker>
@@ -36,7 +36,7 @@
   <text x="745" y="188" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">리포지토리</text>
   <text x="745" y="210" text-anchor="middle" font-size="12.4" fill="#6b7280">@Repository</text>
   <rect x="860" y="160" width="120" height="70" rx="8" fill="#fff" stroke="#475569" stroke-width="1.6"/>
-  <text x="920" y="190" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">H2</text>
+  <text x="920" y="190" text-anchor="middle" font-size="14.6" font-weight="700" fill="#0f172a">DB</text>
   <text x="920" y="210" text-anchor="middle" font-size="12.4" fill="#6b7280">board_tb</text>
   <line x1="240" y1="185" x2="298" y2="185" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2ov-i)"/>
   <line x1="450" y1="185" x2="488" y2="185" stroke="#4f46e5" stroke-width="1.8" marker-end="url(#c2ov-i)"/>
@@ -147,7 +147,7 @@ API 서버가 어떻게 자리 잡게 되었는지, 웹 서버가 발전해 온 
 
 *그림 2-3. WAS의 동적 화면 생성*
 
-문제는 스마트폰 앱, 스마트 TV, 심지어 다른 서버들까지 등장하면서 시작됐습니다. 이 기기들도 서버에 같은 데이터를 요청했지만, 브라우저 전용인 **HTML 화면**은 이들이 쓰기에 맞지 않았습니다.
+문제는 스마트폰 앱, 스마트 TV, 심지어 다른 서버들까지 등장하면서 시작됐습니다. 이 기기들도 서버에 같은 데이터를 요청했지만, 브라우저 전용인 **HTML 화면**은 이들과 호환되지 않았습니다.
 
 <div class="svg-figure">
 <svg viewBox="0 0 640 320" style="max-width:440px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="왼쪽에 브라우저, 스마트폰, TV, 다른 서버 네 개가 세로로 놓여 있고 오른쪽에 서버가 있다. 네 기기가 저마다 서버와 양방향 화살표로 이어져 같은 데이터를 주고받는다.">
@@ -287,7 +287,7 @@ REST API에는 다른 개발자가 주소만 보고도 어떤 자원을 다루�
 
 실습 코드는 챕터 1과 동일하게 GitHub의 start 레포를 사용합니다. 따라서 여기서는 스프링 프로젝트를 생성하는 과정만 짚고 넘어가겠습니다.
 
-먼저 View > Extensions에서 spring으로 검색해 Spring Boot Extension Pack을 설치합니다. 이 확장 프로그램에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
+먼저 View > Extensions에서 spring으로 검색해 **Spring Boot Extension Pack**을 설치합니다. 이 확장 프로그램에 스프링 프로젝트를 만들어 주는 Spring Initializr가 들어 있습니다.
 
 ![](../assets/CH2/setup/03_spring-pack.png)
 
@@ -520,7 +520,7 @@ values ('title2', 'content2', now());
 ![](../assets/CH2/terminal/06_bootrun.png)
 *그림 2-14. 스프링 실행 결과*
 
-브라우저 주소창에 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 로그인 화면에 입력할 JDBC URL과 User Name, Password는 `application.properties`에서 설정한 값입니다.
+브라우저 주소창에 `http://localhost:8080/h2-console`을 입력하면 H2 콘솔에 접속할 수 있습니다. 아래 그림처럼 `application.properties`에 설정한 값을 입력해 H2 콘솔에 접속합니다.
 
 ![](../assets/CH2/terminal/03_h2-login.png)
 *그림 2-15. H2 콘솔 로그인 화면*
@@ -538,7 +538,7 @@ H2 콘솔에서는 SQL문을 실행할 수 있습니다. SELECT 쿼리로 테이
 :::tip
 **자바의 카멜 케이스와 DB의 스네이크 케이스**
 
-자바는 두 번째 단어부터 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 구분하는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 스프링 부트의 기본 설정에서는 하이버네이트가 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 네이밍 규칙만 신경 쓰면 됩니다.
+자바는 두 번째 단어부터 첫 글자를 대문자로 적는 **카멜 표기법(createdAt)** 을 주로 사용하고, 데이터베이스는 단어 사이를 밑줄로 구분하는 **스네이크 표기법(created_at)** 을 관례로 사용합니다. 스프링 부트의 기본 설정에서는 하이버네이트가 엔티티 필드의 카멜 표기를 DB의 스네이크 표기 컬럼명으로 자동 변환해 주므로, 개발자는 자바의 카멜 표기법만 신경 쓰면 됩니다.
 :::
 
 ## 2.4 3계층 아키텍처
@@ -691,7 +691,7 @@ JPQL의 문법은 다음 절에서 따로 다루겠습니다.
 
 ### 2.6.3 게시글 저장
 
-데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 새로 만든 엔티티를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
+데이터를 조회할 때 `find()`를 사용한다면, 새로운 데이터를 추가할 때는 `persist()` 메서드를 사용합니다. 저장할 엔티티를 `persist()`에 넘겨주기만 하면, 하이버네이트가 이를 분석해 INSERT 쿼리를 생성하고 데이터베이스에 저장합니다.
 
 `board/BoardRepository.java`의 `save()`를 아래와 같이 작성합니다.
 
