@@ -116,7 +116,7 @@ start/ch03/src/main/java/com/metacoding/spring/
 
 ### 3.1.2 엔티티 생성자
 
-요청으로 전달받은 DTO 데이터를 JPA를 통해 저장하려면 엔티티로 변환하는 과정이 필요합니다. 따라서 **Board** 클래스에 DTO의 값으로 엔티티를 만드는 생성자를 추가합니다.
+요청으로 전달받은 DTO 데이터를 JPA를 통해 저장하려면 엔티티로 변환하는 과정이 필요합니다. 따라서 **Board** 클래스에는 DTO의 값으로 엔티티를 만드는 생성자가 추가되어 있습니다.
 
 ```java [참고] board/Board.java. 빌더로 생성할 수 있게
 @NoArgsConstructor // 기본 생성자 추가

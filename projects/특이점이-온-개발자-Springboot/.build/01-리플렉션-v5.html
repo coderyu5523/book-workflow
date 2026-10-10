@@ -72,11 +72,19 @@
 <div class="caption">그림 1-1. 챕터 1의 실습 흐름</div>
 <div class="prep-section-md">
 <p><strong>준비하기</strong></p>
-<h3>1. 소스 코드 클론</h3>
+<h3>1. 개발 환경</h3>
+<p>실습에는 JDK 21과 Cursor가 필요합니다.</p>
+<ul>
+<li><strong>JDK 21</strong>: 자바 코드를 컴파일하고 실행하는 도구입니다. OpenJDK 21을 내려받아 설치합니다.</li>
+<li><strong>Cursor</strong>: 이 책에서 사용하는 IDE입니다. Cursor 다운로드 페이지(<code>https://cursor.com/download</code>)에서 운영체제에 맞는 설치 파일을 내려받아 설치합니다.</li>
+</ul>
+<p>JDK 설치가 끝나면 터미널에서 자바 버전을 확인합니다.</p>
+<div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 자바 버전 확인</div>java<span class="w"> </span>-version</div>
+<h3>2. 소스 코드 클론</h3>
 <div class="code-block highlight" data-lang="bash"><div class="cb-title"><span class="badge bash">터미널</span> 레포 클론</div>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/metacoding-06-springboot-v1/start.git
 <span class="nb">cd</span><span class="w"> </span>start/ch01</div>
 <p>완성 코드는 final 레포(<code>https://github.com/metacoding-06-springboot-v1/final</code>)의 <code>ch01</code> 폴더에서 확인할 수 있습니다.</p>
-<h3>2. 파일 구조</h3>
+<h3>3. 파일 구조</h3>
 <p>이번 챕터에서 실습할 패키지 구조는 다음과 같습니다.</p>
 <div class="code-block highlight" data-lang="text"><div class="cb-title">ch01 디렉토리</div>start/ch01/src/main/java/com/reflection/
 ├── ex01/
@@ -91,9 +99,6 @@
     ├── BoardController.java  # [작성] 게시판 컨트롤러
     ├── Controller.java       # [작성] 컨트롤러 어노테이션
     └── RequestMapping.java   # [참고] 주소 매핑 어노테이션</div>
-<div class="prep-note">
-<p>이번 챕터의 코드는 스프링 프로젝트가 아니라 순수 자바입니다. 빌드 도구 없이 IDE에서 각 <code>App.java</code>의 main 메서드를 실행합니다.</p>
-</div>
 </div>
 <h2>1.1 스프링의 실행 원리</h2>
 <h3>1.1.1 프레임워크</h3>
@@ -132,7 +137,7 @@
 </svg>
 </div>
 <div class="caption">그림 1-2. 순수 자바와 프레임워크의 차이</div>
-<p>프레임워크에서는 개발의 출발선이 달라집니다. 번거로운 초기 과정을 건너뛰고 곧바로 핵심 기능을 구현할 수 있습니다. 웹 개발에 필수적인 로그인이나 데이터베이스 연동도 검증된 형태로 제공되어 개발 시간이 크게 줄어듭니다.</p>
+<p>프레임워크에서는 개발의 출발선이 달라집니다. 번거로운 초기 과정을 건너뛰고 곧바로 핵심 기능을 구현할 수 있습니다. 웹 개발에 필수적인 데이터베이스 연동도 검증된 형태로 제공되어 개발 시간이 크게 줄어듭니다.</p>
 <p>또한 프레임워크가 제시하는 표준적인 구조를 바탕으로 작업하기 때문에, 다른 사람이 만든 프로젝트를 열어봐도 전체적인 구조와 역할을 쉽게 파악할 수 있습니다.</p>
 <h3>1.1.2 제어의 역전</h3>
 <p>프레임워크의 가장 큰 특징은 코드의 호출 방향이 뒤바뀐다는 점입니다. 순수 자바만으로 개발할 때는 개발자가 전체 흐름을 통제하며 필요한 기능을 직접 호출합니다. 하지만 프레임워크 환경에서는 그 반대입니다. 개발자가 정해진 규칙에 맞춰 코드를 준비해 두면, 프레임워크가 필요한 시점에 개발자의 코드를 호출합니다.</p>
