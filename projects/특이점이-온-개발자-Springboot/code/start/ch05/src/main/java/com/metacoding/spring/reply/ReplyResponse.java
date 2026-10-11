@@ -4,6 +4,6 @@ public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
 
-        // TODO : 실습 5 - 댓글 응답 DTO
+        // TODO : 실습 6 - 댓글 응답 DTO
     }
 }

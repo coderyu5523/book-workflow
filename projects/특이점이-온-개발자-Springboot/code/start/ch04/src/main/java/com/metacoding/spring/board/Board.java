@@ -22,17 +22,13 @@ public class Board {
     @CreationTimestamp // 자동으로 현재 시간 저장
     private LocalDateTime createdAt;
 
-    @ManyToOne // 다대일 관계 설정 (기본 전략은 즉시 로딩)
-    private User user; // 객체를 직접 참조
-
+    // TODO : 실습 1 - 회원 연관관계 추가
     @Builder
-    public Board(Integer id, String title, String content,
-            LocalDateTime createdAt, User user) {
+    public Board(Integer id, String title, String content, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.createdAt = createdAt;
-        this.user = user;
     }
 
 }

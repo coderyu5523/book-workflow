@@ -25,11 +25,9 @@ public class Board {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    // TODO : 실습 1 - 댓글 목록 추가와 회원 필드 수정
+    @ManyToOne
     private User user;
-
-    @OneToMany(mappedBy = "board", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE) // reply 필드 연결
-    private List<Reply> replies = new ArrayList<>();
 
     @Builder
     public Board(Integer id, String title, String content,

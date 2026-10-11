@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 
-// TODO : 실습 3 - JpaRepository 상속
+// TODO : 실습 3 - JpaRepository로 변환
 @RequiredArgsConstructor
 @Repository
 public class BoardRepository {

@@ -13,7 +13,7 @@ public class BoardResponse {
         }
     }
 
-    // TODO : 실습 2 - 상세에 댓글 목록 추가
+    // TODO : 실습 3 - 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -34,6 +34,6 @@ public class BoardResponse {
                             && loginUser.getId().equals(board.getUser().getId()));
         }
 
-        // TODO : 실습 2 - 상세에 댓글 목록 추가
+        // TODO : 실습 3 - 상세에 댓글 목록 추가
     }
 }

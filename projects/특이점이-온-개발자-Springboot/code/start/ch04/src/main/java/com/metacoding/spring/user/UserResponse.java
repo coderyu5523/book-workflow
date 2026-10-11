@@ -10,6 +10,6 @@ public class UserResponse {
             String email,
             LocalDateTime createdAt) {
 
-        // TODO : 실습 3 - 회원가입 응답 DTO
+        // TODO : 실습 4 - 회원가입 응답 DTO
     }
 }

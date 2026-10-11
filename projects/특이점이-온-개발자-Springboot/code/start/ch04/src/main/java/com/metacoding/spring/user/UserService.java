@@ -14,9 +14,9 @@ public class UserService {
 
     @Transactional
     public UserResponse.DTO 회원가입(UserRequest.SaveDTO requestDTO) {
-        // TODO : 실습 4 - 회원가입
+        // TODO : 실습 5 - 회원가입
         return null;
     }
 
-    // TODO : 실습 7 - 로그인
+    // TODO : 실습 8 - 로그인
 }

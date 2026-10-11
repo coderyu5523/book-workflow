@@ -8,7 +8,7 @@ public class ReplyRequest {
     public record SaveDTO(String comment, Integer boardId) {
 
         public Reply toEntity(User user, Board board) {
-            // TODO : 실습 4 - 댓글 요청 DTO
+            // TODO : 실습 5 - 댓글 요청 DTO
             return null;
         }
     }

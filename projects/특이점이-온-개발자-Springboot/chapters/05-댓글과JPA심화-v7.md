@@ -33,7 +33,7 @@ cd start/ch05
 ```text ch05 디렉토리
 start/ch05/src/main/java/com/metacoding/spring/
 ├── board/
-│   ├── Board.java                        # [참고] 게시글 엔티티
+│   ├── Board.java                        # [작성] 게시글 엔티티
 │   ├── BoardRepository.java              # [작성] 게시글 리포지토리
 │   ├── BoardResponse.java                # [작성] 게시글 응답 DTO
 │   └── BoardService.java                 # [작성] 게시글 서비스
@@ -116,7 +116,7 @@ start/ch05/src/main/resources/
 반면 자바 객체의 참조는 한 방향으로만 이루어집니다. **Reply** 엔티티에 **Board** 타입 필드를 두면 댓글에서 게시글을 참조할 수는 있지만, 반대로 **Board** 엔티티에는 댓글을 가리키는 필드가 없어 게시글에서 댓글에 접근할 수는 없습니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 720 230" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Reply의 board 필드에서 Board로 향하는 화살표 하나만 그려져 있다. Board 쪽에는 댓글을 가리키는 필드가 없다.">
+<svg viewBox="0 34 720 156" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Reply의 board 필드에서 Board로 향하는 화살표 하나만 그려져 있다. Board 쪽에는 댓글을 가리키는 필드가 없다.">
   <defs>
     <marker id="c5obj-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
   </defs>
@@ -135,7 +135,6 @@ start/ch05/src/main/resources/
   <text x="480" y="154" font-size="13" font-family="monospace" font-weight="800" fill="#c2410c">Board board</text>
   <path d="M460,98 H260" fill="none" stroke="#334155" stroke-width="2" marker-end="url(#c5obj-one)"/>
   <text x="360" y="88" text-anchor="middle" font-size="13" font-family="monospace" font-weight="800" fill="#334155">board</text>
-  <text x="360" y="206" text-anchor="middle" font-size="13" fill="#475569">참조는 댓글에서 게시글 한 방향뿐입니다</text>
 </svg>
 </div>
 
@@ -144,7 +143,7 @@ start/ch05/src/main/resources/
 JPA에서는 이를 해결하기 위해 **양방향 매핑(Bidirectional Mapping)** 을 사용합니다. **Board** 엔티티에 댓글 목록 필드를 추가하고 **@OneToMany**를 설정해, **Reply**의 **@ManyToOne**과 서로 참조하도록 연결하는 방식입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 720 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Board에는 OneToMany가 설정된 replies 필드가, Reply에는 ManyToOne이 설정된 board 필드가 있다. Reply에서 Board로 향하는 위쪽 화살표에는 board가, Board에서 Reply로 향하는 아래쪽 화살표에는 replies가 적혀 있어 서로를 참조한다.">
+<svg viewBox="0 35 720 180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Board와 Reply가 나란히 놓이고, Board에는 OneToMany가 설정된 replies 필드가, Reply에는 ManyToOne이 설정된 board 필드가 있다. Reply에서 Board로 향하는 위쪽 화살표에는 board가, Board에서 Reply로 향하는 아래쪽 화살표에는 replies가 적혀 있어 서로를 참조한다.">
   <defs>
     <marker id="c5bi-one" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#334155"/></marker>
   </defs>
@@ -215,7 +214,9 @@ public class Reply {
 
 다음으로 **Board** 엔티티에 **@OneToMany**를 사용해 양방향 매핑을 설정합니다. 그리고 **mappedBy** 속성에 상대 엔티티인 **Reply**의 **board** 필드를 지정하면 두 엔티티가 매핑됩니다.
 
-```java [참고] board/Board.java. 댓글 목록 추가와 회원 필드 수정
+`board/Board.java`에 댓글 목록 필드를 추가하고 회원 필드를 아래와 같이 변경합니다.
+
+```java [실습 1] board/Board.java. 댓글 목록 추가와 회원 필드 수정
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
 
@@ -250,7 +251,7 @@ values('comment4',2,2,now());
 
 ### 5.2.1 즉시 로딩
 
-**즉시 로딩(Eager Loading)** 은 특정 엔티티를 조회할 때 **연관된 엔티티의 데이터까지 같이 가져오는 방식**으로, **@ManyToOne** 어노테이션은 **즉시 로딩이 기본 전략**입니다. 그래서 **fetch** 속성을 별도로 지정하지 않으면, 게시글을 조회하는 순간 JPA가 회원 정보까지 조회해 **Board**의 **user** 필드에 채워 넣습니다.
+**즉시 로딩(Eager Loading)** 은 **특정 엔티티를 조회할 때 연관된 데이터까지 함께 가져오는 방식**입니다. **@ManyToOne**의 기본 전략이며, **fetch** 속성을 EAGER로 명시해 적용할 수도 있습니다. 이 설정이 적용되면 게시글을 조회할 때 JPA가 회원 정보까지 함께 조회하여 **Board**의 **user** 필드에 채워 넣습니다.
 
 이러한 설정 때문에 **findAll** 메서드로 게시글 목록을 조회하면 문제가 발생합니다. JPA가 먼저 **board_tb**에서 게시글 목록을 읽어온 뒤, 각 게시글의 비어 있는 회원 정보를 채우기 위해 **user_tb**를 조회하는 쿼리를 따로 실행하기 때문입니다.
 
@@ -279,9 +280,7 @@ values('comment4',2,2,now());
 
 ### 5.2.2 지연 로딩
 
-이러한 문제를 해결하기 위해 사용하는 방식이 **지연 로딩(Lazy Loading)** 입니다.
-
-지연 로딩은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. **@ManyToOne**의 **fetch** 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.
+반면 **지연 로딩(Lazy Loading)** 은 **기준이 되는 엔티티만 먼저 가져오고, 연관된 엔티티는 실제로 데이터에 접근하는 순간에 조회하는 방식**입니다. **@ManyToOne**의 **fetch** 속성을 LAZY로 설정하면 지연 로딩이 적용됩니다.
 
 ```java board/Board.java. 회원 조회를 지연 로딩으로
     @ManyToOne(fetch = FetchType.LAZY)
@@ -325,7 +324,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardRepository.java`를 열어 아래와 같이 메서드를 작성합니다.
 
-```java [실습 1] board/BoardRepository.java. 회원과 댓글을 함께 가져오는 조회
+```java [실습 2] board/BoardRepository.java. 회원과 댓글을 함께 가져오는 조회
     @Query("select b from Board b join fetch b.user left join fetch b.replies r "
             + "left join fetch r.user where b.id = :boardId")
     Optional<Board> findByIdJoinUserAndReplies(@Param("boardId") Integer boardId);
@@ -339,7 +338,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardResponse.java`의 **DetailDTO**를 아래와 같이 변경합니다.
 
-```java [실습 2] board/BoardResponse.java. 상세에 댓글 목록 추가
+```java [실습 3] board/BoardResponse.java. 상세에 댓글 목록 추가
     public record DetailDTO(
             Integer boardId,
             String title,
@@ -392,7 +391,7 @@ LAZY로 설정하면 JPA는 게시글을 조회할 때 회원 엔티티 대신 �
 
 `board/BoardService.java`를 아래와 같이 변경합니다.
 
-```java [실습 3] board/BoardService.java. 상세 조회를 join fetch로 교체
+```java [실습 4] board/BoardService.java. 상세 조회를 join fetch로 교체
     public BoardResponse.DetailDTO 게시글상세(Integer boardId, User loginUser) {
         Board board = boardRepository.findByIdJoinUserAndReplies(boardId)
                 .orElseThrow(() -> new Exception404("게시글을 찾을 수 없습니다"));
@@ -415,7 +414,7 @@ GET http://localhost:8080/api/boards/1
 
 ### 5.4.1 리포지토리
 
-먼저 댓글을 저장할 리포지토리를 살펴보겠습니다. `reply/ReplyRepository.java`를 열어 아래 코드를 확인합니다.
+댓글을 저장할 리포지토리는 게시글, 회원 리포지토리와 동일한 구조입니다. `reply/ReplyRepository.java`를 열어 아래 코드를 확인합니다.
 
 ```java [참고] reply/ReplyRepository.java. JpaRepository 상속
 public interface ReplyRepository extends JpaRepository<Reply, Integer> {
@@ -428,7 +427,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Integer> {
 
 `reply/ReplyRequest.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 4] reply/ReplyRequest.java. 댓글 요청 DTO
+```java [실습 5] reply/ReplyRequest.java. 댓글 요청 DTO
 public class ReplyRequest {
 
     public record SaveDTO(String comment, Integer boardId) {
@@ -450,7 +449,7 @@ public class ReplyRequest {
 
 `reply/ReplyResponse.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 5] reply/ReplyResponse.java. 댓글 응답 DTO
+```java [실습 6] reply/ReplyResponse.java. 댓글 응답 DTO
 public class ReplyResponse {
 
     public record DTO(Integer replyId, String comment, String username) {
@@ -471,7 +470,7 @@ public class ReplyResponse {
 
 `reply/ReplyService.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 6] reply/ReplyService.java. 댓글 저장
+```java [실습 7] reply/ReplyService.java. 댓글 저장
 @RequiredArgsConstructor
 @Service
 public class ReplyService {
@@ -502,7 +501,7 @@ public class ReplyService {
 
 `reply/ReplyController.java`를 열어 아래와 같이 작성합니다.
 
-```java [실습 7] reply/ReplyController.java. 댓글 작성 엔드포인트
+```java [실습 8] reply/ReplyController.java. 댓글 작성 엔드포인트
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/replies")
@@ -542,7 +541,7 @@ POST http://localhost:8080/api/replies
 
 `reply/ReplyService.java`의 **댓글삭제** 메서드를 아래와 같이 작성합니다.
 
-```java [실습 8] reply/ReplyService.java. 댓글 삭제
+```java [실습 9] reply/ReplyService.java. 댓글 삭제
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
         // 1. 넘어온 유저가 없으면 로그인하지 않은 요청이다
@@ -563,7 +562,7 @@ POST http://localhost:8080/api/replies
 
 `reply/ReplyController.java`의 **deleteById** 메서드를 아래와 같이 작성합니다.
 
-```java [실습 9] reply/ReplyController.java. 댓글 삭제 엔드포인트
+```java [실습 10] reply/ReplyController.java. 댓글 삭제 엔드포인트
     @DeleteMapping("/{replyId}")
     public ResponseEntity<?> deleteById(
             HttpServletRequest request, @PathVariable("replyId") Integer replyId) {

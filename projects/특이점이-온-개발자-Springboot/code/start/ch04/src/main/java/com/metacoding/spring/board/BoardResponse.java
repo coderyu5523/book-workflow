@@ -11,7 +11,7 @@ public class BoardResponse {
         }
     }
 
-    // TODO : 실습 10 - 상세 응답에 작성자와 본인 여부 추가
+    // TODO : 실습 11 - 상세 응답에 작성자와 본인 여부 추가
     public record DetailDTO(
             Integer boardId,
             String title,

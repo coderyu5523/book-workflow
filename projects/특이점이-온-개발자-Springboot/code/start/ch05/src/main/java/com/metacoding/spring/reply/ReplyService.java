@@ -16,12 +16,12 @@ public class ReplyService {
 
     @Transactional
     public ReplyResponse.DTO 댓글추가(ReplyRequest.SaveDTO requestDTO, User loginUser) {
-        // TODO : 실습 6 - 댓글 저장
+        // TODO : 실습 7 - 댓글 저장
         return null;
     }
 
     @Transactional
     public void 댓글삭제(Integer replyId, User loginUser) {
-        // TODO : 실습 8 - 댓글 삭제
+        // TODO : 실습 9 - 댓글 삭제
     }
 }

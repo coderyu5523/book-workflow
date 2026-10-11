@@ -13,9 +13,9 @@ public class UserController {
 
     @PostMapping("/join")
     public ResponseEntity<?> join(@RequestBody UserRequest.SaveDTO requestDTO) {
-        // TODO : 실습 5 - 회원가입 엔드포인트
+        // TODO : 실습 6 - 회원가입 엔드포인트
         return null;
     }
 
-    // TODO : 실습 8 - 로그인 엔드포인트
+    // TODO : 실습 9 - 로그인 엔드포인트
 }
