@@ -1,7 +1,6 @@
 package com.metacoding.spring.board;
 
-import java.util.*;
-
+import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.metacoding.spring.core.handler.ex.*;
