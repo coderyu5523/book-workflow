@@ -166,7 +166,7 @@ src/main/resources/
 
 여기서 `OrderService`가 비즈니스를 수행하는 **사장님**이라면, `Order` 도메인 객체는 그 안에 담긴 핵심 규칙인 **운영 매뉴얼**입니다. **비즈니스 로직을 서비스에서 분리해 도메인에 모아 두면** 기술적 환경이 변해도 비즈니스의 본질은 영향을 받지 않으며, 복잡한 요구사항 속에서도 코드의 가독성과 유지보수성을 지킬 수 있습니다.
 
-## 3.2 UseCase 인터페이스(Use Case Interface) - USB 허브처럼 바꿔 꽂기
+## 3.2 UseCase 인터페이스(Use Case Interface) - USB 허브
 
 비즈니스를 수행하는 서비스가 컨트롤러에 직접 묶여 있으면 두 코드가 **강하게 결합됩니다.** 그래서 서비스를 고칠 때마다 컨트롤러도 함께 고쳐야 하고, 테스트할 때 진짜 서비스 대신 **가짜(Mock) 객체를 끼워 넣기도 불가능**해집니다.
 
@@ -227,30 +227,30 @@ src/main/resources/
 컨트롤러가 구현체 대신 UseCase 인터페이스를 참조하고, 서비스가 이 인터페이스를 구현하면 둘은 독립적으로 동작합니다. 이렇게 의존 관계를 느슨하게 만들어 내부 로직을 보호하는 것이 **클린 아키텍처**의 원칙입니다.
 
 <div class="svg-figure">
-<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UseCase 인터페이스 의존 구조: 세 구현체가 UseCase 인터페이스를 향하고 Controller는 그 인터페이스만 안다">
+<svg viewBox="0 0 800 304" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="UseCase 인터페이스 의존 구조: 세 구현체가 UseCase 인터페이스를 향하고 Controller는 그 인터페이스만 안다" style="max-width:540px">
   <defs>
     <marker id="c3f2-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#475569"/></marker>
   </defs>
-  <text x="400" y="30" text-anchor="middle" font-size="17" font-weight="700" fill="#0f172a">UseCase 인터페이스 의존 구조</text>
-  <rect x="60" y="60" width="200" height="80" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="160" y="95" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">OrderServiceV1</text>
-  <text x="160" y="118" text-anchor="middle" font-size="12" fill="#3730a3">(H2 개발용)</text>
-  <rect x="300" y="60" width="200" height="80" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="400" y="95" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">OrderServiceV2</text>
-  <text x="400" y="118" text-anchor="middle" font-size="12" fill="#3730a3">(MySQL 운영용)</text>
-  <rect x="540" y="60" width="200" height="80" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="640" y="95" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">MockOrderService</text>
-  <text x="640" y="118" text-anchor="middle" font-size="12" fill="#3730a3">(테스트용)</text>
-  <line x1="160" y1="140" x2="320" y2="235" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
-  <line x1="400" y1="140" x2="400" y2="235" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
-  <line x1="640" y1="140" x2="480" y2="235" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
-  <rect x="260" y="240" width="280" height="90" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8" stroke-dasharray="6,4"/>
-  <text x="400" y="278" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">CreateOrderUseCase</text>
-  <text x="400" y="302" text-anchor="middle" font-size="12" fill="#3730a3">(약속: '주문을 생성한다')</text>
-  <line x1="400" y1="395" x2="400" y2="335" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
-  <rect x="180" y="400" width="440" height="80" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
-  <text x="400" y="435" text-anchor="middle" font-size="14" font-weight="700" fill="#3730a3">OrderController</text>
-  <text x="400" y="458" text-anchor="middle" font-size="12" fill="#3730a3">(어떤 코드가 꽂혔는지 몰라도 된다)</text>
+  <text x="400" y="24" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">UseCase 인터페이스 의존 구조</text>
+  <rect x="60" y="44" width="200" height="60" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="160" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">OrderServiceV1</text>
+  <text x="160" y="92" text-anchor="middle" font-size="13" fill="#3730a3">(H2 개발용)</text>
+  <rect x="300" y="44" width="200" height="60" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="400" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">OrderServiceV2</text>
+  <text x="400" y="92" text-anchor="middle" font-size="13" fill="#3730a3">(MySQL 운영용)</text>
+  <rect x="540" y="44" width="200" height="60" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="640" y="70" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">MockOrderService</text>
+  <text x="640" y="92" text-anchor="middle" font-size="13" fill="#3730a3">(테스트용)</text>
+  <line x1="160" y1="104" x2="320" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
+  <line x1="400" y1="104" x2="400" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
+  <line x1="640" y1="104" x2="480" y2="146" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
+  <rect x="260" y="150" width="280" height="60" rx="6" fill="#fff" stroke="#4f46e5" stroke-width="1.8" stroke-dasharray="6,4"/>
+  <text x="400" y="176" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">CreateOrderUseCase</text>
+  <text x="400" y="198" text-anchor="middle" font-size="13" fill="#3730a3">(약속: '주문을 생성한다')</text>
+  <line x1="400" y1="240" x2="400" y2="216" stroke="#475569" stroke-width="1.6" marker-end="url(#c3f2-g)"/>
+  <rect x="180" y="240" width="440" height="60" rx="6" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.6"/>
+  <text x="400" y="266" text-anchor="middle" font-size="16" font-weight="700" fill="#3730a3">OrderController</text>
+  <text x="400" y="288" text-anchor="middle" font-size="13" fill="#3730a3">(어떤 코드가 꽂혔는지 몰라도 된다)</text>
 </svg>
 </div>
 
@@ -266,7 +266,7 @@ src/main/resources/
 
 <div class="svg-figure">
 <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:22px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans-serif;">
-  <div style="display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:0;align-items:start;">
+  <div style="display:grid;grid-template-columns:1fr 64px 1fr;gap:0;align-items:start;">
     <div style="border:2px dashed #cbd5e1;border-radius:10px;padding:14px;">
       <div style="font-family:'SFMono-Regular',Consolas,monospace;font-size:13px;font-weight:700;text-align:center;padding:4px 0 10px;border-bottom:1px solid #e2e8f0;color:#64748b;">챕터 2 — orders/</div>
       <div style="display:flex;flex-direction:column;gap:6px;padding:10px 0 0;">
@@ -279,15 +279,7 @@ src/main/resources/
         <span style="display:inline-flex;padding:5px 11px;border-radius:5px;font-family:'SFMono-Regular',Consolas,monospace;font-size:12px;font-weight:600;border:1.5px solid #cbd5e1;background:#f1f5f9;color:#64748b;">OrderResponse</span>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:5px;padding:14px 10px;">
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">Order</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">domain/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderStatus</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">domain/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderController</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">web/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderService</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">usecase/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderRepository</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">repository/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderRequest</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">web/</span></div>
-      <div style="display:grid;grid-template-columns:1fr 14px 1fr;gap:6px;align-items:center;font-family:'SFMono-Regular',Consolas,monospace;font-size:11.5px;"><span style="text-align:right;color:#64748b;">OrderResponse</span><span style="text-align:center;color:#4f46e5;">→</span><span style="font-weight:700;color:#3730a3;">web/</span></div>
-    </div>
+    <div style="align-self:stretch;display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 40 24" width="40" height="24" style="width:40px;height:24px;margin:0;" xmlns="http://www.w3.org/2000/svg"><line x1="2" y1="12" x2="30" y2="12" stroke="#4f46e5" stroke-width="2.5"/><path d="M28,5 L38,12 L28,19 z" fill="#4f46e5"/></svg></div>
     <div style="border:2px solid #4f46e5;border-radius:10px;padding:0;">
       <div style="padding:10px 14px;border-bottom:1px solid #e2e8f0;">
         <div style="font-family:'SFMono-Regular',Consolas,monospace;font-size:12px;font-weight:700;margin-bottom:5px;color:#3730a3;">domain/ <span style="font-family:-apple-system,sans-serif;font-size:11px;font-weight:500;color:#64748b;font-style:italic;">비즈니스 규칙</span></div>
