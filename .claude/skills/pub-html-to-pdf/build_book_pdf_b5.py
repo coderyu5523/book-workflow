@@ -24,6 +24,9 @@ A4판과 다른 점
 
 설정 파일(선택 키): projects/<책>/book/pdf-build.json 의 "output_b5" = 출력 파일명
   (없으면 "output" 이름에 " (B5)"를 붙인다)
+  "b5_start_left" = 오른쪽 시작 규칙을 풀 머릿말·프롤로그류 파트 이름 목록(예: ["afterword"]).
+  앞 파트가 홀수 쪽에서 끝나면 그 다음 짝수(왼쪽) 쪽에서 바로 시작해 빈 쪽을 줄인다.
+  1쪽짜리 에필로그 뒤 마치며에 쓰면 중간 빈 쪽과 끝 빈 쪽이 함께 사라진다(2쪽 절약)
 """
 
 from __future__ import annotations
@@ -397,6 +400,7 @@ def main() -> int:
         print("[!] pdf-build.json 의 chapters 가 비어 있음")
         return 1
     top_labels = {**DEFAULT_TOP_LABELS, **cfg.get("top_labels", {})}
+    start_left = set(cfg.get("b5_start_left", []))
     base_out = cfg.get("output", f"{project.name}.pdf")
     out_name = cfg.get("output_b5") or f"{Path(base_out).stem} (B5).pdf"
     test_mode = args.only_chapter is not None
@@ -422,9 +426,13 @@ def main() -> int:
     if not test_mode:
         cj = project / "book" / "colophon.json"
         if cj.exists():
+            colophon = json.loads(cj.read_text(encoding="utf-8"))
+            pj = project / "book" / "colophon-paper.json"   # 종이책은 ISBN·정가가 전자책과 달라 덮어쓴다
+            if pj.exists():
+                colophon.update({k: v for k, v in json.loads(pj.read_text(encoding="utf-8")).items()
+                                 if not k.startswith("_")})
             h = build_dir / "_b5-colophon.html"
-            h.write_text(_colophon_html(json.loads(cj.read_text(encoding="utf-8"))),
-                         encoding="utf-8")
+            h.write_text(_colophon_html(colophon), encoding="utf-8")
             front.append(new_part("colophon", h, pdf_dir / "_colophon.pdf",
                                   need_right=True, counted=False))
         aj = project / "book" / "authors.json"
@@ -458,7 +466,8 @@ def main() -> int:
         else:
             body_parts.append(new_part(
                 "front_back", html, pdf_dir / f"{name}.pdf",
-                need_right=True, counted=True,
+                need_right=name not in start_left, counted=True,
+                side="left" if name in start_left else "right",
                 label=top_labels.get(name), lvl=1))
 
     if len(body_parts) < (1 if test_mode else 2):

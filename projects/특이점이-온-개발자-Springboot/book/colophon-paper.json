@@ -1,0 +1,5 @@
+{
+  "_note": "종이책 전용 판권지·표지 값. 종이책 내지(build_book_pdf_b5.py)와 종이책 표지(generate_openskill_paper_covers_white.py)가 colophon.json 위에 덮어쓴다. 전자책(A4)은 colophon.json 그대로.",
+  "isbn": "979-11-998558-0-9",
+  "price": "16,000원"
+}

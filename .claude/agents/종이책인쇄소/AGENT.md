@@ -27,7 +27,7 @@ steps: [5, 7]
 | 총 쪽수 | 제한 없음 | **짝수** (홀수면 끝에 빈 쪽) |
 | 출력 | `.build/pdf/` | **`.build/pdf-b5/`** (A4 덮어쓰지 않음) |
 
-입력은 같다: `book/pdf-build.json`, `dividers.json`, `colophon.json`, `authors.json`, `.build/*.html`. A4 빌더와 크기에 무관한 함수(챕터 헤딩 추출, 목차 라벨 등)는 `build_book_pdf.py`에서 가져다 쓴다. A4 빌더·`build_pdf.py`·`print.css`는 수정하지 않는다.
+입력은 같다: `book/pdf-build.json`, `dividers.json`, `colophon.json`, `authors.json`, `.build/*.html`. 단 종이책은 ISBN·정가가 전자책과 달라서 `book/colophon-paper.json`(`isbn`, `price`)이 있으면 판권지에서 `colophon.json` 위에 덮어쓴다. A4 빌더와 크기에 무관한 함수(챕터 헤딩 추출, 목차 라벨 등)는 `build_book_pdf.py`에서 가져다 쓴다. A4 빌더·`build_pdf.py`·`print.css`는 수정하지 않는다.
 
 ## 2단계 빌드 - 책 무관, 프로젝트 경로만 바꾼다
 
@@ -108,7 +108,8 @@ PYTHONUTF8=1 python docs/images/covers/generate_openskill_paper_covers.py --book
 - 앞표지는 전자책 표지 디자인(`generate_openskill_covers.py`)을 같은 엔진으로 원본 해상도에 다시 그린다. 엔진(`cover_generator.py`)의 치수 상수를 이번 규격으로 덮어쓰므로, 엔진을 쓰는 모듈은 치수를 정한 뒤에 import한다
 - **책등 두께는 추정값이다** - 쪽수/2 x 0.1mm(80g 모조지 가정). 용지와 인쇄소 계산값으로 반드시 교체한다
 - 뒷표지 문구는 `book/출판등록-책소개.txt`(첫 문단=한 줄 요약, 이어지는 문단=소개)가 있으면 그것을, 없으면 스크립트의 `DRAFT_BLURBS` 초안을 쓴다. 초안은 저자 확인 전이다
-- ISBN 바코드는 `colophon.json`의 ISBN으로 EAN-13을 직접 그린다(체크숫자 검증, OpenCV로 디코드 확인). 부가기호(5자리)는 없다. 인쇄 서비스가 바코드를 자동으로 넣는지 먼저 확인한다
+- 확정 디자인(흰 바탕 + 기술 색 한 가지 + 흰 책등, 정가 16,000원)은 `docs/images/covers/generate_openskill_paper_covers_white.py`가 책 세 권을 JPG(`cover-paper-spread-흰책등.jpg`)로 만든다. 위 `generate_openskill_paper_covers.py`는 회색 초안이다
+- ISBN 바코드는 종이책 ISBN(`book/colophon-paper.json`)으로 EAN-13을 직접 그린다. 그 파일이 없으면 전자책 ISBN을 대신 쓰지 않고 그 책을 건너뛴다(체크숫자 검증, OpenCV로 디코드 확인. 디코더가 원본 크기에서 못 읽으면 75%로 줄여 읽는다). 부가기호(5자리)는 없다. 인쇄 서비스가 바코드를 자동으로 넣는지 먼저 확인한다
 
 ## 아직 하지 않는 것
 
