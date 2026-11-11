@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-build_book_pdf_b5.py — 종이책 인쇄용 B5(46배판 188x254mm) 내지 PDF 한 권 빌드.
+build_book_pdf_b5.py — 종이책 인쇄용 B5(46배판 188x254mm, 도련 포함 194x260mm) 내지 PDF 한 권 빌드.
 
 build_book_pdf.py(A4 전자책용)는 건드리지 않는다. 같은 입력(book/pdf-build.json,
 dividers.json, colophon.json, authors.json, .build/*.html)을 읽어 B5 내지를
@@ -13,20 +13,24 @@ dividers.json, colophon.json, authors.json, .build/*.html)을 읽어 B5 내지�
 전제(반드시 먼저): build_html.py 로 .build/*.html 을 만들어 둘 것(A4와 같은 HTML을 쓴다).
 
 A4판과 다른 점
-  - 용지 188x254mm(표지 제작 규격의 46배판). 여백 위20·아래22mm, 안쪽22·바깥16mm (홀수 쪽은 왼쪽이 안쪽, 짝수 쪽은 오른쪽이 안쪽)
+  - 재단 크기 188x254mm(표지 제작 규격의 46배판) + 사방 도련 3mm = 파일 쪽 크기 194x260mm(교보 바로출판 내지 규격).
+    여백은 파일 가장자리 기준 위23·아래25mm, 안쪽25·바깥20mm (교보 템플릿 최소 20mm.
+    홀수 쪽은 왼쪽이 안쪽, 짝수 쪽은 오른쪽이 안쪽)
   - 표지는 내지에 넣지 않는다(표지 펼침면은 인쇄소 규격이 정해진 뒤 별도 작업)
   - 판권지·머릿말·프롤로그·목차·챕터표지·에필로그·맺음말은 홀수(오른쪽) 쪽에서 시작하고
     필요하면 빈 쪽을 끼운다. 챕터 본문은 챕터표지 바로 다음 쪽(짝수)에서 시작한다
   - 총 쪽수가 홀수면 끝에 빈 쪽을 하나 붙여 짝수로 맞춘다
   - 빈 쪽은 번호를 찍지 않되 쪽수에는 포함한다. 머릿말이 1쪽이고, 목차 구간(목차+뒤 빈 쪽)과
     그 앞의 판권지·지은이 소개는 쪽수에 넣지 않는다(홀수 쪽 = 홀수 번호가 유지되는 구간)
-  - 판권지·챕터표지·목차의 mm 치수는 B5 본문 영역(150x212mm)에 맞춰 조정
+  - 판권지·챕터표지·목차의 mm 치수는 B5 본문 영역(149x212mm)에 맞춰 조정
 
 설정 파일(선택 키): projects/<책>/book/pdf-build.json 의 "output_b5" = 출력 파일명
   (없으면 "output" 이름에 " (B5)"를 붙인다)
   "b5_start_left" = 오른쪽 시작 규칙을 풀 머릿말·프롤로그류 파트 이름 목록(예: ["afterword"]).
   앞 파트가 홀수 쪽에서 끝나면 그 다음 짝수(왼쪽) 쪽에서 바로 시작해 빈 쪽을 줄인다.
   1쪽짜리 에필로그 뒤 마치며에 쓰면 중간 빈 쪽과 끝 빈 쪽이 함께 사라진다(2쪽 절약)
+  "b5_grayscale" = true 면 흑백 내지로 만든다. 컬러 이모지는 단색 기호 글꼴(Segoe UI Symbol)로
+  찍고, 병합 뒤 PyMuPDF recolor로 전부 회색조로 바꾼 다음 남은 컬러를 검사해 출력한다
 """
 
 from __future__ import annotations
@@ -46,9 +50,19 @@ from build_book_pdf import (  # noqa: E402  A4 빌더와 공유하는 크기 무
     _load_dividers,
 )
 
-PAGE_W_MM, PAGE_H_MM = 188, 254
-MARGIN_TOP_MM, MARGIN_BOTTOM_MM = 20, 22
-MARGIN_INNER_MM, MARGIN_OUTER_MM = 22, 16
+# 교보 바로출판 내지 규격: 재단 크기(완성 책) 188x254mm + 사방 도련 3mm = 파일 쪽 크기 194x260mm.
+# 도련 3mm는 제작할 때 잘려 나간다.
+TRIM_W_MM, TRIM_H_MM = 188, 254
+BLEED_MM = 3
+PAGE_W_MM, PAGE_H_MM = TRIM_W_MM + 2 * BLEED_MM, TRIM_H_MM + 2 * BLEED_MM
+BLEED_PT = BLEED_MM * 72 / 25.4
+# 여백은 파일 가장자리(도련 포함) 기준. 교보 템플릿은 상하좌우 20mm 이상만 허용한다.
+# 재단선 기준으로는 위 20, 아래 22, 안쪽 22, 바깥 17mm다.
+MARGIN_TOP_MM, MARGIN_BOTTOM_MM = 23, 25
+MARGIN_INNER_MM, MARGIN_OUTER_MM = 25, 20
+# 쪽번호 글꼴. PyMuPDF 기본값(helv)은 내장되지 않은 Type1 Helvetica라 인쇄소 규격(Type1 금지)에 걸린다.
+# TrueType 파일을 내장한다(문서 안에서 한 번만 들어간다)
+PAGE_NUM_FONT = Path(os.environ.get("WINDIR", r"C:\Windows")) / "Fonts" / "segoeui.ttf"
 
 
 def _page_css() -> str:
@@ -64,8 +78,35 @@ def _page_css() -> str:
     )
 
 
+# 흑백 내지: 컬러 이모지(기본 표시가 그림 문자인 글자)를 단색 기호 글꼴로 감싼다.
+# 컬러 이모지는 Chromium이 그라데이션 Type3 글꼴로 넣어서 recolor로 회색이 되지 않는다.
+_MONO_EMOJI_JS = r"""() => {
+  const re = /(\p{Emoji_Presentation}|\p{Extended_Pictographic}️)/u;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) if (re.test(walker.currentNode.nodeValue)) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const frag = document.createDocumentFragment();
+    for (const part of node.nodeValue.split(new RegExp(re.source, 'gu'))) {
+      if (!part) continue;
+      if (re.test(part)) {
+        const s = document.createElement('span');
+        s.style.cssText = 'font-family:"Segoe UI Symbol",sans-serif;font-variant-emoji:text;';
+        s.textContent = part.replace('️', '︎');
+        frag.appendChild(s);
+      } else frag.appendChild(document.createTextNode(part));
+    }
+    node.parentNode.replaceChild(frag, node);
+  }
+  return nodes.length;
+}"""
+
+
 class Renderer:
     """Chromium 한 번만 띄워 여러 HTML을 B5 PDF로 굽는다."""
+
+    def __init__(self, gray: bool = False):
+        self.gray = gray
 
     def __enter__(self):
         from playwright.sync_api import sync_playwright
@@ -86,6 +127,8 @@ class Renderer:
         page = ctx.new_page()
         page.goto(html_path.resolve().as_uri(), wait_until="networkidle")
         page.add_style_tag(content=_page_css())
+        if self.gray:
+            page.evaluate(_MONO_EMOJI_JS)
         if side == "left":
             page.evaluate(
                 "() => { const d = document.createElement('div');"
@@ -110,6 +153,62 @@ def _drop_first_page(pdf_path: Path) -> None:
     doc.save(str(tmp))
     doc.close()
     os.replace(tmp, pdf_path)
+
+
+def _to_grayscale(pdf_path: Path) -> dict:
+    """흑백 내지용: 글자·선·면·이미지 색을 전부 회색조(1성분)로 바꾸고, 투명 그룹의 혼합 색공간도
+    DeviceGray로 맞춘 뒤 남은 컬러를 센다. 반환: {종류: 개수} (비어 있으면 완전 회색조)."""
+    import re
+    import fitz
+    doc = fitz.open(str(pdf_path))
+    doc.recolor(1)
+    for x in range(1, doc.xref_length()):
+        for key in ("Group/CS", "CS"):
+            try:
+                typ, val = doc.xref_get_key(x, key)
+            except Exception:
+                continue
+            if val == "/DeviceRGB" and (key == "Group/CS"
+                                         or doc.xref_get_key(x, "S")[1] == "/Transparency"):
+                doc.xref_set_key(x, key, "/DeviceGray")
+    tmp = pdf_path.with_suffix(".gray.pdf")
+    # garbage는 1(안 쓰는 객체 삭제)까지만. 2 이상은 챕터별 PDF가 공유하는 글꼴 부분집합 이름·
+    # ExtGState 이름을 합치거나 번호를 다시 매기다가 글자를 깨뜨린다(2026-11-11 확인)
+    doc.save(str(tmp), garbage=1, deflate=True)
+    doc.close()
+    os.replace(tmp, pdf_path)
+
+    num = r"[-+]?(?:\d+\.?\d*|\.\d+)"
+    ops = {"RGB 색 연산자": re.compile(rf"(?:{num}\s+){{3}}(?:rg|RG)(?![A-Za-z])"),
+           "CMYK 색 연산자": re.compile(rf"(?:{num}\s+){{4}}(?:k|K)(?![A-Za-z])")}
+    skip = re.compile(r"/Subtype\s*/(Image|Type1C|CIDFontType0C|OpenType)|/Length1"
+                      r"|/Type\s*/(Metadata|XRef|ObjStm)|/N\s+\d")
+    left: dict = {}
+    with fitz.open(str(pdf_path)) as d:
+        for x in range(1, d.xref_length()):
+            try:
+                obj = d.xref_object(x, compressed=False)
+            except Exception:
+                continue
+            for cs in ("/DeviceRGB", "/DeviceCMYK"):
+                if cs in obj:
+                    left[cs + " 색공간"] = left.get(cs + " 색공간", 0) + 1
+            if not d.xref_is_stream(x) or skip.search(obj):
+                continue
+            s = d.xref_stream(x).decode("latin-1", "ignore")
+            for name, rx in ops.items():
+                n = len(rx.findall(s))
+                if n:
+                    left[name] = left.get(name, 0) + n
+        for pg in d:
+            for im in pg.get_images(full=True):
+                cs = d.xref_get_key(im[0], "ColorSpace")[1]
+                m = re.search(r"(\d+) 0 R", cs)
+                if m:
+                    icc = re.search(r"(\d+) 0 R", d.xref_object(int(m.group(1))))
+                    if icc and d.xref_get_key(int(icc.group(1)), "N")[1] != "1":
+                        left["컬러 ICC 이미지"] = left.get("컬러 ICC 이미지", 0) + 1
+    return left
 
 
 def _page_count(pdf: Path) -> int:
@@ -351,10 +450,11 @@ def _finalize(src, dst, page_flags, toc_phys, toc_entries):
         if counted:
             body += 1
             body_to_phys[body] = i + 1
-            if not blank:
+            if not blank:  # 재단선에서 22~42pt 위(도련만큼 올림)
                 page.insert_textbox(
-                    fitz.Rect(pw / 2 - 40, ph - 42, pw / 2 + 40, ph - 22),
-                    str(body), fontsize=9, align=1, color=(0.35, 0.35, 0.35))
+                    fitz.Rect(pw / 2 - 40, ph - 42 - BLEED_PT, pw / 2 + 40, ph - 22 - BLEED_PT),
+                    str(body), fontsize=9, align=1, color=(0.35, 0.35, 0.35),
+                    fontname="pagenum", fontfile=str(PAGE_NUM_FONT))
 
     # 문서 등장 순서(seq)를 보존해 정렬한다(소절과 다음 절이 같은 쪽에 걸릴 때 번호가 뒤집히지 않게).
     raw, seq = [], 0
@@ -387,6 +487,9 @@ def main() -> int:
     if not project.exists():
         print(f"[!] 프로젝트 경로 없음: {project}")
         return 1
+    if not PAGE_NUM_FONT.exists():
+        print(f"[!] 쪽번호 글꼴 없음: {PAGE_NUM_FONT} (TrueType 글꼴 경로로 PAGE_NUM_FONT를 바꿔 주세요)")
+        return 1
     build_dir = project / ".build"
     pdf_dir = build_dir / "pdf-b5"
     cfg_path = project / "book" / "pdf-build.json"
@@ -401,6 +504,7 @@ def main() -> int:
         return 1
     top_labels = {**DEFAULT_TOP_LABELS, **cfg.get("top_labels", {})}
     start_left = set(cfg.get("b5_start_left", []))
+    gray = bool(cfg.get("b5_grayscale", False))
     base_out = cfg.get("output", f"{project.name}.pdf")
     out_name = cfg.get("output_b5") or f"{Path(base_out).stem} (B5).pdf"
     test_mode = args.only_chapter is not None
@@ -482,7 +586,7 @@ def main() -> int:
     else:
         parts = front + body_parts
 
-    with Renderer() as r:
+    with Renderer(gray) as r:
         # 2) 목차를 뺀 모든 파트 렌더
         for p in parts:
             if p["kind"] == "toc":
@@ -555,11 +659,29 @@ def main() -> int:
     merged = pdf_dir / out_name
     _finalize(tmp, merged, page_flags, toc_phys, _toc_entries(parts, starts))
     tmp.unlink(missing_ok=True)
+    if gray:
+        left = _to_grayscale(merged)
+        if left:
+            print(f"[!] 회색조 변환 후 남은 컬러: {left}")
+        else:
+            print("[OK] 흑백 내지: 글자·선·면·이미지 전부 회색조(남은 컬러 없음)")
 
     with fitz.open(str(merged)) as m:
+        fonts = {}
+        for pg in m:
+            for xref, ext, ftype, base, *_ in pg.get_fonts(full=True):
+                fonts[xref] = (ext, ftype, base)
+        type1 = sorted({b for e, t, b in fonts.values() if t == "Type1"})
+        not_embedded = sorted({b for e, t, b in fonts.values() if e == "n/a" and t != "Type3"})
+        type3 = sum(1 for e, t, b in fonts.values() if t == "Type3")
+        if type1 or not_embedded:
+            print(f"[!] 인쇄소 규격 위반 글꼴: Type1 {type1}, 내장 안 됨 {not_embedded}")
+        print(f"     글꼴 {len(fonts)}개 (Type1 {len(type1)}, 내장 안 됨 {len(not_embedded)}, "
+              f"Type3 {type3}: Chromium이 코드 글꼴 등을 윤곽선으로 넣은 것)")
         print(f"[OK] B5 병합 완료: {merged}")
-        print(f"     {m.page_count}쪽, 쪽 크기 {m[0].rect.width:.1f}x{m[0].rect.height:.1f}pt "
-              f"(46배판 {PAGE_W_MM}x{PAGE_H_MM}mm = {PAGE_W_MM * 72 / 25.4:.1f}x{PAGE_H_MM * 72 / 25.4:.1f}pt)")
+        mm = 25.4 / 72
+        print(f"     {m.page_count}쪽, 쪽 크기 {m[0].rect.width * mm:.1f}x{m[0].rect.height * mm:.1f}mm "
+              f"(46배판 재단 {TRIM_W_MM}x{TRIM_H_MM}mm + 도련 {BLEED_MM}mm = {PAGE_W_MM}x{PAGE_H_MM}mm)")
     return 0
 
 

@@ -10,9 +10,11 @@ ISBN·정가는 book/colophon-paper.json(종이책 전용)에서 읽는다. 없�
 
 출력(projects/<책>/assets/paper-cover/):
   cover-paper-spread-흰책등.jpg   펼침면 (300dpi, 품질 95)
-책등 두께: --spine-mm 로 주거나, 생략하면 내지 쪽수로 추정한다(쪽수/2 x 0.1mm, 80g 모조지 가정).
+  cover-paper-spread-흰책등.pdf   같은 그림을 실제 mm 크기 한 쪽 PDF로 (교보 등록 화면은 표지를 PDF로만 받는다)
+책등 두께: --spine-mm 로 주거나, 생략하면 교보 바로출판 계산식으로 구한다
+  ((내지 두께 계수 x 쪽수 / 2) + 0.78mm, 소수 첫째 자리 반올림. 용지는 KYOBO_PAPER).
   B5 내지 PDF(.build/pdf-b5)가 있으면 그 쪽수, 없으면 A4 전자책 PDF 쪽수 x 1.27(스프링 142쪽 -> 180쪽 비율).
-  인쇄소가 알려 주는 값으로 반드시 교체한다.
+  내지 쪽수가 바뀌면 표지도 다시 만든다.
 """
 from __future__ import annotations
 
@@ -38,6 +40,12 @@ import generate_openskill_covers as eb  # noqa: E402
 
 BLACK = (30, 30, 30)
 GRAY = (105, 105, 105)
+
+# 교보 바로출판 책등 계산기의 내지 두께 계수(kyobobookpod.github.io/baro-publishing-guide 소스, 2026-11-11 확인).
+# 세 권은 흑백 내지 + 백색모조 80g으로 정했다(2026-11-11 저자 결정). 백색모조 150g은 컬러 내지만 가능
+KYOBO_PAPER_COEF = {"백색모조 80g": 0.09, "미색모조 80g": 0.09, "백색모조 100g": 0.114,
+                    "미색모조 100g": 0.114, "백색모조 150g": 0.167}
+KYOBO_PAPER = "백색모조 80g"
 GREEN = (76, 160, 56)           # 스프링 초록(로고 색 #6DB33F보다 조금 짙게)
 BLUE = (30, 125, 215)           # 도커 파랑(로고 색 #2496ED보다 조금 짙게)
 ORANGE = (244, 114, 56)         # MSA는 대표색이 없어 오픈스킬 보조색(주황)
@@ -274,8 +282,23 @@ def estimate_spine(project: Path):
             return pc.DEFAULT_SPINE_MM, f"책등 {pc.DEFAULT_SPINE_MM}mm는 임시값(내지 PDF 없음)"
         with fitz.open(str(a4[-1])) as doc:
             pages, src = int(math.ceil(doc.page_count * A4_TO_B5 / 2) * 2), f"A4 {doc.page_count}쪽 x {A4_TO_B5}"
-    mm_ = round(pages / 2 * 0.1, 1)
-    return mm_, f"책등 {mm_}mm는 추정값({src} -> 내지 {pages}쪽 / 2 x 0.1mm)"
+    # 교보 바로출판 책등 계산기: (내지 두께 계수 x 쪽수 / 2) + 0.78mm(면지 0.28 + 표지 0.5),
+    # 최종값만 소수 첫째 자리로 반올림(Math.round). 계수는 KYOBO_PAPER 용지 기준
+    mm_ = math.floor((KYOBO_PAPER_COEF[KYOBO_PAPER] * pages / 2 + 0.78) * 10 + 0.5 + 1e-9) / 10
+    return mm_, f"책등 {mm_}mm는 교보 계산식({src} {pages}쪽, {KYOBO_PAPER})"
+
+
+def jpg_to_pdf(jpg: Path, pdf: Path, dpi: int) -> None:
+    """교보 바로출판 등록 화면은 표지를 PDF(7MB 미만)로만 받는다.
+    JPG를 다시 압축하지 않고 실제 mm 크기의 한 쪽 PDF에 그대로 넣는다."""
+    import fitz
+    with Image.open(jpg) as im:
+        w_pt, h_pt = im.width * 72 / dpi, im.height * 72 / dpi
+    doc = fitz.open()
+    page = doc.new_page(width=w_pt, height=h_pt)
+    page.insert_image(page.rect, filename=str(jpg))
+    doc.save(str(pdf), deflate=True)
+    doc.close()
 
 
 def main() -> int:
@@ -309,7 +332,10 @@ def main() -> int:
         out.mkdir(parents=True, exist_ok=True)
         dst = out / "cover-paper-spread-흰책등.jpg"
         canvas.save(dst, "JPEG", quality=95, subsampling=0, optimize=True, dpi=(pc.DPI, pc.DPI))
+        pdf = dst.with_suffix(".pdf")
+        jpg_to_pdf(dst, pdf, pc.DPI)
         print(f"[OK] {key}: {dst}")
+        print(f"     {pdf.name} (교보 업로드용, {pdf.stat().st_size / 1e6:.1f}MB)")
         print(f"     {cg.W}x{cg.H}px = {cg.W * 25.4 / pc.DPI:.1f}x{cg.H * 25.4 / pc.DPI:.1f}mm, {note}")
         print(f"     ISBN {colo['isbn']}  정가 {colo['price']}")
     return 1 if failed else 0
