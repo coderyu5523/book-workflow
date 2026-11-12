@@ -8,9 +8,11 @@ ISBN·정가는 book/colophon-paper.json(종이책 전용)에서 읽는다. 없�
 사용법:
     PYTHONUTF8=1 python docs/images/covers/generate_openskill_paper_covers_white.py [--book Springboot|MSA|도커] [--spine-mm 9.0]
 
-출력(projects/<책>/assets/paper-cover/):
-  cover-paper-spread-흰책등.jpg   펼침면 (300dpi, 품질 95)
-  cover-paper-spread-흰책등.pdf   같은 그림을 실제 mm 크기 한 쪽 PDF로 (교보 등록 화면은 표지를 PDF로만 받는다)
+출력(projects/<책>/assets/paper-cover/, <책 제목> = book/pdf-build.json 의 "output" 이름, 내지 PDF와 같은 규칙):
+  <책 제목> (표지 펼침면).jpg   뒷표지 + 책등 + 앞표지 + 사방 도련 3mm (300dpi, 품질 95)
+  <책 제목> (표지 펼침면).pdf   같은 그림을 실제 mm 크기 한 쪽 PDF로 (교보 등록 화면은 표지를 PDF로만 받는다)
+  <책 제목> (앞표지).jpg        펼침면에서 앞표지만 재단 크기(도련 없음)로 잘라 가로 1500px로 줄인 것
+                                 (교보 앞표지 칸: 소문자 .jpg만, 7MB 이하, 가로 700~1500px·권장 1080 이상)
 책등 두께: --spine-mm 로 주거나, 생략하면 교보 바로출판 계산식으로 구한다
   ((내지 두께 계수 x 쪽수 / 2) + 0.78mm, 소수 첫째 자리 반올림. 용지는 KYOBO_PAPER).
   B5 내지 PDF(.build/pdf-b5)가 있으면 그 쪽수, 없으면 A4 전자책 PDF 쪽수 x 1.27(스프링 142쪽 -> 180쪽 비율).
@@ -52,6 +54,7 @@ ORANGE = (244, 114, 56)         # MSA는 대표색이 없어 오픈스킬 보조
 
 B = 3                           # 도련 mm
 TW, TH = 188, 254               # 재단 mm
+FRONT_JPG_W = 1500              # 교보 앞표지 칸 가로 최대 1500px(최소 700, 권장 1080 이상)
 A4_TO_B5 = 1.27                 # A4 전자책 쪽수 -> B5 내지 쪽수 (스프링 142 -> 180)
 
 
@@ -330,13 +333,22 @@ def main() -> int:
         draw_spine(canvas, eb.BOOKS[spec["dir"]]["subtitle"])
         out = project / "assets" / "paper-cover"
         out.mkdir(parents=True, exist_ok=True)
-        dst = out / "cover-paper-spread-흰책등.jpg"
+        title = Path(json.loads((project / "book" / "pdf-build.json").read_text(encoding="utf-8"))["output"]).stem
+        print(f"[OK] {key}")
+        # 표지 펼침면: 교보 등록 화면은 PDF만 받는다(JPG는 원본 보관용)
+        dst = out / f"{title} (표지 펼침면).jpg"
         canvas.save(dst, "JPEG", quality=95, subsampling=0, optimize=True, dpi=(pc.DPI, pc.DPI))
         pdf = dst.with_suffix(".pdf")
         jpg_to_pdf(dst, pdf, pc.DPI)
-        print(f"[OK] {key}: {dst}")
-        print(f"     {pdf.name} (교보 업로드용, {pdf.stat().st_size / 1e6:.1f}MB)")
-        print(f"     {cg.W}x{cg.H}px = {cg.W * 25.4 / pc.DPI:.1f}x{cg.H * 25.4 / pc.DPI:.1f}mm, {note}")
+        print(f"     {pdf.name} ({pdf.stat().st_size / 1e6:.1f}MB, "
+              f"{cg.W * 25.4 / pc.DPI:.1f}x{cg.H * 25.4 / pc.DPI:.1f}mm) + .jpg")
+        # 앞표지: 교보 앞표지 칸은 JPG만 받는다(소문자 .jpg, 7MB 이하, 가로 700~1500px)
+        front = canvas.crop((cg.X_FRONT, cg.BLEED, cg.X_FRONT + cg.FRONT, cg.H - cg.BLEED))
+        front = front.resize((FRONT_JPG_W, round(front.height * FRONT_JPG_W / front.width)), Image.LANCZOS)
+        fdst = out / f"{title} (앞표지).jpg"
+        front.save(fdst, "JPEG", quality=95, subsampling=0, optimize=True)
+        print(f"     {fdst.name} ({fdst.stat().st_size / 1e6:.1f}MB, {front.width}x{front.height}px)")
+        print(f"     {note}")
         print(f"     ISBN {colo['isbn']}  정가 {colo['price']}")
     return 1 if failed else 0
 

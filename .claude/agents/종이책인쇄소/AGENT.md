@@ -112,9 +112,9 @@ PYTHONUTF8=1 python docs/images/covers/generate_openskill_paper_covers.py --book
 - 펼침면 가로 = 도련 3 + 뒷표지 188 + 책등 + 앞표지 188 + 도련 3, 세로 = 3 + 254 + 3 (mm)
 - 앞표지는 전자책 표지 디자인(`generate_openskill_covers.py`)을 같은 엔진으로 원본 해상도에 다시 그린다. 엔진(`cover_generator.py`)의 치수 상수를 이번 규격으로 덮어쓰므로, 엔진을 쓰는 모듈은 치수를 정한 뒤에 import한다
 - **책등 두께는 교보 계산식으로 구한다** - `generate_openskill_paper_covers_white.py`는 (내지 두께 계수 x 쪽수 / 2) + 0.78mm를 소수 첫째 자리에서 반올림한다. 계수는 백색·미색모조 80g 0.09, 100g 0.114, 백색모조 150g 0.167(컬러 내지만)이고, 용지는 스크립트의 `KYOBO_PAPER`로 정한다. 내지 쪽수가 바뀌면 표지도 다시 만든다. 회색 초안 생성기(`generate_openskill_paper_covers.py`)는 아직 옛 추정식(쪽수/2 x 0.1mm)이다
-- 교보 등록 화면은 표지를 **PDF(7MB 미만)로만** 받는다(가이드 페이지 코드는 JPG·PNG도 받지만 실제 등록 화면은 PDF만). `_white.py`가 JPG와 같은 그림을 실제 mm 크기 한 쪽 PDF(`cover-paper-spread-흰책등.pdf`, JPG 재압축 없음)로 함께 만든다. 총 가로 610mm 미만, 출판사는 퍼플로고 대신 출판사 로고. 표지는 내지가 흑백이어도 항상 컬러로 인쇄된다
+- 교보 등록 화면은 표지를 **PDF(7MB 미만)로만** 받는다(가이드 페이지 코드는 JPG·PNG도 받지만 실제 등록 화면은 PDF만). `_white.py`가 JPG와 같은 그림을 실제 mm 크기 한 쪽 PDF(JPG 재압축 없음)로 함께 만든다. 교보는 표지 펼침면(뒷표지+책등+앞표지, 도련 포함)과 앞표지를 따로 받으므로 두 가지를 모두 만든다. 총 가로 610mm 미만, 출판사는 퍼플로고 대신 출판사 로고. 표지는 내지가 흑백이어도 항상 컬러로 인쇄된다
 - 뒷표지 문구는 `book/출판등록-책소개.txt`(첫 문단=한 줄 요약, 이어지는 문단=소개)가 있으면 그것을, 없으면 스크립트의 `DRAFT_BLURBS` 초안을 쓴다. 초안은 저자 확인 전이다
-- 확정 디자인(흰 바탕 + 기술 색 한 가지 + 흰 책등, 정가 16,000원)은 `docs/images/covers/generate_openskill_paper_covers_white.py`가 책 세 권을 JPG(`cover-paper-spread-흰책등.jpg`)로 만든다. 위 `generate_openskill_paper_covers.py`는 회색 초안이다
+- 확정 디자인(흰 바탕 + 기술 색 한 가지 + 흰 책등, 정가 16,000원)은 `docs/images/covers/generate_openskill_paper_covers_white.py`가 책 세 권을 `assets/paper-cover/`에 `<책 제목> (표지 펼침면).jpg/.pdf`와 `<책 제목> (앞표지).jpg`(펼침면에서 앞표지만 재단 크기로 잘라 가로 1500px로 줄인 것. 교보 앞표지 칸은 소문자 .jpg만, 7MB 이하, 가로 700~1500px)로 만든다. 펼침면은 PDF로, 앞표지는 JPG로 올린다. `<책 제목>`은 `book/pdf-build.json`의 `output` 이름이다(내지 PDF와 같은 규칙). 위 `generate_openskill_paper_covers.py`는 회색 초안이다
 - ISBN 바코드는 종이책 ISBN(`book/colophon-paper.json`)으로 EAN-13을 직접 그린다. 그 파일이 없으면 전자책 ISBN을 대신 쓰지 않고 그 책을 건너뛴다(체크숫자 검증, OpenCV로 디코드 확인. 디코더가 원본 크기에서 못 읽으면 75%로 줄여 읽는다). 부가기호(5자리)는 없다. 인쇄 서비스가 바코드를 자동으로 넣는지 먼저 확인한다
 
 ## 아직 하지 않는 것
