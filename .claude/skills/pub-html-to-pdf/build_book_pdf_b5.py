@@ -31,6 +31,10 @@ A4판과 다른 점
   1쪽짜리 에필로그 뒤 마치며에 쓰면 중간 빈 쪽과 끝 빈 쪽이 함께 사라진다(2쪽 절약)
   "b5_grayscale" = true 면 흑백 내지로 만든다. 컬러 이모지는 단색 기호 글꼴(Segoe UI Symbol)로
   찍고, 병합 뒤 PyMuPDF recolor로 전부 회색조로 바꾼 다음 남은 컬러를 검사해 출력한다
+
+마지막 단계로 Ghostscript(-dNoOutputFonts)가 모든 글자를 도형(아웃라인)으로 바꿔 글꼴을 0개로 만든다.
+교보 검수가 Chromium의 Type3 글꼴을 '추출할 수 없는 폰트 오류'로 반려하기 때문이다(2026-11-18).
+Ghostscript가 필요하다(없으면 빌드를 멈춘다). 빠른 확인만 할 때는 --no-outline
 """
 
 from __future__ import annotations
@@ -158,7 +162,6 @@ def _drop_first_page(pdf_path: Path) -> None:
 def _to_grayscale(pdf_path: Path) -> dict:
     """흑백 내지용: 글자·선·면·이미지 색을 전부 회색조(1성분)로 바꾸고, 투명 그룹의 혼합 색공간도
     DeviceGray로 맞춘 뒤 남은 컬러를 센다. 반환: {종류: 개수} (비어 있으면 완전 회색조)."""
-    import re
     import fitz
     doc = fitz.open(str(pdf_path))
     doc.recolor(1)
@@ -177,7 +180,13 @@ def _to_grayscale(pdf_path: Path) -> dict:
     doc.save(str(tmp), garbage=1, deflate=True)
     doc.close()
     os.replace(tmp, pdf_path)
+    return _count_color(pdf_path)
 
+
+def _count_color(pdf_path: Path) -> dict:
+    """남은 컬러(RGB·CMYK 색공간과 색 연산자, 컬러 ICC 이미지)를 센다. 비어 있으면 완전 회색조."""
+    import re
+    import fitz
     num = r"[-+]?(?:\d+\.?\d*|\.\d+)"
     ops = {"RGB 색 연산자": re.compile(rf"(?:{num}\s+){{3}}(?:rg|RG)(?![A-Za-z])"),
            "CMYK 색 연산자": re.compile(rf"(?:{num}\s+){{4}}(?:k|K)(?![A-Za-z])")}
@@ -209,6 +218,41 @@ def _to_grayscale(pdf_path: Path) -> dict:
                     if icc and d.xref_get_key(int(icc.group(1)), "N")[1] != "1":
                         left["컬러 ICC 이미지"] = left.get("컬러 ICC 이미지", 0) + 1
     return left
+
+
+def _find_ghostscript() -> str | None:
+    """Ghostscript 콘솔 실행 파일. 환경변수 GS > PATH > C:\\Program Files\\gs\\gs*\\bin 최신 버전 순."""
+    import shutil
+    if os.environ.get("GS") and Path(os.environ["GS"]).exists():
+        return os.environ["GS"]
+    for name in ("gswin64c", "gswin32c", "gs"):
+        found = shutil.which(name)
+        if found:
+            return found
+    for root in (os.environ.get("ProgramFiles", r"C:\Program Files"),
+                 os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)")):
+        hits = sorted(Path(root).glob("gs/gs*/bin/gswin*c.exe"))
+        if hits:
+            return str(hits[-1])
+    return None
+
+
+def _outline_fonts(pdf_path: Path, gs: str) -> None:
+    """교보 검수(폰트 오류) 대응: 모든 글자를 도형(아웃라인)으로 바꿔 PDF 안의 글꼴을 0개로 만든다.
+    Chromium은 가변 글꼴(구글 폰트 JetBrains Mono)과 일부 한글을 글꼴 파일 없는 Type3로 넣는데,
+    교보는 이를 '추출할 수 없는 글꼴'로 반려한다(2026-11-18). 아크로뱃 '글꼴을 외곽선으로 변환'과 같은 결과.
+    이미지는 다시 압축하지 않는다(축소·JPEG 변환 끔). 쪽 크기·재단 상자·북마크는 유지된다."""
+    import subprocess
+    tmp = pdf_path.with_suffix(".outline.pdf")
+    cmd = [gs, "-q", "-dNOPAUSE", "-dBATCH", "-dSAFER", "-sDEVICE=pdfwrite",
+           "-dNoOutputFonts", "-dAutoRotatePages=/None",
+           "-dDownsampleColorImages=false", "-dDownsampleGrayImages=false",
+           "-dDownsampleMonoImages=false",
+           "-dAutoFilterColorImages=false", "-dAutoFilterGrayImages=false",
+           "-dColorImageFilter=/FlateEncode", "-dGrayImageFilter=/FlateEncode",
+           "-o", str(tmp), str(pdf_path)]
+    subprocess.run(cmd, check=True)
+    os.replace(tmp, pdf_path)
 
 
 def _page_count(pdf: Path) -> int:
@@ -481,7 +525,17 @@ def main() -> int:
     ap.add_argument("--project-root", required=True, help="projects/<책폴더> 경로")
     ap.add_argument("--only-chapter", type=int, default=None,
                     help="시험 빌드: 해당 번호 챕터의 표지+본문만 굽는다(판권지·목차 없음)")
+    ap.add_argument("--no-outline", action="store_true",
+                    help="글꼴 아웃라인 처리를 건너뛴다(빠른 확인용. 교보 업로드본에는 쓰지 않는다)")
     args = ap.parse_args()
+    gs = None
+    if not args.no_outline:
+        gs = _find_ghostscript()
+        if not gs:
+            print("[!] Ghostscript 없음: 글꼴 아웃라인 처리(교보 폰트 오류 대응)에 필요합니다.")
+            print("    https://github.com/ArtifexSoftware/ghostpdl-downloads/releases 에서 gsXXXXXw64.exe 설치,")
+            print("    또는 환경변수 GS에 gswin64c.exe 경로 지정. 확인만 할 때는 --no-outline")
+            return 1
 
     project = Path(args.project_root).resolve()
     if not project.exists():
@@ -665,6 +719,12 @@ def main() -> int:
             print(f"[!] 회색조 변환 후 남은 컬러: {left}")
         else:
             print("[OK] 흑백 내지: 글자·선·면·이미지 전부 회색조(남은 컬러 없음)")
+    if gs:
+        _outline_fonts(merged, gs)
+        if gray:
+            left = _count_color(merged)
+            if left:
+                print(f"[!] 아웃라인 처리 후 남은 컬러: {left}")
 
     with fitz.open(str(merged)) as m:
         fonts = {}
@@ -674,11 +734,17 @@ def main() -> int:
         type1 = sorted({b for e, t, b in fonts.values() if t == "Type1"})
         not_embedded = sorted({b for e, t, b in fonts.values() if e == "n/a" and t != "Type3"})
         type3 = sum(1 for e, t, b in fonts.values() if t == "Type3")
-        if type1 or not_embedded:
-            print(f"[!] 인쇄소 규격 위반 글꼴: Type1 {type1}, 내장 안 됨 {not_embedded}")
-        print(f"     글꼴 {len(fonts)}개 (Type1 {len(type1)}, 내장 안 됨 {len(not_embedded)}, "
-              f"Type3 {type3}: Chromium이 코드 글꼴 등을 윤곽선으로 넣은 것)")
-        print(f"[OK] B5 병합 완료: {merged}")
+        if gs:
+            if fonts:
+                print(f"[!] 아웃라인 처리 후에도 글꼴 {len(fonts)}개가 남음 (Type3 {type3})")
+            else:
+                print("[OK] 글꼴 아웃라인: 남은 글꼴 0개 (아크로뱃 문서 속성 > 글꼴 탭이 비어 있는 상태)")
+        else:
+            if type1 or not_embedded:
+                print(f"[!] 인쇄소 규격 위반 글꼴: Type1 {type1}, 내장 안 됨 {not_embedded}")
+            print(f"[!] 아웃라인 생략(--no-outline): 글꼴 {len(fonts)}개 (Type3 {type3}). "
+                  "교보는 Type3를 폰트 오류로 반려하므로 업로드본으로 쓰지 않는다")
+        print(f"[OK] B5 병합 완료: {merged} ({merged.stat().st_size / 1024 / 1024:.1f}MB)")
         mm = 25.4 / 72
         print(f"     {m.page_count}쪽, 쪽 크기 {m[0].rect.width * mm:.1f}x{m[0].rect.height * mm:.1f}mm "
               f"(46배판 재단 {TRIM_W_MM}x{TRIM_H_MM}mm + 도련 {BLEED_MM}mm = {PAGE_W_MM}x{PAGE_H_MM}mm)")

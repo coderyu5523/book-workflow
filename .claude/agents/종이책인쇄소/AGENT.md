@@ -27,6 +27,7 @@ steps: [5, 7]
 | 총 쪽수 | 제한 없음 | **짝수** (홀수면 끝에 빈 쪽) |
 | 색 | 컬러 | `pdf-build.json`의 `"b5_grayscale": true`면 **흑백(회색조)**. 스프링·MSA·도커는 흑백 + 백색모조 80g(2026-11-11 결정) |
 | 쪽번호 글꼴 | PyMuPDF 기본(helv, 내장 안 된 Type1) | **`segoeui.ttf` 내장(TrueType)**. 인쇄소 규격 Type1 금지 |
+| 글꼴 | Chromium이 넣은 그대로 | 마지막에 **Ghostscript로 전부 아웃라인 처리 → 글꼴 0개**. 교보 폰트 오류 반려 대응(2026-11-18) |
 | 출력 | `.build/pdf/` | **`.build/pdf-b5/`** (A4 덮어쓰지 않음) |
 
 입력은 같다: `book/pdf-build.json`, `dividers.json`, `colophon.json`, `authors.json`, `.build/*.html`. 단 종이책은 ISBN·정가가 전자책과 달라서 `book/colophon-paper.json`(`isbn`, `price`)이 있으면 판권지에서 `colophon.json` 위에 덮어쓴다. A4 빌더와 크기에 무관한 함수(챕터 헤딩 추출, 목차 라벨 등)는 `build_book_pdf.py`에서 가져다 쓴다. A4 빌더·`build_pdf.py`·`print.css`는 수정하지 않는다.
@@ -47,6 +48,7 @@ PYTHONUTF8=1 python .claude/skills/pub-html-to-pdf/build_book_pdf_b5.py --projec
 - 산출물: `projects/<책>/.build/pdf-b5/<output 이름> (B5).pdf`. `pdf-build.json`에 `"output_b5"`가 있으면 그 이름을 쓴다
 - 병합 빌더는 HTML을 재생성하지 않는다. 마크다운을 고치고 1번을 건너뛰면 옛 HTML이 그대로 구워진다(웹인쇄소 함정 1과 같다)
 - `PYTHONUTF8=1` 필수. 빌드 전에 PDF 뷰어를 닫는다(열려 있으면 병합 쓰기가 `Permission denied`)
+- **Ghostscript 필수**(글꼴 아웃라인 단계). `C:\Program Files\gs\gs*\bin\gswin64c.exe`·PATH·환경변수 `GS` 순으로 찾고, 없으면 빌드를 멈춘다. winget 카탈로그에는 없어서 Artifex GitHub 릴리스(`ghostpdl-downloads`)의 `gsXXXXXw64.exe`를 설치한다(2026-11-18 10.08.0 설치). 레이아웃만 빠르게 볼 때는 `--no-outline`(업로드본으로 쓰지 않는다)
 
 ## 쪽 배치 규칙 (빌더가 계산한다)
 
@@ -76,7 +78,8 @@ PYTHONUTF8=1 python .claude/skills/pub-html-to-pdf/build_book_pdf_b5.py --projec
 6. **A4 빌드 산출물과 섞지 않는다** - 중간 PDF(`_divider-chN.pdf`, `_colophon.pdf` 등)도 `pdf-b5/`에 따로 만든다. 보조 HTML은 `.build/_b5-*.html`
 7. **병합 PDF를 PyMuPDF로 다시 저장할 때 `garbage`는 1까지만** - 2 이상은 챕터별 PDF가 같이 쓰는 글꼴 부분집합 이름(`AAAAAA+Pretendard-Regular`)·ExtGState 이름을 합치거나 번호를 다시 매기면서 일부 쪽 글자가 엉뚱한 글자로 깨진다. `garbage=1`은 전 쪽 픽셀이 같다(2026-11-11 확인)
 8. **흑백 내지의 컬러 이모지** - Chromium은 컬러 이모지를 그라데이션 Type3 글꼴로 넣어서 `recolor`로 회색이 되지 않는다. 흑백 모드는 렌더 전에 이모지(기본 표시가 그림 문자인 글자)를 `Segoe UI Symbol` 단색 글꼴로 감싼다(MSA 3장 minikube 로그)
-9. **글꼴 검사는 `get_fonts()`의 세 번째 값(종류)으로** - 두 번째 값은 확장자(`ttf`·`n/a`)다. 확장자 열로 Type1을 찾으면 늘 0개로 나온다. 빌더는 끝에 Type1·내장 안 된 글꼴·Type3 개수를 출력한다. Type3는 Chromium이 코드 글꼴 등을 윤곽선으로 넣은 것으로 컬러판에도 있다
+9. **글꼴 검사는 `get_fonts()`의 세 번째 값(종류)으로** - 두 번째 값은 확장자(`ttf`·`n/a`)다. 확장자 열로 Type1을 찾으면 늘 0개로 나온다. 아웃라인 처리 뒤에는 남은 글꼴이 0개여야 하고, `--no-outline`일 때만 Type1·내장 안 된 글꼴·Type3 개수를 출력한다
+10. **Type3 글꼴은 교보 폰트 오류로 반려된다** - Chromium은 가변 글꼴(구글 폰트 JetBrains Mono는 400·600·700이 같은 파일)과 코드 블록 안 일부 한글을 글꼴 파일 없는 Type3로 넣는다(책마다 190~257개). 교보는 이를 "일부 글꼴을 추출할 수 없는 폰트오류"로 반려한다(2026-11-18). 교보 검수 체크리스트의 해법은 "모든 글꼴 포함" 또는 "아웃라인 처리"이고, 완료 기준은 아크로뱃 문서 속성(Ctrl+D) > 글꼴 탭이 비어 있는 것이다. 빌더가 Ghostscript `-dNoOutputFonts`로 글자를 도형으로 바꾼다. 쪽수·쪽 크기·재단 상자·북마크·회색조는 그대로이고 렌더 결과도 같다(안티에일리어싱 차이만). 대신 파일이 4배쯤 커지고(MSA 4.4MB → 19MB) PDF에서 글자 선택·검색이 안 된다. 이미지는 축소·JPEG 재압축을 끈다
 
 ## 빌드 후 검증 (반드시)
 
